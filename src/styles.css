@@ -1,0 +1,13 @@
+/* Global styles: Times New Roman and modern neutral background */
+html, body, #root {
+  height: 100%;
+}
+body {
+  font-family: 'Times New Roman', Times, serif;
+  background: #f7fafc;
+  margin: 0;
+}
+
+.chakra-ui-light {
+  --chakra-colors-bg: #f7fafc;
+}

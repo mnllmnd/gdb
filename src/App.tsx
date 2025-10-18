@@ -1,0 +1,37 @@
+import React from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Home from './pages/Home'
+import SellerDashboard from './pages/SellerDashboard'
+import ShopSetup from './pages/ShopSetup'
+import ProductEditor from './pages/ProductEditor'
+import Admin from './pages/Admin'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
+import NavBar from './components/NavBar'
+import BottomNav from './components/BottomNav'
+import MyOrders from './pages/MyOrders'
+import SellerShop from './pages/SellerShop'
+import SellerOrders from './pages/SellerOrders'
+import ShopView from './pages/ShopView'
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <NavBar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/seller" element={<SellerDashboard />} />
+        <Route path="/seller/setup" element={<ShopSetup />} />
+  <Route path="/seller/shop" element={<SellerShop />} />
+  <Route path="/seller/orders" element={<SellerOrders />} />
+        <Route path="/seller/product/:id?" element={<ProductEditor />} />
+  <Route path="/orders" element={<MyOrders />} />
+    <Route path="/shop/:domain" element={<ShopView />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/admin" element={<Admin />} />
+      </Routes>
+      <BottomNav />
+    </BrowserRouter>
+  )
+}
