@@ -1,5 +1,6 @@
 import api from './api'
 import { setItem, getItem, removeItem } from '../utils/localAuth'
+import cart from '../utils/cart'
 import { normalizeSenegalPhone } from '../utils/phone'
 
 export type Role = 'client' | 'seller' | 'admin'
@@ -34,6 +35,14 @@ export async function signInWithGoogle() {
 export function signOut() {
   removeItem('token')
   removeItem('user')
+  try {
+    cart.clear()
+  } catch (e) {
+    console.error('Failed to clear cart on sign out', e)
+  }
+  // notify app of auth and cart change
+  try { if (typeof globalThis !== 'undefined' && typeof globalThis.dispatchEvent === 'function') globalThis.dispatchEvent(new Event('authChange')) } catch (e) { /* ignore */ }
+  try { if (typeof globalThis !== 'undefined' && typeof globalThis.dispatchEvent === 'function') globalThis.dispatchEvent(new Event('cart:changed')) } catch (e) { /* ignore */ }
 }
 
 export function getCurrentUser() {
