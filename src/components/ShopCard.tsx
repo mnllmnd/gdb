@@ -37,6 +37,7 @@ export default function ShopCard({ shop, compact = false, height }: ShopCardProp
       mx="auto"
       display="flex"
       flexDirection="column"
+        zIndex={10}
       height="100%"
     >
       {/* Image de couverture */}
@@ -99,6 +100,7 @@ export default function ShopCard({ shop, compact = false, height }: ShopCardProp
           colorScheme="brand" 
           size={compact ? 'sm' : 'md'}
           mt={{ base: 3, md: 5 }}
+            mb={{ base: '12px', md: 0 }}
           width="100%"
           borderRadius="lg"
           fontWeight="500"

@@ -70,7 +70,7 @@ export default function Home() {
   const cardHeight = useBreakpointValue({ base: 'auto', md: '220px' })
 
   return (
-    <Container maxW="container.xl" py={8} overflow="visible">
+    <Container maxW="container.xl" py={8} pb={{ base: '120px', md: 8 }} overflow="visible">
       <VStack spacing={6} align="start" mb={8}>
         <Heading size="xl" mb={2}>Bienvenue sur Marketplace</Heading>
         <Text fontSize="lg" color="white">
