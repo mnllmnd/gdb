@@ -3,33 +3,40 @@ import { Box, Image, Heading, Text, Stack, Button, useBreakpointValue } from '@c
 import { Link as RouterLink } from 'react-router-dom'
 import { highRes, SHOP_PLACEHOLDER } from '../utils/image'
 
-export default function ShopCard({ shop }: Readonly<{ shop: Record<string, any> }>) {
+export default function ShopCard({ shop, compact = false }: Readonly<{ shop: Record<string, any>, compact?: boolean }>) {
   const cover = shop.logo_url || SHOP_PLACEHOLDER
-  const hi = highRes(cover, { width: 800, quality: 85 }) ?? SHOP_PLACEHOLDER
+  const hi = highRes(cover, { width: 400, quality: 80 }) ?? SHOP_PLACEHOLDER
   
-  // Tailles adaptées: smaller on mobile so multiple cards are visible
-  const cardHeight = useBreakpointValue({ base: '120px', md: '170px' })
-  const logoSize = useBreakpointValue({ base: '44px', sm: '56px' })
-  const headingSize = useBreakpointValue({ base: 'sm', sm: 'md' })
+  // Tailles ultra-compactes pour affichage côte à côte
+  const cardHeight = useBreakpointValue({ 
+    base: '70px', 
+    sm: '80px',
+    md: '120px' 
+  })
+  const logoSize = useBreakpointValue({ 
+    base: '28px', 
+    sm: '32px',
+    md: '40px' 
+  })
 
   return (
     <Box 
       borderWidth="1px" 
-      borderRadius="xl" 
+      borderRadius="md" 
       overflow="hidden" 
       bg="white" 
-      boxShadow="0 2px 8px rgba(0,0,0,0.08)" 
-      transition="all 250ms ease-in-out" 
+      boxShadow="0 1px 2px rgba(0,0,0,0.06)" 
+      transition="all 150ms ease-in-out" 
       _hover={{ 
-        boxShadow: '0 8px 24px rgba(0,0,0,0.12)', 
-        transform: 'translateY(-2px)'
+        boxShadow: '0 2px 6px rgba(0,0,0,0.1)', 
+        transform: 'translateY(-1px)'
       }}
       position="relative"
-      maxW="420px" // Légèrement plus large
+      maxW="100%"
       mx="auto"
-      height="100%" // Prend toute la hauteur disponible
+      height="100%"
     >
-      {/* Image de couverture avec overlay gradient */}
+      {/* Image de couverture très réduite */}
       <Box 
         height={cardHeight} 
         bg="gray.100" 
@@ -45,87 +52,85 @@ export default function ShopCard({ shop }: Readonly<{ shop: Record<string, any> 
           onError={(e: any) => { e.currentTarget.src = SHOP_PLACEHOLDER }}
           loading="lazy"
         />
-        {/* Overlay gradient pour meilleur contraste */}
-        <Box
-          position="absolute"
-          bottom="0"
-          left="0"
-          right="0"
-          height="40%"
-          bgGradient="linear(to-t, blackAlpha.200, transparent)"
-        />
       </Box>
       
-      {/* Contenu avec plus d'espace */}
-      <Box p={{ base: 4, sm: 5 }} flex="1" display="flex" flexDirection="column">
+      {/* Contenu ultra-compact */}
+      <Box p={2} flex="1" display="flex" flexDirection="column">
         <Stack 
-          spacing={3} 
+          spacing={2} 
           direction="row" 
           align="flex-start"
           position="relative"
           flex="1"
         >
-          {/* Logo avec effet de carte - position ajustée */}
+          {/* Logo très petit */}
           <Box 
             position="relative"
-            mt={`-${useBreakpointValue({ base: '32px', sm: '36px' })}`}
+            mt={useBreakpointValue({ 
+              base: '-16px', 
+              sm: '-18px',
+              md: '-24px' 
+            })}
             flexShrink={0}
           >
             <Image 
-              src={highRes(cover, { width: 160, quality: 85 }) ?? SHOP_PLACEHOLDER} 
+              src={highRes(cover, { width: 80, quality: 80 }) ?? SHOP_PLACEHOLDER} 
               alt="logo" 
               boxSize={logoSize}
               objectFit="cover" 
-              borderRadius="xl"
+              borderRadius="md"
               onError={(e: any) => { e.currentTarget.src = SHOP_PLACEHOLDER }}
-              borderWidth="3px"
+              borderWidth="1.5px"
               borderColor="white"
-              boxShadow="0 4px 12px rgba(0,0,0,0.15)"
+              boxShadow="0 1px 3px rgba(0,0,0,0.1)"
               bg="white"
             />
           </Box>
           
-          {/* Texte avec plus d'espace */}
-          <Box flex="1" minW="0" pt={1}>
+          {/* Texte très compact */}
+          <Box flex="1" minW="0" pt={0.5}>
             <Heading 
-              size={headingSize} 
-              noOfLines={2}
+              size="xs" 
+              noOfLines={1}
               fontWeight="600"
               color="gray.800"
-              lineHeight="1.3"
-              mb={2}
+              lineHeight="1.1"
+              mb={1}
+              fontSize="11px"
             >
               {shop.name || shop.domain}
             </Heading>
             <Text 
               color="gray.600" 
-              noOfLines={3} // Une ligne de plus pour la description
-              fontSize="sm" // Légèrement plus grand
-              lineHeight="1.4"
+              noOfLines={1}
+              fontSize="10px"
+              lineHeight="1.2"
             >
-              {shop.description || 'Boutique locale de qualité'}
+              {shop.description || 'Boutique locale'}
             </Text>
           </Box>
         </Stack>
         
-        {/* Bouton avec plus d'espace au-dessus */}
+        {/* Bouton très compact */}
         <Button 
           as={RouterLink} 
           to={`/shop/${encodeURIComponent(shop.domain || shop.id)}`} 
           colorScheme="brand" 
-          size="md" // Taille medium pour plus de présence
-          mt={5} // Plus d'espace
+          size="xs"
+          mt={2}
           width="100%"
-          borderRadius="lg"
+          borderRadius="sm"
           fontWeight="500"
-          boxShadow="0 2px 6px rgba(0,0,0,0.1)"
+          height="20px"
+          fontSize="10px"
+          boxShadow="none"
           _hover={{
-            transform: 'translateY(-1px)',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+            transform: 'translateY(0)',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
           }}
-          transition="all 200ms ease"
+          transition="all 120ms ease"
         >
-          Visiter la boutique
+          Voir
         </Button>
       </Box>
     </Box>

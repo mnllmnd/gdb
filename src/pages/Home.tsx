@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Heading, Text, Container, Spinner, VStack, Box, Center, Input, InputGroup, InputLeftElement, InputRightElement, IconButton } from '@chakra-ui/react'
+import { Heading, Text, Container, Spinner, VStack, Box, Center, Input, InputGroup, InputLeftElement, InputRightElement, IconButton, Grid } from '@chakra-ui/react'
 import { SearchIcon, CloseIcon } from '@chakra-ui/icons'
 import ShopCard from '../components/ShopCard'
 import api from '../services/api'
@@ -94,19 +94,20 @@ export default function Home() {
         <Box>
           <Heading size="lg" mb={6}>{query ? `Résultats pour: '${query}'` : 'Boutiques'}</Heading>
           {query && <Text mb={3} color="gray.600">{shops.length} résultat{shops.length > 1 ? 's' : ''}</Text>}
-          <Box 
-            display="grid"
-            gridTemplateColumns={{ 
-              base: 'repeat(auto-fill, minmax(220px, 1fr))', 
-              md: 'repeat(auto-fill, minmax(300px, 1fr))' 
+          <Grid
+            templateColumns={{
+              base: 'repeat(auto-fill, minmax(140px, 1fr))',
+              sm: 'repeat(auto-fill, minmax(150px, 1fr))',
+              md: 'repeat(auto-fill, minmax(180px, 1fr))',
+              lg: 'repeat(auto-fill, minmax(200px, 1fr))',
             }}
-            gap={{ base: 4, md: 5 }}
+            gap={{ base: 2, sm: 3, md: 4 }}
             alignItems="stretch"
           >
             {shops.map((s) => (
-              <ShopCard key={s.id} shop={s} />
+              <ShopCard key={s.id} shop={s} compact={true} />
             ))}
-          </Box>
+          </Grid>
         </Box>
       )}
 
