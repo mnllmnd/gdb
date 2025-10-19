@@ -1,156 +1,180 @@
-import React from 'react'
-import { Box, Image, Heading, Text, Stack, Button, useBreakpointValue } from '@chakra-ui/react'
-import { Link as RouterLink } from 'react-router-dom'
-import { highRes, SHOP_PLACEHOLDER } from '../utils/image'
+import React, { useEffect, useState } from 'react'
+import {
+  Box,
+  Flex,
+  Heading,
+  Spacer,
+  Button,
+  HStack,
+  Tag,
+  Avatar,
+  IconButton,
+  useBreakpointValue,
+  useDisclosure,
+  useToast,
+  Drawer,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerHeader,
+  DrawerBody,
+  DrawerFooter,
+  VStack,
+  Text,
+} from '@chakra-ui/react'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { signOut, getCurrentUser } from '../services/auth'
+import api from '../services/api'
 
-export default function ShopCard({ shop, compact = false }: Readonly<{ shop: Record<string, any>, compact?: boolean }>) {
-  const cover = shop.logo_url || SHOP_PLACEHOLDER
-  const hi = highRes(cover, { width: 800, quality: 85 }) ?? SHOP_PLACEHOLDER
-  
-  // Tailles réduites pour mobile - beaucoup plus compact
-  const cardHeight = useBreakpointValue({ 
-    base: compact ? '80px' : '100px', 
-    sm: compact ? '100px' : '120px',
-    md: '140px' 
-  })
-  const logoSize = useBreakpointValue({ 
-    base: compact ? '32px' : '36px', 
-    sm: compact ? '40px' : '44px',
-    md: '48px' 
-  })
-  const headingSize = useBreakpointValue({ 
-    base: compact ? 'xs' : 'sm', 
-    sm: 'sm', 
-    md: 'md' 
-  })
+// Use Times New Roman globally in index.html or via CSS (Times New Roman requested)
+
+export default function NavBar() {
+  type User = { display_name?: string; phone?: string; role?: string; id?: string }
+  type Shop = { name?: string; logo_url?: string; domain?: string }
+
+  const [user, setUser] = useState<User | null>(getCurrentUser() as User | null)
+  const [shop, setShop] = useState<Shop | null>(null)
+  const navigate = useNavigate()
+  const toast = useToast()
+  const showMobileMenu = useBreakpointValue({ base: true, md: false })
+  const { isOpen, onOpen, onClose } = useDisclosure()
+
+  useEffect(() => {
+    function onStorage() {
+      setUser(getCurrentUser())
+    }
+    if (typeof globalThis !== 'undefined') {
+      globalThis.addEventListener('storage', onStorage)
+      function onAuthChange() {
+        setUser(getCurrentUser())
+      }
+      globalThis.addEventListener('authChange', onAuthChange)
+      return () => {
+        globalThis.removeEventListener('storage', onStorage)
+        globalThis.removeEventListener('authChange', onAuthChange)
+      }
+    }
+  }, [])
+
+  // Fetch shop when user changes
+  useEffect(() => {
+    let mounted = true
+    async function loadShop() {
+      if (!user) {
+        if (mounted) setShop(null)
+        return
+      }
+      try {
+          const token = (typeof globalThis !== 'undefined' && globalThis.localStorage) ? globalThis.localStorage.getItem('token') ?? undefined : undefined
+          const s = await api.shops.me(token)
+          if (mounted) setShop(s)
+        } catch (err) {
+          console.error(err)
+          if (mounted) setShop(null)
+        }
+    }
+    loadShop()
+    return () => { mounted = false }
+  }, [user])
 
   return (
-    <Box 
-      borderWidth="1px" 
-      borderRadius="lg" 
-      overflow="hidden" 
-      bg="white" 
-      boxShadow="0 1px 3px rgba(0,0,0,0.08)" 
-      transition="all 200ms ease-in-out" 
-      _hover={{ 
-        boxShadow: '0 4px 12px rgba(0,0,0,0.12)', 
-        transform: 'translateY(-1px)'
-      }}
-      position="relative"
-      maxW="100%"
-      mx="auto"
-      height="100%"
-    >
-      {/* Image de couverture réduite */}
-      <Box 
-        height={cardHeight} 
-        bg="gray.100" 
-        overflow="hidden" 
-        position="relative"
-      >
-        <Image 
-          src={hi} 
-          alt={shop.name || shop.domain} 
-          objectFit="cover" 
-          width="100%" 
-          height="100%"
-          onError={(e: any) => { e.currentTarget.src = SHOP_PLACEHOLDER }}
-          loading="lazy"
-        />
-        {/* Overlay gradient plus subtil */}
-        <Box
-          position="absolute"
-          bottom="0"
-          left="0"
-          right="0"
-          height="30%"
-          bgGradient="linear(to-t, blackAlpha.100, transparent)"
-        />
-      </Box>
-      
-      {/* Contenu compact */}
-      <Box p={{ base: compact ? 2 : 3, sm: compact ? 3 : 4 }} flex="1" display="flex" flexDirection="column">
-        <Stack 
-          spacing={compact ? 2 : 3} 
-          direction="row" 
-          align="flex-start"
-          position="relative"
-          flex="1"
-        >
-          {/* Logo positionné plus haut */}
-          <Box 
-            position="relative"
-            mt={useBreakpointValue({ 
-              base: compact ? '-20px' : '-24px', 
-              sm: compact ? '-24px' : '-28px',
-              md: '-32px' 
-            })}
-            flexShrink={0}
-          >
-            <Image 
-              src={highRes(cover, { width: 160, quality: 85 }) ?? SHOP_PLACEHOLDER} 
-              alt="logo" 
-              boxSize={logoSize}
-              objectFit="cover" 
-              borderRadius="lg"
-              onError={(e: any) => { e.currentTarget.src = SHOP_PLACEHOLDER }}
-              borderWidth="2px"
-              borderColor="white"
-              boxShadow="0 2px 8px rgba(0,0,0,0.1)"
-              bg="white"
-            />
-          </Box>
-          
-          {/* Texte compact */}
-          <Box flex="1" minW="0" pt={compact ? 0 : 1}>
-            <Heading 
-              size={headingSize} 
-              noOfLines={compact ? 1 : 2}
-              fontWeight="600"
-              color="gray.800"
-              lineHeight="1.2"
-              mb={compact ? 1 : 2}
+    <Box as="nav" bg="white" boxShadow="md" px={6} py={4}>
+      <Flex align="center" maxW="1200px" mx="auto">
+        <HStack spacing={4} align="center">
+          <Avatar size="sm" name="Marché Sénégal" />
+          <Heading size="md" color="black" fontWeight="700">Marché Sénégal</Heading>
+          {shop && (
+              <Tag as={RouterLink} to="/seller/shop" ml={3} colorScheme="green" borderRadius="full">
+                {shop.name}
+              </Tag>
+            )}
+        </HStack>
+        <Spacer />
+        {/* Mobile: hamburger opens drawer; Desktop: show actions inline */}
+        {showMobileMenu ? (
+          <IconButton aria-label="Menu" icon={<svg width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></svg>} onClick={onOpen} ml={4} />
+        ) : null}
+        {/* Desktop actions (hidden on mobile) */}
+        {!showMobileMenu && (
+          <HStack spacing={2} align="center">
+            <Button as={RouterLink} to="/" variant="ghost" size="md">
+              Accueil
+            </Button>
+            <Button
+              colorScheme="brand"
+              ml={2}
+              size="md"
+              onClick={() => {
+                if (user) navigate('/seller')
+                else toast({ title: 'Connectez-vous', description: 'Connectez-vous pour accéder à votre boutique', status: 'info' })
+              }}
             >
-              {shop.name || shop.domain}
-            </Heading>
-            <Text 
-              color="gray.600" 
-              noOfLines={compact ? 1 : 2}
-              fontSize={useBreakpointValue({ 
-                base: compact ? 'xs' : 'sm', 
-                sm: 'sm' 
-              })}
-              lineHeight="1.3"
-            >
-              {shop.description || 'Boutique locale de qualité'}
-            </Text>
-          </Box>
-        </Stack>
-        
-        {/* Bouton compact */}
-        <Button 
-          as={RouterLink} 
-          to={`/shop/${encodeURIComponent(shop.domain || shop.id)}`} 
-          colorScheme="brand" 
-          size={useBreakpointValue({ 
-            base: compact ? 'xs' : 'sm', 
-            sm: 'sm',
-            md: 'md' 
-          })}
-          mt={compact ? 2 : 3}
-          width="100%"
-          borderRadius="md"
-          fontWeight="500"
-          boxShadow="0 1px 2px rgba(0,0,0,0.05)"
-          _hover={{
-            transform: 'translateY(-1px)',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
-          }}
-          transition="all 150ms ease"
-        >
-          Visiter
-        </Button>
-      </Box>
+              Ma boutique
+            </Button>
+            {user?.role === 'admin' && (
+              <Button as={RouterLink} to="/admin" variant="ghost" ml={2} size="md">
+                Admin
+              </Button>
+            )}
+            {user ? (
+              <>
+                <Button variant="ghost" ml={4} disabled size="md">
+                  Connecté: {user.display_name ?? user.phone ?? 'Utilisateur'}
+                </Button>
+                <Button
+                  ml={2}
+                  size="md"
+                  onClick={() => {
+                    signOut()
+                    setUser(null)
+                    navigate('/login')
+                  }}
+                >
+                  Se déconnecter
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button as={RouterLink} to="/login" colorScheme="teal" ml={4} size={{ base: 'sm', md: 'md' }}>
+                  Connexion
+                </Button>
+                <Button as={RouterLink} to="/signup" ml={2} size={{ base: 'sm', md: 'md' }}>
+                  S'inscrire
+                </Button>
+              </>
+            )}
+          </HStack>
+        )}
+      </Flex>
+
+      {/* Mobile drawer with actions */}
+  <Drawer placement="left" onClose={onClose} isOpen={isOpen} size="xs">
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerHeader borderBottomWidth="1px">Menu</DrawerHeader>
+          <DrawerBody>
+            <VStack align="stretch" spacing={3} mt={2}>
+              <Button as={RouterLink} to="/" onClick={onClose} variant="ghost" size="sm">Accueil</Button>
+              <Button onClick={() => { onClose(); if (user) navigate('/seller'); else toast({ title: 'Connectez-vous', description: 'Connectez-vous pour accéder à votre boutique', status: 'info' }) }} colorScheme="brand" size="sm">Ma Boutique</Button>
+              {shop && <Button as={RouterLink} to="/seller/shop" onClick={onClose} size="sm">Ma boutique</Button>}
+              {user?.role === 'admin' && <Button as={RouterLink} to="/admin" onClick={onClose} size="sm">Admin</Button>}
+              {user ? (
+                <>
+                  <Button variant="ghost" disabled size="sm">Connecté: {user.display_name ?? user.phone}</Button>
+                  <Button size="sm" onClick={() => { onClose(); signOut(); setUser(null); navigate('/login') }}>Se déconnecter</Button>
+                </>
+              ) : (
+                <>
+                  <Button as={RouterLink} to="/login" onClick={onClose} size="sm">Connexion</Button>
+                  <Button as={RouterLink} to="/signup" onClick={onClose} size="sm">S'inscrire</Button>
+                </>
+              )}
+            </VStack>
+          </DrawerBody>
+          <DrawerFooter>
+            <Text fontSize="sm" color="black">Marché Sénégal</Text>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </Box>
   )
 }

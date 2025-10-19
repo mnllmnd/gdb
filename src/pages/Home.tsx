@@ -1,5 +1,20 @@
 import React, { useEffect, useState } from 'react'
-import { Heading, Text, Container, Spinner, VStack, Box, Center, Input, InputGroup, InputLeftElement, InputRightElement, IconButton, Grid } from '@chakra-ui/react'
+import {
+  Heading,
+  Text,
+  Container,
+  Spinner,
+  VStack,
+  Box,
+  Center,
+  Input,
+  InputGroup,
+  InputLeftElement,
+  InputRightElement,
+  IconButton,
+  Grid,
+  useBreakpointValue
+} from '@chakra-ui/react'
 import { SearchIcon, CloseIcon } from '@chakra-ui/icons'
 import ShopCard from '../components/ShopCard'
 import api from '../services/api'
@@ -28,7 +43,6 @@ export default function Home() {
     const t = setTimeout(async () => {
       try {
         if (!query || query.trim() === '') {
-          // reset to full list
           setShops(allShops)
           return
         }
@@ -37,7 +51,6 @@ export default function Home() {
           setShops(res)
         } catch (err) {
           console.warn('Server search failed, falling back to client-side filter', err)
-          // fallback: filter locally by name or domain or product title available in allShops
           const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean)
           const filtered = (allShops || []).filter((s) => {
             const hay = `${s.name || ''} ${s.domain || ''} ${s.description || ''}`.toLowerCase()
@@ -53,8 +66,11 @@ export default function Home() {
     return () => clearTimeout(t)
   }, [query])
 
+  // hauteur dynamique pour ShopCard
+  const cardHeight = useBreakpointValue({ base: 'auto', md: '220px' })
+
   return (
-    <Container maxW="container.xl" py={8}>
+    <Container maxW="container.xl" py={8} overflow="visible">
       <VStack spacing={6} align="start" mb={8}>
         <Heading size="xl" mb={2}>Bienvenue sur Marketplace</Heading>
         <Text fontSize="lg" color="white">
@@ -78,7 +94,12 @@ export default function Home() {
           />
           {query && (
             <InputRightElement>
-              <IconButton aria-label="clear" icon={<CloseIcon />} size="sm" onClick={() => setQuery('')} />
+              <IconButton
+                aria-label="clear"
+                icon={<CloseIcon />}
+                size="sm"
+                onClick={() => setQuery('')}
+              />
             </InputRightElement>
           )}
         </InputGroup>
@@ -89,23 +110,29 @@ export default function Home() {
           <Spinner size="xl" color="brand.500" thickness="3px" />
         </Center>
       )}
-      
+
       {shops && shops.length > 0 && (
         <Box>
-          <Heading size="lg" mb={6}>{query ? `Résultats pour: '${query}'` : 'Boutiques'}</Heading>
-          {query && <Text mb={3} color="gray.600">{shops.length} résultat{shops.length > 1 ? 's' : ''}</Text>}
+          <Heading size="lg" mb={6}>
+            {query ? `Résultats pour: '${query}'` : 'Boutiques'}
+          </Heading>
+          {query && (
+            <Text mb={3} color="gray.600">
+              {shops.length} résultat{shops.length > 1 ? 's' : ''}
+            </Text>
+          )}
           <Grid
             templateColumns={{
-              base: 'repeat(auto-fill, minmax(140px, 1fr))',
-              sm: 'repeat(auto-fill, minmax(150px, 1fr))',
-              md: 'repeat(auto-fill, minmax(180px, 1fr))',
-              lg: 'repeat(auto-fill, minmax(200px, 1fr))',
+              base: 'repeat(auto-fill, minmax(160px, 1fr))',
+              sm: 'repeat(auto-fill, minmax(180px, 1fr))',
+              md: 'repeat(auto-fill, minmax(200px, 1fr))',
+              lg: 'repeat(auto-fill, minmax(220px, 1fr))',
             }}
-            gap={{ base: 2, sm: 3, md: 4 }}
+            gap={{ base: 4, sm: 5, md: 6 }}
             alignItems="stretch"
           >
             {shops.map((s) => (
-              <ShopCard key={s.id} shop={s} compact={true} />
+              <ShopCard key={s.id} shop={s} compact={true} height={cardHeight} />
             ))}
           </Grid>
         </Box>
