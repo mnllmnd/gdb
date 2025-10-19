@@ -1,0 +1,38 @@
+# Render manifest: defines two services — backend (web service) and frontend (static site)
+services:
+  - type: web
+    name: marketplace-backend
+    env: node
+    plan: free
+    region: oregon
+    root: server
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    # You should configure the following environment variables in the Render dashboard
+    envVars:
+      - key: NODE_ENV
+        value: production
+    # Note: don't store secrets inside render.yaml in plaintext; set them in the Render dashboard
+    # Example env vars to set in the Render dashboard for this service:
+    # DATABASE_URL, JWT_SECRET, Cloudinary_API_Key, Cloudinary_API_Secret, Cloudinary_Cloud_Name
+
+  - type: static
+    name: marketplace-frontend
+    env: static
+    plan: free
+    region: oregon
+    root: .
+    buildCommand: "npm install && npm run build"
+    publishPath: "dist"
+
+jobs:
+  - type: job
+    name: run-migrations
+    env: node
+    plan: free
+    region: oregon
+    root: server
+    steps:
+      - command: "npm install"
+      - command: "npm run migrate"
+    # This job should be run manually or added to a deploy hook to run before backend deployment
