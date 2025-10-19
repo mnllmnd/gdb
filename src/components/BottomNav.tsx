@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react'
-import { HStack, IconButton, useBreakpointValue, Box } from '@chakra-ui/react'
+import { HStack, IconButton, useBreakpointValue, Box, useToast } from '@chakra-ui/react'
 import { Link } from 'react-router-dom'
 import cart from '../utils/cart'
+import { getCurrentUser } from '../services/auth'
 
 export default function BottomNav(){
   const show = useBreakpointValue({ base: true, md: false })
   const [count, setCount] = useState(0)
+  const toast = useToast()
   useEffect(() => {
     function onChange() { setCount(cart.list().reduce((s, i) => s + (i.quantity ?? 0), 0)) }
     onChange()
@@ -25,7 +27,24 @@ export default function BottomNav(){
           <Box position="absolute" top={-2} right={-2} bg="red.500" color="white" px={2} py={0} borderRadius="full" fontSize="sm">{count}</Box>
         )}
       </Box>
-      <IconButton as={Link} to="/login" aria-label="Compte" icon={<span style={{fontSize:18}}>👤</span>} colorScheme="brand" variant="subtle" size="md" borderRadius="full" />
+      <IconButton
+        aria-label="Compte"
+        icon={<span style={{fontSize:18}}>👤</span>}
+        colorScheme="brand"
+        variant="subtle"
+        size="md"
+        borderRadius="full"
+        onClick={() => {
+          const u = getCurrentUser()
+          if (u) {
+            // user is already logged in — show a small toast with their name
+            toast({ title: `Connecté en tant que ${u.displayName || u.name || u.phone || 'utilisateur'}`, status: 'info', duration: 2500 })
+            return
+          }
+          // not logged in — navigate to login
+          window.location.href = '/login'
+        }}
+      />
     </HStack>
   )
 }
