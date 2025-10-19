@@ -171,7 +171,7 @@ export default function NavBar() {
             </VStack>
           </DrawerBody>
           <DrawerFooter>
-            <Text fontSize="sm" color="gray.500">Marché Sénégal</Text>
+            <Text fontSize="sm" color="black">Marché Sénégal</Text>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
