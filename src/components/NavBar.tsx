@@ -80,7 +80,7 @@ export default function NavBar() {
     <Box as="nav" bg="white" boxShadow="md" px={6} py={4}>
       <Flex align="center" maxW="1200px" mx="auto">
         <HStack spacing={4} align="center">
-          <Avatar size="sm" name="Marché Sénégal" src="/logo-small.png" />
+          <Avatar size="sm" name="Marché Sénégal" />
           <Heading size="md" color="black" fontWeight="700">Marché Sénégal</Heading>
           {shop && (
               <Tag as={RouterLink} to="/seller/shop" ml={3} colorScheme="green" borderRadius="full">

@@ -9,6 +9,10 @@ if (API_BASE.startsWith(':')) API_BASE = `http://localhost${API_BASE}`
 if (!/^https?:\/\//i.test(API_BASE)) API_BASE = `http://${API_BASE}`
 // remove trailing slash for consistent concatenation
 API_BASE = API_BASE.replace(/\/$/, '')
+// Ensure API_BASE targets the API root (add /api if caller provided a host without it)
+if (!API_BASE.endsWith('/api')) {
+  API_BASE = API_BASE + '/api'
+}
 
 type ReqOptions = {
   method?: string
