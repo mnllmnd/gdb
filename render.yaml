@@ -22,7 +22,9 @@ services:
     plan: free
     region: oregon
     root: .
-    buildCommand: "npm install && npm run build"
+    # Run install with CI for repeatable builds, then run the Vite build at repo root
+    buildCommand: "npm ci && npm run build"
+    # Vite outputs to `dist` by default (at the repo root). Ensure Render publishes this folder.
     publishPath: "dist"
 
 jobs:
