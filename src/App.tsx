@@ -13,6 +13,7 @@ import MyOrders from './pages/MyOrders'
 import SellerShop from './pages/SellerShop'
 import SellerOrders from './pages/SellerOrders'
 import ShopView from './pages/ShopView'
+import CartPage from './pages/Cart'
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
   <Route path="/seller/orders" element={<SellerOrders />} />
         <Route path="/seller/product/:id?" element={<ProductEditor />} />
   <Route path="/orders" element={<MyOrders />} />
+    <Route path="/cart" element={<CartPage />} />
     <Route path="/shop/:domain" element={<ShopView />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />

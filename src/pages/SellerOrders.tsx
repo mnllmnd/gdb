@@ -43,7 +43,7 @@ export default function SellerOrders() {
   }
 
   return (
-    <Container maxW="container.md" py={8}>
+    <Container maxW="container.md" py={8} pb={{ base: '120px', md: 8 }} overflow="visible">
       <BackButton />
       <Heading mb={4}>Commandes reçues</Heading>
       {loading && <Spinner />}

@@ -13,7 +13,7 @@ export default function MyOrders() {
   }, [])
 
   return (
-    <Container maxW="container.md" py={8}>
+    <Container maxW="container.md" py={8} pb={{ base: '120px', md: 8 }} overflow="visible">
       <Heading mb={4}>Mes commandes</Heading>
       {loading ? <Spinner /> : (
         orders.length === 0 ? <Text>Aucune commande.</Text> : (

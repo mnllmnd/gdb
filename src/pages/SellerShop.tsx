@@ -86,7 +86,7 @@ export default function SellerShop() {
 
   if (!token || !user) {
     return (
-      <Container maxW="container.lg" py={8}>
+      <Container maxW="container.lg" py={8} pb={{ base: '120px', md: 8 }} overflow="visible">
         <BackButton />
         <Heading mb={4} textAlign="center">Votre boutique</Heading>
         <Box textAlign="center" py={8}>
@@ -98,7 +98,7 @@ export default function SellerShop() {
   }
 
   return (
-    <Container maxW="container.lg" py={8}>
+    <Container maxW="container.lg" py={8} pb={{ base: '120px', md: 8 }} overflow="visible">
       <BackButton />
       
       {/* Titre principal */}

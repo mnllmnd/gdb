@@ -41,7 +41,7 @@ export default function ShopView() {
   if (!domain) return <Container py={8}>Nom de boutique manquant</Container>
 
   return (
-    <Container maxW="container.lg" py={8}>
+    <Container maxW="container.lg" py={8} pb={{ base: '120px', md: 8 }} overflow="visible">
       <BackButton />
       {shop === null ? (
         <Spinner />

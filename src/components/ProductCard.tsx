@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Box, Image, Heading, Text, Stack, Button, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, FormControl, FormLabel, Input, Textarea, useDisclosure } from '@chakra-ui/react'
+import cart from '../utils/cart'
 import { highRes, PRODUCT_PLACEHOLDER } from '../utils/image'
 import api from '../services/api'
 
@@ -57,6 +58,17 @@ export default function ProductCard({
     }
   }
 
+  function addToCart() {
+    try {
+      const numeric = numericPrice
+      cart.add({ id, title, price: numeric, image: image ?? null }, 1)
+      toast({ title: 'Ajouté au panier', status: 'success', duration: 2000 })
+    } catch (err) {
+      console.error(err)
+      toast({ title: 'Erreur', description: "Impossible d'ajouter au panier", status: 'error' })
+    }
+  }
+
   return (
     <Box
       borderWidth="1px"
@@ -82,9 +94,12 @@ export default function ProductCard({
           <Heading size="sm" color="black" fontWeight="600" noOfLines={2}>{title}</Heading>
           <Text color="gray.600" fontWeight="semibold">{priceDisplayText}</Text>
           <Box>
-            <Button colorScheme="brand" onClick={onOpen} width={{ base: '100%', md: 'auto' }} borderRadius="md">
-              Commander
-            </Button>
+            <Stack direction={{ base: 'column', md: 'row' }} spacing={3}>
+              <Button colorScheme="brand" onClick={onOpen} width={{ base: '100%', md: 'auto' }} borderRadius="md">
+                Commander
+              </Button>
+              <Button variant="outline" onClick={addToCart} width={{ base: '100%', md: 'auto' }}>Ajouter au panier</Button>
+            </Stack>
           </Box>
         </Stack>
       </Box>

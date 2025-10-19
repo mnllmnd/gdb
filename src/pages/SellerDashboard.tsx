@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Container, Heading, Text, Button, Stack, Box, Image, Flex, Spacer, IconButton, Spinner } from '@chakra-ui/react'
+import { Container, Heading, Text, Button, Stack, Box, Image, Flex, Spacer, IconButton, Spinner, useBreakpointValue } from '@chakra-ui/react'
 import BackButton from '../components/BackButton'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
@@ -13,6 +13,7 @@ export default function SellerDashboard() {
   const [products, setProducts] = useState<Record<string, any>[]>([])
   const [shop, setShop] = useState<Record<string, any> | null>(null)
   const user = getItem('user') ? JSON.parse(getItem('user') as string) : null
+  const btnSize = useBreakpointValue({ base: 'sm', md: 'md' })
 
   useEffect(() => {
     let mounted = true
@@ -62,15 +63,29 @@ export default function SellerDashboard() {
   }
 
   return (
-    <Container maxW="container.md" py={8}>
+  <Container maxW="container.md" py={8} pb={{ base: '120px', md: 8 }} overflow="visible">
       <BackButton />
       <Heading mb={4}>Tableau de bord vendeur</Heading>
       <Text mb={6}>Gérez vos produits et suivez les commandes.</Text>
-      <Stack direction="row" spacing={4} mb={6}>
-        <Button colorScheme="teal" onClick={() => nav('/seller/setup')}>{shop ? 'Modifier ma boutique' : 'Configurer ma boutique'}</Button>
-        <Button onClick={() => nav('/seller/product')}>Ajouter un produit</Button>
-        {shop && <Button variant="outline" onClick={() => nav('/seller/shop')}>Accéder à mon shop</Button>}
-        {shop && <Button colorScheme="red" onClick={handleDeleteShop}>Supprimer la boutique</Button>}
+      {/* Responsive action buttons: stacked on mobile to avoid overlap */}
+  <Stack direction={{ base: 'column', md: 'row' }} spacing={{ base: 3, md: 4 }} mb={6}>
+        {/* smaller size on mobile, full width */}
+  <Button colorScheme="teal" onClick={() => nav('/seller/setup')} size={btnSize} width={{ base: '100%', md: 'auto' }}>
+          {shop ? 'Modifier ma boutique' : 'Configurer ma boutique'}
+        </Button>
+  <Button onClick={() => nav('/seller/product')} size={btnSize} width={{ base: '100%', md: 'auto' }}>
+          Ajouter un produit
+        </Button>
+        {shop && (
+          <Button variant="outline" onClick={() => nav('/seller/shop')} size={btnSize} width={{ base: '100%', md: 'auto' }}>
+            Accéder à mon shop
+          </Button>
+        )}
+        {shop && (
+          <Button colorScheme="red" onClick={handleDeleteShop} size={btnSize} width={{ base: '100%', md: 'auto' }}>
+            Supprimer la boutique
+          </Button>
+        )}
       </Stack>
 
       {loading ? <Spinner /> : (

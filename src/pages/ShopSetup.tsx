@@ -73,7 +73,7 @@ export default function ShopSetup() {
 
   if (!token || !user) {
     return (
-      <Container maxW="container.sm" py={8}>
+      <Container maxW="container.sm" py={8} pb={{ base: '120px', md: 8 }} overflow="visible">
         <BackButton />
         <Heading mb={4}>Configurer ma boutique</Heading>
         <p>Connectez-vous pour pouvoir configurer votre boutique.</p>
@@ -85,7 +85,7 @@ export default function ShopSetup() {
   }
 
   return (
-    <Container maxW="container.sm" py={8}>
+    <Container maxW="container.sm" py={8} pb={{ base: '120px', md: 8 }} overflow="visible">
       <BackButton />
       <Heading mb={4}>Configurer ma boutique</Heading>
       <Stack spacing={4} as="form" onSubmit={(e)=>{ e.preventDefault(); onSave() }}>

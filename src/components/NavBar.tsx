@@ -24,6 +24,7 @@ import {
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { signOut, getCurrentUser } from '../services/auth'
 import api from '../services/api'
+import cart from '../utils/cart'
 
 // Use Times New Roman globally in index.html or via CSS (Times New Roman requested)
 
@@ -37,6 +38,7 @@ export default function NavBar() {
   const toast = useToast()
   const showMobileMenu = useBreakpointValue({ base: true, md: false })
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const [cartCount, setCartCount] = useState<number>(0)
 
   useEffect(() => {
     function onStorage() {
@@ -48,9 +50,14 @@ export default function NavBar() {
         setUser(getCurrentUser())
       }
       globalThis.addEventListener('authChange', onAuthChange)
+      function onCartChange() { setCartCount(cart.list().reduce((s, i) => s + (i.quantity ?? 0), 0)) }
+      // init and subscribe
+      onCartChange()
+      globalThis.addEventListener('cart:changed', onCartChange)
       return () => {
         globalThis.removeEventListener('storage', onStorage)
         globalThis.removeEventListener('authChange', onAuthChange)
+        globalThis.removeEventListener('cart:changed', onCartChange)
       }
     }
   }, [])
@@ -117,6 +124,15 @@ export default function NavBar() {
             )}
             {user ? (
               <>
+                <Button as={RouterLink} to="/cart" variant="ghost" ml={2} size="md">
+                  <HStack spacing={2}>
+                    <Text>Panier</Text>
+                    {cartCount > 0 && (
+                      <Box as="span" bg="red.500" color="white" px={2} py={0} borderRadius="full" fontSize="sm">{cartCount}</Box>
+                    )}
+                  </HStack>
+                </Button>
+                <Button as={RouterLink} to="/orders" variant="ghost" ml={2} size="md">Mes commandes</Button>
                 <Button variant="ghost" ml={4} disabled size="md">
                   Connecté: {user.display_name ?? user.phone ?? 'Utilisateur'}
                 </Button>
@@ -154,7 +170,9 @@ export default function NavBar() {
           <DrawerBody>
             <VStack align="stretch" spacing={3} mt={2}>
               <Button as={RouterLink} to="/" onClick={onClose} variant="ghost" size="sm">Accueil</Button>
-              <Button onClick={() => { onClose(); if (user) navigate('/seller'); else toast({ title: 'Connectez-vous', description: 'Connectez-vous pour accéder à votre boutique', status: 'info' }) }} colorScheme="brand" size="sm">Ma Boutique</Button>
+              <Button as={RouterLink} to="/cart" onClick={onClose} variant="ghost" size="sm">Panier</Button>
+              <Button as={RouterLink} to="/orders" onClick={onClose} variant="ghost" size="sm">Mes commandes</Button>
+              <Button onClick={() => { onClose(); if (user) navigate('/seller'); else toast({ title: 'Connectez-vous', description: 'Connectez-vous pour accéder à votre boutique', status: 'info' }) }} colorScheme="brand" size="sm">Mes produits</Button>
               {shop && <Button as={RouterLink} to="/seller/shop" onClick={onClose} size="sm">Ma boutique</Button>}
               {user?.role === 'admin' && <Button as={RouterLink} to="/admin" onClick={onClose} size="sm">Admin</Button>}
               {user ? (

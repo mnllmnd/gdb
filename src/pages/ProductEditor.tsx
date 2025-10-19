@@ -76,7 +76,7 @@ export default function ProductEditor() {
   }
 
   return (
-    <Container maxW="container.sm" py={8}>
+    <Container maxW="container.sm" py={8} pb={{ base: '120px', md: 8 }} overflow="visible">
       <BackButton />
       <Heading mb={4}>{id ? 'Modifier le produit' : 'Ajouter un produit'}</Heading>
   <Stack spacing={4} as="form" onSubmit={handleSubmit}>
