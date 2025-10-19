@@ -54,7 +54,7 @@ export const api = {
     },
   },
   orders: {
-    create: (payload: any) => request('/orders', { method: 'POST', body: JSON.stringify(payload) }),
+    create: (payload: any, token?: string) => request('/orders', { method: 'POST', body: JSON.stringify(payload), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     my: (token?: string) => request('/orders/me', { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
   },
   shops: {

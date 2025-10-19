@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Box, Image, Heading, Text, Stack, Button, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, FormControl, FormLabel, Input, Textarea, useDisclosure } from '@chakra-ui/react'
 import cart from '../utils/cart'
+import { getItem } from '../utils/localAuth'
 import { highRes, PRODUCT_PLACEHOLDER } from '../utils/image'
 import api from '../services/api'
 
@@ -39,14 +40,15 @@ export default function ProductCard({
         product_id: id,
         product_title: title,
         price: numericPrice,
-        buyer_id: null,
+        buyer_id: getItem('user') ? JSON.parse(getItem('user') as string).id : null,
         payment_method: 'cash_on_delivery',
         buyer_name: name || null,
         buyer_phone: phone || null,
         address: address || null,
         product_image: image || null,
       }
-      await api.orders.create(payload)
+      const token = getItem('token') ?? undefined
+      await api.orders.create(payload, token)
       toast({ title: 'Commande créée', status: 'success', duration: 3000 })
       onClose()
       setName('')

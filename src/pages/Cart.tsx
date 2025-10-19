@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Container, Heading, Stack, Box, Text, Button, NumberInput, NumberInputField, NumberInputStepper, NumberIncrementStepper, NumberDecrementStepper, HStack, Image, useToast } from '@chakra-ui/react'
 import cart from '../utils/cart'
 import api from '../services/api'
+import { getItem } from '../utils/localAuth'
 import { useNavigate } from 'react-router-dom'
 
 export default function CartPage() {
@@ -32,7 +33,11 @@ export default function CartPage() {
         total: cart.getTotal(),
         payment_method: 'cash_on_delivery'
       }
-      await api.orders.create(payload)
+  const token = getItem('token') ?? undefined
+  // attach buyer_id if logged in
+  const user = getItem('user') ? JSON.parse(getItem('user') as string) : null
+  if (user) (payload as any).buyer_id = user.id
+  await api.orders.create(payload, token)
       toast({ title: 'Commande passée', status: 'success', duration: 3000 })
       cart.clear()
       nav('/orders')

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { Container, Heading, Box, Text, useToast, Stack, Spinner, Button, Image, HStack, VStack } from '@chakra-ui/react'
+import { Container, Heading, Box, Text, useToast, Stack, Spinner, Button, Image, HStack, VStack, Badge } from '@chakra-ui/react'
 import BackButton from '../components/BackButton'
 import api from '../services/api'
 import { getItem } from '../utils/localAuth'
+import mapOrderStatus from '../utils/status'
 
 export default function SellerOrders() {
   const token = getItem('token') ?? undefined
@@ -62,7 +63,10 @@ export default function SellerOrders() {
                   <Text>Client: {o.buyer_name ?? `#${o.buyer_id ?? '—'}`}</Text>
                   {o.buyer_phone && <Text>Téléphone: {o.buyer_phone}</Text>}
                   {o.address && <Text>Adresse: {o.address}</Text>}
-                  <Text>État: {o.status ?? '—'}</Text>
+                  {(() => {
+                    const mapped = mapOrderStatus(o.status ?? o.state)
+                    return <Text>État: <Box as="span"><Badge colorScheme={mapped.color as any}>{mapped.label}</Badge></Box></Text>
+                  })()}
                 </VStack>
               </HStack>
               <Box mt={3}>
