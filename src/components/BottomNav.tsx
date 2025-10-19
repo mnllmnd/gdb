@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { HStack, IconButton, useBreakpointValue, Box, useToast } from '@chakra-ui/react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import cart from '../utils/cart'
 import { getCurrentUser } from '../services/auth'
 
 export default function BottomNav(){
+  const navigate = useNavigate()
   const show = useBreakpointValue({ base: true, md: false })
   const [count, setCount] = useState(0)
   const toast = useToast()
@@ -41,8 +42,8 @@ export default function BottomNav(){
             toast({ title: `Connecté en tant que ${u.displayName || u.name || u.phone || 'utilisateur'}`, status: 'info', duration: 2500 })
             return
           }
-          // not logged in — navigate to login
-          window.location.href = '/login'
+          // not logged in — navigate to login within the SPA
+          navigate('/login')
         }}
       />
     </HStack>
