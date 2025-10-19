@@ -88,11 +88,11 @@ router.get('/search', async (req, res) => {
   const whereClauses = parts.map((_, idx) => `(s.name ILIKE $${idx + 1} OR p.title ILIKE $${idx + 1})`).join(' OR ')
   const params = parts.map((p) => `%${p}%`)
     const r = await query(
-      `SELECT DISTINCT s.id, s.owner_id, s.name, s.domain, s.logo_url, s.description, s.created_at
-       FROM shops s
-       LEFT JOIN products p ON p.shop_id = s.id OR p.seller_id = s.owner_id
-       WHERE ${whereClauses}
-       ORDER BY s.created_at DESC`,
+  `SELECT DISTINCT s.id, s.owner_id, s.name, s.domain, s.logo_url, s.description, s.created_at
+   FROM shops s
+   LEFT JOIN products p ON p.seller_id = s.owner_id
+   WHERE ${whereClauses}
+   ORDER BY s.created_at DESC`,
       params
     )
     res.json(r.rows)

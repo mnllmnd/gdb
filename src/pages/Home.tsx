@@ -7,12 +7,14 @@ import api from '../services/api'
 export default function Home() {
   const [shops, setShops] = useState<any[] | null>(null)
   const [query, setQuery] = useState('')
+  const [allShops, setAllShops] = useState<any[] | null>(null)
 
   useEffect(() => {
     async function loadShops() {
       try {
         const s = await api.shops.list()
         setShops(s)
+        setAllShops(s)
       } catch (err) {
         console.error('Failed to load shops', err)
         setShops([])
@@ -26,12 +28,23 @@ export default function Home() {
     const t = setTimeout(async () => {
       try {
         if (!query || query.trim() === '') {
-          const s = await api.shops.list()
-          setShops(s)
+          // reset to full list
+          setShops(allShops)
           return
         }
-        const res = await api.shops.search(query.trim())
-        setShops(res)
+        try {
+          const res = await api.shops.search(query.trim())
+          setShops(res)
+        } catch (err) {
+          console.warn('Server search failed, falling back to client-side filter', err)
+          // fallback: filter locally by name or domain or product title available in allShops
+          const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean)
+          const filtered = (allShops || []).filter((s) => {
+            const hay = `${s.name || ''} ${s.domain || ''} ${s.description || ''}`.toLowerCase()
+            return terms.some((t) => hay.includes(t))
+          })
+          setShops(filtered)
+        }
       } catch (err) {
         console.error('Search failed', err)
         setShops([])
@@ -84,7 +97,7 @@ export default function Home() {
           <Box 
             display="grid"
             gridTemplateColumns={{ 
-              base: 'repeat(auto-fill, minmax(280px, 1fr))', 
+              base: 'repeat(auto-fill, minmax(220px, 1fr))', 
               md: 'repeat(auto-fill, minmax(300px, 1fr))' 
             }}
             gap={{ base: 4, md: 5 }}

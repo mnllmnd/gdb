@@ -7,9 +7,9 @@ export default function ShopCard({ shop }: Readonly<{ shop: Record<string, any> 
   const cover = shop.logo_url || SHOP_PLACEHOLDER
   const hi = highRes(cover, { width: 800, quality: 85 }) ?? SHOP_PLACEHOLDER
   
-  // Tailles légèrement augmentées
-  const cardHeight = useBreakpointValue({ base: '140px', md: '170px' })
-  const logoSize = useBreakpointValue({ base: '56px', sm: '64px' })
+  // Tailles adaptées: smaller on mobile so multiple cards are visible
+  const cardHeight = useBreakpointValue({ base: '120px', md: '170px' })
+  const logoSize = useBreakpointValue({ base: '44px', sm: '56px' })
   const headingSize = useBreakpointValue({ base: 'sm', sm: 'md' })
 
   return (

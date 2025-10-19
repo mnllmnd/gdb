@@ -11,6 +11,16 @@ router.post('/register', async (req, res) => {
   if (!phone || !password) return res.status(400).json({ error: 'Missing phone or password' })
   const hash = await bcrypt.hash(password, 10)
   try {
+    // check if phone or email already exists to give a friendly error
+    if (phone) {
+      const exists = await query('SELECT id FROM users WHERE phone = $1', [phone])
+      if (exists.rowCount > 0) return res.status(409).json({ error: 'Phone already registered' })
+    }
+    if (email) {
+      const existsEmail = await query('SELECT id FROM users WHERE email = $1', [email])
+      if (existsEmail.rowCount > 0) return res.status(409).json({ error: 'Email already registered' })
+    }
+
     const insert = await query(
       'INSERT INTO users (email, phone, password_hash, display_name, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, phone, display_name, role',
       [email || null, phone, hash, displayName || null, role || 'client']
@@ -20,6 +30,8 @@ router.post('/register', async (req, res) => {
     res.json({ user, token })
   } catch (err) {
     console.error(err)
+    // if a unique constraint slipped through, return 409
+    if (err && err.code === '23505') return res.status(409).json({ error: 'User already exists' })
     res.status(500).json({ error: 'Registration failed' })
   }
 })
