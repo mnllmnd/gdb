@@ -23,11 +23,11 @@ export default function Login() {
       <Stack as="form" spacing={4}>
         <FormControl>
           <FormLabel>Numéro de téléphone</FormLabel>
-          <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+221 77 123 45 67" />
+          <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="77 123 45 67" bg="white" color="black" boxShadow="sm" borderRadius="md" />
         </FormControl>
         <FormControl>
           <FormLabel>Mot de passe</FormLabel>
-          <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} bg="white" color="black" boxShadow="sm" borderRadius="md" />
         </FormControl>
         <Stack direction="row">
           <Button colorScheme="teal" onClick={onSignIn}>

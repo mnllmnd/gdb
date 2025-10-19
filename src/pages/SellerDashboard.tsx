@@ -84,7 +84,7 @@ export default function SellerDashboard() {
                 <Box>
                   <Heading size="sm">{shop.name ?? 'Ma boutique'}</Heading>
                   <Text>{shop.description}</Text>
-                  <Text fontSize="sm" color="gray.600">Domaine: {shop.domain ?? '—'}</Text>
+                  <Text fontSize="sm" color="white">Domaine: {shop.domain ?? '—'}</Text>
                 </Box>
                 <Spacer />
               </Flex>

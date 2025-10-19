@@ -82,16 +82,16 @@ export default function ProductEditor() {
   <Stack spacing={4} as="form" onSubmit={handleSubmit}>
         <FormControl>
           <FormLabel>Nom du produit</FormLabel>
-          <Input value={title} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)} placeholder="Nom" required />
+          <Input value={title} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)} placeholder="Nom" required bg="white" color="black" boxShadow="sm" borderRadius="md" />
         </FormControl>
         <FormControl>
           <FormLabel>Description</FormLabel>
-          <Textarea value={description} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)} placeholder="Description" />
+          <Textarea value={description} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)} placeholder="Description" bg="white" color="black" boxShadow="sm" borderRadius="md" />
         </FormControl>
         <FormControl>
           <FormLabel>Prix (CFA)</FormLabel>
           <NumberInput min={0} precision={2} value={price} onChange={(v) => setPrice(Number(v) || 0)}>
-            <NumberInputField />
+            <NumberInputField bg="white" color="black" boxShadow="sm" borderRadius="md" />
           </NumberInput>
         </FormControl>
         <FormControl>

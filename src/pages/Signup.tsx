@@ -35,31 +35,31 @@ export default function Signup() {
       <Heading mb={4}>Inscription — Marché Sénégal</Heading>
       <Stack as="form" spacing={4} onSubmit={(e) => { e.preventDefault(); onSubmit() }}>
         <FormControl>
-          <FormLabel>Nom complet</FormLabel>
-          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Abdou Ndiaye" />
+             <FormLabel>Nom complet</FormLabel>
+             <Input value={name} onChange={(e) => setName(e.target.value)} bg="white" color="black" boxShadow="sm" borderRadius="md" />
         </FormControl>
 
         <FormControl>
-          <FormLabel>Numéro de téléphone</FormLabel>
-          <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+221 77 123 45 67" />
+             <FormLabel>Numéro de téléphone</FormLabel>
+             <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="77 123 45 67" bg="white" color="black" boxShadow="sm" borderRadius="md" />
         </FormControl>
 
         <FormControl>
-          <FormLabel>Mot de passe</FormLabel>
-          <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+             <FormLabel>Mot de passe</FormLabel>
+             <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} bg="white" color="black" boxShadow="sm" borderRadius="md" />
         </FormControl>
 
-        <FormControl>
-          <FormLabel>Confirmer le mot de passe</FormLabel>
-          <Input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
-        </FormControl>
+            <FormControl>
+              <FormLabel>Confirmer le mot de passe</FormLabel>
+              <Input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} bg="white" color="black" boxShadow="sm" borderRadius="md" />
+            </FormControl>
 
         <Stack direction="row">
           <Button colorScheme="teal" onClick={onSubmit}>S'inscrire</Button>
           <Button as={RouterLink} to="/login">Déjà un compte ?</Button>
         </Stack>
 
-        <Text fontSize="sm" color="gray.600">En vous inscrivant, vous acceptez nos conditions d'utilisation.</Text>
+        <Text fontSize="sm" color="white">En vous inscrivant, vous acceptez nos conditions d'utilisation.</Text>
       </Stack>
     </Container>
   )

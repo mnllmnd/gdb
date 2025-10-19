@@ -91,15 +91,15 @@ export default function ShopSetup() {
       <Stack spacing={4} as="form" onSubmit={(e)=>{ e.preventDefault(); onSave() }}>
         <FormControl>
           <FormLabel>Nom de la boutique</FormLabel>
-          <Input value={name} onChange={(e: React.ChangeEvent<HTMLInputElement>)=>setName(e.target.value)} placeholder="Ex: Boulangerie Ndiaye" />
+          <Input value={name} onChange={(e: React.ChangeEvent<HTMLInputElement>)=>setName(e.target.value)} placeholder="Ex: Boulangerie Ndiaye" bg="white" color="black" boxShadow="sm" borderRadius="md" />
         </FormControl>
         <FormControl>
           <FormLabel>Domaine (ex: monshop.sn)</FormLabel>
-          <Input value={domain} onChange={(e: React.ChangeEvent<HTMLInputElement>)=>setDomain(e.target.value)} placeholder="monshop.sn" />
+          <Input value={domain} onChange={(e: React.ChangeEvent<HTMLInputElement>)=>setDomain(e.target.value)} placeholder="monshop.sn" bg="white" color="black" boxShadow="sm" borderRadius="md" />
         </FormControl>
         <FormControl>
           <FormLabel>Description courte</FormLabel>
-          <Textarea value={description} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>)=>setDescription(e.target.value)} placeholder="Présentez votre boutique en une phrase" />
+          <Textarea value={description} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>)=>setDescription(e.target.value)} placeholder="Présentez votre boutique en une phrase" bg="white" color="black" boxShadow="sm" borderRadius="md" />
         </FormControl>
         <FormControl>
           <FormLabel>Logo / Photo de profil</FormLabel>
