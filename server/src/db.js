@@ -7,7 +7,7 @@ const { Pool } = pkg
 // Normalize DATABASE_URL: trim whitespace and surrounding quotes if any
 let connectionString = process.env.DATABASE_URL
 if (typeof connectionString !== 'string') {
-  throw new Error('DATABASE_URL environment variable is not set or not a string')
+  throw new TypeError('DATABASE_URL environment variable is not set or not a string')
 }
 connectionString = connectionString.trim()
 // remove surrounding single or double quotes which sometimes appear when envs are set via Windows UI

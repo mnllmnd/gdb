@@ -81,7 +81,7 @@ export default function NavBar() {
       <Flex align="center" maxW="1200px" mx="auto">
         <HStack spacing={4} align="center">
           <Avatar size="sm" name="Marché Sénégal" src="/logo-small.png" />
-          <Heading size="md">Marché Sénégal</Heading>
+          <Heading size="md" color="black" fontWeight="700">Marché Sénégal</Heading>
           {shop && (
               <Tag as={RouterLink} to="/seller/shop" ml={3} colorScheme="green" borderRadius="full">
                 {shop.name}

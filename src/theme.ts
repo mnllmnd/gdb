@@ -87,10 +87,11 @@ const styles = {
     'html, body': {
       fontSize: { base: '17px', md: '15px' },
       // Use a single uniform background so the page looks consistent when scrolling
-      bg: '#775144',
-      color: 'brand.900',
+      bg: '#392c5bff',
+      color: 'white',
       minHeight: '100vh',
     },
+    'input, textarea, select': { background: 'white', color: 'black' },
     'a': { textDecoration: 'none' },
     'button': { WebkitTapHighlightColor: 'transparent' },
   },

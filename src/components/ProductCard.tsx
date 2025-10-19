@@ -78,7 +78,7 @@ export default function ProductCard({
       </Box>
       <Box p={4}>
         <Stack spacing={3}>
-          <Heading size="sm" noOfLines={2}>{title}</Heading>
+          <Heading size="sm" color="black" fontWeight="600" noOfLines={2}>{title}</Heading>
           <Text color="gray.600" fontWeight="semibold">{priceDisplayText}</Text>
           <Box>
             <Button colorScheme="brand" onClick={onOpen} width={{ base: '100%', md: 'auto' }} borderRadius="md">

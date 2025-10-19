@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Container, Heading, FormControl, FormLabel, Input, Button, Stack, Textarea, Image } from '@chakra-ui/react'
 import BackButton from '../components/BackButton'
 import api from '../services/api'
+import FileInput from '../components/FileInput'
 
 export default function ShopSetup() {
   const [name, setName] = useState('')
@@ -13,6 +14,24 @@ export default function ShopSetup() {
 
   const token = (typeof globalThis !== 'undefined' && globalThis.localStorage) ? globalThis.localStorage.getItem('token') ?? undefined : undefined
   const user = (typeof globalThis !== 'undefined' && globalThis.localStorage && localStorage.getItem('user')) ? JSON.parse(localStorage.getItem('user') as string) : null
+
+  useEffect(() => {
+    if (!token) return
+    (async () => {
+      try {
+        const s = await api.shops.me(token)
+        if (s) {
+          setName(s.name || '')
+          setDomain(s.domain || '')
+          setDescription(s.description || '')
+          setLogoUrl(s.logo_url || null)
+        }
+      } catch (err) {
+        // ignore: prefill is optional
+        console.debug('No shop to prefill', err)
+      }
+    })()
+  }, [token])
 
   async function uploadLogo() {
     if (!logo) return
@@ -62,34 +81,22 @@ export default function ShopSetup() {
       <Stack spacing={4} as="form" onSubmit={(e)=>{ e.preventDefault(); onSave() }}>
         <FormControl>
           <FormLabel>Nom de la boutique</FormLabel>
-          <Input value={name} onChange={(e)=>setName(e.target.value)} placeholder="Ex: Boulangerie Ndiaye" />
+          <Input value={name} onChange={(e: React.ChangeEvent<HTMLInputElement>)=>setName(e.target.value)} placeholder="Ex: Boulangerie Ndiaye" />
         </FormControl>
         <FormControl>
           <FormLabel>Domaine (ex: monshop.sn)</FormLabel>
-          <Input value={domain} onChange={(e)=>setDomain(e.target.value)} placeholder="monshop.sn" />
+          <Input value={domain} onChange={(e: React.ChangeEvent<HTMLInputElement>)=>setDomain(e.target.value)} placeholder="monshop.sn" />
         </FormControl>
         <FormControl>
           <FormLabel>Description courte</FormLabel>
-          <Textarea value={description} onChange={(e)=>setDescription(e.target.value)} placeholder="Présentez votre boutique en une phrase" />
+          <Textarea value={description} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>)=>setDescription(e.target.value)} placeholder="Présentez votre boutique en une phrase" />
         </FormControl>
         <FormControl>
           <FormLabel>Logo / Photo de profil</FormLabel>
-          <Input type="file" accept="image/*" onChange={async (e)=>{
-            const file = e.target.files?.[0] ?? null
-            setLogo(file)
-            if (file) {
-              setLoading(true)
-              try {
-                const res = await api.uploads.uploadFile(file, token)
-                setLogoUrl(res.url)
-              } catch (err:any) {
-                alert(err?.error || 'Échec upload')
-              } finally { setLoading(false) }
-            }
-          }} />
-          {logoUrl && <Image src={logoUrl} alt="logo" boxSize="100px" mt={2} objectFit="cover" borderRadius="full" />}
+          <FileInput value={logo} onChange={(f) => { setLogo(f); }} label="Choisir un logo" />
+          {logoUrl && !logo && <Image src={logoUrl} alt="logo" boxSize="100px" mt={2} objectFit="cover" borderRadius="full" />}
           <Stack direction="row" mt={2}>
-            <Button colorScheme="teal" onClick={onSave} isLoading={loading}>Enregistrer la boutique</Button>
+            <Button colorScheme="brand" onClick={onSave} isLoading={loading}>Enregistrer la boutique</Button>
           </Stack>
         </FormControl>
       </Stack>
