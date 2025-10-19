@@ -58,7 +58,7 @@ export default function ShopView() {
           {products !== null && products.length > 0 && (
             <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
               {products.map((p) => (
-                <ProductCard key={p.id} id={p.id} title={p.title} price={p.price} image={p.image_url} />
+                <ProductCard key={p.id} id={p.id} title={p.title} price={p.price} image_url={p.image_url} />
               ))}
             </SimpleGrid>
           )}

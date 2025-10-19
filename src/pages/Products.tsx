@@ -102,12 +102,12 @@ export default function Products() {
       {products && products.length > 0 ? (
         <Grid
           templateColumns={{
-            base: 'repeat(auto-fill, minmax(140px, 1fr))',
-            sm: 'repeat(auto-fill, minmax(160px, 1fr))',
-            md: 'repeat(auto-fill, minmax(200px, 1fr))',
-            lg: 'repeat(auto-fill, minmax(220px, 1fr))',
+            base: 'repeat(3, 1fr)',
+            sm: 'repeat(4, 1fr)',
+            md: 'repeat(5, 1fr)',
+            lg: 'repeat(6, 1fr)',
           }}
-          gap={{ base: 4, sm: 5, md: 6 }}
+          gap={2}
         >
           {products.map((p) => (
             <ProductCard
@@ -115,7 +115,7 @@ export default function Products() {
               id={String(p.id)}
               title={p.title || p.name}
               price={p.price ?? p.amount}
-              image={p.image_url ?? p.product_image}
+              image_url={p.image_url ?? p.product_image}
             />
           ))}
         </Grid>

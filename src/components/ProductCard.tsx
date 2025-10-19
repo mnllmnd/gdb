@@ -10,12 +10,14 @@ export default function ProductCard({
   title,
   price,
   image,
-  height,
+  image_url,
+  height = { base: '80px', md: '160px' }, // much smaller heights as requested
 }: Readonly<{
   id: string
   title: string
   price: number | string | null | undefined
   image?: string
+  image_url?: string
   height?: any
 }>) {
   const [isHovered, setIsHovered] = useState(false)
@@ -39,7 +41,9 @@ export default function ProductCard({
   const [hasImage, setHasImage] = useState<boolean | null>(null)
 
   // Resolve the final src we will use and probe it to confirm it loads
-  const resolvedSrc = (highRes(image, { width: 1000, quality: 80 }) ?? image) as string | undefined
+  // prefer `image_url` (DB) over legacy `image` prop
+  const chosen = image_url ?? image
+  const resolvedSrc = (highRes(chosen, { width: 1000, quality: 80 }) ?? chosen) as string | undefined
   React.useEffect(() => {
     let mounted = true
     // if there's no resolved src, mark as no image
@@ -62,7 +66,7 @@ export default function ProductCard({
 
   async function placeOrder() {
     try {
-      const payload = {
+        const payload = {
         product_id: id,
         product_title: title,
         price: numericPrice,
@@ -71,7 +75,7 @@ export default function ProductCard({
         buyer_name: name || null,
         buyer_phone: phone || null,
         address: address || null,
-        product_image: image || null,
+          product_image: chosen || null,
       }
       const token = getItem('token') ?? undefined
       await api.orders.create(payload, token)
@@ -89,7 +93,7 @@ export default function ProductCard({
   function addToCart() {
     try {
       const numeric = numericPrice
-      cart.add({ id, title, price: numeric, image: image ?? null }, 1)
+  cart.add({ id, title, price: numeric, image: chosen ?? null }, 1)
       toast({ title: 'Ajouté au panier', status: 'success', duration: 2000 })
     } catch (err) {
       console.error(err)
@@ -107,7 +111,7 @@ export default function ProductCard({
       transition="all 160ms ease"
       _hover={{ transform: 'translateY(-6px)', boxShadow: 'lg' }}
     >
-      <Box position="relative" height={height ?? { base: '110px', md: '220px' }} bg="gray.50" display="flex" alignItems="center" justifyContent="center" overflow="hidden">
+      <Box position="relative"       height={height ?? { base: '90px', md: '180px' }} bg="gray.50" display="flex" alignItems="center" justifyContent="center" overflow="hidden">
         <Image
           src={resolvedSrc ?? PRODUCT_PLACEHOLDER}
           alt={title}
@@ -123,16 +127,16 @@ export default function ProductCard({
           </Box>
         )}
       </Box>
-  <Box p={{ base: 2, md: 4 }}>
-        <Stack spacing={3}>
-          <Heading size="sm" color="black" fontWeight="600" noOfLines={2}>{title}</Heading>
-          <Text color="gray.600" fontWeight="semibold">{priceDisplayText}</Text>
+  <Box p={1.5}>
+        <Stack spacing={1}>
+          <Heading size="xs" color="black" fontWeight="600" noOfLines={2}>{title}</Heading>
+          <Text fontSize="xs" color="gray.600" fontWeight="semibold">{priceDisplayText}</Text>
           <Box>
-            <Stack direction={{ base: 'column', md: 'row' }} spacing={3}>
-              <Button colorScheme="brand" onClick={onOpen} width={{ base: '100%', md: 'auto' }} borderRadius="md" boxShadow="sm" size={{ base: 'sm', md: 'md' }} px={{ base: 3, md: 4 }}>
+            <Stack direction={{ base: 'column', md: 'row' }} spacing={1.5}>
+              <Button colorScheme="brand" onClick={onOpen} width={{ base: '100%', md: 'auto' }} borderRadius="md" boxShadow="sm" size="xs" px={2}>
                 Commander
               </Button>
-              <Button variant="ghost" onClick={addToCart} width={{ base: '100%', md: 'auto' }} borderRadius="md" size={{ base: 'sm', md: 'md' }} px={{ base: 3, md: 4 }}>Ajouter au panier</Button>
+              <Button variant="ghost" onClick={addToCart} width={{ base: '100%', md: 'auto' }} borderRadius="md" size="xs" px={2}>Ajouter au panier</Button>
             </Stack>
           </Box>
         </Stack>

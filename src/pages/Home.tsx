@@ -7,202 +7,182 @@ import {
   VStack,
   Box,
   Center,
-  Input,
-  InputGroup,
-  InputLeftElement,
-  InputRightElement,
-  IconButton,
   Grid,
-  useBreakpointValue,
-  Button,
   GridItem,
+  useBreakpointValue,
+  IconButton,
 } from '@chakra-ui/react'
-import { SearchIcon, CloseIcon } from '@chakra-ui/icons'
-import { FiShoppingBag, FiTruck, FiShield } from 'react-icons/fi'
+import { CloseIcon } from '@chakra-ui/icons'
+import FilterNav from '../components/FilterNav'
 import ShopCard from '../components/ShopCard'
 import ProductCard from '../components/ProductCard'
 import api from '../services/api'
 
 export default function Home() {
   const [shops, setShops] = React.useState<any[] | null>(null)
+  const [products, setProducts] = React.useState<any[] | null>(null)
   const [query, setQuery] = React.useState('')
-  const [allShops, setAllShops] = React.useState<any[] | null>(null)
+  const [currentView, setCurrentView] = React.useState<'shops' | 'products'>('shops')
   const [isLoading, setIsLoading] = React.useState(true)
 
+  // hauteur commune pour les cartes (mobile = 80px, desktop = 160px)
+  const cardHeight = useBreakpointValue({ base: '80px', md: '160px' })
+
   React.useEffect(() => {
-    async function loadShops() {
+    async function loadData() {
       try {
-        const s = await api.shops.list()
-        setShops(s)
-        setAllShops(s)
+        const [shopsData, productsData] = await Promise.all([
+          api.shops.list(),
+          api.products.list(),
+        ])
+        setShops(shopsData)
+        // take recent products from the list (assume API returns newest first)
+        setProducts((productsData || []).slice(0, 12))
       } catch (err) {
-        console.error('Failed to load shops', err)
+        console.error('Failed to load data', err)
         setShops([])
+        setProducts([])
       } finally {
         setIsLoading(false)
       }
     }
-    loadShops()
+    loadData()
   }, [])
 
-  // debounce search
+  // recherche débouncée déclenchant une recherche côté serveur selon la vue
   React.useEffect(() => {
+    if (!query || query.trim() === '') return
     const t = setTimeout(async () => {
+      setIsLoading(true)
       try {
-        if (!query || query.trim() === '') {
-          setShops(allShops)
-          return
-        }
-        try {
+        if (currentView === 'shops') {
           const res = await api.shops.search(query.trim())
           setShops(res)
-        } catch (err) {
-          console.warn('Server search failed, falling back to client-side filter', err)
+        } else {
+          // API has no products.search — fetch list and filter client-side
+          const all = await api.products.list()
           const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean)
-          const filtered = (allShops || []).filter((s) => {
-            const hay = `${s.name || ''} ${s.domain || ''} ${s.description || ''}`.toLowerCase()
-            return terms.some((t) => hay.includes(t))
+          const filtered = (all || []).filter((p: any) => {
+            const hay = `${p.title || p.name || ''} ${p.description || ''}`.toLowerCase()
+            return terms.every((t) => hay.includes(t))
           })
-          setShops(filtered)
+          setProducts(filtered)
         }
       } catch (err) {
         console.error('Search failed', err)
-        setShops([])
+      } finally {
+        setIsLoading(false)
       }
     }, 300)
     return () => clearTimeout(t)
-  }, [query, allShops])
+  }, [query, currentView])
 
-  // hauteur dynamique pour ShopCard — small fixed on mobile so cards align
-  const cardHeight = useBreakpointValue({ base: '110px', md: '220px' })
+  // When the query is cleared (or when view changes while there's no query),
+  // reload the appropriate full list so the UI returns to the unfiltered state.
+  React.useEffect(() => {
+    if (query && query.trim() !== '') return
+    let mounted = true
+    ;(async () => {
+      setIsLoading(true)
+      try {
+        if (currentView === 'shops') {
+          const s = await api.shops.list()
+          if (mounted) setShops(s)
+        } else {
+          const p = await api.products.list()
+          if (mounted) setProducts((p || []).slice(0, 12))
+        }
+      } catch (err) {
+        console.error('Reload failed', err)
+        if (mounted) {
+          if (currentView === 'shops') setShops([])
+          else setProducts([])
+        }
+      } finally {
+        if (mounted) setIsLoading(false)
+      }
+    })()
+    return () => { mounted = false }
+  }, [query, currentView])
 
   return (
     <Box>
-      {/* Hero Section */}
-      <Box
-        bg="brand.500"
-        color="white"
-        py={16}
-        position="relative"
-        overflow="hidden"
-      >
-        <Box
-          position="absolute"
-          top="0"
-          left="0"
-          right="0"
-          bottom="0"
-          bg="brand.600"
-          transform="skewY(-6deg)"
-          transformOrigin="top left"
-        />
-        
+      {/* Hero */}
+      <Box bg="brand.500" color="white" py={16} position="relative" overflow="hidden">
+        <Box position="absolute" top="0" left="0" right="0" bottom="0" bg="brand.600" transform="skewY(-6deg)" transformOrigin="top left" />
         <Container maxW="container.xl" position="relative">
-          <VStack spacing={6} align="start">
-            <Heading
-              size="2xl"
-              bgGradient="linear(to-r, white, blue.200)"
-              bgClip="text"
-              letterSpacing="tight"
-            >
-              Sama Bitik
-            </Heading>
-            <Text fontSize="xl" maxW="lg" lineHeight="tall">
-              Découvrez l'excellence du commerce local. Simple, élégant et sécurisé.
-            </Text>
-            <Button
-              size="lg"
-              colorScheme="white"
-              variant="outline"
-              _hover={{ bg: 'whiteAlpha.200' }}
-              leftIcon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>}
-            >
-              Explorer les boutiques
-            </Button>
+          <VStack spacing={6} align="stretch">
+            <Box textAlign="center">
+              <Heading size="2xl" mb={4}>{currentView === 'shops' ? 'Découvrez nos boutiques' : 'Produits récents'}</Heading>
+              <Text fontSize="xl" color="whiteAlpha.900">
+                {currentView === 'shops' ? 'Les meilleurs produits, directement des artisans' : 'Explorez les produits disponibles'}
+              </Text>
+            </Box>
           </VStack>
         </Container>
       </Box>
 
-      <Container maxW="container.xl" py={12} overflow="visible">
+      {/* Filtres / recherche */}
+      <FilterNav view={currentView} onViewChange={setCurrentView} searchQuery={query} onSearchChange={setQuery} />
 
-      {/* Section des boutiques */}
-      <Box mb={6} w="100%">
-        <InputGroup maxW="720px">
-          <InputLeftElement pointerEvents="none">
-            <SearchIcon color="gray.400" />
-          </InputLeftElement>
-          <Input
-            placeholder="Rechercher une boutique ou un produit..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            bg="white"
-            borderRadius="lg"
-            boxShadow="sm"
-          />
-          {query && (
-            <InputRightElement>
-              <IconButton aria-label="clear" icon={<CloseIcon />} size="sm" onClick={() => setQuery('')} />
-            </InputRightElement>
-          )}
-        </InputGroup>
-
-        {shops === null && (
-          <Center py={12}>
-            <Spinner size="xl" color="brand.500" thickness="3px" />
-          </Center>
-        )}
-
-        {shops && shops.length > 0 && (
-          <Box>
-            <Heading size="lg" mb={6}>
-              {query ? `Résultats pour: '${query}'` : 'Boutiques'}
-            </Heading>
-            {query && (
-              <Text mb={3} color="gray.600">
-                {shops.length} résultat{shops.length > 1 ? 's' : ''}
-              </Text>
+      {/* Contenu principal */}
+      <Container maxW={{ base: '95%', md: '85%', lg: '80%' }} py={4}>
+        {isLoading ? (
+          <Center py={4}><Spinner size="md" /></Center>
+        ) : (
+          <>
+            {currentView === 'shops' ? (
+              shops?.length ? (
+                <Grid templateColumns={{ base: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }} gap={2}>
+                  {shops.map((shop) => (
+                    <GridItem key={shop.id}>
+                      <ShopCard {...shop} compact height={cardHeight} />
+                    </GridItem>
+                  ))}
+                </Grid>
+              ) : query ? (
+                <Box textAlign="center" py={8}>
+                  <Text fontSize="lg" mb={4}>Aucune boutique ne correspond à votre recherche</Text>
+                  <IconButton
+                    aria-label="Effacer la recherche"
+                    icon={<CloseIcon />}
+                    onClick={() => setQuery('')}
+                    size="md"
+                    colorScheme="brand"
+                    variant="outline"
+                  />
+                </Box>
+              ) : null
+            ) : (
+              products?.length ? (
+                <Grid templateColumns={{ base: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)', lg: 'repeat(5, 1fr)' }} gap={2}>
+                  {products.map((product) => (
+                    <GridItem key={product.id}>
+                      <ProductCard {...product} image_url={product.image_url ?? product.product_image} height={cardHeight} />
+                    </GridItem>
+                  ))}
+                </Grid>
+              ) : query ? (
+                <Box textAlign="center" py={8}>
+                  <Text fontSize="lg" mb={4}>Aucun produit ne correspond à votre recherche</Text>
+                  <IconButton
+                    aria-label="Effacer la recherche"
+                    icon={<CloseIcon />}
+                    onClick={() => setQuery('')}
+                    size="md"
+                    colorScheme="brand"
+                    variant="outline"
+                  />
+                </Box>
+              ) : null
             )}
-
-            <Grid
-              templateColumns={{
-                base: 'repeat(auto-fill, minmax(140px, 1fr))',
-                sm: 'repeat(auto-fill, minmax(160px, 1fr))',
-                md: 'repeat(auto-fill, minmax(200px, 1fr))',
-                lg: 'repeat(auto-fill, minmax(220px, 1fr))',
-              }}
-              gap={{ base: 4, sm: 5, md: 6 }}
-              alignItems="stretch"
-            >
-              {shops.map((s) => (
-                <ShopCard key={s.id} shop={s} compact={true} height={cardHeight} />
-              ))}
-            </Grid>
-          </Box>
+          </>
         )}
 
-        {shops && shops.length === 0 && (
-          <Center py={12}>
-            <VStack spacing={4}>
-              <Text fontSize="lg" color="white">
-                Aucune boutique disponible pour le moment
-              </Text>
-              <Text color="white">Revenez plus tard pour découvrir nos boutiques partenaires</Text>
-            </VStack>
-          </Center>
-        )}
-      </Box>
-
-      {/* Section produits récents */}
-      <Box mt={10}>
-        <Heading size="lg" mb={4}>
-          Produits récents
-        </Heading>
-        <ProductListPreview cardHeight={cardHeight} />
-      </Box>
-    </Container>
-  </Box>
+        {/* Aperçu des produits récents — visible uniquement quand on voit les boutiques */}
+       
+      </Container>
+    </Box>
   )
 }
 
@@ -225,35 +205,17 @@ function ProductListPreview({ cardHeight }: { cardHeight?: any }) {
       }
     }
     load()
-    return () => {
-      mounted = false
-    }
+    return () => { mounted = false }
   }, [])
 
-  if (loading) return (
-    <Box>
-      <Text>Chargement...</Text>
-    </Box>
-  )
-  if (!products || products.length === 0) return (
-    <Box>
-      <Text>Aucun produit récent.</Text>
-    </Box>
-  )
+  if (loading) return <Box><Text>Chargement...</Text></Box>
+  if (!products || products.length === 0) return <Box><Text>Aucun produit récent.</Text></Box>
 
   return (
     <Box>
-      <Grid
-        templateColumns={{
-          base: 'repeat(auto-fill, minmax(140px, 1fr))',
-          sm: 'repeat(auto-fill, minmax(160px, 1fr))',
-          md: 'repeat(auto-fill, minmax(200px, 1fr))',
-          lg: 'repeat(auto-fill, minmax(220px, 1fr))',
-        }}
-        gap={{ base: 4, sm: 5, md: 6 }}
-      >
+      <Grid templateColumns={{ base: 'repeat(auto-fill, minmax(140px, 1fr))', sm: 'repeat(auto-fill, minmax(160px, 1fr))', md: 'repeat(auto-fill, minmax(200px, 1fr))' }} gap={{ base: 4, sm: 5, md: 6 }}>
         {products.map((p) => (
-          <ProductCard key={p.id} id={String(p.id)} title={p.title || p.name} price={p.price ?? p.amount} image={p.image_url ?? p.product_image} height={cardHeight} />
+          <ProductCard key={p.id} id={String(p.id)} title={p.title || p.name} price={p.price ?? p.amount} image_url={p.image_url ?? p.product_image} height={cardHeight} />
         ))}
       </Grid>
     </Box>

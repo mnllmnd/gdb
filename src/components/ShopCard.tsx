@@ -4,21 +4,37 @@ import { Link as RouterLink } from 'react-router-dom'
 import { highRes, SHOP_PLACEHOLDER } from '../utils/image'
 
 type ShopCardProps = {
-  shop: Record<string, any>;
+  shop?: Record<string, any>;
+  // also allow flattened props when component is used as <ShopCard {...shop} />
+  id?: string
+  name?: string
+  domain?: string
+  description?: string
+  logo_url?: string
   compact?: boolean;
   height?: string | number; // optionnel, depuis Home.tsx
 };
 
-export default function ShopCard({ shop, compact = false, height }: ShopCardProps) {
-  const cover = shop.logo_url || SHOP_PLACEHOLDER
+export default function ShopCard(props: ShopCardProps) {
+  const { shop, compact = false, height } = props
+  // normalize data whether caller passed `shop={obj}` or spread the shop fields
+  const s: Record<string, any> = shop ?? {
+    id: props.id,
+    name: props.name,
+    domain: props.domain,
+    description: props.description,
+    logo_url: props.logo_url,
+  }
+
+  const cover = s?.logo_url || SHOP_PLACEHOLDER
   const hi = highRes(cover, { width: 800, quality: 85 }) ?? SHOP_PLACEHOLDER
 
   // Tailles adaptatives
-  const cardHeight = height ?? useBreakpointValue({ base: compact ? 'auto' : '110px', md: '220px' })
-  const logoSize = useBreakpointValue({ base: compact ? '34px' : '40px', md: '72px' })
-  const headingSize = useBreakpointValue({ base: 'sm', md: 'lg' })
-  const padding = useBreakpointValue({ base: 2, md: 5 })
-  const logoTopOffset = useBreakpointValue({ base: '18px', md: '36px' })
+  const cardHeight = height ?? useBreakpointValue({ base: compact ? 'auto' : '70px', md: '140px' })
+  const logoSize = useBreakpointValue({ base: compact ? '28px' : '32px', md: '48px' })
+  const headingSize = useBreakpointValue({ base: 'xs', md: 'sm' })
+  const padding = useBreakpointValue({ base: 1, md: 2 })
+  const logoTopOffset = useBreakpointValue({ base: '12px', md: '24px' })
 
   return (
     <Box 
@@ -33,18 +49,18 @@ export default function ShopCard({ shop, compact = false, height }: ShopCardProp
         transform: 'translateY(-2px)'
       }}
       position="relative"
-      maxW="420px"
+      maxW="320px"
       mx="auto"
       display="flex"
       flexDirection="column"
-        zIndex={10}
+      zIndex={10}
       height="100%"
     >
-      {/* Image de couverture */}
-      <Box height={cardHeight} bg="gray.100" overflow="hidden" position="relative">
+  {/* Image de couverture */}
+  <Box height={cardHeight} bg="gray.100" overflow="hidden" position="relative">
         <Image 
           src={hi} 
-          alt={shop.name || shop.domain} 
+          alt={s?.name || s?.domain || 'cover'} 
           objectFit="cover" 
           objectPosition="center center"
           width="100%" 
@@ -70,10 +86,10 @@ export default function ShopCard({ shop, compact = false, height }: ShopCardProp
             mt={`-${logoTopOffset}`}
             flexShrink={0}
           >
-            <Image 
-              src={highRes(cover, { width: 160, quality: 85 }) ?? SHOP_PLACEHOLDER} 
-              alt="logo" 
-              boxSize={logoSize}
+              <Image 
+                src={highRes(cover, { width: 160, quality: 85 }) ?? SHOP_PLACEHOLDER} 
+                alt={s?.name || s?.domain || 'logo'} 
+                boxSize={logoSize}
               objectFit="cover" 
               borderRadius="xl"
               onError={(e: any) => { e.currentTarget.src = SHOP_PLACEHOLDER }}
@@ -86,10 +102,10 @@ export default function ShopCard({ shop, compact = false, height }: ShopCardProp
 
           <Box flex="1" minW="0" pt={1}>
             <Heading size={headingSize} noOfLines={2} fontWeight="600" color="gray.800" lineHeight="1.3" mb={2}>
-              {shop.name || shop.domain}
+              {s?.name || s?.domain}
             </Heading>
             <Text color="gray.600" noOfLines={compact ? 2 : 3} fontSize={compact ? 'sm' : 'md'} lineHeight="1.4">
-              {shop.description || 'Boutique locale de qualité'}
+              {s?.description || 'Boutique locale de qualité'}
             </Text>
           </Box>
         </Stack>
@@ -97,7 +113,7 @@ export default function ShopCard({ shop, compact = false, height }: ShopCardProp
         {/* Bouton toujours visible */}
         <Button 
           as={RouterLink} 
-          to={`/shop/${encodeURIComponent(shop.domain || shop.id)}`} 
+          to={`/shop/${encodeURIComponent(s?.domain || s?.id || '')}`} 
           colorScheme="brand" 
           size={compact ? 'sm' : 'md'}
           mt={{ base: 3, md: 5 }}
