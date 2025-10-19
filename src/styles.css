@@ -8,6 +8,18 @@ body {
   margin: 0;
 }
 
+/* Reserve space for the mobile BottomNav so buttons near the bottom remain tappable.
+   BottomNav is shown on base (mobile) breakpoints only. Increase if you change
+   the BottomNav sizing. Also include safe-area inset for iOS devices. */
+@media (max-width: 48em) {
+  :root { --bottom-nav-height: calc(env(safe-area-inset-bottom, 0px) + 88px); }
+  /* Apply the padding to both body and the root container so Chakra's Containers
+     that rely on body height won't be overlapped. */
+  body, #root {
+    padding-bottom: var(--bottom-nav-height);
+  }
+}
+
 .chakra-ui-light {
   --chakra-colors-bg: #f7fafc;
 }
