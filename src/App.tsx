@@ -1,5 +1,6 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Box } from '@chakra-ui/react'
 import Home from './pages/Home'
 import SellerDashboard from './pages/SellerDashboard'
 import ShopSetup from './pages/ShopSetup'
@@ -20,7 +21,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <NavBar />
-      <Routes>
+      <Box pb={{ base: '96px', md: 0 }}>
+        <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/seller" element={<SellerDashboard />} />
         <Route path="/seller/setup" element={<ShopSetup />} />
@@ -34,7 +36,8 @@ export default function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/products" element={<Products />} />
-      </Routes>
+        </Routes>
+      </Box>
       <BottomNav />
     </BrowserRouter>
   )
