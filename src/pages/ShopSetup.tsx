@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Container, Heading, FormControl, FormLabel, Input, Button, Stack, Textarea, Image } from '@chakra-ui/react'
 import BackButton from '../components/BackButton'
 import api from '../services/api'
+import { highRes, SHOP_PLACEHOLDER } from '../utils/image'
 import FileInput from '../components/FileInput'
 
 export default function ShopSetup() {
@@ -11,6 +12,7 @@ export default function ShopSetup() {
   const [logo, setLogo] = useState<File | null>(null)
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   const token = (typeof globalThis !== 'undefined' && globalThis.localStorage) ? globalThis.localStorage.getItem('token') ?? undefined : undefined
   const user = (typeof globalThis !== 'undefined' && globalThis.localStorage && localStorage.getItem('user')) ? JSON.parse(localStorage.getItem('user') as string) : null
@@ -35,14 +37,22 @@ export default function ShopSetup() {
 
   async function uploadLogo() {
     if (!logo) return
-    setLoading(true)
+    setUploading(true)
     try {
       const res = await api.uploads.uploadFile(logo, token)
       setLogoUrl(res.url)
     } catch (err: any) {
       alert(err?.error || 'Échec upload')
-    } finally { setLoading(false) }
+    } finally { setUploading(false) }
   }
+
+  // Auto-upload when a new file is selected
+  useEffect(() => {
+    if (!logo) return
+    // perform upload in background
+    uploadLogo()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [logo])
 
   async function onSave() {
     setLoading(true)
@@ -94,9 +104,21 @@ export default function ShopSetup() {
         <FormControl>
           <FormLabel>Logo / Photo de profil</FormLabel>
           <FileInput value={logo} onChange={(f) => { setLogo(f); }} label="Choisir un logo" />
-          {logoUrl && !logo && <Image src={logoUrl} alt="logo" boxSize="100px" mt={2} objectFit="cover" borderRadius="full" />}
+          {logoUrl && !logo && (
+            <Image
+              src={highRes(logoUrl) ?? SHOP_PLACEHOLDER}
+              alt="logo"
+              boxSize="100px"
+              mt={2}
+              objectFit="cover"
+              borderRadius="full"
+              onError={(e: any) => { e.currentTarget.src = SHOP_PLACEHOLDER }}
+            />
+          )}
           <Stack direction="row" mt={2}>
-            <Button colorScheme="brand" onClick={onSave} isLoading={loading}>Enregistrer la boutique</Button>
+            <Button colorScheme="brand" onClick={onSave} isLoading={loading || uploading} disabled={uploading}>
+              {uploading ? 'Téléversement...' : 'Enregistrer la boutique'}
+            </Button>
           </Stack>
         </FormControl>
       </Stack>

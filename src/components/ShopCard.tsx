@@ -1,11 +1,11 @@
 import React from 'react'
 import { Box, Image, Heading, Text, Stack, Button, useBreakpointValue } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
-import { highRes } from '../utils/image'
+import { highRes, SHOP_PLACEHOLDER } from '../utils/image'
 
 export default function ShopCard({ shop }: Readonly<{ shop: Record<string, any> }>) {
-  const cover = shop.logo_url || '/shop-placeholder.png'
-  const hi = highRes(cover, { width: 800, quality: 85 })
+  const cover = shop.logo_url || SHOP_PLACEHOLDER
+  const hi = highRes(cover, { width: 800, quality: 85 }) ?? SHOP_PLACEHOLDER
   
   // Tailles légèrement augmentées
   const cardHeight = useBreakpointValue({ base: '140px', md: '170px' })
@@ -42,6 +42,7 @@ export default function ShopCard({ shop }: Readonly<{ shop: Record<string, any> 
           objectFit="cover" 
           width="100%" 
           height="100%"
+          onError={(e: any) => { e.currentTarget.src = SHOP_PLACEHOLDER }}
           loading="lazy"
         />
         {/* Overlay gradient pour meilleur contraste */}
@@ -71,11 +72,12 @@ export default function ShopCard({ shop }: Readonly<{ shop: Record<string, any> 
             flexShrink={0}
           >
             <Image 
-              src={highRes(cover, { width: 160, quality: 85 })} 
+              src={highRes(cover, { width: 160, quality: 85 }) ?? SHOP_PLACEHOLDER} 
               alt="logo" 
               boxSize={logoSize}
               objectFit="cover" 
               borderRadius="xl"
+              onError={(e: any) => { e.currentTarget.src = SHOP_PLACEHOLDER }}
               borderWidth="3px"
               borderColor="white"
               boxShadow="0 4px 12px rgba(0,0,0,0.15)"

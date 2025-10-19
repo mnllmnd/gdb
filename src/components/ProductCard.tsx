@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Box, Image, Heading, Text, Stack, Button, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, FormControl, FormLabel, Input, Textarea, useDisclosure } from '@chakra-ui/react'
-import { highRes } from '../utils/image'
+import { highRes, PRODUCT_PLACEHOLDER } from '../utils/image'
 import api from '../services/api'
 
 export default function ProductCard({
@@ -69,11 +69,12 @@ export default function ProductCard({
     >
       <Box height={{ base: '220px', md: '260px' }} bg="gray.50" display="flex" alignItems="center" justifyContent="center" overflow="hidden">
         <Image
-          src={highRes(image, { width: 1000, quality: 80 }) || '/placeholder.png'}
+          src={highRes(image, { width: 1000, quality: 80 }) ?? PRODUCT_PLACEHOLDER}
           alt={title}
           objectFit="cover"
           width="100%"
           height="100%"
+          onError={(e: any) => { e.currentTarget.src = PRODUCT_PLACEHOLDER }}
         />
       </Box>
       <Box p={4}>

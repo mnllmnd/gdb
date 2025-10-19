@@ -3,7 +3,7 @@ import { Container, Heading, Text, Button, Stack, Box, Image, Flex, Spacer, Icon
 import BackButton from '../components/BackButton'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
-import { highRes } from '../utils/image'
+import { highRes, PRODUCT_PLACEHOLDER, SHOP_PLACEHOLDER } from '../utils/image'
 import { getItem } from '../utils/localAuth'
 import { DeleteIcon, EditIcon } from '@chakra-ui/icons'
 
@@ -78,7 +78,9 @@ export default function SellerDashboard() {
           {shop && (
             <Box borderWidth="1px" p={4} mb={4} borderRadius="md">
               <Flex align="center">
-                  <Image src={shop.logo_url ?? '/placeholder.png'} boxSize="80px" objectFit="cover" borderRadius="md" mr={4} />
+                  <Image src={highRes(shop.logo_url) ?? SHOP_PLACEHOLDER} boxSize="80px" objectFit="cover" borderRadius="md" mr={4}
+                    onError={(e: any) => { e.currentTarget.src = SHOP_PLACEHOLDER }}
+                  />
                 <Box>
                   <Heading size="sm">{shop.name ?? 'Ma boutique'}</Heading>
                   <Text>{shop.description}</Text>
@@ -94,7 +96,7 @@ export default function SellerDashboard() {
               <Box key={p.id} borderRadius="xl" p={4} bg="white" boxShadow="sm" borderWidth="1px">
                 <Flex align="center">
                   <Box boxSize="110px" mr={4} display="flex" alignItems="center" justifyContent="center" bg="gray.50" borderRadius="md" overflow="hidden">
-                    <Image src={highRes(p.image_url, { width: 400, quality: 80 }) ?? '/placeholder.png'} maxH="100%" maxW="100%" objectFit="cover" />
+                    <Image src={highRes(p.image_url, { width: 400, quality: 80 }) ?? PRODUCT_PLACEHOLDER} maxH="100%" maxW="100%" objectFit="cover" />
                   </Box>
                   <Box>
                     <Heading size="sm" noOfLines={2}>{p.title}</Heading>
