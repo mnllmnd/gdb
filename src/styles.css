@@ -5,7 +5,7 @@ html, body, #root {
 body {
   /* modern system font stack for readability */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif;
-  background: linear-gradient(180deg, #f7fafc 0%, #ffffff 100%);
+  background: linear-gradient(180deg, #b7aed2 0%, #d9cbe8 100%);
   margin: 0;
   color: #0f172a;
 }
@@ -37,4 +37,34 @@ body {
 .chakra-container {
   padding-left: 16px;
   padding-right: 16px;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+body {
+  background-color: #F8FAFC;
+}
+
+.product-card {
+  transition: all 0.3s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+}
+
+.hero-gradient {
+  background: linear-gradient(135deg, #0967D2 0%, #0552B5 100%);
+}
+
+.section-padding {
+  padding: 4rem 0;
+}
+
+.shadow-hover {
+  transition: box-shadow 0.3s ease;
+}
+
+.shadow-hover:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }

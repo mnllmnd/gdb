@@ -14,8 +14,11 @@ import {
   IconButton,
   Grid,
   useBreakpointValue,
+  Button,
+  GridItem,
 } from '@chakra-ui/react'
 import { SearchIcon, CloseIcon } from '@chakra-ui/icons'
+import { FiShoppingBag, FiTruck, FiShield } from 'react-icons/fi'
 import ShopCard from '../components/ShopCard'
 import ProductCard from '../components/ProductCard'
 import api from '../services/api'
@@ -24,6 +27,7 @@ export default function Home() {
   const [shops, setShops] = React.useState<any[] | null>(null)
   const [query, setQuery] = React.useState('')
   const [allShops, setAllShops] = React.useState<any[] | null>(null)
+  const [isLoading, setIsLoading] = React.useState(true)
 
   React.useEffect(() => {
     async function loadShops() {
@@ -34,6 +38,8 @@ export default function Home() {
       } catch (err) {
         console.error('Failed to load shops', err)
         setShops([])
+      } finally {
+        setIsLoading(false)
       }
     }
     loadShops()
@@ -71,15 +77,55 @@ export default function Home() {
   const cardHeight = useBreakpointValue({ base: '110px', md: '220px' })
 
   return (
-    <Container maxW="container.xl" py={8} pb={{ base: '120px', md: 8 }} overflow="visible">
-      <VStack spacing={6} align="start" mb={8}>
-        <Heading size="xl" mb={2}>
-          Sama Bitik
-        </Heading>
-        <Text fontSize="lg" color="white">
-          Achetez local. Simple, beau et sécurisé.
-        </Text>
-      </VStack>
+    <Box>
+      {/* Hero Section */}
+      <Box
+        bg="brand.500"
+        color="white"
+        py={16}
+        position="relative"
+        overflow="hidden"
+      >
+        <Box
+          position="absolute"
+          top="0"
+          left="0"
+          right="0"
+          bottom="0"
+          bg="brand.600"
+          transform="skewY(-6deg)"
+          transformOrigin="top left"
+        />
+        
+        <Container maxW="container.xl" position="relative">
+          <VStack spacing={6} align="start">
+            <Heading
+              size="2xl"
+              bgGradient="linear(to-r, white, blue.200)"
+              bgClip="text"
+              letterSpacing="tight"
+            >
+              Sama Bitik
+            </Heading>
+            <Text fontSize="xl" maxW="lg" lineHeight="tall">
+              Découvrez l'excellence du commerce local. Simple, élégant et sécurisé.
+            </Text>
+            <Button
+              size="lg"
+              colorScheme="white"
+              variant="outline"
+              _hover={{ bg: 'whiteAlpha.200' }}
+              leftIcon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>}
+            >
+              Explorer les boutiques
+            </Button>
+          </VStack>
+        </Container>
+      </Box>
+
+      <Container maxW="container.xl" py={12} overflow="visible">
 
       {/* Section des boutiques */}
       <Box mb={6} w="100%">
@@ -156,6 +202,7 @@ export default function Home() {
         <ProductListPreview cardHeight={cardHeight} />
       </Box>
     </Container>
+  </Box>
   )
 }
 

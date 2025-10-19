@@ -18,6 +18,7 @@ export default function ProductCard({
   image?: string
   height?: any
 }>) {
+  const [isHovered, setIsHovered] = useState(false)
   const toast = useToast()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [name, setName] = useState('')

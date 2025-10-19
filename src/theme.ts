@@ -1,108 +1,86 @@
 import { extendTheme } from '@chakra-ui/react'
 
-const config = {
-  initialColorMode: 'light',
-  useSystemColorMode: false,
-}
-
-const fonts = {
-  heading: `"Times New Roman", Times, serif`,
-  body: `"Times New Roman", Times, serif`,
-}
-
-// Palette conservée
-const colors = {
-  brand: {
-    50: '#F4DBD8',
-    100: '#BEA8A7',
-    200: '#C09891',
-    300: '#775144',
-    400: '#4A2B24',
-    500: '#2A0800',
-    600: '#260700',
-    700: '#1e0500',
-    800: '#170400',
-    900: '#000000ff',
+const theme = extendTheme({
+  fonts: {
+    heading: `'Times New Roman', serif`,
+    body: `'Times New Roman', serif`,
   },
-  accent: {
-    50: '#fff5f4',
-    100: '#feecec',
-    200: '#fbdada',
-    300: '#f9c7c6',
-    400: '#f7b5b4',
-    500: '#f4a29f',
-    600: '#d08583',
-    700: '#a86a68',
-    800: '#7f504f',
-    900: '#553735',
-  }
-}
-
-const components = {
-  Button: {
-    baseStyle: {
-      borderRadius: '16px', // arrondi légèrement plus moderne
-      fontWeight: 600,
-      boxShadow: '0 2px 6px rgba(0,0,0,0.12)', // shadow douce
-      _focus: { boxShadow: '0 0 0 3px rgba(199, 128, 115, 0.4)' },
-      transition: 'all 0.2s ease-in-out', // hover smooth
+  colors: {
+    brand: {
+      50: '#e9e8f7ff',
+      100: '#BAE3FF',
+      200: '#7CC4FA',
+      300: '#47A3F3',
+      400: '#2186EB',
+      500: '#0967D2',
+      600: '#0552B5',
+      700: '#03449E',
+      800: '#01337D',
+      900: '#002159',
+      980: '#001233',
+    },  
+    accent: {
+      50: '#c6baecff',
+      100: '#c2b9e6ff',
+      200: '#CBD2D9',
+      300: '#9AA5B1',
+      400: '#7B8794',
+      500: '#616E7C',
+      600: '#52606D',
+      700: '#3E4C59',
+      800: '#323F4B',
+      900: '#1F2933',
     },
-    variants: {
-      solid: {
-        bg: 'brand.300',
-        color: 'white',
-        bgGradient: 'linear(to-br, brand.300, brand.400)',
-        _hover: { 
-          bgGradient: 'linear(to-br, brand.200, brand.300)', 
-          transform: 'translateY(-2px)' 
-        },
-        _active: { transform: 'translateY(0)' },
+  },
+  components: {
+    Button: {
+      baseStyle: {
+        fontWeight: '500',
+        borderRadius: 'lg',
       },
-      subtle: {
+      variants: {
+        solid: {
+          bg: 'brand.980',
+          color: 'white',
+          _hover: {
+            bg: 'brand.600',
+            _disabled: {
+              bg: 'brand.500',
+            },
+          },
+        },
+        outline: {
+          borderColor: 'brand.500',
+          color: 'brand.500',
+          _hover: {
+            bg: 'brand.50',
+          },
+        },
+      },
+    },
+    Card: {
+      baseStyle: {
+        container: {
+          borderRadius: 'xl',
+          overflow: 'hidden',
+          bg: 'white',
+          transition: 'all 0.3s ease',
+          _hover: {
+            transform: 'translateY(-4px)',
+            boxShadow: 'lg',
+          },
+        },
+      },
+    },
+  },
+  styles: {
+    global: {
+      body: {
         bg: 'brand.50',
-        color: 'brand.700',
-        _hover: { 
-          bg: 'brand.100', 
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)' 
-        },
-      },
-      outline: {
-        borderRadius: '16px',
-        borderColor: 'brand.200',
-        _hover: { bg: 'brand.50' },
+        color: 'gray.800',
       },
     },
-    sizes: {
-      md: { h: 10, fontSize: 'md', px: 6 },
-      lg: { h: 14, fontSize: 'lg', px: 8 },
-    },
   },
-  Heading: {
-    baseStyle: { fontFamily: fonts.heading },
-  },
-}
-
-const styles = {
-  global: {
-    'html, body': {
-      fontSize: { base: '17px', md: '15px' },
-      bg: 'linear-gradient(135deg, #712d2dff, #7d3c20ff)', // dégradé moderne
-      color: 'white',
-      minHeight: '100vh',
-      scrollBehavior: 'smooth',
-    },
-    'input, textarea, select': { 
-      background: 'white', 
-      color: 'black', 
-      borderRadius: '12px', 
-      border: '1px solid #ccc',
-      _focus: { borderColor: 'brand.300', boxShadow: '0 0 0 3px rgba(199, 128, 115, 0.3)' }
-    },
-    'a': { textDecoration: 'none', transition: 'color 0.2s' },
-    'button': { WebkitTapHighlightColor: 'transparent' },
-  },
-}
-
-const theme = extendTheme({ config, fonts, colors, components, styles })
+})
 
 export default theme

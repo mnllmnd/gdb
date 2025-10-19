@@ -31,6 +31,7 @@ import cart from '../utils/cart'
 export default function NavBar() {
   type User = { display_name?: string; phone?: string; role?: string; id?: string }
   type Shop = { name?: string; logo_url?: string; domain?: string }
+  const [isScrolled, setIsScrolled] = useState(false)
 
   const [user, setUser] = useState<User | null>(getCurrentUser() as User | null)
   const [shop, setShop] = useState<Shop | null>(null)
@@ -39,6 +40,14 @@ export default function NavBar() {
   const showMobileMenu = useBreakpointValue({ base: true, md: false })
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [cartCount, setCartCount] = useState<number>(0)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     function onStorage() {
@@ -84,7 +93,18 @@ export default function NavBar() {
   }, [user])
 
   return (
-    <Box as="nav" bg="white" boxShadow="md" px={6} py={4}>
+    <Box
+      as="nav"
+      bg={isScrolled ? 'whiteAlpha.900' : 'transparent'}
+      boxShadow={isScrolled ? 'md' : 'none'}
+      px={6}
+      py={3}
+      position="sticky"
+      top={0}
+      zIndex={999}
+      backdropFilter="saturate(180%) blur(6px)"
+      transition="background 200ms, box-shadow 200ms"
+    >
       <Flex align="center" maxW="1200px" mx="auto">
         <HStack spacing={4} align="center">
           <Avatar size="sm" name="Sama Bitik" />
@@ -105,6 +125,9 @@ export default function NavBar() {
           <HStack spacing={2} align="center">
             <Button as={RouterLink} to="/" variant="ghost" size="md">
               Accueil
+            </Button>
+            <Button as={RouterLink} to="/products" variant="ghost" size="md">
+              Produits
             </Button>
             <Button
               colorScheme="brand"
@@ -133,9 +156,6 @@ export default function NavBar() {
                   </HStack>
                 </Button>
                 <Button as={RouterLink} to="/orders" variant="ghost" ml={2} size="md">Mes commandes</Button>
-                <Button variant="ghost" ml={4} disabled size="md">
-                  Connecté: {user.display_name ?? user.phone ?? 'Utilisateur'}
-                </Button>
                 <Button
                   ml={2}
                   size="md"
@@ -170,6 +190,7 @@ export default function NavBar() {
           <DrawerBody>
             <VStack align="stretch" spacing={3} mt={2}>
               <Button as={RouterLink} to="/" onClick={onClose} variant="ghost" size="sm">Accueil</Button>
+              <Button as={RouterLink} to="/products" onClick={onClose} variant="ghost" size="sm">Produits</Button>
               <Button as={RouterLink} to="/cart" onClick={onClose} variant="ghost" size="sm">Panier</Button>
               <Button as={RouterLink} to="/orders" onClick={onClose} variant="ghost" size="sm">Mes commandes</Button>
               <Button onClick={() => { onClose(); if (user) navigate('/seller'); else toast({ title: 'Connectez-vous', description: 'Connectez-vous pour accéder à votre boutique', status: 'info' }) }} colorScheme="brand" size="sm">Mes produits</Button>

@@ -14,6 +14,7 @@ import SellerShop from './pages/SellerShop'
 import SellerOrders from './pages/SellerOrders'
 import ShopView from './pages/ShopView'
 import CartPage from './pages/Cart'
+import Products from './pages/Products'
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/products" element={<Products />} />
       </Routes>
       <BottomNav />
     </BrowserRouter>
