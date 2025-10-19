@@ -61,48 +61,49 @@ export default function MyOrders() {
 
       {!loading && getItem('token') && orders.length === 0 && <Text>Aucune commande.</Text>}
 
-      {!loading && orders.length > 0 && (
-        <Stack spacing={4}>
-          {orders.map((o) => {
-            const total = o.total ?? o.price ?? o.amount ?? '—'
-            const status = o.status ?? o.state ?? '—'
-            return (
-              <Box key={o.id} borderWidth="1px" borderRadius="md" p={4}>
-                <HStack align="center">
-                  {((o.product_image) || (Array.isArray(o.items) && o.items[0]?.image)) && (
-                    <Box mr={3} flexShrink={0}>
-                      <img src={o.product_image ?? o.items[0].image} alt="product" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8 }} />
+      {/* orders: modern card rendering (kept single modern block below) */}
+        {!loading && orders.length > 0 && (
+          <Stack spacing={4}>
+            {orders.map((o) => {
+              const total = o.total ?? o.price ?? o.amount ?? '—'
+              const status = o.status ?? o.state ?? '—'
+              const image = o.product_image ?? (Array.isArray(o.items) && o.items[0]?.image) ?? null
+              return (
+                <Box key={o.id} bg="white" borderRadius="lg" p={4} boxShadow="sm" borderWidth="1px" overflow="hidden">
+                  <HStack align="start" spacing={4}>
+                    {image && (
+                      <Box flexShrink={0} borderRadius="md" overflow="hidden" boxShadow="xs">
+                        <img src={image} alt="product" style={{ width: 88, height: 88, objectFit: 'cover', display: 'block' }} />
+                      </Box>
+                    )}
+                    <Box flex="1">
+                      <HStack justify="space-between" align="start">
+                        <Box>
+                          <Text fontWeight="700" fontSize="md">Commande</Text>
+                          <Text mt={2} fontSize="sm" color="gray.700" whiteSpace="normal" wordBreak="break-word">
+                            {Array.isArray(o.items) ? (
+                              o.items.map((it:any) => (it.title || it.product_title || it.name)).join(', ')
+                            ) : (
+                              (o.product_title || o.title || '—')
+                            )}
+                          </Text>
+                          <Text mt={2} fontSize="sm" color="gray.600">Montant: {typeof total === 'number' ? total.toLocaleString() : total} CFA</Text>
+                          {o.created_at && <Text fontSize="xs" color="gray.500">Le {new Date(o.created_at).toLocaleString()}</Text>}
+                        </Box>
+                        <Box textAlign="right">
+                          {(() => {
+                            const mapped = mapOrderStatus(String(status))
+                            return <Badge colorScheme={mapped.color as any} fontSize="sm" py={1} px={3}>{mapped.label}</Badge>
+                          })()}
+                        </Box>
+                      </HStack>
                     </Box>
-                  )}
-                  <Box flex="1">
-                    <Text fontWeight="bold">Commande</Text>
-                    <Text mt={1} fontSize="sm" color="white" whiteSpace="normal" wordBreak="break-word">
-                      {Array.isArray(o.items) ? (
-                        o.items.map((it:any) => (
-                            <span key={it.id ?? it.product_id ?? (it.sku ?? it.title ?? Math.random().toString(36).slice(2,8))}>
-                              {it.title || it.product_title || it.name}
-                              {', '}
-                            </span>
-                          ))
-                      ) : (
-                        (o.product_title || o.title || '—')
-                      )}
-                    </Text>
-                    <Text fontSize="sm" color="yellow.600">Montant: {typeof total === 'number' ? total.toLocaleString() : total} CFA</Text>
-                    {o.created_at && <Text fontSize="xs" color="yellow">Le {new Date(o.created_at).toLocaleString()}</Text>}
-                  </Box>
-                  <Box>
-                    {(() => {
-                      const mapped = mapOrderStatus(String(status))
-                      return <Badge colorScheme={mapped.color as any} fontSize="sm" p={2}>{mapped.label}</Badge>
-                    })()}
-                  </Box>
-                </HStack>
-              </Box>
-            )
-          })}
-        </Stack>
-      )}
+                  </HStack>
+                </Box>
+              )
+            })}
+          </Stack>
+        )}
     </Container>
   )
 }

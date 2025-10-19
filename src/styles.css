@@ -3,9 +3,18 @@ html, body, #root {
   height: 100%;
 }
 body {
-  font-family: 'Times New Roman', Times, serif;
-  background: #f7fafc;
+  /* modern system font stack for readability */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif;
+  background: linear-gradient(180deg, #f7fafc 0%, #ffffff 100%);
   margin: 0;
+  color: #0f172a;
+}
+
+/* Card variables */
+:root{
+  --card-bg: #ffffff;
+  --card-radius: 12px;
+  --card-shadow: 0 6px 18px rgba(15,23,42,0.06);
 }
 
 /* Reserve space for the mobile BottomNav so buttons near the bottom remain tappable.
@@ -22,4 +31,10 @@ body {
 
 .chakra-ui-light {
   --chakra-colors-bg: #f7fafc;
+}
+
+/* Make Chakra Container feel more airy by default */
+.chakra-container {
+  padding-left: 16px;
+  padding-right: 16px;
 }

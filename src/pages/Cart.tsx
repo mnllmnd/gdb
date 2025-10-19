@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Container, Heading, Stack, Box, Text, Button, NumberInput, NumberInputField, NumberInputStepper, NumberIncrementStepper, NumberDecrementStepper, HStack, Image, useToast } from '@chakra-ui/react'
+import { Container, Heading, Stack, Box, Text, Button, NumberInput, NumberInputField, NumberInputStepper, NumberIncrementStepper, NumberDecrementStepper, HStack, Image, useToast, IconButton, useColorModeValue } from '@chakra-ui/react'
+import { CloseIcon } from '@chakra-ui/icons'
 import cart from '../utils/cart'
 import api from '../services/api'
 import { getItem } from '../utils/localAuth'
@@ -47,6 +48,9 @@ export default function CartPage() {
     } finally { setLoading(false) }
   }
 
+  const cardBg = useColorModeValue('white', 'gray.700')
+  const totalBg = useColorModeValue('gray.50', 'gray.800')
+
   return (
     <Container maxW="container.md" py={8} pb={{ base: '120px', md: 8 }} overflow="visible">
       <Heading mb={4}>Mon panier</Heading>
@@ -55,8 +59,8 @@ export default function CartPage() {
       ) : (
         <Stack spacing={4}>
           {items.map((it) => (
-            <Box key={it.id} borderWidth="1px" borderRadius="md" p={3} display="flex" alignItems="center">
-              <Image src={it.image ?? undefined} boxSize="80px" objectFit="cover" mr={3} alt={it.title} />
+            <Box key={it.id} borderRadius="var(--card-radius)" boxShadow="var(--card-shadow)" bg={cardBg} p={3} display="flex" alignItems="center">
+              <Image src={it.image ?? undefined} boxSize="80px" objectFit="cover" mr={3} alt={it.title} borderRadius="md" />
               <Box flex="1">
                 <Text fontWeight="600">{it.title}</Text>
                 <Text color="gray.600">{it.price ?? 0} CFA</Text>
@@ -69,16 +73,20 @@ export default function CartPage() {
                     <NumberDecrementStepper />
                   </NumberInputStepper>
                 </NumberInput>
-                <Button size="sm" variant="ghost" colorScheme="red" onClick={() => remove(it.id)}>Supprimer</Button>
+                <IconButton aria-label={`Supprimer ${it.title}`} icon={<CloseIcon />} size="sm" variant="ghost" colorScheme="red" onClick={() => remove(it.id)} />
               </HStack>
             </Box>
           ))}
 
-          <Box textAlign="right">
-            <Text fontWeight="bold" mb={2}>Total: {cart.getTotal()} CFA</Text>
-            <Stack direction={{ base: 'column', sm: 'row' }} spacing={3} justify="flex-end">
+          <Box borderRadius="var(--card-radius)" boxShadow="var(--card-shadow)" bg={totalBg} p={4}>
+            <HStack justify="space-between">
+              <Text fontWeight="bold" fontSize="lg">Total</Text>
+              <Text fontWeight="800" fontSize="lg">{cart.getTotal()} CFA</Text>
+            </HStack>
+
+            <Stack mt={4} direction={{ base: 'column', sm: 'row' }} spacing={3} justify="flex-end">
               <Button variant="outline" onClick={() => { cart.clear(); setItems([]); }} isDisabled={items.length === 0}>Vider le panier</Button>
-              <Button onClick={() => { if (typeof globalThis !== 'undefined' && globalThis.history) globalThis.history.back() }}>Continuer mes achats</Button>
+              <Button onClick={() => nav(-1)}>Continuer mes achats</Button>
               <Button colorScheme="brand" onClick={checkout} isLoading={loading}>Passer la commande</Button>
             </Stack>
           </Box>

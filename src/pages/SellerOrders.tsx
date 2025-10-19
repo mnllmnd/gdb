@@ -50,33 +50,35 @@ export default function SellerOrders() {
       {loading && <Spinner />}
       {!loading && orders.length === 0 && <Text>Aucune commande pour le moment.</Text>}
       {!loading && orders.length > 0 && (
-        <Stack spacing={3}>
+        <Stack spacing={4}>
           {orders.map((o) => (
-            <Box key={o.id} p={3} borderWidth={1} borderRadius="md">
-              <HStack align="start">
+            <Box key={o.id} bg="white" borderRadius="lg" p={4} boxShadow="sm" borderWidth="1px">
+              <HStack align="start" spacing={4}>
                 {o.product_image && (
-                  <Image src={o.product_image} alt={o.product_title || 'Produit'} boxSize="80px" objectFit="cover" borderRadius="md" />
+                  <Image src={o.product_image} alt={o.product_title || 'Produit'} boxSize="88px" objectFit="cover" borderRadius="md" />
                 )}
-                <VStack align="start" spacing={1}>
-                  <Text fontWeight="bold">{o.product_title}</Text>
-                  <Text>Montant: {o.price} FCFA</Text>
-                  <Text>Client: {o.buyer_name ?? `#${o.buyer_id ?? '—'}`}</Text>
-                  {o.buyer_phone && <Text>Téléphone: {o.buyer_phone}</Text>}
-                  {o.address && <Text>Adresse: {o.address}</Text>}
-                  {(() => {
-                    const mapped = mapOrderStatus(o.status ?? o.state)
-                    return <Text>État: <Box as="span"><Badge colorScheme={mapped.color as any}>{mapped.label}</Badge></Box></Text>
-                  })()}
+                <VStack align="start" spacing={1} flex="1">
+                  <HStack justify="space-between" width="100%">
+                    <Text fontWeight="700">{o.product_title}</Text>
+                    {(() => {
+                      const mapped = mapOrderStatus(o.status ?? o.state)
+                      return <Badge colorScheme={mapped.color as any}>{mapped.label}</Badge>
+                    })()}
+                  </HStack>
+                  <Text color="gray.600">Montant: {o.price} FCFA</Text>
+                  <Text color="gray.600">Client: {o.buyer_name ?? `#${o.buyer_id ?? '—'}`}</Text>
+                  {o.buyer_phone && <Text color="gray.600">Téléphone: {o.buyer_phone}</Text>}
+                  {o.address && <Text color="gray.600">Adresse: {o.address}</Text>}
                 </VStack>
               </HStack>
-              <Box mt={3}>
-                <Button mr={3} size="sm" colorScheme={shipped[String(o.id)] ? 'green' : 'brand'} onClick={() => {
+              <HStack mt={4} spacing={3}>
+                <Button size="sm" colorScheme={shipped[String(o.id)] ? 'green' : 'brand'} onClick={() => {
                   const key = String(o.id)
                   setShipped(s => ({ ...s, [key]: !s[key] }))
                   toast({ title: shipped[String(o.id)] ? 'Expédition annulée' : 'Marqué expédiée', status: 'success' })
                 }}>{shipped[String(o.id)] ? 'Annuler expédition' : 'Marquer expédiée'}</Button>
-                <Button size="sm" colorScheme="red" onClick={() => handleDelete(o.id)}>Supprimer</Button>
-              </Box>
+                <Button size="sm" colorScheme="red" variant="outline" onClick={() => handleDelete(o.id)}>Supprimer</Button>
+              </HStack>
             </Box>
           ))}
         </Stack>

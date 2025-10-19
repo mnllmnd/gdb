@@ -74,10 +74,10 @@ export default function ProductCard({
   return (
     <Box
       borderWidth="1px"
-      borderRadius="xl"
+      borderRadius="var(--card-radius)"
       overflow="hidden"
       bg="white"
-      boxShadow="sm"
+      boxShadow="var(--card-shadow)"
       transition="all 160ms ease"
       _hover={{ transform: 'translateY(-6px)', boxShadow: 'lg' }}
     >
@@ -97,10 +97,10 @@ export default function ProductCard({
           <Text color="gray.600" fontWeight="semibold">{priceDisplayText}</Text>
           <Box>
             <Stack direction={{ base: 'column', md: 'row' }} spacing={3}>
-              <Button colorScheme="brand" onClick={onOpen} width={{ base: '100%', md: 'auto' }} borderRadius="md">
+              <Button colorScheme="brand" onClick={onOpen} width={{ base: '100%', md: 'auto' }} borderRadius="lg" boxShadow="sm">
                 Commander
               </Button>
-              <Button variant="outline" onClick={addToCart} width={{ base: '100%', md: 'auto' }}>Ajouter au panier</Button>
+              <Button variant="ghost" onClick={addToCart} width={{ base: '100%', md: 'auto' }} borderRadius="lg">Ajouter au panier</Button>
             </Stack>
           </Box>
         </Stack>

@@ -72,7 +72,7 @@ export default function Home() {
   return (
     <Container maxW="container.xl" py={8} pb={{ base: '120px', md: 8 }} overflow="visible">
       <VStack spacing={6} align="start" mb={8}>
-        <Heading size="xl" mb={2}>Bienvenue sur Marketplace</Heading>
+        <Heading size="xl" mb={2}>Sama Bitik</Heading>
         <Text fontSize="lg" color="white">
           Achetez local. Simple, beau et sécurisé.
         </Text>
