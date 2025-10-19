@@ -25,8 +25,8 @@ export default function Home() {
   const [currentView, setCurrentView] = React.useState<'shops' | 'products'>('shops')
   const [isLoading, setIsLoading] = React.useState(true)
 
-  // hauteur commune pour les cartes (mobile = 80px, desktop = 160px)
-  const cardHeight = useBreakpointValue({ base: '80px', md: '160px' })
+  // hauteur commune pour les cartes (mobile = 90px, desktop = 180px)
+  const cardHeight = useBreakpointValue({ base: '90px', md: '180px' })
 
   React.useEffect(() => {
     async function loadData() {
