@@ -69,17 +69,17 @@ export default function MyOrders() {
               const status = o.status ?? o.state ?? '—'
               const image = o.product_image ?? (Array.isArray(o.items) && o.items[0]?.image) ?? null
               return (
-                <Box key={o.id} bg="white" borderRadius="lg" p={4} boxShadow="sm" borderWidth="1px" overflow="hidden">
-                  <HStack align="start" spacing={4}>
-                    {image && (
-                      <Box flexShrink={0} borderRadius="md" overflow="hidden" boxShadow="xs">
-                        <img src={image} alt="product" style={{ width: 88, height: 88, objectFit: 'cover', display: 'block' }} />
-                      </Box>
-                    )}
-                    <Box flex="1">
-                      <HStack justify="space-between" align="start">
-                        <Box>
-                          <Text fontWeight="700" fontSize="md">Commande</Text>
+                <Box key={o.id} bg="white" borderRadius="lg" p={{ base: 3, md: 4 }} boxShadow="sm" borderWidth="1px" overflow="hidden">
+                  <HStack align="start" spacing={{ base: 3, md: 4 }}>
+                        {image && (
+                          <Box flexShrink={0} borderRadius="md" overflow="hidden" boxShadow="xs">
+                            <img src={image} alt="product" style={{ width: 64, height: 64, objectFit: 'cover', display: 'block' }} />
+                          </Box>
+                        )}
+                        <Box flex="1">
+                          <HStack justify="space-between" align="start">
+                            <Box>
+                              <Text fontWeight="700" fontSize="md">Commande</Text>
                           <Text mt={2} fontSize="sm" color="gray.700" whiteSpace="normal" wordBreak="break-word">
                             {Array.isArray(o.items) ? (
                               o.items.map((it:any) => (it.title || it.product_title || it.name)).join(', ')

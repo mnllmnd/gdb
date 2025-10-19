@@ -21,7 +21,7 @@ export default function FileInput({ value, onChange, accept = 'image/*', label =
         {label}
       </Button>
       {preview ? (
-        <Image src={preview} alt="preview" boxSize="96px" objectFit="cover" mt={3} borderRadius="md" />
+  <Image src={preview} alt="preview" boxSize={{ base: '72px', md: '96px' }} objectFit="cover" mt={3} borderRadius="md" />
       ) : (
         <Text fontSize="sm" color="gray.400" mt={3}>Aucune image sélectionnée</Text>
       )}

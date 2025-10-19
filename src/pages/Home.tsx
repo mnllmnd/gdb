@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import {
   Heading,
   Text,
@@ -13,18 +13,19 @@ import {
   InputRightElement,
   IconButton,
   Grid,
-  useBreakpointValue
+  useBreakpointValue,
 } from '@chakra-ui/react'
 import { SearchIcon, CloseIcon } from '@chakra-ui/icons'
 import ShopCard from '../components/ShopCard'
+import ProductCard from '../components/ProductCard'
 import api from '../services/api'
 
 export default function Home() {
-  const [shops, setShops] = useState<any[] | null>(null)
-  const [query, setQuery] = useState('')
-  const [allShops, setAllShops] = useState<any[] | null>(null)
+  const [shops, setShops] = React.useState<any[] | null>(null)
+  const [query, setQuery] = React.useState('')
+  const [allShops, setAllShops] = React.useState<any[] | null>(null)
 
-  useEffect(() => {
+  React.useEffect(() => {
     async function loadShops() {
       try {
         const s = await api.shops.list()
@@ -39,7 +40,7 @@ export default function Home() {
   }, [])
 
   // debounce search
-  useEffect(() => {
+  React.useEffect(() => {
     const t = setTimeout(async () => {
       try {
         if (!query || query.trim() === '') {
@@ -64,20 +65,22 @@ export default function Home() {
       }
     }, 300)
     return () => clearTimeout(t)
-  }, [query])
+  }, [query, allShops])
 
-  // hauteur dynamique pour ShopCard
-  const cardHeight = useBreakpointValue({ base: 'auto', md: '220px' })
+  // hauteur dynamique pour ShopCard — small fixed on mobile so cards align
+  const cardHeight = useBreakpointValue({ base: '110px', md: '220px' })
 
   return (
     <Container maxW="container.xl" py={8} pb={{ base: '120px', md: 8 }} overflow="visible">
       <VStack spacing={6} align="start" mb={8}>
-        <Heading size="xl" mb={2}>Sama Bitik</Heading>
+        <Heading size="xl" mb={2}>
+          Sama Bitik
+        </Heading>
         <Text fontSize="lg" color="white">
           Achetez local. Simple, beau et sécurisé.
         </Text>
       </VStack>
-      
+
       {/* Section des boutiques */}
       <Box mb={6} w="100%">
         <InputGroup maxW="720px">
@@ -94,62 +97,118 @@ export default function Home() {
           />
           {query && (
             <InputRightElement>
-              <IconButton
-                aria-label="clear"
-                icon={<CloseIcon />}
-                size="sm"
-                onClick={() => setQuery('')}
-              />
+              <IconButton aria-label="clear" icon={<CloseIcon />} size="sm" onClick={() => setQuery('')} />
             </InputRightElement>
           )}
         </InputGroup>
+
+        {shops === null && (
+          <Center py={12}>
+            <Spinner size="xl" color="brand.500" thickness="3px" />
+          </Center>
+        )}
+
+        {shops && shops.length > 0 && (
+          <Box>
+            <Heading size="lg" mb={6}>
+              {query ? `Résultats pour: '${query}'` : 'Boutiques'}
+            </Heading>
+            {query && (
+              <Text mb={3} color="gray.600">
+                {shops.length} résultat{shops.length > 1 ? 's' : ''}
+              </Text>
+            )}
+
+            <Grid
+              templateColumns={{
+                base: 'repeat(auto-fill, minmax(140px, 1fr))',
+                sm: 'repeat(auto-fill, minmax(160px, 1fr))',
+                md: 'repeat(auto-fill, minmax(200px, 1fr))',
+                lg: 'repeat(auto-fill, minmax(220px, 1fr))',
+              }}
+              gap={{ base: 4, sm: 5, md: 6 }}
+              alignItems="stretch"
+            >
+              {shops.map((s) => (
+                <ShopCard key={s.id} shop={s} compact={true} height={cardHeight} />
+              ))}
+            </Grid>
+          </Box>
+        )}
+
+        {shops && shops.length === 0 && (
+          <Center py={12}>
+            <VStack spacing={4}>
+              <Text fontSize="lg" color="white">
+                Aucune boutique disponible pour le moment
+              </Text>
+              <Text color="white">Revenez plus tard pour découvrir nos boutiques partenaires</Text>
+            </VStack>
+          </Center>
+        )}
       </Box>
 
-      {shops === null && (
-        <Center py={12}>
-          <Spinner size="xl" color="brand.500" thickness="3px" />
-        </Center>
-      )}
-
-      {shops && shops.length > 0 && (
-        <Box>
-          <Heading size="lg" mb={6}>
-            {query ? `Résultats pour: '${query}'` : 'Boutiques'}
-          </Heading>
-          {query && (
-            <Text mb={3} color="gray.600">
-              {shops.length} résultat{shops.length > 1 ? 's' : ''}
-            </Text>
-          )}
-          <Grid
-            templateColumns={{
-              base: 'repeat(auto-fill, minmax(160px, 1fr))',
-              sm: 'repeat(auto-fill, minmax(180px, 1fr))',
-              md: 'repeat(auto-fill, minmax(200px, 1fr))',
-              lg: 'repeat(auto-fill, minmax(220px, 1fr))',
-            }}
-            gap={{ base: 4, sm: 5, md: 6 }}
-            alignItems="stretch"
-          >
-            {shops.map((s) => (
-              <ShopCard key={s.id} shop={s} compact={true} height={cardHeight} />
-            ))}
-          </Grid>
-        </Box>
-      )}
-
-      {shops && shops.length === 0 && (
-        <Center py={12}>
-          <VStack spacing={4}>
-            <Text fontSize="lg" color="white">
-              Aucune boutique disponible pour le moment
-            </Text>
-            <Text color="white">
-              Revenez plus tard pour découvrir nos boutiques partenaires
-            </Text>
-          </VStack>
-        </Center>
-      )}
+      {/* Section produits récents */}
+      <Box mt={10}>
+        <Heading size="lg" mb={4}>
+          Produits récents
+        </Heading>
+        <ProductListPreview cardHeight={cardHeight} />
+      </Box>
     </Container>
+  )
+}
+
+function ProductListPreview({ cardHeight }: { cardHeight?: any }) {
+  const [products, setProducts] = React.useState<any[] | null>(null)
+  const [loading, setLoading] = React.useState(true)
+
+  React.useEffect(() => {
+    let mounted = true
+    async function load() {
+      try {
+        const list = await api.products.list()
+        if (!mounted) return
+        setProducts((list || []).slice(0, 8))
+      } catch (err) {
+        console.error('Failed to load products', err)
+        if (mounted) setProducts([])
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    }
+    load()
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  if (loading) return (
+    <Box>
+      <Text>Chargement...</Text>
+    </Box>
+  )
+  if (!products || products.length === 0) return (
+    <Box>
+      <Text>Aucun produit récent.</Text>
+    </Box>
+  )
+
+  return (
+    <Box>
+      <Grid
+        templateColumns={{
+          base: 'repeat(auto-fill, minmax(140px, 1fr))',
+          sm: 'repeat(auto-fill, minmax(160px, 1fr))',
+          md: 'repeat(auto-fill, minmax(200px, 1fr))',
+          lg: 'repeat(auto-fill, minmax(220px, 1fr))',
+        }}
+        gap={{ base: 4, sm: 5, md: 6 }}
+      >
+        {products.map((p) => (
+          <ProductCard key={p.id} id={String(p.id)} title={p.title || p.name} price={p.price ?? p.amount} image={p.image_url ?? p.product_image} height={cardHeight} />
+        ))}
+      </Grid>
+    </Box>
   )
 }

@@ -60,7 +60,7 @@ export default function CartPage() {
         <Stack spacing={4}>
           {items.map((it) => (
             <Box key={it.id} borderRadius="var(--card-radius)" boxShadow="var(--card-shadow)" bg={cardBg} p={3} display="flex" alignItems="center">
-              <Image src={it.image ?? undefined} boxSize="80px" objectFit="cover" mr={3} alt={it.title} borderRadius="md" />
+              <Image src={it.image ?? undefined} boxSize={{ base: '56px', md: '80px' }} objectFit="cover" mr={3} alt={it.title} borderRadius="md" />
               <Box flex="1">
                 <Text fontWeight="600">{it.title}</Text>
                 <Text color="gray.600">{it.price ?? 0} CFA</Text>

@@ -108,7 +108,7 @@ export default function ShopSetup() {
             <Image
               src={highRes(logoUrl) ?? SHOP_PLACEHOLDER}
               alt="logo"
-              boxSize="100px"
+              boxSize={{ base: '72px', md: '100px' }}
               mt={2}
               objectFit="cover"
               borderRadius="full"

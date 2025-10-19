@@ -97,7 +97,7 @@ export default function ProductEditor() {
         <FormControl>
           <FormLabel>Image</FormLabel>
           <FileInput value={file} onChange={(f) => { setFile(f); if (!f) return }} />
-          {imageUrl && !file && <Image src={imageUrl} alt="current" boxSize="120px" mt={3} objectFit="cover" borderRadius="md" />}
+          {imageUrl && !file && <Image src={imageUrl} alt="current" boxSize={{ base: '96px', md: '120px' }} mt={3} objectFit="cover" borderRadius="md" />}
         </FormControl>
         <Button colorScheme="teal" type="submit" isLoading={loading}>
           Enregistrer

@@ -27,18 +27,25 @@ export function highRes(url: string | undefined, options?: { width?: number, qua
       }
     }
 
-    if (u.hostname.includes('res.cloudinary.com')){
-      // example: https://res.cloudinary.com/<cloud>/image/upload/v123/.../file.jpg
-      // insert /q_{quality},w_{width},f_auto after /upload
-      const parts = u.pathname.split('/upload/')
-      const transform: string[] = []
-      if (options?.quality) transform.push(`q_${options.quality}`)
-      if (options?.width) transform.push(`w_${options.width}`)
-      // ensure format auto for best results
-      transform.push('f_auto')
-      const t = transform.join(',')
-      if (parts.length === 2) {
-        return `${u.protocol}//${u.host}${parts[0]}/upload/${t}/${parts[1]}`
+    // Cloudinary detection: support variants like res.cloudinary.com and any hostname containing 'cloudinary'
+    if (u.hostname.toLowerCase().includes('cloudinary')){
+      // example variants:
+      // - https://res.cloudinary.com/<cloud>/image/upload/v123/.../file.jpg
+      // - https://res.cloudinary.com/<cloud>/upload/v123/.../file.jpg
+      // We'll insert transforms after the first '/upload' segment we find.
+      const pathname = u.pathname || ''
+      const uploadIndex = pathname.indexOf('/upload')
+      if (uploadIndex !== -1) {
+        const before = pathname.slice(0, uploadIndex)
+        const after = pathname.slice(uploadIndex + '/upload'.length)
+        const transform: string[] = []
+        if (options?.quality) transform.push(`q_${options.quality}`)
+        if (options?.width) transform.push(`w_${options.width}`)
+        transform.push('f_auto')
+        const t = transform.join(',')
+        // ensure https protocol for Cloudinary
+        const proto = u.protocol && u.protocol.startsWith('http') ? u.protocol : 'https:'
+        return `${proto}//${u.host}${before}/upload/${t}${after}`
       }
     }
     // Not a Cloudinary URL — return original (resolved) string so <img> can load it.

@@ -50,12 +50,12 @@ export default function SellerOrders() {
       {loading && <Spinner />}
       {!loading && orders.length === 0 && <Text>Aucune commande pour le moment.</Text>}
       {!loading && orders.length > 0 && (
-        <Stack spacing={4}>
+        <Stack spacing={{ base: 3, md: 4 }}>
           {orders.map((o) => (
-            <Box key={o.id} bg="white" borderRadius="lg" p={4} boxShadow="sm" borderWidth="1px">
-              <HStack align="start" spacing={4}>
+            <Box key={o.id} bg="white" borderRadius="lg" p={{ base: 3, md: 4 }} boxShadow="sm" borderWidth="1px">
+              <HStack align="start" spacing={{ base: 3, md: 4 }}>
                 {o.product_image && (
-                  <Image src={o.product_image} alt={o.product_title || 'Produit'} boxSize="88px" objectFit="cover" borderRadius="md" />
+                  <Image src={o.product_image} alt={o.product_title || 'Produit'} boxSize={{ base: '56px', md: '88px' }} objectFit="cover" borderRadius="md" />
                 )}
                 <VStack align="start" spacing={1} flex="1">
                   <HStack justify="space-between" width="100%">

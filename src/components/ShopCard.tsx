@@ -14,11 +14,11 @@ export default function ShopCard({ shop, compact = false, height }: ShopCardProp
   const hi = highRes(cover, { width: 800, quality: 85 }) ?? SHOP_PLACEHOLDER
 
   // Tailles adaptatives
-  const cardHeight = height ?? useBreakpointValue({ base: compact ? 'auto' : '200px', md: '220px' })
-  const logoSize = useBreakpointValue({ base: compact ? '44px' : '56px', md: '72px' })
-  const headingSize = useBreakpointValue({ base: compact ? 'sm' : 'md', md: 'lg' })
-  const padding = useBreakpointValue({ base: compact ? 3 : 4, md: 5 })
-  const logoTopOffset = useBreakpointValue({ base: '28px', md: '36px' })
+  const cardHeight = height ?? useBreakpointValue({ base: compact ? 'auto' : '110px', md: '220px' })
+  const logoSize = useBreakpointValue({ base: compact ? '34px' : '40px', md: '72px' })
+  const headingSize = useBreakpointValue({ base: 'sm', md: 'lg' })
+  const padding = useBreakpointValue({ base: 2, md: 5 })
+  const logoTopOffset = useBreakpointValue({ base: '18px', md: '36px' })
 
   return (
     <Box 
@@ -46,6 +46,7 @@ export default function ShopCard({ shop, compact = false, height }: ShopCardProp
           src={hi} 
           alt={shop.name || shop.domain} 
           objectFit="cover" 
+          objectPosition="center center"
           width="100%" 
           height="100%"
           onError={(e: any) => { e.currentTarget.src = SHOP_PLACEHOLDER }}

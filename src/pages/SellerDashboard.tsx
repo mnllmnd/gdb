@@ -93,7 +93,7 @@ export default function SellerDashboard() {
           {shop && (
             <Box borderWidth="1px" p={4} mb={4} borderRadius="md">
               <Flex align="center">
-                  <Image src={highRes(shop.logo_url) ?? SHOP_PLACEHOLDER} boxSize="80px" objectFit="cover" borderRadius="md" mr={4}
+                  <Image src={highRes(shop.logo_url) ?? SHOP_PLACEHOLDER} boxSize={{ base: '56px', md: '80px' }} objectFit="cover" borderRadius="md" mr={4}
                     onError={(e: any) => { e.currentTarget.src = SHOP_PLACEHOLDER }}
                   />
                 <Box>
@@ -110,7 +110,7 @@ export default function SellerDashboard() {
             {products.map((p) => (
               <Box key={p.id} borderRadius="xl" p={4} bg="white" boxShadow="sm" borderWidth="1px">
                 <Flex align="center">
-                  <Box boxSize="110px" mr={4} display="flex" alignItems="center" justifyContent="center" bg="gray.50" borderRadius="md" overflow="hidden">
+                  <Box boxSize={{ base: '80px', md: '110px' }} mr={4} display="flex" alignItems="center" justifyContent="center" bg="gray.50" borderRadius="md" overflow="hidden">
                     <Image src={highRes(p.image_url, { width: 400, quality: 80 }) ?? PRODUCT_PLACEHOLDER} maxH="100%" maxW="100%" objectFit="cover" />
                   </Box>
                   <Box>
