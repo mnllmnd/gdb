@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Box, Image, Heading, Text, Stack, Button, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, FormControl, FormLabel, Input, Textarea, useDisclosure } from '@chakra-ui/react'
+import { Box, Image, Heading, Text, Stack, Button, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, FormControl, FormLabel, Input, Textarea, useDisclosure, useBreakpointValue } from '@chakra-ui/react'
 import cart from '../utils/cart'
 import { getItem } from '../utils/localAuth'
 import { highRes, PRODUCT_PLACEHOLDER } from '../utils/image'
@@ -39,6 +39,8 @@ export default function ProductCard({
 
   const priceDisplayText = numericPrice == null ? '—' : `${numericPrice.toFixed(2)} CFA`
   const [hasImage, setHasImage] = useState<boolean | null>(null)
+  const { isOpen: isImageOpen, onOpen: onImageOpen, onClose: onImageClose } = useDisclosure()
+  const modalSize = useBreakpointValue({ base: 'full', md: 'xl' })
 
   // Resolve the final src we will use and probe it to confirm it loads
   // prefer `image_url` (DB) over legacy `image` prop
@@ -120,6 +122,9 @@ export default function ProductCard({
           width="100%"
           height="100%"
           onError={(e: any) => { e.currentTarget.src = PRODUCT_PLACEHOLDER }}
+          cursor="zoom-in"
+          role="button"
+          onClick={onImageOpen}
         />
         {hasImage === false && (
           <Box position="absolute" bottom="8px" left="8px" bg="blackAlpha.600" color="white" px={2} py={1} borderRadius="md" fontSize="xs">
@@ -164,6 +169,16 @@ export default function ProductCard({
             <Button variant="ghost" mr={3} onClick={onClose}>Annuler</Button>
             <Button colorScheme="brand" onClick={placeOrder}>Confirmer la commande</Button>
           </ModalFooter>
+        </ModalContent>
+      </Modal>
+      {/* Image lightbox modal — show full image when clicked (mobile full-screen) */}
+      <Modal isOpen={isImageOpen} onClose={onImageClose} size={modalSize} isCentered>
+        <ModalOverlay bg="blackAlpha.800" />
+        <ModalContent bg="transparent" boxShadow="none">
+          <ModalCloseButton color="white" />
+          <ModalBody display="flex" alignItems="center" justifyContent="center" p={0}>
+            <Image src={resolvedSrc ?? PRODUCT_PLACEHOLDER} alt={title} objectFit="contain" maxH="90vh" onError={(e: any) => { e.currentTarget.src = PRODUCT_PLACEHOLDER }} />
+          </ModalBody>
         </ModalContent>
       </Modal>
     </Box>

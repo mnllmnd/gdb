@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Container, Heading, Text, SimpleGrid, Spinner, Box } from '@chakra-ui/react'
+import { Container, Heading, Text, SimpleGrid, Spinner, Box, useBreakpointValue } from '@chakra-ui/react'
 import api from '../services/api'
 import ProductCard from '../components/ProductCard'
 import BackButton from '../components/BackButton'
@@ -9,6 +9,7 @@ export default function ShopView() {
   const { domain } = useParams()
   const [shop, setShop] = useState<any | null>(null)
   const [products, setProducts] = useState<any[] | null>(null)
+  const cardHeight = useBreakpointValue({ base: '90px', md: '180px' })
 
   useEffect(() => {
     async function load() {
@@ -56,9 +57,9 @@ export default function ShopView() {
           {products === null && <Spinner />}
           {products !== null && products.length === 0 && <Text>Aucun produit trouvé pour cette boutique.</Text>}
           {products !== null && products.length > 0 && (
-            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
+            <SimpleGrid columns={{ base: 2, sm: 3, md: 4, lg: 5 }} spacing={4}>
               {products.map((p) => (
-                <ProductCard key={p.id} id={p.id} title={p.title} price={p.price} image_url={p.image_url} />
+                <ProductCard key={p.id} {...p} image_url={p.image_url ?? p.product_image} height={cardHeight} />
               ))}
             </SimpleGrid>
           )}
