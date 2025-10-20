@@ -7,7 +7,7 @@ const theme = extendTheme({
   },
   colors: {
     brand: {
-      50: '#e9e8f7ff',
+      50: '#cbc5eac1',
       100: '#BAE3FF',
       200: '#7CC4FA',
       300: '#47A3F3',
@@ -17,10 +17,10 @@ const theme = extendTheme({
       700: '#03449E',
       800: '#01337D',
       900: '#002159',
-      980: '#001233',
+      980: '#0e0033ff',
     },  
     accent: {
-      50: '#c6baecff',
+      50: '#b292d3ff',
       100: '#c2b9e6ff',
       200: '#CBD2D9',
       300: '#9AA5B1',
