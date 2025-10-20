@@ -1,25 +1,21 @@
 import React, { useState } from 'react'
 import { Container, Heading, FormControl, FormLabel, Input, Button, Stack, Text } from '@chakra-ui/react'
 import { useNavigate, Link as RouterLink } from 'react-router-dom'
+import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input'
+import 'react-phone-number-input/style.css'
 
 export default function Signup() {
   const [name, setName] = useState('')
-  const [phone, setPhone] = useState('')
+  const [phone, setPhone] = useState<string | undefined>('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
   const nav = useNavigate()
 
-  // Validation simple du numéro de téléphone sénégalais
-  const isValidPhone = (num: string) => {
-    const regex = /^(7\d{1}[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2}|7\d{8})$/
-    return regex.test(num.replace(/\s+/g, ''))
-  }
-
   function validate() {
     if (!name.trim()) return 'Veuillez saisir votre nom complet.'
-    if (!phone.trim()) return 'Veuillez saisir votre numéro de téléphone.'
-    if (!isValidPhone(phone)) return 'Veuillez entrer un numéro de téléphone valide (ex : 77 123 45 67).'
+    if (!phone) return 'Veuillez saisir votre numéro de téléphone.'
+    if (!isValidPhoneNumber(phone)) return 'Numéro de téléphone invalide. Veuillez inclure l’indicatif pays (ex : +221).'
     if (password.length < 6) return 'Le mot de passe doit contenir au moins 6 caractères.'
     if (password !== confirm) return 'Les mots de passe ne correspondent pas.'
     return null
@@ -35,7 +31,7 @@ export default function Signup() {
 
     try {
       const { signUpWithPhone } = await import('../services/auth')
-      await signUpWithPhone(phone, password, name)
+      await signUpWithPhone(phone!, password, name)
       nav('/')
     } catch (e: any) {
       setError(e?.error || "Échec de l'inscription")
@@ -45,8 +41,8 @@ export default function Signup() {
   return (
     <Container maxW="container.sm" py={8}>
       <Heading mb={4}>Inscription</Heading>
+
       <Stack as="form" spacing={4} onSubmit={(e) => { e.preventDefault(); onSubmit() }}>
-        
         <FormControl>
           <FormLabel>Nom complet</FormLabel>
           <Input
@@ -61,14 +57,19 @@ export default function Signup() {
 
         <FormControl>
           <FormLabel>Numéro de téléphone</FormLabel>
-          <Input
+          <PhoneInput
+            international
+            defaultCountry="SN"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="77 123 45 67"
-            bg="white"
-            color="black"
-            boxShadow="sm"
-            borderRadius="md"
+            onChange={setPhone}
+            placeholder="Entrez votre numéro (ex : +221 77 123 45 67)"
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '6px',
+              padding: '10px',
+              fontSize: '16px',
+              boxShadow: '0 0 4px rgba(0,0,0,0.1)'
+            }}
           />
         </FormControl>
 
