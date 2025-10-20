@@ -89,7 +89,7 @@ export default function ProductEditor() {
           <Textarea value={description} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)} placeholder="Description" bg="white" color="black" boxShadow="sm" borderRadius="md" />
         </FormControl>
         <FormControl>
-          <FormLabel>Prix (CFA)</FormLabel>
+          <FormLabel>Prix (FCFA)</FormLabel>
           <NumberInput min={0} precision={2} value={price} onChange={(v) => setPrice(Number(v) || 0)}>
             <NumberInputField bg="white" color="black" boxShadow="sm" borderRadius="md" />
           </NumberInput>

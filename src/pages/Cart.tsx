@@ -63,7 +63,7 @@ export default function CartPage() {
               <Image src={it.image ?? undefined} boxSize={{ base: '56px', md: '80px' }} objectFit="cover" mr={3} alt={it.title} borderRadius="md" />
               <Box flex="1">
                 <Text fontWeight="600">{it.title}</Text>
-                <Text color="gray.600">{it.price ?? 0} CFA</Text>
+                <Text color="gray.600">{it.price ?? 0} FCFA</Text>
               </Box>
               <HStack>
                 <NumberInput size="sm" maxW="100px" value={String(it.quantity)} min={1} onChange={(_, v) => setQty(it.id, Number(v))}>
@@ -81,7 +81,7 @@ export default function CartPage() {
           <Box borderRadius="var(--card-radius)" boxShadow="var(--card-shadow)" bg={totalBg} p={4}>
             <HStack justify="space-between">
               <Text fontWeight="bold" fontSize="lg">Total</Text>
-              <Text fontWeight="800" fontSize="lg">{cart.getTotal()} CFA</Text>
+              <Text fontWeight="800" fontSize="lg">{cart.getTotal()} FCFA</Text>
             </HStack>
 
             <Stack mt={4} direction={{ base: 'column', sm: 'row' }} spacing={3} justify="flex-end">

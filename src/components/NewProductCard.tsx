@@ -59,7 +59,7 @@ export default function ProductCard({
     return null
   })()
 
-  const priceDisplayText = numericPrice == null ? '—' : `${numericPrice.toFixed(2)} CFA`
+  const priceDisplayText = numericPrice == null ? '—' : `${numericPrice.toFixed(2)} FCFA`
   const [hasImage, setHasImage] = useState<boolean | null>(null)
 
   const resolvedSrc = (highRes(image, { width: 1000, quality: 80 }) ?? image) as string | undefined

@@ -37,7 +37,7 @@ export default function ProductCard({
     return null
   })()
 
-  const priceDisplayText = numericPrice == null ? '—' : `${numericPrice.toFixed(2)} CFA`
+  const priceDisplayText = numericPrice == null ? '—' : `${numericPrice.toFixed(2)} FCFA`
   const [hasImage, setHasImage] = useState<boolean | null>(null)
   const { isOpen: isImageOpen, onOpen: onImageOpen, onClose: onImageClose } = useDisclosure()
   const modalSize = useBreakpointValue({ base: 'full', md: 'xl' })

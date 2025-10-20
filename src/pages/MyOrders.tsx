@@ -87,7 +87,7 @@ export default function MyOrders() {
                               (o.product_title || o.title || '—')
                             )}
                           </Text>
-                          <Text mt={2} fontSize="sm" color="gray.600">Montant: {typeof total === 'number' ? total.toLocaleString() : total} CFA</Text>
+                          <Text mt={2} fontSize="sm" color="gray.600">Montant: {typeof total === 'number' ? total.toLocaleString() : total} FCFA</Text>
                           {o.created_at && <Text fontSize="xs" color="gray.500">Le {new Date(o.created_at).toLocaleString()}</Text>}
                         </Box>
                         <Box textAlign="right">
