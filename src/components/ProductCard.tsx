@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Box, Image, Heading, Text, Stack, Button, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, FormControl, FormLabel, Input, Textarea, useDisclosure, useBreakpointValue } from '@chakra-ui/react'
+import { FaCreditCard, FaPlus } from 'react-icons/fa'
 import cart from '../utils/cart'
 import { getItem } from '../utils/localAuth'
 import { highRes, PRODUCT_PLACEHOLDER } from '../utils/image'
@@ -137,11 +138,60 @@ export default function ProductCard({
           <Heading size="xs" color="black" fontWeight="600" noOfLines={2}>{title}</Heading>
           <Text fontSize="xs" color="gray.600" fontWeight="semibold">{priceDisplayText}</Text>
           <Box>
-            <Stack direction={{ base: 'column', md: 'row' }} spacing={1.5}>
-              <Button colorScheme="brand" onClick={onOpen} width={{ base: '100%', md: 'auto' }} borderRadius="md" boxShadow="sm" size="xs" px={2}>
-                Commander
+            <Stack direction={{ base: 'column', md: 'row' }} spacing={2.5}>
+              <Button 
+                onClick={onOpen} 
+                width={{ base: '100%', md: 'auto' }} 
+                borderRadius="md" 
+                boxShadow="sm" 
+                size="sm"
+                px={4}
+                title="Commander"
+                height="36px"
+                bg="black"
+                color="white"
+                _hover={{ 
+                  transform: 'scale(1.05)',
+                  boxShadow: 'md',
+                  bg: 'gray.800'
+                }}
+                _active={{
+                  bg: 'gray.700'
+                }}
+                transition="all 0.2s ease"
+                display="flex"
+                alignItems="center"
+                gap={2}
+              >
+                <Text fontSize="18px">📦</Text>
               </Button>
-              <Button variant="ghost" onClick={addToCart} width={{ base: '100%', md: 'auto' }} borderRadius="md" size="xs" px={2}>Ajouter au panier</Button>
+              <Button 
+                onClick={addToCart} 
+                width={{ base: '100%', md: 'auto' }} 
+                borderRadius="md" 
+                size="sm"
+                px={4}
+                title="Ajouter au panier"
+                height="36px"
+                bg="white"
+                color="black"
+                border="1px solid"
+                borderColor="gray.300"
+                _hover={{ 
+                  bg: "gray.50",
+                  transform: 'scale(1.05)',
+                  borderColor: "gray.400"
+                }}
+                _active={{
+                  bg: "gray.100"
+                }}
+                transition="all 0.2s ease"
+                display="flex"
+                alignItems="center"
+                gap={2}
+              >
+                <Text fontSize="18px">🛒</Text>
+              </Button>
             </Stack>
           </Box>
         </Stack>
