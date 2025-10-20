@@ -59,8 +59,8 @@ export default function FilterNav({ view, onViewChange, searchQuery, onSearchCha
         </Box>
         <Tabs index={view === 'shops' ? 0 : 1} onChange={(index) => onViewChange(index === 0 ? 'shops' : 'products')}>
           <TabList>
-            <Tab>Voir les boutiques</Tab>
-            <Tab>Voir tous les produits</Tab>
+            <Tab>Boutiques</Tab>
+            <Tab>Produits</Tab>
           </TabList>
         </Tabs>
       </Container>

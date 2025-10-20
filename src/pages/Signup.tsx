@@ -32,7 +32,7 @@ export default function Signup() {
 
   return (
     <Container maxW="container.sm" py={8}>
-      <Heading mb={4}>Inscription — Marché Sénégal</Heading>
+      <Heading mb={4}>Inscription</Heading>
       <Stack as="form" spacing={4} onSubmit={(e) => { e.preventDefault(); onSubmit() }}>
         <FormControl>
              <FormLabel>Nom complet</FormLabel>
@@ -59,7 +59,7 @@ export default function Signup() {
           <Button as={RouterLink} to="/login">Déjà un compte ?</Button>
         </Stack>
 
-        <Text fontSize="sm" color="white">En vous inscrivant, vous acceptez nos conditions d'utilisation.</Text>
+        <Text fontSize="sm" color="black">En vous inscrivant, vous acceptez nos conditions d'utilisation.</Text>
       </Stack>
     </Container>
   )
