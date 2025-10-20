@@ -84,7 +84,7 @@ const theme = extendTheme({
       },
       body: {
         // ✅ Image de fond qui s'affiche correctement
-        backgroundImage: 'url("https://res.cloudinary.com/dcs9vkwe0/image/upload/v1760976023/xtbsljcucw9effwhr4jw.jpg")',
+        
         backgroundRepeat: 'repeat',
        
         position: 'relative',
