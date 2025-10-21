@@ -36,16 +36,18 @@ router.post('/', authenticate, requireRole('seller'), async (req, res) => {
 // Update product (seller or admin)
 router.put('/:id', authenticate, async (req, res) => {
   const { id } = req.params
-  const { title, description, price, image_url } = req.body
+  // include category_id which was missing and caused a ReferenceError
+  const { title, description, price, image_url, category_id } = req.body
   try {
     // check owner
     const product = await query('SELECT * FROM products WHERE id = $1', [id])
     if (product.rowCount === 0) return res.status(404).json({ error: 'Not found' })
     const p = product.rows[0]
     if (req.user.role !== 'admin' && p.seller_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' })
+    // Use nullish coalescing so falsy values like 0 are preserved correctly
     const updated = await query(
       'UPDATE products SET title=$1, description=$2, price=$3, image_url=$4, category_id=$5 WHERE id=$6 RETURNING *',
-      [title || p.title, description || p.description, price || p.price, image_url || p.image_url, category_id || p.category_id, id]
+      [title ?? p.title, description ?? p.description, price ?? p.price, image_url ?? p.image_url, category_id ?? p.category_id, id]
     )
     res.json(updated.rows[0])
   } catch (err) {

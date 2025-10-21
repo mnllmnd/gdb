@@ -67,12 +67,14 @@ export default function ProductEditor() {
       }
       if (!selectedCategory) {
         alert('Veuillez sélectionner une catégorie')
+        setLoading(false)
         return
       }
       const payload: any = { 
         title, 
         description, 
-        price,
+        // ensure numeric value or null
+        price: typeof price === 'number' ? price : (price ? Number(price) : null),
         category_id: selectedCategory 
       }
       if (image_url) payload.image_url = image_url
