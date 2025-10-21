@@ -46,7 +46,9 @@ export const ChatPopup = () => {
   const [emotion, setEmotion] = useState('neutral');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { isOpen, onToggle, onClose } = useDisclosure({ defaultIsOpen: true });
+  
+  // Changement ici : defaultIsOpen: false au lieu de true
+  const { isOpen, onToggle, onClose } = useDisclosure({ defaultIsOpen: false });
 
   // Utilisation de useBreakpointValue pour détecter les mobiles
   const isMobile = useBreakpointValue({ base: true, md: false });
@@ -249,18 +251,18 @@ export const ChatPopup = () => {
     return (
       <Box 
         position="fixed" 
-        bottom={isMobile ? "80px" : "20px"} 
+        bottom={isMobile ? "20px" : "20px"} 
         right={isMobile ? "20px" : "20px"} 
         zIndex={9999}
       >
         <Button
           onClick={onToggle}
           colorScheme="blue"
-          size={isMobile ? "md" : "lg"}
+          size={isMobile ? "lg" : "lg"}
           borderRadius="full"
           boxShadow="2xl"
-          width={isMobile ? "50px" : "60px"}
-          height={isMobile ? "50px" : "60px"}
+          width={isMobile ? "60px" : "60px"}
+          height={isMobile ? "60px" : "60px"}
           fontSize={isMobile ? "xl" : "2xl"}
         >
           💬
@@ -272,18 +274,21 @@ export const ChatPopup = () => {
   return (
     <Box
       position="fixed"
-      bottom={isMobile ? "0" : "20px"}
-      right={isMobile ? "0" : "20px"}
-      width={isMobile ? "100%" : "420px"}
-      height={isMobile ? "100%" : "600px"}
+      bottom={isMobile ? "80px" : "20px"} // Changement ici : plus d'espace en bas sur mobile
+      right={isMobile ? "20px" : "20px"}
+      width={isMobile ? "calc(100% - 40px)" : "420px"} // Changement ici : largeur réduite sur mobile
+      height={isMobile ? "70vh" : "600px"} // Changement ici : hauteur réduite à 70% sur mobile
       bg="white"
-      borderRadius={isMobile ? "none" : "xl"}
-      boxShadow={isMobile ? "none" : "2xl"}
+      borderRadius="xl" // Toujours des bordures arrondies
+      boxShadow="2xl"
       zIndex={9999}
       display="flex"
       flexDirection="column"
-      border={isMobile ? "none" : "1px solid"}
+      border="1px solid"
       borderColor="gray.200"
+      maxWidth={isMobile ? "400px" : "none"} // Largeur max sur mobile
+      margin={isMobile ? "0 auto" : "0"} // Centrer sur mobile si nécessaire
+      left={isMobile ? "20px" : "auto"} // Positionnement sur mobile
     >
       {/* Header */}
       <Flex
@@ -321,12 +326,11 @@ export const ChatPopup = () => {
       {/* Messages */}
       <Box 
         flex="1" 
-        p={isMobile ? 2 : 4} 
+        p={isMobile ? 3 : 4} 
         overflowY="auto" 
         bg="gray.50"
-        // Réduire l'espace en bas sur mobile pour laisser de la place au clavier
-        pb={isMobile ? "80px" : 4}
-        minHeight={0} // Important pour le flexbox
+        pb={isMobile ? "70px" : 4} // Réduction de l'espace en bas sur mobile
+        minHeight={0}
       >
         <VStack spacing={2} align="stretch">
           {messages.map((msg, i) => (
@@ -479,16 +483,13 @@ export const ChatPopup = () => {
         </Box>
       )}
 
-      {/* Zone de saisie - Toujours visible */}
+      {/* Zone de saisie */}
       <Box 
         p={3} 
         borderTop="1px solid" 
         borderColor="gray.200" 
         bg="white"
-        position={isMobile ? "sticky" : "static"}
-        bottom="0"
         flexShrink={0}
-        zIndex={1}
       >
         <HStack>
           <Input
@@ -499,7 +500,6 @@ export const ChatPopup = () => {
             placeholder="Ex: Je cherche une lampe scandinave..."
             size="sm"
             isDisabled={isLoading}
-            // Empêcher le zoom sur iOS
             fontSize="16px"
           />
           <Button
