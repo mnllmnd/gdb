@@ -100,7 +100,7 @@ const theme = extendTheme({
           left: 0,
           width: '100%',
           height: '100%',
-          bg: 'rgba(68, 63, 197, 0.16)', // Ajustez l'opacité selon vos besoins
+          bg: 'rgba(169, 102, 73, 0.43)', // Ajustez l'opacité selon vos besoins
           zIndex: -1,
         },
       },
