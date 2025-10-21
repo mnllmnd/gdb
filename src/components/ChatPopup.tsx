@@ -296,12 +296,12 @@ export const ChatPopup = () => {
       width={isMobile ? "calc(100% - 40px)" : "420px"} // Changement ici : largeur réduite sur mobile
       height={isMobile ? "70vh" : "600px"} // Changement ici : hauteur réduite à 70% sur mobile
       bg="white"
-      borderRadius="xl" // Toujours des bordures arrondies
+      borderRadius="2xl" // Toujours des bordures arrondies
       boxShadow="2xl"
       zIndex={9999}
       display="flex"
       flexDirection="column"
-      border="1px solid"
+      border="5px solid"
       borderColor="gray.200"
       maxWidth={isMobile ? "400px" : "none"} // Largeur max sur mobile
       margin={isMobile ? "0 auto" : "0"} // Centrer sur mobile si nécessaire
@@ -312,7 +312,7 @@ export const ChatPopup = () => {
         bg="blue.500"
         color="white"
         p={3}
-        borderTopRadius="xl"
+        borderTopRadius="2xl"
         justify="space-between"
         align="center"
         flexShrink={0}
