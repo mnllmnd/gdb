@@ -26,7 +26,16 @@ const app = express();
 
 // Middlewares
 app.use(helmet());
-app.use(cors());
+// Configure CORS to accept the frontend origin provided via env (CLIENT_URL or FRONTEND_URL)
+const CLIENT_URL = process.env.CLIENT_URL || process.env.FRONTEND_URL || null
+if (CLIENT_URL) {
+  app.use(cors({ origin: CLIENT_URL }))
+  console.log(`🔒 CORS configured for: ${CLIENT_URL}`)
+} else {
+  // In development, allow all (or restrict as needed)
+  app.use(cors())
+  console.log('⚠️  CORS not restricted (no CLIENT_URL set).')
+}
 app.use(express.json());
 
 // Routes
@@ -159,6 +168,9 @@ app.use((error, req, res, next) => {
 const port = process.env.PORT || 4000;
 app.listen(port, () => {
   console.log(`🚀 Server running on port ${port}`);
-  console.log(`📝 NLP Chat endpoint: http://localhost:${port}/api/message`);
-  console.log(`🏥 Health check: http://localhost:${port}/api/nlp/health`);
+  const host = process.env.HOSTNAME || 'localhost'
+  const proto = process.env.PROTOCOL || 'http'
+  const base = process.env.API_ROOT || `${proto}://${host}:${port}`
+  console.log(`📝 NLP Chat endpoint: ${base}/api/message`);
+  console.log(`🏥 Health check: ${base}/api/nlp/health`);
 });

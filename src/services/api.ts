@@ -14,6 +14,10 @@ if (!API_BASE.endsWith('/api')) {
   API_BASE = API_BASE + '/api'
 }
 
+// Export API_BASE and API_ROOT for components that need direct URLs
+export { API_BASE }
+export const API_ROOT = API_BASE.replace(/\/api$/, '')
+
 type ReqOptions = {
   method?: string
   headers?: Record<string, string>

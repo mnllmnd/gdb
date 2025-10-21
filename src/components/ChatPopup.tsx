@@ -8,6 +8,7 @@ import {
 } from '@chakra-ui/react';
 import { ChevronUpIcon, ChevronDownIcon } from '@chakra-ui/icons';
 import axios from 'axios';
+import { API_ROOT } from '../services/api'
 
 // Définition des types TypeScript
 interface Product {
@@ -78,7 +79,7 @@ export const ChatPopup = () => {
   // Fonction pour chercher les vrais produits de l'API
   const searchRealProducts = async (searchTerm: string) => {
     try {
-      const response = await axios.get(`http://localhost:4000/api/products?search=${encodeURIComponent(searchTerm)}&limit=4`);
+        const response = await axios.get(`${API_ROOT}/api/products?search=${encodeURIComponent(searchTerm)}&limit=4`);
       return response.data.products || response.data || [];
     } catch (error) {
       console.error('Erreur recherche produits:', error);
@@ -89,7 +90,7 @@ export const ChatPopup = () => {
   // Fonction pour obtenir les produits populaires
   const getPopularProducts = async () => {
     try {
-      const response = await axios.get('http://localhost:4000/api/products?sort=popular&limit=4');
+        const response = await axios.get(`${API_ROOT}/api/products?sort=popular&limit=4`);
       return response.data.products || response.data || [];
     } catch (error) {
       console.error('Erreur produits populaires:', error);
@@ -112,7 +113,7 @@ export const ChatPopup = () => {
     setIsLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:4000/api/message', {
+  const res = await axios.post(`${API_ROOT}/api/message`, {
         message: input,
         userProfile: { 
           preferences: ['décoration', 'mobilier'],
@@ -242,7 +243,7 @@ export const ChatPopup = () => {
     if (product.image) {
       return product.image.startsWith('http') 
         ? product.image 
-        : `http://localhost:4000${product.image}`;
+        : `${API_ROOT}${product.image}`;
     }
     return null;
   };
