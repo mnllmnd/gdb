@@ -28,7 +28,6 @@ interface Product {
   category_id?: number | null
   image_url?: string
   product_image?: string
-  // Ensure we have at least one of title or name
   [key: string]: string | number | null | undefined
 }
 
@@ -54,7 +53,6 @@ export default function Home() {
 
   const cardHeight = useBreakpointValue({ base: '90px', md: '180px' })
 
-  // Chargement initial des données
   React.useEffect(() => {
     async function loadData() {
       try {
@@ -68,19 +66,15 @@ export default function Home() {
         setCategories(categoriesData)
         setProducts(productsData)
         
-        // Organiser les produits par catégorie
         const productsByCategory: Record<number, Product[]> = {}
-        
         productsData?.forEach((product: Product) => {
           if (!product?.id) return
-          
           const categoryId = product.category_id ?? 0
           if (!productsByCategory[categoryId]) {
             productsByCategory[categoryId] = []
           }
           productsByCategory[categoryId].push(product)
         })
-        
         setCategorizedProducts(productsByCategory)
       } catch (err) {
         console.error('Failed to load data', err)
@@ -94,7 +88,6 @@ export default function Home() {
     loadData()
   }, [])
 
-  // Recherche avec debounce
   React.useEffect(() => {
     if (!query.trim()) return
 
@@ -112,7 +105,6 @@ export default function Home() {
             const searchText = `${product.title || product.name || ''} ${product.description || ''}`.toLowerCase()
             return searchTerms.every(term => searchText.includes(term))
           }) || []
-
           setProducts(filteredProducts)
         }
       } catch (err) {
@@ -126,7 +118,6 @@ export default function Home() {
     return () => clearTimeout(timeoutId)
   }, [query, currentView])
 
-  // Recompute categorizedProducts whenever `products` changes
   React.useEffect(() => {
     const map: Record<number, Product[]> = {}
     products.forEach((p) => {
@@ -137,10 +128,8 @@ export default function Home() {
     setCategorizedProducts(map)
   }, [products])
 
-  // Rechargement des données quand la recherche est vide ou la vue change
   React.useEffect(() => {
     if (query.trim()) return
-
     let isMounted = true
 
     const reloadData = async () => {
@@ -193,27 +182,23 @@ export default function Home() {
       <VStack spacing={8} align="stretch">
         {selectedCategory === null ? (
           <>
-            {/* Produits sans catégorie */}
             {renderUncategorizedProducts()}
-            
-            {/* Produits par catégorie */}
             {categories
               .filter(category => (categorizedProducts[category.id] || []).length > 0)
               .map(category => renderProductCategory(category))}
           </>
         ) : (
-          /* Produits d'une catégorie spécifique */
           <Grid templateColumns={{ base: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)', lg: 'repeat(5, 1fr)' }} gap={2}>
             {(categorizedProducts[selectedCategory] || []).map((product) => (
-                <GridItem key={product.id}>
-                  <ProductCard
-                    id={String(product.id)}
-                    title={product.title || product.name || ''}
-                    price={product.price ?? product.amount}
-                    image_url={product.image_url ?? product.product_image}
-                    height={cardHeight}
-                  />
-                </GridItem>
+              <GridItem key={product.id}>
+                <ProductCard
+                  id={String(product.id)}
+                  title={product.title || product.name || ''}
+                  price={product.price ?? product.amount}
+                  image_url={product.image_url ?? product.product_image}
+                  height={cardHeight}
+                />
+              </GridItem>
             ))}
           </Grid>
         )}
@@ -223,23 +208,22 @@ export default function Home() {
 
   const renderUncategorizedProducts = () => {
     const uncategorizedProducts = products?.filter(product => !product.category_id) || []
-    
     if (uncategorizedProducts.length === 0) return null
 
     return (
-      <Box mb={8}>
-        <Heading size="lg" mb={4}>Autres produits</Heading>
+      <Box mb={8} bg="brand.700" p={{ base: 4, md: 6 }} borderRadius="lg">
+        <Heading size="lg" mb={4} color="white" textAlign="center">Autres produits</Heading>
         <Grid templateColumns={{ base: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)', lg: 'repeat(5, 1fr)' }} gap={2}>
           {uncategorizedProducts.map((product) => (
-              <GridItem key={product.id}>
-                <ProductCard
-                  id={String(product.id)}
-                  title={product.title || product.name || ''}
-                  price={product.price ?? product.amount}
-                  image_url={product.image_url ?? product.product_image}
-                  height={cardHeight}
-                />
-              </GridItem>
+            <GridItem key={product.id}>
+              <ProductCard
+                id={String(product.id)}
+                title={product.title || product.name || ''}
+                price={product.price ?? product.amount}
+                image_url={product.image_url ?? product.product_image}
+                height={cardHeight}
+              />
+            </GridItem>
           ))}
         </Grid>
       </Box>
@@ -248,24 +232,30 @@ export default function Home() {
 
   const renderProductCategory = (category: Category) => {
     const categoryProducts = categorizedProducts[category.id] || []
-    
-    // Ne pas afficher les catégories vides lors d'une recherche
     if (query && categoryProducts.length === 0) return null
 
     return (
-      <Box key={category.id} bg="gray.50" p={{ base: 4, md: 6 }} borderRadius="lg" mb={6}>
-        <Heading size="lg" mb={4} textAlign="center">{category.name}</Heading>
+      <Box 
+          key={category.id} 
+          bg="#a86d4dff"  // couleur inspirée de l'image
+          color="white"  // le texte reste bien lisible
+          p={{ base: 4, md: 6 }} 
+          borderRadius="lg" 
+          mb={6}
+        >
+
+        <Heading size="lg" mb={4} textAlign="center" color="white">{category.name}</Heading>
         <Grid templateColumns={{ base: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)', lg: 'repeat(5, 1fr)' }} gap={4}>
           {categoryProducts.map((product) => (
-              <GridItem key={product.id}>
-                <ProductCard
-                  id={String(product.id)}
-                  title={product.title || product.name || ''}
-                  price={product.price ?? product.amount}
-                  image_url={product.image_url ?? product.product_image}
-                  height={cardHeight}
-                />
-              </GridItem>
+            <GridItem key={product.id}>
+              <ProductCard
+                id={String(product.id)}
+                title={product.title || product.name || ''}
+                price={product.price ?? product.amount}
+                image_url={product.image_url ?? product.product_image}
+                height={cardHeight}
+              />
+            </GridItem>
           ))}
         </Grid>
       </Box>
@@ -274,7 +264,6 @@ export default function Home() {
 
   return (
     <Box>
-      {/* Hero Section */}
       <Box bg="brand.500" color="white" py={16} position="relative" overflow="hidden">
         <Box 
           position="absolute" 
@@ -295,15 +284,13 @@ export default function Home() {
               <Text fontSize="xl" color="whiteAlpha.900">
                 {currentView === 'shops' 
                   ? 'Les meilleurs produits, directement des artisans' 
-                  : 'Explorez les produits disponibles'
-                }
+                  : 'Explorez les produits disponibles'}
               </Text>
             </Box>
           </VStack>
         </Container>
       </Box>
 
-      {/* Navigation et filtres */}
       <FilterNav 
         view={currentView} 
         onViewChange={setCurrentView} 
@@ -314,7 +301,6 @@ export default function Home() {
         onCategoryChange={setSelectedCategory}
       />
 
-      {/* Contenu principal */}
       <Container maxW={{ base: '95%', md: '85%', lg: '80%' }} py={4}>
         {isLoading ? (
           <Center py={4}><Spinner size="md" /></Center>
@@ -326,7 +312,6 @@ export default function Home() {
   )
 }
 
-// Composant pour les résultats vides
 function NoResults({ message, onClear }: { message: string; onClear: () => void }) {
   return (
     <Box textAlign="center" py={8}>
@@ -339,60 +324,6 @@ function NoResults({ message, onClear }: { message: string; onClear: () => void 
         colorScheme="brand"
         variant="outline"
       />
-    </Box>
-  )
-}
-
-// Composant pour l'aperçu des produits (gardé pour référence)
-function ProductListPreview({ cardHeight }: { cardHeight?: any }) {
-  const [products, setProducts] = React.useState<Product[] | null>(null)
-  const [loading, setLoading] = React.useState(true)
-
-  React.useEffect(() => {
-    let isMounted = true
-    
-    const loadProducts = async () => {
-      try {
-        const productsList = await api.products.list()
-        if (isMounted) {
-          setProducts(productsList?.slice(0, 8) || [])
-        }
-      } catch (err) {
-        console.error('Failed to load products', err)
-        if (isMounted) setProducts([])
-      } finally {
-        if (isMounted) setLoading(false)
-      }
-    }
-    
-    loadProducts()
-    return () => { isMounted = false }
-  }, [])
-
-  if (loading) return <Box><Text>Chargement...</Text></Box>
-  if (!products || products.length === 0) return <Box><Text>Aucun produit récent.</Text></Box>
-
-  return (
-    <Box>
-      <Grid 
-        templateColumns={{ 
-          base: 'repeat(auto-fill, minmax(140px, 1fr))', 
-          sm: 'repeat(auto-fill, minmax(160px, 1fr))', 
-          md: 'repeat(auto-fill, minmax(200px, 1fr))' 
-        }} 
-        gap={{ base: 4, sm: 5, md: 6 }}
-      >
-        {products.map((product) => (
-          <ProductCard 
-            key={product.id} 
-            id={String(product.id)} 
-            title={product.title || product.name} 
-            price={product.price ?? product.amount} 
-            image_url={product.image_url ?? product.product_image} 
-            height={cardHeight} 
-          />
-        ))}
-      </Grid>
     </Box>
   )
 }
