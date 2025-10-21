@@ -248,29 +248,29 @@ export const ChatPopup = () => {
     return null;
   };
 
-  if (!isOpen) {
-    return (
-      <Box 
-        position="fixed" 
-        bottom={isMobile ? "20px" : "20px"} 
-        right={isMobile ? "20px" : "20px"} 
-        zIndex={9999}
+ if (!isOpen) {
+  return (
+    <Box 
+      position="fixed" 
+      bottom={isMobile ? "80px" : "20px"}  // ← LIGNE 250 - Position verticale
+      right={isMobile ? "20px" : "20px"}   // ← LIGNE 251 - Position horizontale
+      zIndex={9999}
+    >
+      <Button
+        onClick={onToggle}
+        colorScheme="blue"
+        size={isMobile ? "md" : "lg"}
+        borderRadius="full"
+        boxShadow="2xl"
+        width={isMobile ? "50px" : "60px"}   // ← LIGNE 258 - Largeur
+        height={isMobile ? "50px" : "60px"}  // ← LIGNE 259 - Hauteur
+        fontSize={isMobile ? "xl" : "2xl"}   // ← LIGNE 260 - Taille de l'icône
       >
-        <Button
-          onClick={onToggle}
-          colorScheme="blue"
-          size={isMobile ? "lg" : "lg"}
-          borderRadius="full"
-          boxShadow="2xl"
-          width={isMobile ? "60px" : "60px"}
-          height={isMobile ? "60px" : "60px"}
-          fontSize={isMobile ? "xl" : "2xl"}
-        >
-          💬
-        </Button>
-      </Box>
-    );
-  }
+        💬
+      </Button>
+    </Box>
+  );
+}
 
   return (
     <Box
