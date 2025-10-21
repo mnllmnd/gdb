@@ -9,14 +9,19 @@ import {
 import { ChevronUpIcon, ChevronDownIcon } from '@chakra-ui/icons';
 import axios from 'axios';
 import { API_ROOT } from '../services/api'
+import { PRODUCT_PLACEHOLDER } from '../utils/image'
 
 // Définition des types TypeScript
 interface Product {
   id: number;
-  name: string;
-  price: number;
-  category: string;
+  name?: string;
+  title?: string;
+  product_name?: string;
+  price?: number;
+  category?: string;
   image?: string;
+  image_url?: string;
+  product_image?: string;
   description?: string;
   shop?: any;
 }
@@ -240,12 +245,12 @@ export const ChatPopup = () => {
 
   // Fonction pour obtenir l'URL de l'image du produit
   const getProductImageUrl = (product: Product) => {
-    if (product.image) {
-      return product.image.startsWith('http') 
-        ? product.image 
-        : `${API_ROOT}${product.image}`;
-    }
-    return null;
+    const src = product.image_url || product.product_image || product.image || null
+    if (!src) return null
+    if (src.startsWith('http')) return src
+    // resolve relative paths against API_ROOT (root without /api)
+    const root = API_ROOT.replace(/\/api$/, '')
+    return `${root}${src.startsWith('/') ? src : '/' + src}`
   };
 
  if (!isOpen) {
@@ -392,27 +397,16 @@ export const ChatPopup = () => {
                                 </Box>
                                 <Box flex="1">
                                   <Text fontSize="sm" fontWeight="bold" noOfLines={2} mb={1}>
-                                    {product.name}
+                                    {product.name || product.title || product.product_name || 'Produit'}
                                   </Text>
-                                  <Box 
-                                    bg="green.50" 
-                                    display="inline-block" 
-                                    px={2} 
-                                    py={1} 
-                                    borderRadius="md"
-                                    mb={1}
-                                  >
-                                    <Text 
-                                      fontSize="md" 
-                                      color="green.700" 
-                                      fontWeight="bold"
-                                    >
-                                      {Math.floor(product.price)} FCFA
-                                    </Text>
+                                  <Box display="flex" alignItems="center" gap={3} mb={1}>
+                                    <Box bg="green.50" px={3} py={1} borderRadius="md">
+                                      <Text fontSize="md" color="green.700" fontWeight="bold">
+                                        {new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.floor(product.price || 0))} FCFA
+                                      </Text>
+                                    </Box>
+                                    <Text fontSize="xs" color="gray.500">{product.category}</Text>
                                   </Box>
-                                  <Text fontSize="xs" color="gray.500" noOfLines={1}>
-                                    {product.category}
-                                  </Text>
                                   <Link 
                                     href={`${typeof window !== 'undefined' ? window.location.origin : ''}/products/${product.id}`} 
                                     fontSize="xs" 
