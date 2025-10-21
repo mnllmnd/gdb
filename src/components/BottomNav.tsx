@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { HStack, IconButton, useBreakpointValue, Box, useToast } from '@chakra-ui/react'
-import { Link, useNavigate } from 'react-router-dom'
+import { HStack, IconButton, Box, useBreakpointValue } from '@chakra-ui/react'
+import { Link } from 'react-router-dom'
 import cart from '../utils/cart'
-import { getCurrentUser } from '../services/auth'
 
 export default function BottomNav() {
-  const navigate = useNavigate()
   const show = useBreakpointValue({ base: true, md: false })
   const [count, setCount] = useState(0)
-  const toast = useToast()
 
   useEffect(() => {
     function onChange() {
@@ -27,51 +24,45 @@ export default function BottomNav() {
     <HStack
       position="fixed"
       bottom={4}
-      left={4}
-      right={4}
-      justify="space-around"
+      left={0}
+      right={0}
+      justify="center"
+      spacing={6}
       px={4}
-      pr={10}
       py={3}
       zIndex={60}
-      bg="#a86d4d7f" // même couleur que le top nav
+      bg="#a86d4d7f"
       borderRadius="xl"
       boxShadow="lg"
-      backdropFilter="blur(6px)" // effet de flou doux identique
+      backdropFilter="blur(6px)"
     >
+      {/* Home */}
       <IconButton
         as={Link}
         to="/"
         aria-label="Accueil"
-        icon={<span style={{ fontSize: 20 }}>🏠</span>}
+        icon={<span style={{ fontSize: 24 }}>🏠</span>}
         bg="whiteAlpha.900"
         _hover={{ bg: 'whiteAlpha.800', transform: 'scale(1.05)' }}
         color="black"
         borderRadius="full"
         boxShadow="md"
+        size="lg"
       />
-      <IconButton
-        as={Link}
-        to="/seller"
-        aria-label="Vendeur"
-        icon={<span style={{ fontSize: 20 }}>🏪</span>}
-        bg="whiteAlpha.900"
-        _hover={{ bg: 'whiteAlpha.800', transform: 'scale(1.05)' }}
-        color="black"
-        borderRadius="full"
-        boxShadow="md"
-      />
+
+      {/* Panier */}
       <Box position="relative">
         <IconButton
           as={Link}
           to="/cart"
           aria-label="Panier"
-          icon={<span style={{ fontSize: 20 }}>🛒</span>}
+          icon={<span style={{ fontSize: 24 }}>🛒</span>}
           bg="whiteAlpha.900"
           _hover={{ bg: 'whiteAlpha.800', transform: 'scale(1.05)' }}
           color="black"
           borderRadius="full"
           boxShadow="md"
+          size="lg"
         />
         {count > 0 && (
           <Box
@@ -90,27 +81,6 @@ export default function BottomNav() {
           </Box>
         )}
       </Box>
-      <IconButton
-        aria-label="Compte"
-        icon={<span style={{ fontSize: 20 }}>👤</span>}
-        bg="whiteAlpha.900"
-        _hover={{ bg: 'whiteAlpha.800', transform: 'scale(1.05)' }}
-        color="black"
-        borderRadius="full"
-        boxShadow="md"
-        onClick={() => {
-          const u = getCurrentUser()
-          if (u) {
-            toast({
-              title: `Connecté en tant que ${u.displayName || u.name || u.phone || 'utilisateur'}`,
-              status: 'info',
-              duration: 2500,
-            })
-            return
-          }
-          navigate('/login')
-        }}
-      />
     </HStack>
   )
 }
