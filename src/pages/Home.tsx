@@ -278,9 +278,7 @@ export default function Home() {
         <Container maxW="container.xl" position="relative">
           <VStack spacing={6} align="stretch">
             <Box textAlign="center">
-              <Heading size="2xl" mb={4}>
-                {currentView === 'shops' ? 'Découvrez nos boutiques' : 'Produits récents'}
-              </Heading>
+             
               <Text fontSize="xl" color="whiteAlpha.900">
                 {currentView === 'shops' 
                   ? 'Les meilleurs produits, directement des artisans' 
