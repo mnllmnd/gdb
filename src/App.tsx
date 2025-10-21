@@ -16,6 +16,7 @@ import SellerOrders from './pages/SellerOrders';
 import ShopView from './pages/ShopView';
 import CartPage from './pages/Cart';
 import Products from './pages/Products';
+import ProductView from './pages/ProductView';
 import { ChatPopup } from './components/ChatPopup';
 
 export default function App() {
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/products" element={<Products />} />
+          <Route path="/products/:id" element={<ProductView />} />
         </Routes>
       </Box>
       <BottomNav />

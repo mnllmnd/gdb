@@ -414,10 +414,10 @@ export const ChatPopup = () => {
                                     {product.category}
                                   </Text>
                                   <Link 
-                                    href={`/products/${product.id}`} 
+                                    href={`${typeof window !== 'undefined' ? window.location.origin : ''}/products/${product.id}`} 
                                     fontSize="xs" 
                                     color="blue.500"
-                                    onClick={() => window.open(`/products/${product.id}`, '_blank')}
+                                    onClick={() => window.open(`${typeof window !== 'undefined' ? window.location.origin : ''}/products/${product.id}`, '_blank')}
                                   >
                                     Voir le produit →
                                   </Link>
