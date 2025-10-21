@@ -2,20 +2,20 @@
 // become a valid absolute URL (http://localhost:4000/api). Also remove
 // an accidental trailing slash to keep concatenation predictable.
 const rawBase: string = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api'
-let API_BASE: string = rawBase.trim()
+let apiBase: string = rawBase.trim()
 // If env provides something like ":4000/api" prepend localhost
-if (API_BASE.startsWith(':')) API_BASE = `http://localhost${API_BASE}`
+if (apiBase.startsWith(':')) apiBase = `http://localhost${apiBase}`
 // Ensure we have a protocol; if not, treat as localhost
-if (!/^https?:\/\//i.test(API_BASE)) API_BASE = `http://${API_BASE}`
+if (!/^https?:\/\//i.test(apiBase)) apiBase = `http://${apiBase}`
 // remove trailing slash for consistent concatenation
-API_BASE = API_BASE.replace(/\/$/, '')
-// Ensure API_BASE targets the API root (add /api if caller provided a host without it)
-if (!API_BASE.endsWith('/api')) {
-  API_BASE = API_BASE + '/api'
+apiBase = apiBase.replace(/\/$/, '')
+// Ensure apiBase targets the API root (add /api if caller provided a host without it)
+if (!apiBase.endsWith('/api')) {
+  apiBase = apiBase + '/api'
 }
 
-// Export API_BASE and API_ROOT for components that need direct URLs
-export { API_BASE }
+// Export a constant API_BASE and API_ROOT for components that need direct URLs
+export const API_BASE = apiBase
 export const API_ROOT = API_BASE.replace(/\/api$/, '')
 
 type ReqOptions = {
@@ -26,7 +26,7 @@ type ReqOptions = {
 
 async function request(path: string, options: ReqOptions = {}) {
   const headers = options.headers ? { 'Content-Type': 'application/json', ...options.headers } : { 'Content-Type': 'application/json' }
-  const res = await fetch(API_BASE + path, { ...options, headers })
+  const res = await fetch(apiBase + path, { ...options, headers })
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: 'unknown' }))
     throw err
@@ -64,6 +64,8 @@ export const api = {
   orders: {
     create: (payload: any, token?: string) => request('/orders', { method: 'POST', body: JSON.stringify(payload), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     my: (token?: string) => request('/orders/me', { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+    cancel: (orderId: string, token?: string) => request(`/orders/${encodeURIComponent(orderId)}/cancel`, { method: 'PATCH', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+    delete: (orderId: string, token?: string) => request(`/orders/${encodeURIComponent(orderId)}`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
   },
   shops: {
     list: () => request('/shops'),

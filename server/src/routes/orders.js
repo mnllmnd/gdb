@@ -42,4 +42,38 @@ router.get('/', authenticate, async (req, res) => {
   }
 })
 
+// Cancel an order (buyer can cancel their order if it's not yet shipped)
+router.patch('/:id/cancel', authenticate, async (req, res) => {
+  const id = req.params.id
+  try {
+    const r = await query('SELECT * FROM orders WHERE id = $1', [id])
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Order not found' })
+    const order = r.rows[0]
+    if (String(order.buyer_id) !== String(req.user.id)) return res.status(403).json({ error: 'Forbidden' })
+    if (order.status === 'expedie') return res.status(400).json({ error: 'Order already shipped' })
+    const u = await query('UPDATE orders SET status = $1 WHERE id = $2 RETURNING *', ['cancelled', id])
+    res.json(u.rows[0])
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to cancel order' })
+  }
+})
+
+// Delete an order (buyer may delete their order record if not shipped)
+router.delete('/:id', authenticate, async (req, res) => {
+  const id = req.params.id
+  try {
+    const r = await query('SELECT * FROM orders WHERE id = $1', [id])
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Order not found' })
+    const order = r.rows[0]
+    if (String(order.buyer_id) !== String(req.user.id)) return res.status(403).json({ error: 'Forbidden' })
+    if (order.status === 'expedie') return res.status(400).json({ error: 'Cannot delete a shipped order' })
+    await query('DELETE FROM orders WHERE id = $1', [id])
+    res.json({ success: true })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to delete order' })
+  }
+})
+
 export default router

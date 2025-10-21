@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Container, Heading, Stack, Box, Text, Spinner, Button, useToast, HStack, Badge } from '@chakra-ui/react'
+import { Container, Heading, Stack, Box, Text, Spinner, Button, useToast, HStack, Badge, VStack } from '@chakra-ui/react'
 import api from '../services/api'
 import { getItem } from '../utils/localAuth'
 import mapOrderStatus from '../utils/status'
@@ -39,6 +39,32 @@ export default function MyOrders() {
       setOrders([])
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleCancel(orderId: string) {
+    const token = getItem('token')
+    if (!token) return toast({ title: 'Erreur', description: 'Vous devez être connecté', status: 'error' })
+    try {
+      await api.orders.cancel(orderId, token)
+      toast({ title: 'Annulé', description: "La commande a été annulée.", status: 'success' })
+      loadOrders()
+    } catch (err: any) {
+      console.error('Failed to cancel order', err)
+      toast({ title: 'Erreur', description: err?.error || 'Impossible d\'annuler la commande', status: 'error' })
+    }
+  }
+
+  async function handleDelete(orderId: string) {
+    const token = getItem('token')
+    if (!token) return toast({ title: 'Erreur', description: 'Vous devez être connecté', status: 'error' })
+    try {
+      await api.orders.delete(orderId, token)
+      toast({ title: 'Supprimé', description: "La commande a été supprimée.", status: 'success' })
+      loadOrders()
+    } catch (err: any) {
+      console.error('Failed to delete order', err)
+      toast({ title: 'Erreur', description: err?.error || 'Impossible de supprimer la commande', status: 'error' })
     }
   }
 
@@ -104,6 +130,14 @@ export default function MyOrders() {
                             </Text>
                           </Box>
                           {o.created_at && <Text fontSize="xs" color="gray.500">Le {new Date(o.created_at).toLocaleString()}</Text>}
+                          <VStack align="end" spacing={2} mt={3}>
+                            {status !== 'expedie' && (
+                              <HStack spacing={2}>
+                                <Button size="sm" colorScheme="orange" onClick={() => handleCancel(o.id)}>Annuler</Button>
+                                <Button size="sm" colorScheme="red" onClick={() => handleDelete(o.id)}>Supprimer</Button>
+                              </HStack>
+                            )}
+                          </VStack>
                         </Box>
                         <Box textAlign="right">
                           {(() => {
