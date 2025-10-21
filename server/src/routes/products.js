@@ -17,14 +17,14 @@ router.get('/', async (req, res) => {
 
 // Create product (seller)
 router.post('/', authenticate, requireRole('seller'), async (req, res) => {
-  const { title, description, price, image_url } = req.body
+  const { title, description, price, image_url, category_id } = req.body
   try {
     // ensure the seller has a shop before allowing product creation
     const shopCheck = await query('SELECT id FROM shops WHERE owner_id = $1', [req.user.id])
     if (shopCheck.rowCount === 0) return res.status(400).json({ error: 'You must create a shop before adding products' })
     const r = await query(
-      'INSERT INTO products (title, description, price, image_url, seller_id) VALUES ($1,$2,$3,$4,$5) RETURNING *',
-      [title, description || null, price, image_url || null, req.user.id]
+      'INSERT INTO products (title, description, price, image_url, category_id, seller_id) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *',
+      [title, description || null, price, image_url || null, category_id, req.user.id]
     )
     res.json(r.rows[0])
   } catch (err) {
@@ -44,8 +44,8 @@ router.put('/:id', authenticate, async (req, res) => {
     const p = product.rows[0]
     if (req.user.role !== 'admin' && p.seller_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' })
     const updated = await query(
-      'UPDATE products SET title=$1, description=$2, price=$3, image_url=$4 WHERE id=$5 RETURNING *',
-      [title || p.title, description || p.description, price || p.price, image_url || p.image_url, id]
+      'UPDATE products SET title=$1, description=$2, price=$3, image_url=$4, category_id=$5 WHERE id=$6 RETURNING *',
+      [title || p.title, description || p.description, price || p.price, image_url || p.image_url, category_id || p.category_id, id]
     )
     res.json(updated.rows[0])
   } catch (err) {

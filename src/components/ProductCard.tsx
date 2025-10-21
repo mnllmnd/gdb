@@ -15,7 +15,7 @@ export default function ProductCard({
   height = { base: '80px', md: '160px' }, // much smaller heights as requested
 }: Readonly<{
   id: string
-  title: string
+  title?: string
   price: number | string | null | undefined
   image?: string
   image_url?: string
@@ -96,7 +96,7 @@ export default function ProductCard({
   function addToCart() {
     try {
       const numeric = numericPrice
-  cart.add({ id, title, price: numeric, image: chosen ?? null }, 1)
+  cart.add({ id, title: title || 'Sans titre', price: numeric, image: chosen ?? null }, 1)
       toast({ title: 'Ajouté au panier', status: 'success', duration: 2000 })
     } catch (err) {
       console.error(err)
@@ -135,7 +135,7 @@ export default function ProductCard({
       </Box>
   <Box p={1.5}>
         <Stack spacing={1}>
-          <Heading size="xs" color="black" fontWeight="600" noOfLines={2}>{title}</Heading>
+          <Heading size="xs" color="black" fontWeight="600" noOfLines={2}>{title || 'Sans titre'}</Heading>
           <Text fontSize="xs" color="gray.600" fontWeight="semibold">{priceDisplayText}</Text>
           <Box>
             <Stack direction={{ base: 'column', md: 'row' }} spacing={2.5}>

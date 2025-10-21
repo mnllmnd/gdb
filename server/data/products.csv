@@ -1,0 +1,9 @@
+id,title,description,price,image_url,seller_id,created_at
+2badb5c3-7f17-41ff-8621-3acd4f3697d2,Montre,Très beau,10000,https://res.cloudinary.com/dcs9vkwe0/image/upload/v1760878154/gestion_de_boutique/uw01xk8dozosbaun1wt9.jpg,6d67955d-3715-4fd1-a532-874bb8f4bdd7,2025-10-19 12:49:15.769624+00
+a24a8ac0-00b1-4dc3-89e1-245268c0cbfc,Banane ,🍌 ,1000,https://res.cloudinary.com/dcs9vkwe0/image/upload/v1760903316/gestion_de_boutique/qxahb3igbdlsxxyk4f4x.jpg,69d2a260-4f8d-417e-a6df-92f96b2222a9,2025-10-19 19:48:38.188557+00
+bfc6e0bc-a5f8-461d-b58d-97f38dd9e21e,Apple Watch ,Quality,300000,https://res.cloudinary.com/dcs9vkwe0/image/upload/v1760981994/gestion_de_boutique/pcfsm9guavu66ybzelsy.jpg,6d67955d-3715-4fd1-a532-874bb8f4bdd7,2025-10-20 17:39:56.548266+00
+931085dd-5f41-499b-a44b-54eb8b137558,iPhone 17,Qualité ,900000,https://res.cloudinary.com/dcs9vkwe0/image/upload/v1760982071/gestion_de_boutique/j0o8hulht6cxrczt8kvp.jpg,6d67955d-3715-4fd1-a532-874bb8f4bdd7,2025-10-20 17:41:13.011071+00
+cd00c902-bd43-41b2-b5b0-67bcc92b74f3,Légumes ,Un mélange de tout ,2500,https://res.cloudinary.com/dcs9vkwe0/image/upload/v1760982962/gestion_de_boutique/jugpazykx6dss7bujcy9.jpg,69d2a260-4f8d-417e-a6df-92f96b2222a9,2025-10-19 20:00:42.646558+00
+8fdbf8b4-78b5-4d0e-a267-fd9935edc519,Orange ,Riche en vitamines C ,2000,https://res.cloudinary.com/dcs9vkwe0/image/upload/v1760983314/gestion_de_boutique/h0uwge1ngslmeamuya1f.jpg,69d2a260-4f8d-417e-a6df-92f96b2222a9,2025-10-19 20:02:18.712825+00
+b307a20b-afe5-46d2-904c-c5ffedc116a2,Men outfit,Handsome ,5000,https://res.cloudinary.com/dcs9vkwe0/image/upload/v1760983727/gestion_de_boutique/iuuc0wjgbu2xrt0dc1rv.jpg,37002d3c-3575-4bf2-87d6-5cc7e2a3777d,2025-10-19 12:14:49.290261+00
+3bd92c47-7811-42ae-b440-58cc92d82744,Chemise ,Cool,1000,https://res.cloudinary.com/dcs9vkwe0/image/upload/v1760983989/gestion_de_boutique/bxbovg6e2jemrtqdxs7r.jpg,37002d3c-3575-4bf2-87d6-5cc7e2a3777d,2025-10-19 09:48:55.120336+00

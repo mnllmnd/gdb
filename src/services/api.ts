@@ -35,6 +35,10 @@ export const api = {
     register: (payload: any) => request('/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
     login: (payload: any) => request('/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
   },
+  categories: {
+    list: () => request('/categories'),
+    getProducts: (categoryId: number) => request(`/categories/${categoryId}/products`),
+  },
   products: {
     list: () => request('/products'),
     create: (payload: any, token?: string) =>

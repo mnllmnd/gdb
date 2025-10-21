@@ -1,0 +1,74 @@
+[
+  {
+    "id": "2badb5c3-7f17-41ff-8621-3acd4f3697d2",
+    "title": "Montre",
+    "description": "Très beau",
+    "price": "10000",
+    "image_url": "https://res.cloudinary.com/dcs9vkwe0/image/upload/v1760878154/gestion_de_boutique/uw01xk8dozosbaun1wt9.jpg",
+    "seller_id": "6d67955d-3715-4fd1-a532-874bb8f4bdd7",
+    "created_at": "2025-10-19 12:49:15.769624+00"
+  },
+  {
+    "id": "a24a8ac0-00b1-4dc3-89e1-245268c0cbfc",
+    "title": "Banane ",
+    "description": "🍌 ",
+    "price": "1000",
+    "image_url": "https://res.cloudinary.com/dcs9vkwe0/image/upload/v1760903316/gestion_de_boutique/qxahb3igbdlsxxyk4f4x.jpg",
+    "seller_id": "69d2a260-4f8d-417e-a6df-92f96b2222a9",
+    "created_at": "2025-10-19 19:48:38.188557+00"
+  },
+  {
+    "id": "bfc6e0bc-a5f8-461d-b58d-97f38dd9e21e",
+    "title": "Apple Watch ",
+    "description": "Quality",
+    "price": "300000",
+    "image_url": "https://res.cloudinary.com/dcs9vkwe0/image/upload/v1760981994/gestion_de_boutique/pcfsm9guavu66ybzelsy.jpg",
+    "seller_id": "6d67955d-3715-4fd1-a532-874bb8f4bdd7",
+    "created_at": "2025-10-20 17:39:56.548266+00"
+  },
+  {
+    "id": "931085dd-5f41-499b-a44b-54eb8b137558",
+    "title": "iPhone 17",
+    "description": "Qualité ",
+    "price": "900000",
+    "image_url": "https://res.cloudinary.com/dcs9vkwe0/image/upload/v1760982071/gestion_de_boutique/j0o8hulht6cxrczt8kvp.jpg",
+    "seller_id": "6d67955d-3715-4fd1-a532-874bb8f4bdd7",
+    "created_at": "2025-10-20 17:41:13.011071+00"
+  },
+  {
+    "id": "cd00c902-bd43-41b2-b5b0-67bcc92b74f3",
+    "title": "Légumes ",
+    "description": "Un mélange de tout ",
+    "price": "2500",
+    "image_url": "https://res.cloudinary.com/dcs9vkwe0/image/upload/v1760982962/gestion_de_boutique/jugpazykx6dss7bujcy9.jpg",
+    "seller_id": "69d2a260-4f8d-417e-a6df-92f96b2222a9",
+    "created_at": "2025-10-19 20:00:42.646558+00"
+  },
+  {
+    "id": "8fdbf8b4-78b5-4d0e-a267-fd9935edc519",
+    "title": "Orange ",
+    "description": "Riche en vitamines C ",
+    "price": "2000",
+    "image_url": "https://res.cloudinary.com/dcs9vkwe0/image/upload/v1760983314/gestion_de_boutique/h0uwge1ngslmeamuya1f.jpg",
+    "seller_id": "69d2a260-4f8d-417e-a6df-92f96b2222a9",
+    "created_at": "2025-10-19 20:02:18.712825+00"
+  },
+  {
+    "id": "b307a20b-afe5-46d2-904c-c5ffedc116a2",
+    "title": "Men outfit",
+    "description": "Handsome ",
+    "price": "5000",
+    "image_url": "https://res.cloudinary.com/dcs9vkwe0/image/upload/v1760983727/gestion_de_boutique/iuuc0wjgbu2xrt0dc1rv.jpg",
+    "seller_id": "37002d3c-3575-4bf2-87d6-5cc7e2a3777d",
+    "created_at": "2025-10-19 12:14:49.290261+00"
+  },
+  {
+    "id": "3bd92c47-7811-42ae-b440-58cc92d82744",
+    "title": "Chemise ",
+    "description": "Cool",
+    "price": "1000",
+    "image_url": "https://res.cloudinary.com/dcs9vkwe0/image/upload/v1760983989/gestion_de_boutique/bxbovg6e2jemrtqdxs7r.jpg",
+    "seller_id": "37002d3c-3575-4bf2-87d6-5cc7e2a3777d",
+    "created_at": "2025-10-19 09:48:55.120336+00"
+  }
+]

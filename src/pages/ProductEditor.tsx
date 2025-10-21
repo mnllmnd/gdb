@@ -15,8 +15,13 @@ export default function ProductEditor() {
   const [file, setFile] = useState<File | null>(null)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [categories, setCategories] = useState<any[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<number | undefined>()
 
   useEffect(() => {
+    // Charger les catégories
+    api.categories.list().then(setCategories).catch(console.error)
+    
     if (!id) return
     // fetch product to edit
     api.products.list().then((list: any[]) => {
@@ -26,6 +31,7 @@ export default function ProductEditor() {
         setDescription(p.description || '')
         setPrice(p.price)
         setImageUrl(p.image_url || p.image || null)
+        setSelectedCategory(p.category_id)
       }
     }).catch(() => {})
   }, [id])
@@ -59,14 +65,23 @@ export default function ProductEditor() {
         const upl = await api.uploads.uploadFile(file, token ?? undefined)
         image_url = upl.url
       }
-      const payload: any = { title, description, price }
+      if (!selectedCategory) {
+        alert('Veuillez sélectionner une catégorie')
+        return
+      }
+      const payload: any = { 
+        title, 
+        description, 
+        price,
+        category_id: selectedCategory 
+      }
       if (image_url) payload.image_url = image_url
       if (id) {
         await api.products.update(id, payload, token ?? undefined)
       } else {
         await api.products.create(payload, token ?? undefined)
       }
-  navigate('/seller/shop')
+      navigate('/seller/shop')
     } catch (err: any) {
       console.error(err)
       alert(err?.error || 'Une erreur est survenue')
@@ -93,6 +108,30 @@ export default function ProductEditor() {
           <NumberInput min={0} precision={2} value={price} onChange={(v) => setPrice(Number(v) || 0)}>
             <NumberInputField bg="white" color="black" boxShadow="sm" borderRadius="md" />
           </NumberInput>
+        </FormControl>
+        <FormControl isRequired>
+          <FormLabel>Catégorie</FormLabel>
+          <select 
+            value={selectedCategory} 
+            onChange={(e) => setSelectedCategory(Number(e.target.value))}
+            style={{
+              width: '100%',
+              padding: '8px',
+              borderRadius: '6px',
+              border: '1px solid',
+              borderColor: 'var(--chakra-colors-gray-200)',
+              backgroundColor: 'white',
+              color: 'black',
+              boxShadow: 'var(--chakra-shadows-sm)'
+            }}
+          >
+            <option value="">Sélectionnez une catégorie</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
         </FormControl>
         <FormControl>
           <FormLabel>Image</FormLabel>
