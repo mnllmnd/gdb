@@ -45,6 +45,7 @@ export const ChatPopup = () => {
   const [recommendations, setRecommendations] = useState<Product[]>([]);
   const [emotion, setEmotion] = useState('neutral');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { isOpen, onToggle, onClose } = useDisclosure({ defaultIsOpen: true });
 
   // Utilisation de useBreakpointValue pour détecter les mobiles
@@ -58,6 +59,19 @@ export const ChatPopup = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Ajuster la hauteur quand le clavier s'ouvre sur mobile
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const handleResize = () => {
+      // Forcer le scroll vers le bas quand la hauteur change
+      setTimeout(scrollToBottom, 100);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isMobile]);
 
   // Fonction pour chercher les vrais produits de l'API
   const searchRealProducts = async (searchTerm: string) => {
@@ -279,6 +293,7 @@ export const ChatPopup = () => {
         borderTopRadius="xl"
         justify="space-between"
         align="center"
+        flexShrink={0}
       >
         <HStack>
           <Avatar size="sm" name="Assistant IA" bg="blue.300" />
@@ -309,7 +324,9 @@ export const ChatPopup = () => {
         p={isMobile ? 2 : 4} 
         overflowY="auto" 
         bg="gray.50"
-        pb={isMobile ? "100px" : 4}
+        // Réduire l'espace en bas sur mobile pour laisser de la place au clavier
+        pb={isMobile ? "80px" : 4}
+        minHeight={0} // Important pour le flexbox
       >
         <VStack spacing={2} align="stretch">
           {messages.map((msg, i) => (
@@ -429,7 +446,13 @@ export const ChatPopup = () => {
 
       {/* Recommendations en cours */}
       {recommendations.length > 0 && (
-        <Box p={3} borderTop="1px solid" borderColor="gray.200" bg="blue.50">
+        <Box 
+          p={3} 
+          borderTop="1px solid" 
+          borderColor="gray.200" 
+          bg="blue.50"
+          flexShrink={0}
+        >
           <Text fontSize="sm" fontWeight="bold" mb={2}>
             🛍️ Produits trouvés ({recommendations.length})
           </Text>
@@ -443,16 +466,28 @@ export const ChatPopup = () => {
         </Box>
       )}
 
-      {/* Input */}
-      <Box p={3} borderTop="1px solid" borderColor="gray.200">
+      {/* Zone de saisie - Toujours visible */}
+      <Box 
+        p={3} 
+        borderTop="1px solid" 
+        borderColor="gray.200" 
+        bg="white"
+        position={isMobile ? "sticky" : "static"}
+        bottom="0"
+        flexShrink={0}
+        zIndex={1}
+      >
         <HStack>
           <Input
+            ref={inputRef}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !isLoading && sendMessage()}
             placeholder="Ex: Je cherche une lampe scandinave..."
             size="sm"
             isDisabled={isLoading}
+            // Empêcher le zoom sur iOS
+            fontSize="16px"
           />
           <Button
             onClick={sendMessage}
@@ -460,6 +495,8 @@ export const ChatPopup = () => {
             size="sm"
             isLoading={isLoading}
             loadingText="..."
+            flexShrink={0}
+            minWidth="70px"
           >
             Envoyer
           </Button>
