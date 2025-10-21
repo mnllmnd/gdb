@@ -145,18 +145,38 @@ export default function Products() {
           )}
 
           {/* Produits par catégorie */}
-          {categories && categories.length > 0 && (
-            categories.filter((c: any) => (categorizedProducts[c.id] || []).length > 0).map((c: any) => (
-              <Box key={c.id} mb={6} bg="gray.50" p={4} borderRadius="lg">
-                <Heading size="lg" mb={4} textAlign="center">{c.name}</Heading>
-                <Grid templateColumns={{ base: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)', lg: 'repeat(5, 1fr)' }} gap={4}>
-                  {(categorizedProducts[c.id] || []).map((p) => (
-                    <ProductCard key={p.id} id={String(p.id)} title={p.title || p.name} price={p.price ?? p.amount} image_url={p.image_url ?? p.product_image} />
-                  ))}
-                </Grid>
-              </Box>
-            ))
-          )}
+         {/* Produits par catégorie */}
+{categories && categories.length > 0 && (
+  categories
+    .filter((c: any) => (categorizedProducts[c.id] || []).length > 0)
+    .map((c: any) => (
+      <Box
+        key={c.id}
+        mb={6}
+        bg="#a86d4d7f"  // couleur inspirée de l'image
+        color="white"    // texte bien lisible
+        p={{ base: 4, md: 6 }}
+        borderRadius="lg"
+      >
+        <Heading size="lg" mb={4} textAlign="center">{c.name}</Heading>
+        <Grid
+          templateColumns={{ base: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)', lg: 'repeat(5, 1fr)' }}
+          gap={4}
+        >
+          {(categorizedProducts[c.id] || []).map((p) => (
+            <ProductCard
+              key={p.id}
+              id={String(p.id)}
+              title={p.title || p.name}
+              price={p.price ?? p.amount}
+              image_url={p.image_url ?? p.product_image}
+            />
+          ))}
+        </Grid>
+      </Box>
+    ))
+)}
+
         </>
       ) : (
         <Center py={12}>
