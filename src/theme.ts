@@ -99,8 +99,8 @@ const theme = extendTheme({
           top: 0,
           left: 0,
           width: '100%',
-          height: '40%',
-          bg: 'rgba(169, 102, 73, 0.43)', // Ajustez l'opacité selon vos besoins
+          height: '100%',
+          bg: 'rgba(169, 105, 73, 0.43)', // Ajustez l'opacité selon vos besoins
           zIndex: -1,
         },
       },
