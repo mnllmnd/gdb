@@ -38,14 +38,21 @@ interface ChatMessage {
 }
 
 export const ChatPopup = () => {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { 
-      from: 'bot', 
-      text: 'Bonjour ! 👋 Je suis votre assistant shopping. Je peux vous aider à trouver des produits sur notre plateforme. Que cherchez-vous ?',
-      timestamp: new Date(),
-      type: 'text'
+  // Load messages from localStorage to persist chat history across reloads
+  const STORAGE_KEY = 'chat:messages'
+  const loadInitialMessages = (): ChatMessage[] => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (!raw) return [{ from: 'bot', text: 'Bonjour ! 👋 Je suis votre assistant shopping. Je peux vous aider à trouver des produits sur notre plateforme. Que cherchez-vous ?', timestamp: new Date(), type: 'text' as const } as ChatMessage]
+      const parsed = JSON.parse(raw)
+      return parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }))
+    } catch (err) {
+      console.error('Failed to load chat history', err)
+  return [{ from: 'bot', text: 'Bonjour ! 👋 Je suis votre assistant shopping. Je peux vous aider à trouver des produits sur notre plateforme. Que cherchez-vous ?', timestamp: new Date(), type: 'text' as const } as ChatMessage]
     }
-  ]);
+  }
+
+  const [messages, setMessages] = useState<ChatMessage[]>(loadInitialMessages);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [recommendations, setRecommendations] = useState<Product[]>([]);
@@ -67,6 +74,15 @@ export const ChatPopup = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Persist messages to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages))
+    } catch (err) {
+      console.error('Failed to save chat history', err)
+    }
+  }, [messages])
 
   // Ajuster la hauteur quand le clavier s'ouvre sur mobile
   useEffect(() => {
@@ -231,14 +247,9 @@ export const ChatPopup = () => {
   };
 
   const clearChat = () => {
-    setMessages([
-      { 
-        from: 'bot', 
-        text: 'Bonjour ! 👋 Comment puis-je vous aider à trouver des produits ?',
-        timestamp: new Date(),
-        type: 'text'
-      }
-    ]);
+  const initial = [{ from: 'bot', text: 'Bonjour ! 👋 Comment puis-je vous aider à trouver des produits ?', timestamp: new Date(), type: 'text' as const } as ChatMessage]
+  setMessages(initial);
+    try { localStorage.removeItem(STORAGE_KEY) } catch(e){}
     setRecommendations([]);
     setEmotion('neutral');
   };
@@ -360,7 +371,12 @@ export const ChatPopup = () => {
                   borderBottomRightRadius={msg.from === 'user' ? 0 : 'lg'}
                   borderBottomLeftRadius={msg.from === 'user' ? 'lg' : 0}
                 >
-                  <Text fontSize="sm">{msg.text}</Text>
+                    <Box display="flex" alignItems="start" justifyContent="space-between">
+                      <Text fontSize="sm" flex="1">{msg.text}</Text>
+                      <CloseButton size="sm" ml={2} onClick={() => {
+                        setMessages(prev => prev.filter((_, ii) => ii !== i))
+                      }} aria-label="Supprimer le message" />
+                    </Box>
                   {msg.type === 'recommendations' && msg.products && (
                     <VStack mt={3} spacing={3}>
                       {msg.products.map((product, idx) => {
