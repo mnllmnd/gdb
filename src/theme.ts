@@ -84,7 +84,7 @@ const theme = extendTheme({
       },
       body: {
         // ✅ Image de fond qui s'affiche correctement
-        
+        bgImage: "url('https://res.cloudinary.com/dcs9vkwe0/image/upload/v1761050180/cqurnath5a2accqrdwur.jpg')",
         backgroundRepeat: 'repeat',
        
         position: 'relative',
@@ -119,6 +119,10 @@ const theme = extendTheme({
         position: 'relative',
         zIndex: 1,
         minHeight: '100vh',
+      },
+      // Make all headings white by default
+      'h1, h2, h3, h4, h5, h6': {
+        color: 'white',
       },
     },
   },

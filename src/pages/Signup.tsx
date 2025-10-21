@@ -1,5 +1,17 @@
 import React, { useState } from 'react'
-import { Container, Heading, FormControl, FormLabel, Input, Button, Stack, Text } from '@chakra-ui/react'
+import {
+  Container,
+  Heading,
+  FormControl,
+  FormLabel,
+  Input,
+  Button,
+  Stack,
+  Text,
+  Box,
+  Divider,
+  useColorModeValue,
+} from '@chakra-ui/react'
 import { useNavigate, Link as RouterLink } from 'react-router-dom'
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
@@ -11,6 +23,9 @@ export default function Signup() {
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
   const nav = useNavigate()
+
+  const bgCard = useColorModeValue('white', 'gray.800')
+  const labelColor = useColorModeValue('gray.700', 'gray.200')
 
   function validate() {
     if (!name.trim()) return 'Veuillez saisir votre nom complet.'
@@ -39,81 +54,139 @@ export default function Signup() {
   }
 
   return (
-    <Container maxW="container.sm" py={8}>
-      <Heading mb={4}>Inscription</Heading>
+    <Container maxW="md" py={10} display="flex" justifyContent="center" alignItems="center" minH="100vh">
+      <Box
+        bg={bgCard}
+        p={8}
+        rounded="xl"
+        shadow="lg"
+        w="100%"
+        transition="all 0.3s ease"
+        _hover={{ transform: 'translateY(-3px)', shadow: 'xl' }}
+      >
+        <Heading textAlign="center" mb={6} color="gray.700">
+          Inscription
+        </Heading>
 
-      <Stack as="form" spacing={4} onSubmit={(e) => { e.preventDefault(); onSubmit() }}>
-        <FormControl>
-          <FormLabel>Nom complet</FormLabel>
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            bg="white"
-            color="black"
-            boxShadow="sm"
-            borderRadius="md"
-          />
-        </FormControl>
+        <Stack as="form" spacing={5} onSubmit={(e) => { e.preventDefault(); onSubmit() }}>
+          <FormControl>
+            <FormLabel fontWeight="medium" color={labelColor}>
+              Nom complet
+            </FormLabel>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              bg="gray.50"
+              focusBorderColor="blue.400"
+              borderRadius="md"
+              shadow="xs"
+              borderColor="gray.300"
+            />
+          </FormControl>
 
-        <FormControl>
-          <FormLabel>Numéro de téléphone</FormLabel>
-          <PhoneInput
-            international
-            defaultCountry="SN"
-            value={phone}
-            onChange={setPhone}
-            placeholder="Entrez votre numéro (ex : +221 77 123 45 67)"
-            style={{
-              backgroundColor: 'white',
-              borderRadius: '6px',
-              padding: '10px',
-              fontSize: '16px',
-              boxShadow: '0 0 4px rgba(0,0,0,0.1)'
-            }}
-          />
-        </FormControl>
+          <FormControl>
+            <FormLabel fontWeight="medium" color={labelColor}>
+              Numéro de téléphone
+            </FormLabel>
+            <Box
+              border="1px solid"
+              borderColor="gray.300"
+              rounded="md"
+              p={2}
+              bg="white"
+              transition="all 0.2s ease"
+              _focusWithin={{ borderColor: 'blue.400', shadow: '0 0 0 1px rgba(66,153,225,0.4)' }}
+            >
+              <PhoneInput
+                international
+                defaultCountry="SN"
+                value={phone}
+                onChange={setPhone}
+                placeholder="Ex : +221 77 123 45 67"
+                countrySelectProps={{ searchable: true }}
+                style={{
+                  backgroundColor: 'transparent',
+                  width: '100%',
+                  fontSize: '16px',
+                  border: 'none',
+                  outline: 'none',
+                }}
+              />
+            </Box>
+          </FormControl>
 
-        <FormControl>
-          <FormLabel>Mot de passe</FormLabel>
-          <Input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            bg="white"
-            color="black"
-            boxShadow="sm"
-            borderRadius="md"
-          />
-        </FormControl>
+          <FormControl>
+            <FormLabel fontWeight="medium" color={labelColor}>
+              Mot de passe
+            </FormLabel>
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              bg="gray.50"
+              focusBorderColor="blue.400"
+              borderRadius="md"
+              shadow="xs"
+              borderColor="gray.300"
+            />
+          </FormControl>
 
-        <FormControl>
-          <FormLabel>Confirmer le mot de passe</FormLabel>
-          <Input
-            type="password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            bg="white"
-            color="black"
-            boxShadow="sm"
-            borderRadius="md"
-          />
-        </FormControl>
+          <FormControl>
+            <FormLabel fontWeight="medium" color={labelColor}>
+              Confirmer le mot de passe
+            </FormLabel>
+            <Input
+              type="password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              bg="gray.50"
+              focusBorderColor="blue.400"
+              borderRadius="md"
+              shadow="xs"
+              borderColor="gray.300"
+            />
+          </FormControl>
 
-        {error && <Text color="red.500" fontSize="sm">{error}</Text>}
+          {error && (
+            <Text color="red.500" fontSize="sm" textAlign="center" fontWeight="medium">
+              {error}
+            </Text>
+          )}
 
-        <Stack direction="row">
-          <Button colorScheme="teal" onClick={onSubmit}>
+          <Button
+            colorScheme="blue"
+            size="lg"
+            w="full"
+            shadow="md"
+            _hover={{ transform: 'scale(1.02)' }}
+            transition="all 0.2s ease"
+            onClick={onSubmit}
+          >
             S'inscrire
           </Button>
-          <Button as={RouterLink} to="/login">
-            Déjà un compte ?
-          </Button>
-        </Stack>
 
-        <Text fontSize="sm" color="black">
-          En vous inscrivant, vous acceptez nos conditions d'utilisation.
-        </Text>
-      </Stack>
+          <Divider my={2} />
+
+          <Button
+            as={RouterLink}
+            to="/login"
+            variant="outline"
+            size="lg"
+            w="full"
+            _hover={{
+              bg: useColorModeValue('gray.100', 'gray.700'),
+              transform: 'scale(1.02)',
+            }}
+            transition="all 0.2s ease"
+          >
+            Déjà un compte ? Se connecter
+          </Button>
+
+          <Text fontSize="sm" color="gray.600" textAlign="center" mt={2}>
+            En vous inscrivant, vous acceptez nos conditions d’utilisation.
+          </Text>
+        </Stack>
+      </Box>
     </Container>
   )
 }
