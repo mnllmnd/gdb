@@ -4,7 +4,7 @@ import {
   Avatar, Badge, IconButton, Flex,
   useDisclosure, Card, CardBody,
   Image, HStack, Tag, CloseButton,
-  Link
+  Link, useBreakpointValue
 } from '@chakra-ui/react';
 import { ChevronUpIcon, ChevronDownIcon } from '@chakra-ui/icons';
 import axios from 'axios';
@@ -46,6 +46,9 @@ export const ChatPopup = () => {
   const [emotion, setEmotion] = useState('neutral');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isOpen, onToggle, onClose } = useDisclosure({ defaultIsOpen: true });
+
+  // Utilisation de useBreakpointValue pour détecter les mobiles
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   // Scroll automatique vers le bas
   const scrollToBottom = () => {
@@ -230,15 +233,21 @@ export const ChatPopup = () => {
 
   if (!isOpen) {
     return (
-      <Box position="fixed" bottom="20px" right="20px" zIndex={9999}>
+      <Box 
+        position="fixed" 
+        bottom={isMobile ? "80px" : "20px"} 
+        right={isMobile ? "20px" : "20px"} 
+        zIndex={9999}
+      >
         <Button
           onClick={onToggle}
           colorScheme="blue"
-          size="lg"
+          size={isMobile ? "md" : "lg"}
           borderRadius="full"
           boxShadow="2xl"
-          width="60px"
-          height="60px"
+          width={isMobile ? "50px" : "60px"}
+          height={isMobile ? "50px" : "60px"}
+          fontSize={isMobile ? "xl" : "2xl"}
         >
           💬
         </Button>
@@ -249,17 +258,17 @@ export const ChatPopup = () => {
   return (
     <Box
       position="fixed"
-      bottom="20px"
-      right="20px"
-      width="420px"
-      height="600px"
+      bottom={isMobile ? "0" : "20px"}
+      right={isMobile ? "0" : "20px"}
+      width={isMobile ? "100%" : "420px"}
+      height={isMobile ? "100%" : "600px"}
       bg="white"
-      borderRadius="xl"
-      boxShadow="2xl"
+      borderRadius={isMobile ? "none" : "xl"}
+      boxShadow={isMobile ? "none" : "2xl"}
       zIndex={9999}
       display="flex"
       flexDirection="column"
-      border="1px solid"
+      border={isMobile ? "none" : "1px solid"}
       borderColor="gray.200"
     >
       {/* Header */}
@@ -295,13 +304,19 @@ export const ChatPopup = () => {
       </Flex>
 
       {/* Messages */}
-      <Box flex="1" p={4} overflowY="auto" bg="gray.50">
-        <VStack spacing={3} align="stretch">
+      <Box 
+        flex="1" 
+        p={isMobile ? 2 : 4} 
+        overflowY="auto" 
+        bg="gray.50"
+        pb={isMobile ? "100px" : 4}
+      >
+        <VStack spacing={2} align="stretch">
           {messages.map((msg, i) => (
             <Box
               key={i}
               alignSelf={msg.from === 'user' ? 'flex-end' : 'flex-start'}
-              maxWidth="85%"
+              maxWidth={isMobile ? "90%" : "85%"}
             >
               <Flex align="flex-end" gap={2} direction={msg.from === 'user' ? 'row-reverse' : 'row'}>
                 <Avatar
@@ -325,11 +340,11 @@ export const ChatPopup = () => {
                         const imageUrl = getProductImageUrl(product);
                         return (
                           <Card key={idx} size="sm" width="100%" variant="outline">
-                            <CardBody p={3}>
-                              <HStack spacing={3} align="start">
+                            <CardBody p={isMobile ? 2 : 3}>
+                              <HStack spacing={isMobile ? 2 : 3} align="start">
                                 <Box 
-                                  width="50px" 
-                                  height="50px" 
+                                  width={isMobile ? "40px" : "50px"} 
+                                  height={isMobile ? "40px" : "50px"} 
                                   bg="gray.100" 
                                   borderRadius="md"
                                   display="flex"
