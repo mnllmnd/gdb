@@ -237,7 +237,7 @@ export default function Home() {
     return (
       <Box 
           key={category.id} 
-          bg="#b6a09577"  // couleur inspirée de l'image
+          bg="#9d7b6a77"  // couleur inspirée de l'image
           color="white"  // le texte reste bien lisible
           p={{ base: 4, md: 6 }} 
           borderRadius="lg" 
