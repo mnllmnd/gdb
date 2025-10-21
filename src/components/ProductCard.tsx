@@ -38,7 +38,18 @@ export default function ProductCard({
     return null
   })()
 
-  const priceDisplayText = numericPrice == null ? '—' : `${numericPrice.toFixed(2)} FCFA`
+  // Format price: remove decimals and show thousands separators using French locale
+  const formattedPrice = (() => {
+    if (numericPrice == null) return null
+    // remove any fractional part
+    const whole = Math.floor(numericPrice)
+    try {
+      return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(whole)
+    } catch (e) {
+      // fallback
+      return String(whole)
+    }
+  })()
   const [hasImage, setHasImage] = useState<boolean | null>(null)
   const { isOpen: isImageOpen, onOpen: onImageOpen, onClose: onImageClose } = useDisclosure()
   const modalSize = useBreakpointValue({ base: 'full', md: 'xl' })
@@ -136,7 +147,26 @@ export default function ProductCard({
   <Box p={1.5}>
         <Stack spacing={1}>
           <Heading size="xs" color="black" fontWeight="600" noOfLines={2}>{title || 'Sans titre'}</Heading>
-          <Text fontSize="xs" color="gray.600" fontWeight="semibold">{priceDisplayText}</Text>
+          <Box
+            bg="green.50"
+            display="inline-flex"
+            alignItems="baseline"
+            px={2}
+            py={1}
+            borderRadius="md"
+            mt={1}
+          >
+            {formattedPrice == null ? (
+              <Text fontSize="sm" color="gray.600">—</Text>
+            ) : (
+              <>
+                <Text fontSize={{ base: 'lg', md: 'xl' }} color="green.800" fontWeight="700" mr={2}>
+                  {formattedPrice}
+                </Text>
+                <Text fontSize={{ base: 'xs', md: 'sm' }} color="green.700" fontWeight="600">FCFA</Text>
+              </>
+            )}
+          </Box>
           <Box>
             <Stack direction={{ base: 'column', md: 'row' }} spacing={2.5}>
               <Button 

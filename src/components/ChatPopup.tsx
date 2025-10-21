@@ -386,12 +386,25 @@ export const ChatPopup = () => {
                                   )}
                                 </Box>
                                 <Box flex="1">
-                                  <Text fontSize="sm" fontWeight="bold" noOfLines={2}>
+                                  <Text fontSize="sm" fontWeight="bold" noOfLines={2} mb={1}>
                                     {product.name}
                                   </Text>
-                                  <Text fontSize="sm" color="green.600" fontWeight="bold">
-                                    {product.price}€
-                                  </Text>
+                                  <Box 
+                                    bg="green.50" 
+                                    display="inline-block" 
+                                    px={2} 
+                                    py={1} 
+                                    borderRadius="md"
+                                    mb={1}
+                                  >
+                                    <Text 
+                                      fontSize="md" 
+                                      color="green.700" 
+                                      fontWeight="bold"
+                                    >
+                                      {Math.floor(product.price)} FCFA
+                                    </Text>
+                                  </Box>
                                   <Text fontSize="xs" color="gray.500" noOfLines={1}>
                                     {product.category}
                                   </Text>

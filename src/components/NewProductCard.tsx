@@ -59,7 +59,7 @@ export default function ProductCard({
     return null
   })()
 
-  const priceDisplayText = numericPrice == null ? '—' : `${numericPrice.toFixed(2)} FCFA`
+  const priceDisplayText = numericPrice == null ? '—' : `${Math.floor(numericPrice)} FCFA`
   const [hasImage, setHasImage] = useState<boolean | null>(null)
 
   const resolvedSrc = (highRes(image, { width: 1000, quality: 80 }) ?? image) as string | undefined
@@ -186,7 +186,21 @@ export default function ProductCard({
               fontWeight="bold"
               color="brand.500"
             >
-              {priceDisplayText}
+              <Box 
+                bg="green.50" 
+                display="inline-block" 
+                px={2} 
+                py={1} 
+                borderRadius="md"
+              >
+                <Text 
+                  fontSize="md" 
+                  color="green.700" 
+                  fontWeight="bold"
+                >
+                  {priceDisplayText}
+                </Text>
+              </Box>
             </Text>
             <Badge colorScheme="brand" fontSize="sm" px="2">
               En stock
@@ -223,7 +237,22 @@ export default function ProductCard({
                 <FormLabel>Adresse de livraison</FormLabel>
                 <Textarea value={address} onChange={(e) => setAddress(e.target.value)} />
               </FormControl>
-              <Text fontWeight="bold">Prix: {priceDisplayText}</Text>
+              <Box 
+                bg="green.50" 
+                display="inline-block" 
+                px={3} 
+                py={2} 
+                borderRadius="md"
+                mb={3}
+              >
+                <Text 
+                  fontSize="lg" 
+                  color="green.700" 
+                  fontWeight="bold"
+                >
+                  Prix: {priceDisplayText}
+                </Text>
+              </Box>
             </Stack>
           </ModalBody>
           <ModalFooter>

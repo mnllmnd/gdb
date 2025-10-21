@@ -65,7 +65,21 @@ export default function SellerOrders() {
                       return <Badge colorScheme={mapped.color as any}>{mapped.label}</Badge>
                     })()}
                   </HStack>
-                  <Text color="gray.600">Montant: {o.price} FCFA</Text>
+                  <Box 
+                    bg="green.50" 
+                    display="inline-block" 
+                    px={2} 
+                    py={1} 
+                    borderRadius="md"
+                  >
+                    <Text 
+                      fontSize="md" 
+                      color="green.700" 
+                      fontWeight="bold"
+                    >
+                      Montant: {Math.floor(o.price)} FCFA
+                    </Text>
+                  </Box>
                   <Text color="gray.600">Client: {o.buyer_name ?? `#${o.buyer_id ?? '—'}`}</Text>
                   {o.buyer_phone && <Text color="gray.600">Téléphone: {o.buyer_phone}</Text>}
                   {o.address && <Text color="gray.600">Adresse: {o.address}</Text>}

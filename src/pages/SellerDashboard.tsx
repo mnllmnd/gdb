@@ -116,7 +116,22 @@ export default function SellerDashboard() {
                   <Box>
                     <Heading size="sm" noOfLines={2}>{p.title}</Heading>
                     <Text noOfLines={2} color="gray.600">{p.description}</Text>
-                    <Text fontWeight="bold" mt={2}>{p.price} FCFA</Text>
+                    <Box 
+                      bg="green.50" 
+                      display="inline-block" 
+                      px={2} 
+                      py={1} 
+                      borderRadius="md"
+                      mt={2}
+                    >
+                      <Text 
+                        fontSize="md" 
+                        color="green.700" 
+                        fontWeight="bold"
+                      >
+                        {Math.floor(p.price)} FCFA
+                      </Text>
+                    </Box>
                   </Box>
                   <Spacer />
                   <Stack direction="row">
