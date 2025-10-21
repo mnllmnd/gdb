@@ -1,5 +1,20 @@
 import React, { useState, useEffect } from 'react'
-import { Container, Heading, FormControl, FormLabel, Input, Button, Stack, NumberInput, NumberInputField, Textarea, Image } from '@chakra-ui/react'
+import {
+  Container,
+  Heading,
+  FormControl,
+  FormLabel,
+  Input,
+  Button,
+  Stack,
+  NumberInput,
+  NumberInputField,
+  Textarea,
+  Image,
+  Box,
+  Select,
+  useColorModeValue,
+} from '@chakra-ui/react'
 import BackButton from '../components/BackButton'
 import { useParams, useNavigate } from 'react-router-dom'
 import api from '../services/api'
@@ -18,38 +33,36 @@ export default function ProductEditor() {
   const [categories, setCategories] = useState<any[]>([])
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>()
 
+  const bgForm = useColorModeValue('whiteAlpha.800', 'gray.800')
+  const labelColor = useColorModeValue('gray.700', 'gray.200')
+
   useEffect(() => {
-    // Charger les catégories
     api.categories.list().then(setCategories).catch(console.error)
-    
+
     if (!id) return
-    // fetch product to edit
-    api.products.list().then((list: any[]) => {
-      const p = list.find((x) => String(x.id) === String(id))
-      if (p) {
-        setTitle(p.title)
-        setDescription(p.description || '')
-        setPrice(p.price)
-        setImageUrl(p.image_url || p.image || null)
-        setSelectedCategory(p.category_id)
-      }
-    }).catch(() => {})
+    api.products.list()
+      .then((list: any[]) => {
+        const p = list.find((x) => String(x.id) === String(id))
+        if (p) {
+          setTitle(p.title)
+          setDescription(p.description || '')
+          setPrice(p.price)
+          setImageUrl(p.image_url || p.image || null)
+          setSelectedCategory(p.category_id)
+        }
+      })
+      .catch(() => {})
   }, [id])
 
   useEffect(() => {
-    // if creating (no id), ensure seller has a shop
     if (id) return
     (async () => {
       try {
         const token = getItem('token')
         const s = await api.shops.me(token ?? undefined)
-        if (!s) {
-          // no shop, send to setup
-          globalThis.location.href = '/seller/setup'
-        }
+        if (!s) globalThis.location.href = '/seller/setup'
       } catch (err) {
         console.error('No shop found', err)
-        // redirect to setup if no shop
         globalThis.location.href = '/seller/setup'
       }
     })()
@@ -65,24 +78,27 @@ export default function ProductEditor() {
         const upl = await api.uploads.uploadFile(file, token ?? undefined)
         image_url = upl.url
       }
+
       if (!selectedCategory) {
         alert('Veuillez sélectionner une catégorie')
         setLoading(false)
         return
       }
-      const payload: any = { 
-        title, 
-        description, 
-        // ensure numeric value or null
+
+      const payload: any = {
+        title,
+        description,
         price: typeof price === 'number' ? price : (price ? Number(price) : null),
-        category_id: selectedCategory 
+        category_id: selectedCategory,
       }
       if (image_url) payload.image_url = image_url
+
       if (id) {
         await api.products.update(id, payload, token ?? undefined)
       } else {
         await api.products.create(payload, token ?? undefined)
       }
+
       navigate('/seller/shop')
     } catch (err: any) {
       console.error(err)
@@ -93,57 +109,108 @@ export default function ProductEditor() {
   }
 
   return (
-    <Container maxW="container.sm" py={8} pb={{ base: '120px', md: 8 }} overflow="visible">
+    <Container maxW="container.sm" py={10} pb={{ base: '120px', md: 10 }} overflow="visible">
       <BackButton />
-      <Heading mb={4}>{id ? 'Modifier le produit' : 'Ajouter un produit'}</Heading>
-  <Stack spacing={4} as="form" onSubmit={handleSubmit}>
-        <FormControl>
-          <FormLabel>Nom du produit</FormLabel>
-          <Input value={title} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)} placeholder="Nom" required bg="white" color="black" boxShadow="sm" borderRadius="md" />
-        </FormControl>
-        <FormControl>
-          <FormLabel>Description</FormLabel>
-          <Textarea value={description} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)} placeholder="Description" bg="white" color="black" boxShadow="sm" borderRadius="md" />
-        </FormControl>
-        <FormControl>
-          <FormLabel>Prix (FCFA)</FormLabel>
-          <NumberInput min={0} precision={2} value={price} onChange={(v) => setPrice(Number(v) || 0)}>
-            <NumberInputField bg="white" color="black" boxShadow="sm" borderRadius="md" />
-          </NumberInput>
-        </FormControl>
-        <FormControl isRequired>
-          <FormLabel>Catégorie</FormLabel>
-          <select 
-            value={selectedCategory} 
-            onChange={(e) => setSelectedCategory(Number(e.target.value))}
-            style={{
-              width: '100%',
-              padding: '8px',
-              borderRadius: '6px',
-              border: '1px solid',
-              borderColor: 'var(--chakra-colors-gray-200)',
-              backgroundColor: 'white',
-              color: 'black',
-              boxShadow: 'var(--chakra-shadows-sm)'
-            }}
+      <Heading mb={6} textAlign="center" fontSize="2xl" color="white">
+        {id ? 'Modifier le produit' : 'Ajouter un produit'}
+      </Heading>
+
+      <Box
+        bg={bgForm}
+        p={6}
+        borderRadius="2xl"
+        boxShadow="md"
+        backdropFilter="blur(8px)"
+      >
+        <Stack spacing={5} as="form" onSubmit={handleSubmit}>
+          <FormControl isRequired>
+            <FormLabel color={labelColor}>Nom du produit</FormLabel>
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Ex : Tasse en céramique"
+              bg="white"
+              color="black"
+              borderRadius="md"
+              boxShadow="sm"
+            />
+          </FormControl>
+
+          <FormControl>
+            <FormLabel color={labelColor}>Description</FormLabel>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Décrivez brièvement le produit"
+              bg="white"
+              color="black"
+              borderRadius="md"
+              boxShadow="sm"
+              minH="100px"
+            />
+          </FormControl>
+
+          <FormControl>
+            <FormLabel color={labelColor}>Prix (FCFA)</FormLabel>
+            <NumberInput min={0} precision={2} value={price} onChange={(v) => setPrice(Number(v) || 0)}>
+              <NumberInputField
+                bg="white"
+                color="black"
+                borderRadius="md"
+                boxShadow="sm"
+                placeholder="0.00"
+              />
+            </NumberInput>
+          </FormControl>
+
+          <FormControl isRequired>
+            <FormLabel color={labelColor}>Catégorie</FormLabel>
+            <Select
+              placeholder="Sélectionnez une catégorie"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(Number(e.target.value))}
+              bg="white"
+              color="black"
+              borderRadius="md"
+              boxShadow="sm"
+            >
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl>
+            <FormLabel color={labelColor}>Image du produit</FormLabel>
+            <FileInput value={file} onChange={(f) => setFile(f)} label="Choisir une image" />
+            {imageUrl && !file && (
+              <Image
+                src={imageUrl}
+                alt="Produit"
+                boxSize={{ base: '96px', md: '120px' }}
+                mt={3}
+                objectFit="cover"
+                borderRadius="md"
+                boxShadow="sm"
+              />
+            )}
+          </FormControl>
+
+          <Button
+            type="submit"
+            colorScheme="teal"
+            size="lg"
+            borderRadius="xl"
+            isLoading={loading}
+            loadingText="Enregistrement..."
+            _hover={{ bg: 'teal.600' }}
           >
-            <option value="">Sélectionnez une catégorie</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-        </FormControl>
-        <FormControl>
-          <FormLabel>Image</FormLabel>
-          <FileInput value={file} onChange={(f) => { setFile(f); if (!f) return }} />
-          {imageUrl && !file && <Image src={imageUrl} alt="current" boxSize={{ base: '96px', md: '120px' }} mt={3} objectFit="cover" borderRadius="md" />}
-        </FormControl>
-        <Button colorScheme="teal" type="submit" isLoading={loading}>
-          Enregistrer
-        </Button>
-      </Stack>
+            Enregistrer
+          </Button>
+        </Stack>
+      </Box>
     </Container>
   )
 }
