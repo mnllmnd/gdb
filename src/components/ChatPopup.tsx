@@ -274,7 +274,7 @@ export const ChatPopup = () => {
     >
       <Button
         onClick={onToggle}
-        colorScheme="blue"
+        colorScheme="maroon"
         size={isMobile ? "md" : "lg"}
         borderRadius="full"
         boxShadow="2xl"
@@ -309,7 +309,7 @@ export const ChatPopup = () => {
     >
       {/* Header */}
       <Flex
-        bg="blue.500"
+        bg="brand.500"
         color="white"
         p={3}
         borderTopRadius="2xl"
@@ -318,7 +318,7 @@ export const ChatPopup = () => {
         flexShrink={0}
       >
         <HStack>
-          <Avatar size="sm" name="Assistant IA" bg="blue.300" />
+          <Avatar size="sm" name="Assistant IA" bg="brand.500" />
           <Box>
             <Text fontWeight="bold">Assistant Shopping</Text>
             <Text fontSize="xs" opacity={0.8}>
@@ -360,10 +360,10 @@ export const ChatPopup = () => {
                 <Avatar
                   size="xs"
                   name={msg.from === 'user' ? 'Vous' : 'Assistant'}
-                  bg={msg.from === 'user' ? 'green.500' : 'blue.500'}
+                  bg={msg.from === 'user' ? 'green.500' : 'brand.500'}
                 />
                 <Box
-                  bg={msg.from === 'user' ? 'blue.500' : getEmotionColor(msg.emotion)}
+                  bg={msg.from === 'user' ? 'brand.500' : getEmotionColor(msg.emotion)}
                   color={msg.from === 'user' ? 'white' : 'gray.800'}
                   px={3}
                   py={2}
