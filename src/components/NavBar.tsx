@@ -6,7 +6,7 @@ import {
   Spacer,
   Button,
   HStack,
-  Tag,
+  
   Avatar,
   IconButton,
   useBreakpointValue,
@@ -18,13 +18,21 @@ import {
   DrawerHeader,
   DrawerBody,
   DrawerFooter,
+  Center,
   VStack,
   Text,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  MenuDivider,
 } from '@chakra-ui/react'
+import { ChevronDownIcon } from '@chakra-ui/icons'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { signOut, getCurrentUser } from '../services/auth'
 import api from '../services/api'
 import cart from '../utils/cart'
+import SearchBar from './SearchBar'
 
 export default function NavBar() {
   type User = { display_name?: string; phone?: string; role?: string; id?: string }
@@ -34,6 +42,13 @@ export default function NavBar() {
   const [user, setUser] = useState<User | null>(getCurrentUser() as User | null)
   const [shop, setShop] = useState<Shop | null>(null)
   const [cartCount, setCartCount] = useState<number>(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  
+  // Utilise la fonction de recherche globale
+  const handleSearch = (query: string) => {
+    setSearchQuery(query)
+    ;(globalThis as any).handleGlobalSearch?.(query)
+  }
   
   const navigate = useNavigate()
   const toast = useToast()
@@ -99,7 +114,7 @@ export default function NavBar() {
       <Flex align="center" maxW="1200px" mx="auto" justify="space-between">
         {/* Mobile: hamburger + panier */}
         {showMobileMenu ? (
-          <HStack spacing={3}>
+          <HStack spacing={3} width="100%">
             <IconButton
               aria-label="Menu"
               icon={
@@ -109,6 +124,12 @@ export default function NavBar() {
               }
               onClick={onOpen}
               className="nav-hamburger"
+            />
+            <Spacer />
+            <SearchBar
+              value={searchQuery}
+              onChange={handleSearch}
+              placeholder="Rechercher..."
             />
             <Box position="relative">
               <IconButton
@@ -151,13 +172,20 @@ export default function NavBar() {
             <Spacer />
 
             {/* Desktop actions - Simplified with emojis */}
-            <HStack spacing={4} align="center">
+            <HStack spacing={6} align="center">
               <Button as={RouterLink} to="/" variant="ghost" size="md" leftIcon={<span>🏠</span>}>
                 Accueil
               </Button>
               <Button as={RouterLink} to="/products" variant="ghost" size="md" leftIcon={<span>🛍️</span>}>
                 Produits
               </Button>
+              <Center height="40px">
+                <SearchBar
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  placeholder="Rechercher un produit..."
+                />
+              </Center>
               <Button
                 colorScheme="brand"
                 size="md"
@@ -178,25 +206,75 @@ export default function NavBar() {
               {user?.role === 'admin' && (
                 <Button as={RouterLink} to="/admin" variant="ghost" ml={2} size="md">Admin</Button>
               )}
-              {user ? (
-                <>
-                  <Button as={RouterLink} to="/cart" variant="ghost" ml={2} size="md">
-                    🛒 {cartCount > 0 && `(${cartCount})`}
-                  </Button>
-                  <Button as={RouterLink} to="/orders" variant="ghost" ml={2} size="md">Mes commandes</Button>
-                  <Button
-                    ml={2}
-                    size="md"
-                    onClick={() => { signOut(); setUser(null); navigate('/login') }}
+              <Box position="relative">
+                <IconButton
+                  as={RouterLink}
+                  to="/cart"
+                  aria-label="Panier"
+                  icon={<span style={{ fontSize: 24 }}>🛒</span>}
+                  variant="ghost"
+                  size="lg"
+                  _hover={{ transform: 'scale(1.1)' }}
+                  transition="transform 0.2s"
+                />
+                {cartCount > 0 && (
+                  <Box
+                    position="absolute"
+                    top={-1}
+                    right={-1}
+                    bg="red.500"
+                    color="white"
+                    px={2}
+                    py={0}
+                    borderRadius="full"
+                    fontSize="sm"
+                    fontWeight="bold"
+                    animation="pulse 2s infinite"
                   >
-                    Se déconnecter
-                  </Button>
-                </>
+                    {cartCount}
+                  </Box>
+                )}
+              </Box>
+              {user ? (
+                <Menu>
+                  <MenuButton
+                    as={Button}
+                    rightIcon={<ChevronDownIcon />}
+                    variant="ghost"
+                    _hover={{ bg: 'whiteAlpha.800' }}
+                  >
+                    <HStack>
+                      <Avatar size="xs" name={user.display_name ?? user.phone} />
+                      <Text>{user.display_name ?? 'Mon compte'}</Text>
+                    </HStack>
+                  </MenuButton>
+                  <MenuList>
+                    <MenuItem as={RouterLink} to="/orders" icon={<span>📦</span>}>
+                      Mes commandes
+                    </MenuItem>
+                    {shop && (
+                      <MenuItem as={RouterLink} to="/seller/shop" icon={<span>🏪</span>}>
+                        Ma boutique
+                      </MenuItem>
+                    )}
+                    <MenuDivider />
+                    <MenuItem onClick={() => { signOut(); setUser(null); navigate('/login') }} icon={<span>👋</span>}>
+                      Se déconnecter
+                    </MenuItem>
+                  </MenuList>
+                </Menu>
               ) : (
-                <>
-                  <Button as={RouterLink} to="/login" colorScheme="teal" ml={4} size={{ base: 'sm', md: 'md' }} className="nav-login">Connexion</Button>
-                  <Button as={RouterLink} to="/signup" ml={2} size={{ base: 'sm', md: 'md' }} className="nav-signup">S'inscrire</Button>
-                </>
+                <Button
+                  as={RouterLink}
+                  to="/login"
+                  colorScheme="brand"
+                  size="md"
+                  leftIcon={<span>✨</span>}
+                  _hover={{ transform: 'scale(1.05)' }}
+                  transition="transform 0.2s"
+                >
+                  Commencer
+                </Button>
               )}
             </HStack>
           </>

@@ -5,33 +5,30 @@ import {
   Tabs,
   TabList,
   Tab,
-  Input,
-  InputGroup,
-  InputLeftElement,
-  InputRightElement,
-  IconButton,
   Flex,
   Button,
   Select,
   useBreakpointValue,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  MenuDivider,
+  Text,
 } from '@chakra-ui/react'
-import { SearchIcon, CloseIcon } from '@chakra-ui/icons'
+import { ChevronDownIcon } from '@chakra-ui/icons'
 
 interface FilterNavProps {
-  view: 'shops' | 'products'
-  onViewChange: (view: 'shops' | 'products') => void
-  searchQuery: string
-  onSearchChange: (query: string) => void
-  categories?: any[]
-  selectedCategory?: number | null
-  onCategoryChange?: (categoryId: number | null) => void
+  readonly view: 'shops' | 'products'
+  readonly onViewChange: (view: 'shops' | 'products') => void
+  readonly categories?: any[]
+  readonly selectedCategory?: number | null
+  readonly onCategoryChange?: (categoryId: number | null) => void
 }
 
 export default function FilterNav({
   view,
   onViewChange,
-  searchQuery,
-  onSearchChange,
   categories = [],
   selectedCategory,
   onCategoryChange
@@ -41,40 +38,7 @@ export default function FilterNav({
   return (
     <Box py={4} bg="#a86d4d7f" shadow="sm" position="sticky" top="0" zIndex="sticky" backdropFilter="blur(6px)">
       <Container maxW="container.xl">
-        {/* Barre de recherche */}
-        <Box mb={4}>
-          <InputGroup size="lg">
-            <InputLeftElement pointerEvents="none">
-              <SearchIcon color="gray.700" />
-            </InputLeftElement>
-            <Input
-              placeholder="Rechercher..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="search-bar"
-              bg="whiteAlpha.700"
-              borderRadius="full"
-              color="black"
-              _focus={{
-                boxShadow: '0 0 0 2px #a86d4d',
-                borderColor: '#a86d4d',
-              }}
-              fontSize="md"
-            />
-            {searchQuery && (
-              <InputRightElement>
-                <IconButton
-                  aria-label="Effacer la recherche"
-                  icon={<CloseIcon w={3} h={3} />}
-                  size="sm"
-                  variant="ghost"
-                  colorScheme="gray"
-                  onClick={() => onSearchChange('')}
-                />
-              </InputRightElement>
-            )}
-          </InputGroup>
-        </Box>
+        {/* Search has been moved to the header (NavBar). */}
 
         {/* Tabs Produits / Boutiques */}
         <Tabs
@@ -143,52 +107,60 @@ export default function FilterNav({
                 ))}
               </Select>
             ) : (
-              <Box overflowX="auto" whiteSpace="nowrap">
-                <Flex gap={2}>
-                  <Button
-                    variant={selectedCategory === null ? 'solid' : 'outline'}
-                    bg={selectedCategory === null ? '#a86d4d' : 'whiteAlpha.800'}
-                    color={selectedCategory === null ? 'white' : 'black'}
-                    _hover={{
-                      bg:
-                        selectedCategory === null
-                          ? '#8c5639'
-                          : 'whiteAlpha.900',
-                    }}
-                    size="sm"
+              // Desktop: beautiful dropdown using Chakra Menu
+              <Box>
+                {/** compute selected label **/}
+                <Menu>
+                  <MenuButton
+                    as={Button}
+                    rightIcon={<ChevronDownIcon />}
+                    size="md"
+                    bg="whiteAlpha.900"
+                    color="black"
                     borderRadius="full"
-                    onClick={() => onCategoryChange?.(null)}
+                    boxShadow="md"
+                    px={6}
+                    py={3}
+                    _hover={{ boxShadow: 'lg' }}
                   >
-                    Toutes les catégories
-                  </Button>
-                  {categories.map((category) => (
-                    <Box
-                      key={category.id}
-                      as="button"
-                      px={4}
-                      py={2}
-                      borderRadius="full"
-                      bg={
-                        selectedCategory === category.id
-                          ? '#a86d4d'
-                          : 'whiteAlpha.800'
-                      }
-                      color={
-                        selectedCategory === category.id ? 'white' : 'black'
-                      }
-                      fontWeight="medium"
-                      _hover={{
-                        bg:
-                          selectedCategory === category.id
-                            ? '#8c5639'
-                            : 'whiteAlpha.900',
-                      }}
-                      onClick={() => onCategoryChange?.(category.id)}
+                    {selectedCategory == null
+                      ? `Toutes les catégories (${categories.length})`
+                      : categories.find((c) => c.id === selectedCategory)?.name}
+                  </MenuButton>
+
+                  <MenuList
+                    mt={2}
+                    borderRadius="lg"
+                    boxShadow="lg"
+                    bg="whiteAlpha.900"
+                    minW="240px"
+                    maxH="300px"
+                    overflowY="auto"
+                  >
+                    <MenuItem
+                      onClick={() => onCategoryChange?.(null)}
+                      bg={selectedCategory === null ? '#a86d4d' : undefined}
+                      color={selectedCategory === null ? 'white' : 'black'}
+                      _hover={{ bg: selectedCategory === null ? '#8c5639' : 'gray.100' }}
+                      borderTopRadius="lg"
                     >
-                      {category.name}
-                    </Box>
-                  ))}
-                </Flex>
+                      <Text fontWeight="semibold">Toutes les catégories</Text>
+                      <Text ml="auto" color="gray.500" fontSize="sm">{categories.length}</Text>
+                    </MenuItem>
+                    <MenuDivider />
+                    {categories.map((category) => (
+                      <MenuItem
+                        key={category.id}
+                        onClick={() => onCategoryChange?.(category.id)}
+                        bg={selectedCategory === category.id ? '#a86d4d' : undefined}
+                        color={selectedCategory === category.id ? 'white' : 'black'}
+                        _hover={{ bg: selectedCategory === category.id ? '#8c5639' : 'gray.100' }}
+                      >
+                        {category.name}
+                      </MenuItem>
+                    ))}
+                  </MenuList>
+                </Menu>
               </Box>
             )}
           </Box>
