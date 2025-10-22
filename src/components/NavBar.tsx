@@ -203,6 +203,7 @@ export default function NavBar() {
               >
                 Vendre
               </Button>
+              
               {user?.role === 'admin' && (
                 <Button as={RouterLink} to="/admin" variant="ghost" ml={2} size="md">Admin</Button>
               )}
@@ -321,6 +322,7 @@ export default function NavBar() {
                 colorScheme="brand" 
                 size="md"
                 leftIcon={<span>🏪</span>}
+                className="nav-vendre"
               >
                 Vendre
               </Button>

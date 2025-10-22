@@ -81,6 +81,7 @@ export default function FilterNav({
               <Menu>
                 <MenuButton
                   as={Button}
+                  className="category-select"
                   w="full"
                   size="lg"
                   bg="whiteAlpha.900"

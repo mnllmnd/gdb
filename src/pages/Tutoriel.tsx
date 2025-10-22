@@ -41,6 +41,9 @@ export default function TutorielPage() {
   const [joySteps, setJoySteps] = React.useState<Step[]>([])
   const [missingSteps, setMissingSteps] = React.useState<string[] | null>(null)
 
+  // show debug panel only when explicitly requested via ?debug=1
+  const isDebug = typeof globalThis !== 'undefined' && new URLSearchParams(globalThis.location?.search ?? '').get('debug') === '1'
+
   const steps: Step[] = [
     { target: '.tab-products', content: "Onglet Produits — Parcourez les produits disponibles.", placement },
     { target: '.tab-shops', content: "Onglet Boutiques — Trouvez des boutiques locales.", placement },
@@ -84,7 +87,13 @@ export default function TutorielPage() {
       setJoySteps(resolved)
       try {
         const stored = localStorage.getItem('tutorialMissingSteps')
-        setMissingSteps(stored ? JSON.parse(stored) : [])
+        // if explicitly debugging, preserve stored missing steps — otherwise clear them
+        if (isDebug) {
+          setMissingSteps(stored ? JSON.parse(stored) : [])
+        } else {
+          try { localStorage.removeItem('tutorialMissingSteps') } catch (e) { console.debug('Tutoriel: failed to remove tutorialMissingSteps', e) }
+          setMissingSteps([])
+        }
       } catch (e) {
         // eslint-disable-next-line no-console
         console.debug('Tutoriel: failed to read tutorialMissingSteps', e)
@@ -205,8 +214,8 @@ export default function TutorielPage() {
             </Box>
           ))}
         </SimpleGrid>
-          {/* Debug panel: show missing selectors when present */}
-          {missingSteps && missingSteps.length > 0 && (
+          {/* Debug panel: show missing selectors when present (only in debug mode) */}
+          {isDebug && missingSteps && missingSteps.length > 0 && (
             <Box bg="whiteAlpha.900" p={4} borderRadius="md" mt={4}>
               <Heading size="sm" mb={2}>Étapes manquantes détectées</Heading>
               <Text mb={3} fontSize="sm">Les sélecteurs suivants n'ont pas été trouvés dans le DOM au démarrage du tutoriel :</Text>

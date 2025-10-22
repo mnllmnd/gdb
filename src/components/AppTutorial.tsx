@@ -166,6 +166,12 @@ export default function AppTutorial({ enabled = true }: AppTutorialProps) {
     const step = baseSteps[i]
     if (!step) return false
     const selector = String(step.target)
+    // fallback mapping for mobile: try alternatives when primary selector not present
+    const fallbackMap: Record<string, string[]> = {
+      '.search-bar': ['.nav-search', '.search-input', '.search-bar'],
+      '.category-select': ['.category-select', '.category-select-mobile', '.category-menu', '.category-menu-mobile'],
+      '.nav-my-shop': ['.nav-my-shop', '.nav-vendre', '.nav-tutoriel']
+    }
     // If target likely in drawer, open it on mobile
     if (isMobileGlobal && selector.startsWith('.nav-')) {
       try {
@@ -174,7 +180,15 @@ export default function AppTutorial({ enabled = true }: AppTutorialProps) {
         await new Promise(r => setTimeout(r, 300))
       } catch {}
     }
-    const ok = await ensureTargetForIndexGlobal(selector, 2000)
+    let ok = await ensureTargetForIndexGlobal(selector, 2000)
+    if (!ok && isMobileGlobal) {
+      const alts = fallbackMap[selector] ?? []
+      for (const alt of alts) {
+        if (alt === selector) continue
+        ok = await ensureTargetForIndexGlobal(alt, 1500)
+        if (ok) break
+      }
+    }
     return ok
   }
 
