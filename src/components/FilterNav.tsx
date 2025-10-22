@@ -77,35 +77,64 @@ export default function FilterNav({
         {view === 'products' && categories && categories.length > 0 && (
           <Box mt={4} pb={2}>
             {isMobile ? (
-              <Select
-                className="category-select"
-                value={selectedCategory ?? ''}
-                onChange={(e) =>
-                  onCategoryChange?.(
-                    e.target.value === '' ? null : Number(e.target.value)
-                  )
-                }
-                size="lg"
-                bg="whiteAlpha.900"
-                borderRadius="full"
-                boxShadow="md"
-                color="black"
-                fontWeight="medium"
-                _hover={{ boxShadow: 'lg' }}
-                _focus={{
-                  boxShadow: '0 0 0 2px #a86d4d',
-                  borderColor: '#a86d4d',
-                }}
-              >
-                <option value="" style={{ fontWeight: 'bold' }}>
-                  Toutes les catégories ({categories.length})
-                </option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </Select>
+              // Mobile: full-width, touch-friendly menu button
+              <Menu>
+                <MenuButton
+                  as={Button}
+                  w="full"
+                  size="lg"
+                  bg="whiteAlpha.900"
+                  color="black"
+                  borderRadius="full"
+                  boxShadow="md"
+                  px={4}
+                  py={3}
+                  rightIcon={<ChevronDownIcon />}
+                  _hover={{ boxShadow: 'lg' }}
+                >
+                  {selectedCategory == null
+                    ? `Toutes les catégories (${categories.length})`
+                    : categories.find((c) => c.id === selectedCategory)?.name}
+                </MenuButton>
+
+                <MenuList
+                  mt={2}
+                  borderRadius="lg"
+                  boxShadow="lg"
+                  bg="white"
+                  minW="auto"
+                  w="calc(100% - 32px)"
+                  maxH="60vh"
+                  overflowY="auto"
+                  mx="auto"
+                  px={2}
+                >
+                  <MenuItem
+                    onClick={() => onCategoryChange?.(null)}
+                    py={3}
+                    bg={selectedCategory === null ? '#a86d4d' : undefined}
+                    color={selectedCategory === null ? 'white' : 'black'}
+                    _hover={{ bg: selectedCategory === null ? '#8c5639' : 'gray.100' }}
+                    borderTopRadius="md"
+                  >
+                    <Text fontWeight="semibold">Toutes les catégories</Text>
+                    <Text ml="auto" color="gray.500" fontSize="sm">{categories.length}</Text>
+                  </MenuItem>
+                  <MenuDivider />
+                  {categories.map((c) => (
+                    <MenuItem
+                      key={c.id}
+                      onClick={() => onCategoryChange?.(c.id)}
+                      py={3}
+                      bg={selectedCategory === c.id ? '#a86d4d' : undefined}
+                      color={selectedCategory === c.id ? 'white' : 'black'}
+                      _hover={{ bg: selectedCategory === c.id ? '#8c5639' : 'gray.100' }}
+                    >
+                      {c.name}
+                    </MenuItem>
+                  ))}
+                </MenuList>
+              </Menu>
             ) : (
               // Desktop: beautiful dropdown using Chakra Menu
               <Box>
