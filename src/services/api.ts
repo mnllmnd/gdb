@@ -88,6 +88,10 @@ export const api = {
     users: (token?: string) => request('/admin/users', { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     setRole: (id: string, role: string, token?: string) =>
       request(`/admin/users/${id}/role`, { method: 'POST', body: JSON.stringify({ role }), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+    // Create a new user (admin)
+    createUser: (payload: any, token?: string) => request('/admin/users', { method: 'POST', body: JSON.stringify(payload), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+    // Delete a user by id (admin)
+    deleteUser: (id: string, token?: string) => request(`/admin/users/${id}`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
   },
 }
 

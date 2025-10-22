@@ -84,19 +84,30 @@ export default function NavBar() {
   useEffect(() => {
     let mounted = true
     async function loadShop() {
-      if (!user) { mounted && setShop(null); return }
+      if (!user || user.role !== 'seller') { 
+        mounted && setShop(null)
+        return 
+      }
       try {
         const token = globalThis.localStorage?.getItem('token') ?? undefined
         const s = await api.shops.me(token)
         if (mounted) setShop(s)
-      } catch (err) {
-        console.error(err)
+      } catch (err: any) {
+        if (err?.error !== 'No shop' && mounted) {
+          toast({
+            title: "Error loading shop",
+            description: "Please try again later",
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+          })
+        }
         if (mounted) setShop(null)
       }
     }
     loadShop()
     return () => { mounted = false }
-  }, [user])
+  }, [user, toast])
 
   return (
     <Box
