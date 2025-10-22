@@ -89,7 +89,9 @@ export default function AppTutorial({ enabled = true }: AppTutorialProps) {
   const textColor = useColorModeValue('gray.800', 'white')
 
   React.useEffect(() => {
+    // Do not run the automatic tutorial on mobile devices — avoid steps missing in mobile views
     if (!enabled) return
+    if (isMobileGlobal) return
     let mounted = true
 
     async function prepareAndRun() {
