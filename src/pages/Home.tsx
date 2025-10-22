@@ -47,7 +47,7 @@ export default function Home() {
   const [categories, setCategories] = React.useState<Category[]>([])
   const [categorizedProducts, setCategorizedProducts] = React.useState<Record<number, Product[]>>({})
   const [query, setQuery] = React.useState('')
-  const [currentView, setCurrentView] = React.useState<'shops' | 'products'>('shops')
+  const [currentView, setCurrentView] = React.useState<'shops' | 'products'>('products')
   const [selectedCategory, setSelectedCategory] = React.useState<number | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
 
@@ -94,7 +94,7 @@ export default function Home() {
     const searchData = async () => {
       setIsLoading(true)
       try {
-        if (currentView === 'shops') {
+        if (currentView === 'products') {
           const results = await api.shops.search(query.trim())
           setShops(results)
         } else {
@@ -135,7 +135,7 @@ export default function Home() {
     const reloadData = async () => {
       setIsLoading(true)
       try {
-        if (currentView === 'shops') {
+        if (currentView === 'products') {
           const shopsData = await api.shops.list()
           if (isMounted) setShops(shopsData)
         } else {
@@ -237,13 +237,12 @@ export default function Home() {
     return (
       <Box 
           key={category.id} 
-          bg="#9d7b6a77"  // couleur inspirée de l'image
-          color="white"  // le texte reste bien lisible
+          bg="#9d7b6a77"
+          color="white"
           p={{ base: 4, md: 6 }} 
           borderRadius="lg" 
           mb={6}
         >
-
         <Heading size="lg" mb={4} textAlign="center" color="white">{category.name}</Heading>
         <Grid templateColumns={{ base: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)', lg: 'repeat(5, 1fr)' }} gap={4}>
           {categoryProducts.map((product) => (
@@ -278,9 +277,8 @@ export default function Home() {
         <Container maxW="container.xl" position="relative">
           <VStack spacing={6} align="stretch">
             <Box textAlign="center">
-             
               <Text fontSize="xl" color="whiteAlpha.900">
-                {currentView === 'shops' 
+                {currentView === 'products' 
                   ? 'Les meilleurs produits, directement des artisans' 
                   : 'Explorez les produits disponibles'}
               </Text>
@@ -303,7 +301,7 @@ export default function Home() {
         {isLoading ? (
           <Center py={4}><Spinner size="md" /></Center>
         ) : (
-          currentView === 'shops' ? renderShopsView() : renderProductsView()
+          currentView === 'products' ? renderShopsView() : renderProductsView()
         )}
       </Container>
     </Box>
