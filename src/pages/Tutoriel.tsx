@@ -154,13 +154,13 @@ export default function TutorielPage() {
             {
               title: '2) Recherche et navigation',
               text: "Utilisez la barre de recherche pour trouver des produits ou des boutiques rapidement.",
-              img: 'https://res.cloudinary.com/dcs9vkwe0/image/upload/v1761132699/cudnoxnyvnnvxigwl6sd.png',
+              img: 'https://res.cloudinary.com/dcs9vkwe0/image/upload/v1761143438/cqriqgdz6ihhn4yxw7rd.png',
               caption: "La barre de recherche est située en haut de la page."
             },
             {
               title: '3) Onglets Produits / Boutiques',
               text: "Basculez entre les produits et les boutiques pour explorer selon vos besoins.",
-              img: 'https://res.cloudinary.com/dcs9vkwe0/image/upload/v1761133736/jmnl4msste6nzekw437u.png',
+              img: 'https://res.cloudinary.com/dcs9vkwe0/image/upload/v1761143179/aehpqunllfdxfnaifz5f.png',
               caption: "Utilisez les onglets pour changer de vue."
             },
             {
