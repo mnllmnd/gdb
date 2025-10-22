@@ -146,31 +146,34 @@ export default function NavBar() {
             <HStack spacing={4} align="center">
               <Avatar size="sm" name="Sama Bitik" />
               <Heading size="md" color="black" fontWeight="700">Sama Bitik</Heading>
-              {shop && (
-                <Tag as={RouterLink} to="/seller/shop" ml={3} colorScheme="blue" borderRadius="full">
-                  {shop.name}
-                </Tag>
-              )}
             </HStack>
 
             <Spacer />
 
-            {/* Desktop actions */}
-            <HStack spacing={2} align="center">
-              <Button as={RouterLink} to="/" variant="ghost" size="md">Accueil</Button>
-              <Button as={RouterLink} to="/products" variant="ghost" size="md">Produits</Button>
-              <Button as={RouterLink} to="/tutoriel" variant="ghost" size="md">Tutoriel</Button>
+            {/* Desktop actions - Simplified with emojis */}
+            <HStack spacing={4} align="center">
+              <Button as={RouterLink} to="/" variant="ghost" size="md" leftIcon={<span>🏠</span>}>
+                Accueil
+              </Button>
+              <Button as={RouterLink} to="/products" variant="ghost" size="md" leftIcon={<span>🛍️</span>}>
+                Produits
+              </Button>
               <Button
                 colorScheme="brand"
-                ml={2}
                 size="md"
                 onClick={() => {
                   if (user) navigate('/seller')
-                  else toast({ title: 'Connectez-vous', description: 'Connectez-vous pour accéder à votre boutique', status: 'info' })
+                  else toast({ 
+                    title: '✨ Créez votre boutique', 
+                    description: 'Rejoignez notre communauté de vendeurs !', 
+                    status: 'info',
+                    duration: 5000,
+                  })
                 }}
                 className="nav-my-shop"
+                leftIcon={<span>🏪</span>}
               >
-                Ma boutique
+                Vendre
               </Button>
               {user?.role === 'admin' && (
                 <Button as={RouterLink} to="/admin" variant="ghost" ml={2} size="md">Admin</Button>
@@ -208,29 +211,40 @@ export default function NavBar() {
             <HStack spacing={2}>
               <Avatar size="sm" name="Sama Bitik" />
               <Heading size="md" color="black" fontWeight="700">Sama Bitik</Heading>
-              {shop && (
-                <Tag as={RouterLink} to="/seller/shop" ml={2} colorScheme="blue" borderRadius="full">
-                  {shop.name}
-                </Tag>
-              )}
             </HStack>
           </DrawerHeader>
           <DrawerBody>
-            <VStack align="stretch" spacing={3} mt={2}>
-              <Button as={RouterLink} to="/" onClick={onClose} variant="ghost" size="sm">Accueil</Button>
-              <Button as={RouterLink} to="/products" onClick={onClose} variant="ghost" size="sm">Produits</Button>
-              <Button as={RouterLink} to="/orders" onClick={onClose} variant="ghost" size="sm">Mes commandes</Button>
-              <Button as={RouterLink} to="/cart" onClick={onClose} variant="ghost" size="sm">Panier</Button>
-               <Button as={RouterLink} to="/tutoriel" onClick={onClose} variant="ghost" size="sm" className="nav-tutorial">Tutoriel</Button>
+            <VStack align="stretch" spacing={4} mt={2}>
+              <Button as={RouterLink} to="/" onClick={onClose} variant="ghost" size="md" leftIcon={<span>🏠</span>}>
+                Accueil
+              </Button>
+              <Button as={RouterLink} to="/products" onClick={onClose} variant="ghost" size="md" leftIcon={<span>🛍️</span>}>
+                Découvrir
+              </Button>
+              <Button as={RouterLink} to="/cart" onClick={onClose} variant="ghost" size="md" leftIcon={<span>🛒</span>}>
+                Mon panier {cartCount > 0 && `(${cartCount})`}
+              </Button>
+              {user && (
+                <Button as={RouterLink} to="/orders" onClick={onClose} variant="ghost" size="md" leftIcon={<span>📦</span>}>
+                  Mes commandes
+                </Button>
+              )}
               <Button
                 onClick={() => {
                   onClose()
                   if (user) navigate('/seller')
-                  else toast({ title: 'Connectez-vous', description: 'Connectez-vous pour accéder à votre boutique', status: 'info' })
+                  else toast({ 
+                    title: '✨ Créez votre boutique', 
+                    description: 'Rejoignez notre communauté de vendeurs !',
+                    status: 'info',
+                    duration: 5000
+                  })
                 }}
-                colorScheme="brand" size="sm"
+                colorScheme="brand" 
+                size="md"
+                leftIcon={<span>🏪</span>}
               >
-                Mes produits
+                Vendre
               </Button>
               {shop && <Button as={RouterLink} to="/seller/shop" onClick={onClose} size="sm" className="nav-my-shop">Ma boutique</Button>}
               {user?.role === 'admin' && <Button as={RouterLink} to="/admin" onClick={onClose} size="sm">Admin</Button>}
