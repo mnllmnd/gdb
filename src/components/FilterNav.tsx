@@ -51,6 +51,7 @@ export default function FilterNav({
               placeholder="Rechercher..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
+              className="search-bar"
               bg="whiteAlpha.700"
               borderRadius="full"
               color="black"
@@ -90,6 +91,7 @@ export default function FilterNav({
                 fontWeight: 'bold',
               }}
               color="black"
+              className="tab-shops"
             >
               Boutiques
             </Tab>
@@ -100,6 +102,7 @@ export default function FilterNav({
                 fontWeight: 'bold',
               }}
               color="black"
+              className="tab-products"
             >
               Produits
             </Tab>
@@ -111,6 +114,7 @@ export default function FilterNav({
           <Box mt={4} pb={2}>
             {isMobile ? (
               <Select
+                className="category-select"
                 value={selectedCategory ?? ''}
                 onChange={(e) =>
                   onCategoryChange?.(

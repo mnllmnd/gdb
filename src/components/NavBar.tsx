@@ -108,6 +108,7 @@ export default function NavBar() {
                 </svg>
               }
               onClick={onOpen}
+              className="nav-hamburger"
             />
             <Box position="relative">
               <IconButton
@@ -158,6 +159,7 @@ export default function NavBar() {
             <HStack spacing={2} align="center">
               <Button as={RouterLink} to="/" variant="ghost" size="md">Accueil</Button>
               <Button as={RouterLink} to="/products" variant="ghost" size="md">Produits</Button>
+              <Button as={RouterLink} to="/tutoriel" variant="ghost" size="md">Tutoriel</Button>
               <Button
                 colorScheme="brand"
                 ml={2}
@@ -166,6 +168,7 @@ export default function NavBar() {
                   if (user) navigate('/seller')
                   else toast({ title: 'Connectez-vous', description: 'Connectez-vous pour accéder à votre boutique', status: 'info' })
                 }}
+                className="nav-my-shop"
               >
                 Ma boutique
               </Button>
@@ -188,8 +191,8 @@ export default function NavBar() {
                 </>
               ) : (
                 <>
-                  <Button as={RouterLink} to="/login" colorScheme="teal" ml={4} size={{ base: 'sm', md: 'md' }}>Connexion</Button>
-                  <Button as={RouterLink} to="/signup" ml={2} size={{ base: 'sm', md: 'md' }}>S'inscrire</Button>
+                  <Button as={RouterLink} to="/login" colorScheme="teal" ml={4} size={{ base: 'sm', md: 'md' }} className="nav-login">Connexion</Button>
+                  <Button as={RouterLink} to="/signup" ml={2} size={{ base: 'sm', md: 'md' }} className="nav-signup">S'inscrire</Button>
                 </>
               )}
             </HStack>
@@ -216,8 +219,9 @@ export default function NavBar() {
             <VStack align="stretch" spacing={3} mt={2}>
               <Button as={RouterLink} to="/" onClick={onClose} variant="ghost" size="sm">Accueil</Button>
               <Button as={RouterLink} to="/products" onClick={onClose} variant="ghost" size="sm">Produits</Button>
-              <Button as={RouterLink} to="/cart" onClick={onClose} variant="ghost" size="sm">Panier</Button>
               <Button as={RouterLink} to="/orders" onClick={onClose} variant="ghost" size="sm">Mes commandes</Button>
+              <Button as={RouterLink} to="/cart" onClick={onClose} variant="ghost" size="sm">Panier</Button>
+               <Button as={RouterLink} to="/tutoriel" onClick={onClose} variant="ghost" size="sm" className="nav-tutorial">Tutoriel</Button>
               <Button
                 onClick={() => {
                   onClose()
@@ -228,7 +232,7 @@ export default function NavBar() {
               >
                 Mes produits
               </Button>
-              {shop && <Button as={RouterLink} to="/seller/shop" onClick={onClose} size="sm">Ma boutique</Button>}
+              {shop && <Button as={RouterLink} to="/seller/shop" onClick={onClose} size="sm" className="nav-my-shop">Ma boutique</Button>}
               {user?.role === 'admin' && <Button as={RouterLink} to="/admin" onClick={onClose} size="sm">Admin</Button>}
               {user ? (
                 <>
@@ -237,8 +241,8 @@ export default function NavBar() {
                 </>
               ) : (
                 <>
-                  <Button as={RouterLink} to="/login" onClick={onClose} size="sm">Connexion</Button>
-                  <Button as={RouterLink} to="/signup" onClick={onClose} size="sm">S'inscrire</Button>
+                  <Button as={RouterLink} to="/login" onClick={onClose} size="sm" className="nav-login">Connexion</Button>
+                  <Button as={RouterLink} to="/signup" onClick={onClose} size="sm" className="nav-signup">S'inscrire</Button>
                 </>
               )}
             </VStack>

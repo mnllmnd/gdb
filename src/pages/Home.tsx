@@ -14,6 +14,7 @@ import {
 } from '@chakra-ui/react'
 import { CloseIcon } from '@chakra-ui/icons'
 import FilterNav from '../components/FilterNav'
+import AppTutorial from '../components/AppTutorial'
 import ShopCard from '../components/ShopCard'
 import ProductCard from '../components/ProductCard'
 import api from '../services/api'
@@ -95,17 +96,19 @@ export default function Home() {
       setIsLoading(true)
       try {
         if (currentView === 'products') {
-          const results = await api.shops.search(query.trim())
-          setShops(results)
-        } else {
+          // search products
           const allProducts = await api.products.list()
           const searchTerms = query.trim().toLowerCase().split(/\s+/).filter(Boolean)
-          
+
           const filteredProducts = allProducts?.filter((product: Product) => {
             const searchText = `${product.title || product.name || ''} ${product.description || ''}`.toLowerCase()
             return searchTerms.every(term => searchText.includes(term))
           }) || []
           setProducts(filteredProducts)
+        } else {
+          // search shops
+          const results = await api.shops.search(query.trim())
+          setShops(results)
         }
       } catch (err) {
         console.error('Search failed', err)
@@ -136,11 +139,11 @@ export default function Home() {
       setIsLoading(true)
       try {
         if (currentView === 'products') {
-          const shopsData = await api.shops.list()
-          if (isMounted) setShops(shopsData)
-        } else {
           const productsData = await api.products.list()
           if (isMounted) setProducts(productsData?.slice(0, 12) || [])
+        } else {
+          const shopsData = await api.shops.list()
+          if (isMounted) setShops(shopsData)
         }
       } catch (err) {
         console.error('Reload failed', err)
@@ -263,6 +266,7 @@ export default function Home() {
 
   return (
     <Box>
+      <AppTutorial />
       <Box bg="brand.500" color="white" py={16} position="relative" overflow="hidden">
         <Box 
           position="absolute" 
@@ -280,7 +284,7 @@ export default function Home() {
               <Text fontSize="xl" color="whiteAlpha.900">
                 {currentView === 'products' 
                   ? 'Les meilleurs produits, directement des artisans' 
-                  : 'Explorez les produits disponibles'}
+                  : 'Découvrez les boutiques locales'}
               </Text>
             </Box>
           </VStack>
@@ -301,7 +305,7 @@ export default function Home() {
         {isLoading ? (
           <Center py={4}><Spinner size="md" /></Center>
         ) : (
-          currentView === 'products' ? renderShopsView() : renderProductsView()
+          currentView === 'products' ? renderProductsView() : renderShopsView()
         )}
       </Container>
     </Box>
