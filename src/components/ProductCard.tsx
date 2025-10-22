@@ -27,6 +27,25 @@ export default function ProductCard({
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [address, setAddress] = useState('')
+  // getItem is imported at top of file from ../utils/localAuth
+
+  // Prefill name and phone when modal opens from stored user info; keep address empty
+  React.useEffect(() => {
+    if (!isOpen) return
+    try {
+      const raw = getItem('user')
+      if (raw) {
+        const u = JSON.parse(raw)
+        if (u) {
+          setName(u.display_name ?? u.name ?? '')
+          setPhone(u.phone ?? u.mobile ?? u.phone_number ?? '')
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+    setAddress('')
+  }, [isOpen])
 
   // compute numeric price and display text safely
   const numericPrice = (() => {
