@@ -299,6 +299,9 @@ export default function NavBar() {
               <Button as={RouterLink} to="/products" onClick={onClose} variant="ghost" size="md" leftIcon={<span>🛍️</span>}>
                 Découvrir
               </Button>
+              <Button as={RouterLink} to="/tutoriel" onClick={onClose} variant="ghost" size="md" leftIcon={<span>📚</span>} className="nav-tutoriel">
+                Tutoriel
+              </Button>
               <Button as={RouterLink} to="/cart" onClick={onClose} variant="ghost" size="md" leftIcon={<span>🛒</span>}>
                 Mon panier {cartCount > 0 && `(${cartCount})`}
               </Button>
