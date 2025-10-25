@@ -196,24 +196,7 @@ export default function ProductCard({
             </Badge>
           )}
 
-          {/* Price Badge */}
-          {formattedPrice && (
-            <Badge
-              position="absolute"
-              top="12px"
-              right="12px"
-              bg="white"
-              color="green.600"
-              fontSize="sm"
-              fontWeight="bold"
-              px={3}
-              py={1}
-              borderRadius="full"
-              boxShadow="md"
-            >
-              {formattedPrice} FCFA
-            </Badge>
-          )}
+          {/* Price Badge - Removed from image section */}
         </Box>
 
         {/* Content Section */}
@@ -231,9 +214,31 @@ export default function ProductCard({
               {title || 'Sans titre'}
             </Heading>
 
+            {/* Price Display - Moved between title and shop */}
+            {formattedPrice && (
+              <Flex align="center" justify="space-between">
+                <Text 
+                  fontSize="lg" 
+                  fontWeight="800" 
+                  color={priceText}
+                  bg={priceBg}
+                  px={3}
+                  py={1}
+                  borderRadius="lg"
+                  border="1px solid"
+                  borderColor={useColorModeValue('green.200', 'green.700')}
+                >
+                  {formattedPrice} FCFA
+                </Text>
+                
+                {/* Optional: Add a small tag for discount or special offer */}
+               
+              </Flex>
+            )}
+
             {/* Shop Info */}
             {shopName && (
-              <HStack spacing={2}>
+              <HStack spacing={2} mt={1}>
                 <Icon as={FaStore} color={shopBadgeText} boxSize={3} />
                 {shopDomain ? (
                   <ChakraLink
