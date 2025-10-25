@@ -251,22 +251,25 @@ export default function Home() {
           return (
            <Box mb={6}>
   <Heading size="md" color="brand.500">Nouveautés</Heading>
-  <Text fontSize="sm" color={useColorModeValue('brand.500', 'brand.500')} mb={2}>faites défiler → </Text>
+  <Text fontSize="sm" color={useColorModeValue('brand.500', 'brand.500')} mb={2}>
+    Faites défiler →
+  </Text>
+
   <HStack
     spacing={3}
     overflowX="auto"
     py={2}
-    px={{ base: 2, md: 1 }}
+    px={0} // Pas de padding pour que le peek soit visible
     css={{
       scrollSnapType: 'x mandatory',
       '& > *': { scrollSnapAlign: 'start' }
     }}
   >
     {newProducts.map(product => (
-      <Box 
-        key={product.id} 
+      <Box
+        key={product.id}
         flex="0 0 auto"
-        w={{ base: '120px', sm: '140px', md: '180px' }}
+        w={{ base: '45%', sm: '45%', md: '180px' }} // 2 produits visibles + peek
       >
         <ProductCard
           id={String(product.id)}
