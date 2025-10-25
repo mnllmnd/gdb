@@ -250,8 +250,8 @@ export default function Home() {
 
           return (
            <Box mb={6}>
-  <Heading size="md" color="brand.500">Nouveautés</Heading>
-  <Text fontSize="sm" color={useColorModeValue('brand.500', 'brand.500')} mb={2}>
+  <Heading size="md" color="black">Nouveautés</Heading>
+  <Text fontSize="sm" color={useColorModeValue('black', 'brand.500')} mb={2}>
     Faites défiler →
   </Text>
 
