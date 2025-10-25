@@ -3,6 +3,7 @@ import {
   Heading,
   Text,
   Container,
+  Button,
   Spinner,
   VStack,
   Box,
@@ -70,6 +71,12 @@ export default function Home() {
   const textColor = useColorModeValue('gray.800', 'white')
   const pageBg = useColorModeValue('gray.50', 'gray.900')
   const borderColor = useColorModeValue('gray.200', 'gray.600')
+
+  // Pagination / lazy loading UX
+  const initialCount = useBreakpointValue({ base: 4, md: 6 }) || 6
+  const loadMoreCount = 6
+  const [visibleByCategory, setVisibleByCategory] = React.useState<Record<number, number>>({})
+  const [visibleUncategorized, setVisibleUncategorized] = React.useState<number>(initialCount)
 
   React.useEffect(() => {
     async function loadData() {
@@ -162,6 +169,9 @@ export default function Home() {
       map[cid].push(p)
     }
     setCategorizedProducts(map)
+    // Reset visible counts when product list changes (fresh search/filter)
+    setVisibleByCategory({})
+    setVisibleUncategorized(initialCount)
   }, [products])
 
   // Reload data when the view changes (shops <-> products)
@@ -227,6 +237,39 @@ export default function Home() {
 
     return (
       <VStack spacing={8} align="stretch">
+        {/* Nouveautés carousel horizontal (les produits récents) */}
+        {(() => {
+          const newProducts = [...(products || [])]
+            .sort((a, b) => {
+              const ta = a.created_at ? new Date(String(a.created_at)).getTime() : 0
+              const tb = b.created_at ? new Date(String(b.created_at)).getTime() : 0
+              return tb - ta
+            })
+            .slice(0, 12)
+          if (!newProducts.length) return null
+
+          return (
+            <Box mb={6}>
+              <Heading size="md" color="brand.500">Nouveautés</Heading>
+              <Text fontSize="sm" color={useColorModeValue('brand.500', 'brand.500')} mb={2}>faites défiler → </Text>
+              <HStack spacing={3} overflowX="auto" py={2} px={1}>
+                {newProducts.map((product) => (
+                  <Box key={product.id} minW={{ base: '140px', md: '180px' }} flexShrink={0}>
+                    <ProductCard
+                      id={String(product.id)}
+                      title={product.title || product.name || ''}
+                      price={product.price ?? product.amount}
+                      image_url={product.image_url ?? product.product_image}
+                      height={cardHeight}
+                      shopName={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.name}
+                      shopDomain={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.domain}
+                    />
+                  </Box>
+                ))}
+              </HStack>
+            </Box>
+          )
+        })()}
         {selectedCategory === null ? (
           <Fade in={!isLoading}>
             <VStack spacing={8}>
@@ -274,6 +317,8 @@ export default function Home() {
   const renderUncategorizedProducts = () => {
     const uncategorizedProducts = products?.filter(product => !product.category_id) || []
     if (uncategorizedProducts.length === 0) return null
+    const visible = visibleUncategorized || initialCount
+    const toShow = uncategorizedProducts.slice(0, visible)
 
     return (
       <Box 
@@ -309,7 +354,7 @@ export default function Home() {
             columns={{ base: 2, sm: 3, md: 4, lg: 5 }} 
             spacing={3}
           >
-            {uncategorizedProducts.map((product) => {
+            {toShow.map((product) => {
               const shop = (shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)])
               return (
                 <Box 
@@ -330,6 +375,12 @@ export default function Home() {
               )
             })}
           </SimpleGrid>
+
+          {uncategorizedProducts.length > toShow.length && (
+            <Center>
+              <Button size="sm" onClick={() => setVisibleUncategorized(v => v + loadMoreCount)}>Voir plus</Button>
+            </Center>
+          )}
         </VStack>
       </Box>
     )
@@ -338,6 +389,8 @@ export default function Home() {
   const renderProductCategory = (category: Category) => {
     const categoryProducts = categorizedProducts[category.id] || []
     if (categoryProducts.length === 0) return null
+    const visible = visibleByCategory[category.id] ?? initialCount
+    const toShow = categoryProducts.slice(0, visible)
 
     return (
       <Box 
@@ -366,7 +419,7 @@ export default function Home() {
             columns={{ base: 2, sm: 3, md: 4, lg: 5 }} 
             spacing={3}
           >
-            {categoryProducts.map((product) => {
+            {toShow.map((product) => {
               const shop = (shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)])
               return (
                 <Box 
@@ -387,6 +440,12 @@ export default function Home() {
               )
             })}
           </SimpleGrid>
+
+          {categoryProducts.length > toShow.length && (
+            <Center>
+              <Button size="sm" onClick={() => setVisibleByCategory(prev => ({ ...prev, [category.id]: (prev[category.id] || initialCount) + loadMoreCount }))}>Voir plus</Button>
+            </Center>
+          )}
         </VStack>
       </Box>
     )
