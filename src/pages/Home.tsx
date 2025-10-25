@@ -249,25 +249,39 @@ export default function Home() {
           if (!newProducts.length) return null
 
           return (
-            <Box mb={6}>
-              <Heading size="md" color="brand.500">Nouveautés</Heading>
-              <Text fontSize="sm" color={useColorModeValue('brand.500', 'brand.500')} mb={2}>faites défiler → </Text>
-              <HStack spacing={3} overflowX="auto" py={2} px={1}>
-                {newProducts.map((product) => (
-                  <Box key={product.id} minW={{ base: '140px', md: '180px' }} flexShrink={0}>
-                    <ProductCard
-                      id={String(product.id)}
-                      title={product.title || product.name || ''}
-                      price={product.price ?? product.amount}
-                      image_url={product.image_url ?? product.product_image}
-                      height={cardHeight}
-                      shopName={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.name}
-                      shopDomain={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.domain}
-                    />
-                  </Box>
-                ))}
-              </HStack>
-            </Box>
+           <Box mb={6}>
+  <Heading size="md" color="brand.500">Nouveautés</Heading>
+  <Text fontSize="sm" color={useColorModeValue('brand.500', 'brand.500')} mb={2}>faites défiler → </Text>
+  <HStack
+    spacing={3}
+    overflowX="auto"
+    py={2}
+    px={{ base: 2, md: 1 }}
+    css={{
+      scrollSnapType: 'x mandatory',
+      '& > *': { scrollSnapAlign: 'start' }
+    }}
+  >
+    {newProducts.map(product => (
+      <Box 
+        key={product.id} 
+        flex="0 0 auto"
+        w={{ base: '120px', sm: '140px', md: '180px' }}
+      >
+        <ProductCard
+          id={String(product.id)}
+          title={product.title || product.name || ''}
+          price={product.price ?? product.amount}
+          image_url={product.image_url ?? product.product_image}
+          height={cardHeight}
+          shopName={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.name}
+          shopDomain={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.domain}
+        />
+      </Box>
+    ))}
+  </HStack>
+</Box>
+
           )
         })()}
         {selectedCategory === null ? (
