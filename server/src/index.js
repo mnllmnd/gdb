@@ -16,6 +16,7 @@ import adminRoutes from './routes/admin.js';
 import uploadRoutes from './routes/uploads.js';
 import shopRoutes from './routes/shops.js';
 import categoryRoutes from './routes/categories.js';
+import recommendRoutes from './routes/recommend.js';
 
 dotenv.config();
 
@@ -46,6 +47,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/uploads', uploadRoutes);
 app.use('/api/shops', shopRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/recommend', recommendRoutes);
 
 // Route NLP améliorée
 app.post('/api/message', async (req, res) => {

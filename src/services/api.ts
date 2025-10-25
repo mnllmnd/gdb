@@ -84,6 +84,9 @@ export const api = {
     // Public: search shops by query (name or product title)
     search: (q: string) => request(`/shops/search?q=${encodeURIComponent(q)}`),
   },
+  recommend: {
+    find: (payload: any) => request('/recommend', { method: 'POST', body: JSON.stringify(payload) })
+  },
   admin: {
     users: (token?: string) => request('/admin/users', { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     setRole: (id: string, role: string, token?: string) =>

@@ -21,6 +21,7 @@ import {
 import { CloseIcon, StarIcon } from '@chakra-ui/icons'
 import FilterNav from '../components/FilterNav'
 import AppTutorial from '../components/AppTutorial'
+import Recommendations from '../components/Recommendations'
 import ShopCard from '../components/ShopCard'
 import ProductCard from '../components/ProductCard'
 import api from '../services/api'
@@ -394,10 +395,6 @@ export default function Home() {
   return (
     <Box minH="100vh" bg={pageBg}>
       <AppTutorial />
-      
-      {/* Hero Section améliorée */}
-     
-
       <FilterNav 
         view={currentView} 
         onViewChange={setCurrentView}
@@ -405,6 +402,9 @@ export default function Home() {
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
       />
+
+      {/* Section recommandations intelligente */}
+      <Recommendations />
 
       <Container maxW={{ base: '100%', lg: '90%', xl: '85%' }} py={8} px={{ base: 4, md: 6 }}>
         {isLoading ? (
