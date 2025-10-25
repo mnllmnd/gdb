@@ -1,6 +1,7 @@
 // src/index.js
 import express from 'express';
-import nlpManager from '../nlp/index.js';
+import nlpManager, { init as initNlp } from '../nlp/index.js';
+import tfidfCache from './tfidf_cache.js';
 import detectEmotion from '../nlp/emotions.js';
 import recommend from '../nlp/recommend.js';
 import dotenv from 'dotenv';
@@ -168,11 +169,31 @@ app.use((error, req, res, next) => {
 });
 
 const port = process.env.PORT || 4000;
-app.listen(port, () => {
-  console.log(`🚀 Server running on port ${port}`);
-  const host = process.env.HOSTNAME || 'localhost'
-  const proto = process.env.PROTOCOL || 'http'
-  const base = process.env.API_ROOT || `${proto}://${host}:${port}`
-  console.log(`📝 NLP Chat endpoint: ${base}/api/message`);
-  console.log(`🏥 Health check: ${base}/api/nlp/health`);
-});
+const start = async () => {
+  // Initialize NLP (load saved model or train once)
+  try {
+    await initNlp()
+  } catch (err) {
+    console.warn('NLP init error:', err.message)
+  }
+
+  // Initialize TF-IDF cache (precompute product vectors)
+  try {
+    // import db query helper lazily to avoid circular imports
+    const { query: dbQuery } = await import('./db.js')
+    await tfidfCache.init(dbQuery)
+  } catch (err) {
+    console.warn('TF-IDF cache init error:', err.message)
+  }
+
+  app.listen(port, () => {
+    console.log(`🚀 Server running on port ${port}`);
+    const host = process.env.HOSTNAME || 'localhost'
+    const proto = process.env.PROTOCOL || 'http'
+    const base = process.env.API_ROOT || `${proto}://${host}:${port}`
+    console.log(`📝 NLP Chat endpoint: ${base}/api/message`);
+    console.log(`🏥 Health check: ${base}/api/nlp/health`);
+  });
+}
+
+start()

@@ -1,0 +1,4010 @@
+{
+  "settings": {
+    "languages": [
+      "fr"
+    ],
+    "forceNER": true,
+    "nlu": {
+      "log": false
+    },
+    "tag": "nlp",
+    "threshold": 0.5,
+    "autoLoad": true,
+    "autoSave": true,
+    "modelFileName": "model.nlp",
+    "executeActionsBeforeAnswers": false,
+    "calculateSentiment": true
+  },
+  "nluManager": {
+    "settings": {
+      "tag": "nlu-manager",
+      "log": false
+    },
+    "locales": [
+      "fr"
+    ],
+    "languageNames": {},
+    "domainManagers": {
+      "fr": {
+        "settings": {
+          "locale": "fr",
+          "trainByDomain": false,
+          "tag": "domain-manager-fr",
+          "nluByDomain": {
+            "default": {
+              "className": "NeuralNlu",
+              "settings": {}
+            }
+          },
+          "useStemDict": true
+        },
+        "stemDict": {
+          "bonjour": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "salut": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "hello": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "coucou": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "yo": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "hey": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "bonsoir": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "cc": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "slt": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "bjr": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "bot,hey,le": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "hello,ther": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "hi": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "bonjour,ca,va": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "comment,salut,tu,vas": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "good,morning": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "afternoon,good": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "bot,le,yo": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "ca,slt,va": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "ca,cc,comment,va": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "assist,hey": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "assist,bonjour": {
+            "intent": "salutation",
+            "domain": "default"
+          },
+          "cherch,je": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "je,veux": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "je,voudr": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "je,recherch": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "a,je,la,recherch,suis": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "as,tu": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "avez,vous": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "disponibl": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "trouv": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "achet": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "montr": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "don": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "voir": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "affich": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "list": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "catalogu": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "produit": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "articl": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "item": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "meubl": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "mobili": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "deco": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "decor": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "lamp": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "luminair": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "lustr": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "chais": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "sieg": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "fauteuil": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "tabl": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "bureau": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "canap": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "sof": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "armoir": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "commod": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "etager": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "lit": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "matel": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "vaissel": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "couvert": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "verr": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "assiet": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "electromenag": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "frigo": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "lave-ling": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "cuisinier": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "jardin": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "exterieur": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "cherch,je,produit,un": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "achet,je,veux": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "de,moi,montr,produit": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "avez-vous,produit,quel": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "articl,as,comm,quoi,tu": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "je,meubl,recherch,un": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "je,lamp,une,veux": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "de,deco,don,ide,moi": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "chais,le,montr": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "affich,le,tabl": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "cherch,de,decor,je,la": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "avez,canap,de,vous": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "du,je,mobili,veux": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "armoir,moi,trouv,une": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "de,je,meubl,recherch,salon": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "de,don,lamp,moi": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "montr,tout": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "ce,est,qu,que,vend,vous": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "catalogu,produit": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "articl,de,list": {
+            "intent": "recherche_produit",
+            "domain": "default"
+          },
+          "recommand": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "conseil": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "suggest": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "conseil,me,que": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "quoi,recommand,tu": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "de,ide": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "de,don,ide": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "est,est-ce,populair,qu,qui": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "produit,tendanc": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "produit,top": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "a,aide-moi,chois": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "je,pas,prendr,quoi,sais": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "indec,je,suis": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "inspir,moi": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "nouveaut": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "meilleur,produit": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "coup,cœur,de": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "achet,devr,est-ce,je,qu,que": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "a,pens,quoi,tu": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "guid,moi": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "a,aid,decid": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "hesit,je": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "choix,difficil": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "best-seller": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "phar,produit": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "bien,ce,qui,se,vend": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "client,de,prefer": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "prendr,que": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "chois,quoi": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "avis,don,ton": {
+            "intent": "recommandation",
+            "domain": "default"
+          },
+          "aid": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "help": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "assist": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "support": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "fair,peux-tu,que": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "fonctionnalit": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "fais,quoi,tu": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "aid,moi": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "aid,besoin,d": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "ca,comment,march": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "comment,utilis": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "guid": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "tutoriel": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "comprend,je,pas": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "expliqu,moi": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "aid,m,peux,tu": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "a,quoi,ser,tu": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "fonctionnalit,te": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "capacit": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "fair,que,sais-tu": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "aid,informat": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "soutien": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "document": {
+            "intent": "aide",
+            "domain": "default"
+          },
+          "*": {
+            "intent": "fallback",
+            "domain": "default"
+          }
+        },
+        "intentDict": {
+          "salutation": "default",
+          "recherche_produit": "default",
+          "recommandation": "default",
+          "aide": "default",
+          "fallback": "default"
+        },
+        "sentences": [
+          {
+            "domain": "default",
+            "utterance": "bonjour",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "salut",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "hello",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "coucou",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "yo",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "hey",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "bonsoir",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "cc",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "slt",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "bjr",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "hey le bot",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "hello there",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "hi",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "bonjour ça va",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "salut comment tu vas",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "bonjour bonjour",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "good morning",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "good afternoon",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "yo le bot",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "slt ça va",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "cc comment ça va",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "hey assistant",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "bonjour assistant",
+            "intent": "salutation"
+          },
+          {
+            "domain": "default",
+            "utterance": "je cherche",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "je veux",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "je voudrais",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "je recherche",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "je suis à la recherche",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "tu as",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "vous avez",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "disponible",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "trouver",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "acheter",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "montre",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "montrer",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "donne",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "voir",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "affiche",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "afficher",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "liste",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "catalogue",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "produit",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "produits",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "article",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "articles",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "item",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "items",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "meuble",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "meubles",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "mobilier",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "déco",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "décoration",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "lampe",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "lampes",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "luminaire",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "luminaires",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "lustre",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "lustres",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "chaise",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "chaises",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "siège",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "sièges",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "fauteuil",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "fauteuils",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "table",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "tables",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "bureau",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "bureaux",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "canapé",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "canapés",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "sofa",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "armoire",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "armoires",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "commode",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "commodes",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "étagère",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "étagères",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "lit",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "lits",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "matelas",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "vaisselle",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "couvert",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "verre",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "assiette",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "électroménager",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "frigo",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "lave-linge",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "cuisinière",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "jardin",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "extérieur",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "je cherche un produit",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "je veux acheter",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "montre moi des produits",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "quels produits avez-vous",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "tu as quoi comme articles",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "je recherche un meuble",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "je veux une lampe",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "donne moi des idées déco",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "montre les chaises",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "affiche les tables",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "je cherche de la décoration",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "vous avez des canapés",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "je veux du mobilier",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "trouve moi une armoire",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "je recherche des meubles salon",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "donne moi des lampes",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "montre tout",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "qu est ce que vous vendez",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "catalogue produits",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "liste des articles",
+            "intent": "recherche_produit"
+          },
+          {
+            "domain": "default",
+            "utterance": "recommandation",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "recommandations",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "conseil",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "conseils",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "suggestion",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "suggestions",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "que me conseilles",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "tu recommandes quoi",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "des idées",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "donne des idées",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "qu est-ce qui est populaire",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "produits tendance",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "top produits",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "aide-moi à choisir",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "je sais pas quoi prendre",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "je suis indécis",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "inspire moi",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "nouveautés",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "meilleurs produits",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "coup de cœur",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "qu est-ce que je devrais acheter",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "tu penses à quoi",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "guide moi",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "aide à décider",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "je hésite",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "choix difficile",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "best-sellers",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "produits phares",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "ce qui se vend bien",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "préférés des clients",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "que prendre",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "quoi choisir",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "donne ton avis",
+            "intent": "recommandation"
+          },
+          {
+            "domain": "default",
+            "utterance": "aide",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "help",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "assistance",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "support",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "que peux-tu faire",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "fonctionnalités",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "tu fais quoi",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "aide moi",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "besoin d aide",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "comment ça marche",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "comment utiliser",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "guide",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "tutoriel",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "je comprends pas",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "explique moi",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "peux tu m aider",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "à quoi tu sers",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "tes fonctionnalités",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "capacités",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "que sais-tu faire",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "aide informatique",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "soutien",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "documentation",
+            "intent": "aide"
+          },
+          {
+            "domain": "default",
+            "utterance": "*",
+            "intent": "fallback"
+          }
+        ],
+        "domains": {
+          "master_domain": {
+            "settings": {
+              "locale": "fr",
+              "tag": "nlu-fr",
+              "keepStopwords": true,
+              "nonefeatureValue": 1,
+              "nonedeltaMultiplier": 1.2,
+              "spellCheck": false,
+              "spellCheckDistance": 1,
+              "filterZeros": true,
+              "log": true
+            },
+            "features": {
+              "bonjour": 1,
+              "salut": 1,
+              "hello": 1,
+              "coucou": 1,
+              "yo": 1,
+              "hey": 1,
+              "bonsoir": 1,
+              "cc": 1,
+              "slt": 1,
+              "bjr": 1,
+              "le": 1,
+              "bot": 1,
+              "ther": 1,
+              "hi": 1,
+              "ca": 1,
+              "va": 1,
+              "comment": 1,
+              "tu": 1,
+              "vas": 1,
+              "good": 1,
+              "morning": 1,
+              "afternoon": 1,
+              "assist": 1,
+              "je": 1,
+              "cherch": 1,
+              "veux": 1,
+              "voudr": 1,
+              "recherch": 1,
+              "suis": 1,
+              "a": 1,
+              "la": 1,
+              "as": 1,
+              "vous": 1,
+              "avez": 1,
+              "disponibl": 1,
+              "trouv": 1,
+              "achet": 1,
+              "montr": 1,
+              "don": 1,
+              "voir": 1,
+              "affich": 1,
+              "list": 1,
+              "catalogu": 1,
+              "produit": 1,
+              "articl": 1,
+              "item": 1,
+              "meubl": 1,
+              "mobili": 1,
+              "deco": 1,
+              "decor": 1,
+              "lamp": 1,
+              "luminair": 1,
+              "lustr": 1,
+              "chais": 1,
+              "sieg": 1,
+              "fauteuil": 1,
+              "tabl": 1,
+              "bureau": 1,
+              "canap": 1,
+              "sof": 1,
+              "armoir": 1,
+              "commod": 1,
+              "etager": 1,
+              "lit": 1,
+              "matel": 1,
+              "vaissel": 1,
+              "couvert": 1,
+              "verr": 1,
+              "assiet": 1,
+              "electromenag": 1,
+              "frigo": 1,
+              "lave-ling": 1,
+              "cuisinier": 1,
+              "jardin": 1,
+              "exterieur": 1,
+              "un": 1,
+              "moi": 1,
+              "de": 1,
+              "quel": 1,
+              "avez-vous": 1,
+              "quoi": 1,
+              "comm": 1,
+              "une": 1,
+              "ide": 1,
+              "du": 1,
+              "salon": 1,
+              "tout": 1,
+              "qu": 1,
+              "est": 1,
+              "ce": 1,
+              "que": 1,
+              "vend": 1,
+              "recommand": 1,
+              "conseil": 1,
+              "suggest": 1,
+              "me": 1,
+              "est-ce": 1,
+              "qui": 1,
+              "populair": 1,
+              "tendanc": 1,
+              "top": 1,
+              "aide-moi": 1,
+              "chois": 1,
+              "sais": 1,
+              "pas": 1,
+              "prendr": 1,
+              "indec": 1,
+              "inspir": 1,
+              "nouveaut": 1,
+              "meilleur": 1,
+              "coup": 1,
+              "cœur": 1,
+              "devr": 1,
+              "pens": 1,
+              "guid": 1,
+              "aid": 1,
+              "decid": 1,
+              "hesit": 1,
+              "choix": 1,
+              "difficil": 1,
+              "best-seller": 1,
+              "phar": 1,
+              "se": 1,
+              "bien": 1,
+              "prefer": 1,
+              "client": 1,
+              "ton": 1,
+              "avis": 1,
+              "help": 1,
+              "support": 1,
+              "peux-tu": 1,
+              "fair": 1,
+              "fonctionnalit": 1,
+              "fais": 1,
+              "besoin": 1,
+              "d": 1,
+              "march": 1,
+              "utilis": 1,
+              "tutoriel": 1,
+              "comprend": 1,
+              "expliqu": 1,
+              "peux": 1,
+              "m": 1,
+              "ser": 1,
+              "te": 1,
+              "capacit": 1,
+              "sais-tu": 1,
+              "informat": 1,
+              "soutien": 1,
+              "document": 1,
+              "*": 1
+            },
+            "intents": {
+              "salutation": 1,
+              "recherche_produit": 1,
+              "recommandation": 1,
+              "aide": 1,
+              "fallback": 1
+            },
+            "intentFeatures": {
+              "salutation": {
+                "bonjour": 1,
+                "salut": 1,
+                "hello": 1,
+                "coucou": 1,
+                "yo": 1,
+                "hey": 1,
+                "bonsoir": 1,
+                "cc": 1,
+                "slt": 1,
+                "bjr": 1,
+                "le": 1,
+                "bot": 1,
+                "ther": 1,
+                "hi": 1,
+                "ca": 1,
+                "va": 1,
+                "comment": 1,
+                "tu": 1,
+                "vas": 1,
+                "good": 1,
+                "morning": 1,
+                "afternoon": 1,
+                "assist": 1
+              },
+              "recherche_produit": {
+                "je": 1,
+                "cherch": 1,
+                "veux": 1,
+                "voudr": 1,
+                "recherch": 1,
+                "suis": 1,
+                "a": 1,
+                "la": 1,
+                "tu": 1,
+                "as": 1,
+                "vous": 1,
+                "avez": 1,
+                "disponibl": 1,
+                "trouv": 1,
+                "achet": 1,
+                "montr": 1,
+                "don": 1,
+                "voir": 1,
+                "affich": 1,
+                "list": 1,
+                "catalogu": 1,
+                "produit": 1,
+                "articl": 1,
+                "item": 1,
+                "meubl": 1,
+                "mobili": 1,
+                "deco": 1,
+                "decor": 1,
+                "lamp": 1,
+                "luminair": 1,
+                "lustr": 1,
+                "chais": 1,
+                "sieg": 1,
+                "fauteuil": 1,
+                "tabl": 1,
+                "bureau": 1,
+                "canap": 1,
+                "sof": 1,
+                "armoir": 1,
+                "commod": 1,
+                "etager": 1,
+                "lit": 1,
+                "matel": 1,
+                "vaissel": 1,
+                "couvert": 1,
+                "verr": 1,
+                "assiet": 1,
+                "electromenag": 1,
+                "frigo": 1,
+                "lave-ling": 1,
+                "cuisinier": 1,
+                "jardin": 1,
+                "exterieur": 1,
+                "un": 1,
+                "moi": 1,
+                "de": 1,
+                "quel": 1,
+                "avez-vous": 1,
+                "quoi": 1,
+                "comm": 1,
+                "une": 1,
+                "ide": 1,
+                "le": 1,
+                "du": 1,
+                "salon": 1,
+                "tout": 1,
+                "qu": 1,
+                "est": 1,
+                "ce": 1,
+                "que": 1,
+                "vend": 1
+              },
+              "recommandation": {
+                "recommand": 1,
+                "conseil": 1,
+                "suggest": 1,
+                "que": 1,
+                "me": 1,
+                "tu": 1,
+                "quoi": 1,
+                "de": 1,
+                "ide": 1,
+                "don": 1,
+                "qu": 1,
+                "est-ce": 1,
+                "qui": 1,
+                "est": 1,
+                "populair": 1,
+                "produit": 1,
+                "tendanc": 1,
+                "top": 1,
+                "aide-moi": 1,
+                "a": 1,
+                "chois": 1,
+                "je": 1,
+                "sais": 1,
+                "pas": 1,
+                "prendr": 1,
+                "suis": 1,
+                "indec": 1,
+                "inspir": 1,
+                "moi": 1,
+                "nouveaut": 1,
+                "meilleur": 1,
+                "coup": 1,
+                "cœur": 1,
+                "devr": 1,
+                "achet": 1,
+                "pens": 1,
+                "guid": 1,
+                "aid": 1,
+                "decid": 1,
+                "hesit": 1,
+                "choix": 1,
+                "difficil": 1,
+                "best-seller": 1,
+                "phar": 1,
+                "ce": 1,
+                "se": 1,
+                "vend": 1,
+                "bien": 1,
+                "prefer": 1,
+                "client": 1,
+                "ton": 1,
+                "avis": 1
+              },
+              "aide": {
+                "aid": 1,
+                "help": 1,
+                "assist": 1,
+                "support": 1,
+                "que": 1,
+                "peux-tu": 1,
+                "fair": 1,
+                "fonctionnalit": 1,
+                "tu": 1,
+                "fais": 1,
+                "quoi": 1,
+                "moi": 1,
+                "besoin": 1,
+                "d": 1,
+                "comment": 1,
+                "ca": 1,
+                "march": 1,
+                "utilis": 1,
+                "guid": 1,
+                "tutoriel": 1,
+                "je": 1,
+                "comprend": 1,
+                "pas": 1,
+                "expliqu": 1,
+                "peux": 1,
+                "m": 1,
+                "a": 1,
+                "ser": 1,
+                "te": 1,
+                "capacit": 1,
+                "sais-tu": 1,
+                "informat": 1,
+                "soutien": 1,
+                "document": 1
+              },
+              "fallback": {
+                "*": 1
+              }
+            },
+            "featuresToIntent": {
+              "bonjour": [
+                "salutation"
+              ],
+              "salut": [
+                "salutation"
+              ],
+              "hello": [
+                "salutation"
+              ],
+              "coucou": [
+                "salutation"
+              ],
+              "yo": [
+                "salutation"
+              ],
+              "hey": [
+                "salutation"
+              ],
+              "bonsoir": [
+                "salutation"
+              ],
+              "cc": [
+                "salutation"
+              ],
+              "slt": [
+                "salutation"
+              ],
+              "bjr": [
+                "salutation"
+              ],
+              "le": [
+                "salutation",
+                "recherche_produit"
+              ],
+              "bot": [
+                "salutation"
+              ],
+              "ther": [
+                "salutation"
+              ],
+              "hi": [
+                "salutation"
+              ],
+              "ca": [
+                "salutation",
+                "aide"
+              ],
+              "va": [
+                "salutation"
+              ],
+              "comment": [
+                "salutation",
+                "aide"
+              ],
+              "tu": [
+                "salutation",
+                "recherche_produit",
+                "recommandation",
+                "aide"
+              ],
+              "vas": [
+                "salutation"
+              ],
+              "good": [
+                "salutation"
+              ],
+              "morning": [
+                "salutation"
+              ],
+              "afternoon": [
+                "salutation"
+              ],
+              "assist": [
+                "salutation",
+                "aide"
+              ],
+              "je": [
+                "recherche_produit",
+                "recommandation",
+                "aide"
+              ],
+              "cherch": [
+                "recherche_produit"
+              ],
+              "veux": [
+                "recherche_produit"
+              ],
+              "voudr": [
+                "recherche_produit"
+              ],
+              "recherch": [
+                "recherche_produit"
+              ],
+              "suis": [
+                "recherche_produit",
+                "recommandation"
+              ],
+              "a": [
+                "recherche_produit",
+                "recommandation",
+                "aide"
+              ],
+              "la": [
+                "recherche_produit"
+              ],
+              "as": [
+                "recherche_produit"
+              ],
+              "vous": [
+                "recherche_produit"
+              ],
+              "avez": [
+                "recherche_produit"
+              ],
+              "disponibl": [
+                "recherche_produit"
+              ],
+              "trouv": [
+                "recherche_produit"
+              ],
+              "achet": [
+                "recherche_produit",
+                "recommandation"
+              ],
+              "montr": [
+                "recherche_produit"
+              ],
+              "don": [
+                "recherche_produit",
+                "recommandation"
+              ],
+              "voir": [
+                "recherche_produit"
+              ],
+              "affich": [
+                "recherche_produit"
+              ],
+              "list": [
+                "recherche_produit"
+              ],
+              "catalogu": [
+                "recherche_produit"
+              ],
+              "produit": [
+                "recherche_produit",
+                "recommandation"
+              ],
+              "articl": [
+                "recherche_produit"
+              ],
+              "item": [
+                "recherche_produit"
+              ],
+              "meubl": [
+                "recherche_produit"
+              ],
+              "mobili": [
+                "recherche_produit"
+              ],
+              "deco": [
+                "recherche_produit"
+              ],
+              "decor": [
+                "recherche_produit"
+              ],
+              "lamp": [
+                "recherche_produit"
+              ],
+              "luminair": [
+                "recherche_produit"
+              ],
+              "lustr": [
+                "recherche_produit"
+              ],
+              "chais": [
+                "recherche_produit"
+              ],
+              "sieg": [
+                "recherche_produit"
+              ],
+              "fauteuil": [
+                "recherche_produit"
+              ],
+              "tabl": [
+                "recherche_produit"
+              ],
+              "bureau": [
+                "recherche_produit"
+              ],
+              "canap": [
+                "recherche_produit"
+              ],
+              "sof": [
+                "recherche_produit"
+              ],
+              "armoir": [
+                "recherche_produit"
+              ],
+              "commod": [
+                "recherche_produit"
+              ],
+              "etager": [
+                "recherche_produit"
+              ],
+              "lit": [
+                "recherche_produit"
+              ],
+              "matel": [
+                "recherche_produit"
+              ],
+              "vaissel": [
+                "recherche_produit"
+              ],
+              "couvert": [
+                "recherche_produit"
+              ],
+              "verr": [
+                "recherche_produit"
+              ],
+              "assiet": [
+                "recherche_produit"
+              ],
+              "electromenag": [
+                "recherche_produit"
+              ],
+              "frigo": [
+                "recherche_produit"
+              ],
+              "lave-ling": [
+                "recherche_produit"
+              ],
+              "cuisinier": [
+                "recherche_produit"
+              ],
+              "jardin": [
+                "recherche_produit"
+              ],
+              "exterieur": [
+                "recherche_produit"
+              ],
+              "un": [
+                "recherche_produit"
+              ],
+              "moi": [
+                "recherche_produit",
+                "recommandation",
+                "aide"
+              ],
+              "de": [
+                "recherche_produit",
+                "recommandation"
+              ],
+              "quel": [
+                "recherche_produit"
+              ],
+              "avez-vous": [
+                "recherche_produit"
+              ],
+              "quoi": [
+                "recherche_produit",
+                "recommandation",
+                "aide"
+              ],
+              "comm": [
+                "recherche_produit"
+              ],
+              "une": [
+                "recherche_produit"
+              ],
+              "ide": [
+                "recherche_produit",
+                "recommandation"
+              ],
+              "du": [
+                "recherche_produit"
+              ],
+              "salon": [
+                "recherche_produit"
+              ],
+              "tout": [
+                "recherche_produit"
+              ],
+              "qu": [
+                "recherche_produit",
+                "recommandation"
+              ],
+              "est": [
+                "recherche_produit",
+                "recommandation"
+              ],
+              "ce": [
+                "recherche_produit",
+                "recommandation"
+              ],
+              "que": [
+                "recherche_produit",
+                "recommandation",
+                "aide"
+              ],
+              "vend": [
+                "recherche_produit",
+                "recommandation"
+              ],
+              "recommand": [
+                "recommandation"
+              ],
+              "conseil": [
+                "recommandation"
+              ],
+              "suggest": [
+                "recommandation"
+              ],
+              "me": [
+                "recommandation"
+              ],
+              "est-ce": [
+                "recommandation"
+              ],
+              "qui": [
+                "recommandation"
+              ],
+              "populair": [
+                "recommandation"
+              ],
+              "tendanc": [
+                "recommandation"
+              ],
+              "top": [
+                "recommandation"
+              ],
+              "aide-moi": [
+                "recommandation"
+              ],
+              "chois": [
+                "recommandation"
+              ],
+              "sais": [
+                "recommandation"
+              ],
+              "pas": [
+                "recommandation",
+                "aide"
+              ],
+              "prendr": [
+                "recommandation"
+              ],
+              "indec": [
+                "recommandation"
+              ],
+              "inspir": [
+                "recommandation"
+              ],
+              "nouveaut": [
+                "recommandation"
+              ],
+              "meilleur": [
+                "recommandation"
+              ],
+              "coup": [
+                "recommandation"
+              ],
+              "cœur": [
+                "recommandation"
+              ],
+              "devr": [
+                "recommandation"
+              ],
+              "pens": [
+                "recommandation"
+              ],
+              "guid": [
+                "recommandation",
+                "aide"
+              ],
+              "aid": [
+                "recommandation",
+                "aide"
+              ],
+              "decid": [
+                "recommandation"
+              ],
+              "hesit": [
+                "recommandation"
+              ],
+              "choix": [
+                "recommandation"
+              ],
+              "difficil": [
+                "recommandation"
+              ],
+              "best-seller": [
+                "recommandation"
+              ],
+              "phar": [
+                "recommandation"
+              ],
+              "se": [
+                "recommandation"
+              ],
+              "bien": [
+                "recommandation"
+              ],
+              "prefer": [
+                "recommandation"
+              ],
+              "client": [
+                "recommandation"
+              ],
+              "ton": [
+                "recommandation"
+              ],
+              "avis": [
+                "recommandation"
+              ],
+              "help": [
+                "aide"
+              ],
+              "support": [
+                "aide"
+              ],
+              "peux-tu": [
+                "aide"
+              ],
+              "fair": [
+                "aide"
+              ],
+              "fonctionnalit": [
+                "aide"
+              ],
+              "fais": [
+                "aide"
+              ],
+              "besoin": [
+                "aide"
+              ],
+              "d": [
+                "aide"
+              ],
+              "march": [
+                "aide"
+              ],
+              "utilis": [
+                "aide"
+              ],
+              "tutoriel": [
+                "aide"
+              ],
+              "comprend": [
+                "aide"
+              ],
+              "expliqu": [
+                "aide"
+              ],
+              "peux": [
+                "aide"
+              ],
+              "m": [
+                "aide"
+              ],
+              "ser": [
+                "aide"
+              ],
+              "te": [
+                "aide"
+              ],
+              "capacit": [
+                "aide"
+              ],
+              "sais-tu": [
+                "aide"
+              ],
+              "informat": [
+                "aide"
+              ],
+              "soutien": [
+                "aide"
+              ],
+              "document": [
+                "aide"
+              ],
+              "*": [
+                "fallback"
+              ]
+            },
+            "neuralNetwork": {
+              "settings": {
+                "locale": "fr",
+                "tag": "nlu-fr",
+                "keepStopwords": true,
+                "nonefeatureValue": 1,
+                "nonedeltaMultiplier": 1.2,
+                "spellCheck": false,
+                "spellCheckDistance": 1,
+                "filterZeros": true
+              },
+              "features": [
+                "bonjour",
+                "salut",
+                "hello",
+                "coucou",
+                "yo",
+                "hey",
+                "bonsoir",
+                "cc",
+                "slt",
+                "bjr",
+                "le",
+                "bot",
+                "ther",
+                "hi",
+                "ca",
+                "va",
+                "comment",
+                "tu",
+                "vas",
+                "good",
+                "morning",
+                "afternoon",
+                "assist",
+                "je",
+                "cherch",
+                "veux",
+                "voudr",
+                "recherch",
+                "suis",
+                "a",
+                "la",
+                "as",
+                "vous",
+                "avez",
+                "disponibl",
+                "trouv",
+                "achet",
+                "montr",
+                "don",
+                "voir",
+                "affich",
+                "list",
+                "catalogu",
+                "produit",
+                "articl",
+                "item",
+                "meubl",
+                "mobili",
+                "deco",
+                "decor",
+                "lamp",
+                "luminair",
+                "lustr",
+                "chais",
+                "sieg",
+                "fauteuil",
+                "tabl",
+                "bureau",
+                "canap",
+                "sof",
+                "armoir",
+                "commod",
+                "etager",
+                "lit",
+                "matel",
+                "vaissel",
+                "couvert",
+                "verr",
+                "assiet",
+                "electromenag",
+                "frigo",
+                "lave-ling",
+                "cuisinier",
+                "jardin",
+                "exterieur",
+                "un",
+                "moi",
+                "de",
+                "quel",
+                "avez-vous",
+                "quoi",
+                "comm",
+                "une",
+                "ide",
+                "du",
+                "salon",
+                "tout",
+                "qu",
+                "est",
+                "ce",
+                "que",
+                "vend",
+                "recommand",
+                "conseil",
+                "suggest",
+                "me",
+                "est-ce",
+                "qui",
+                "populair",
+                "tendanc",
+                "top",
+                "aide-moi",
+                "chois",
+                "sais",
+                "pas",
+                "prendr",
+                "indec",
+                "inspir",
+                "nouveaut",
+                "meilleur",
+                "coup",
+                "cœur",
+                "devr",
+                "pens",
+                "guid",
+                "aid",
+                "decid",
+                "hesit",
+                "choix",
+                "difficil",
+                "best-seller",
+                "phar",
+                "se",
+                "bien",
+                "prefer",
+                "client",
+                "ton",
+                "avis",
+                "help",
+                "support",
+                "peux-tu",
+                "fair",
+                "fonctionnalit",
+                "fais",
+                "besoin",
+                "d",
+                "march",
+                "utilis",
+                "tutoriel",
+                "comprend",
+                "expliqu",
+                "peux",
+                "m",
+                "ser",
+                "te",
+                "capacit",
+                "sais-tu",
+                "informat",
+                "soutien",
+                "document",
+                "*"
+              ],
+              "intents": [
+                "salutation",
+                "recherche_produit",
+                "recommandation",
+                "aide",
+                "fallback"
+              ],
+              "perceptrons": [
+                [
+                  13.341933250427246,
+                  13.167257308959961,
+                  13.164862632751465,
+                  13.168368339538574,
+                  13.250529289245605,
+                  13.401324272155762,
+                  13.174720764160156,
+                  13.18281364440918,
+                  13.22900676727295,
+                  13.17198657989502,
+                  -0.16085819900035858,
+                  0.05814867466688156,
+                  0.057798538357019424,
+                  13.173296928405762,
+                  -0.9176965951919556,
+                  0.8573404550552368,
+                  0.09053551405668259,
+                  -1.386060118675232,
+                  1.3511492013931274,
+                  8.80679702758789,
+                  4.40370512008667,
+                  4.402008056640625,
+                  -0.4769060015678406,
+                  -4.567002773284912,
+                  -0.9667765498161316,
+                  -0.9829533696174622,
+                  -0.8754377961158752,
+                  -1.1869902610778809,
+                  -0.3691381514072418,
+                  -0.7711172103881836,
+                  -0.3691381514072418,
+                  -2.5748472213745117,
+                  -1.859623908996582,
+                  -1.844599723815918,
+                  -2.661147356033325,
+                  -2.6113641262054443,
+                  -2.5614283084869385,
+                  -3.2088112831115723,
+                  -2.4610917568206787,
+                  -2.4274048805236816,
+                  -2.9749386310577393,
+                  -2.3456430435180664,
+                  -2.311300277709961,
+                  -2.753570318222046,
+                  -2.6864662170410156,
+                  -2.6339797973632812,
+                  -2.583756923675537,
+                  -2.152479410171509,
+                  -2.126121759414673,
+                  -2.100128173828125,
+                  -2.3848652839660645,
+                  -2.3509764671325684,
+                  -2.3181986808776855,
+                  -2.285491943359375,
+                  -2.2553279399871826,
+                  -2.228210210800171,
+                  -2.204819917678833,
+                  -2.176633358001709,
+                  -2.1536788940429688,
+                  -1.9260367155075073,
+                  -2.1009562015533447,
+                  -2.0814626216888428,
+                  -2.060476303100586,
+                  -2.0436275005340576,
+                  -1.8699605464935303,
+                  -1.8576923608779907,
+                  -1.8475874662399292,
+                  -1.837293028831482,
+                  -1.8285516500473022,
+                  -1.8198858499526978,
+                  -1.811816692352295,
+                  -1.8042831420898438,
+                  -1.7979519367218018,
+                  -1.791435718536377,
+                  -1.785293459892273,
+                  0,
+                  -1.3365267515182495,
+                  -1.2213431596755981,
+                  -0.004211111459881067,
+                  -0.004211111459881067,
+                  -0.8492143154144287,
+                  0,
+                  -0.0024160966277122498,
+                  -0.6143889427185059,
+                  0,
+                  0,
+                  0,
+                  -0.31668534874916077,
+                  -0.31668534874916077,
+                  -0.310336172580719,
+                  -1.1675742864608765,
+                  -0.310336172580719,
+                  -1.8333261013031006,
+                  -1.8293077945709229,
+                  -1.825382947921753,
+                  -0.0911620482802391,
+                  -0.3037443161010742,
+                  -0.6014131307601929,
+                  -0.3037443161010742,
+                  0,
+                  0,
+                  -0.22374218702316284,
+                  -0.958403468132019,
+                  0,
+                  0,
+                  -0.6666728854179382,
+                  0,
+                  -0.6133205890655518,
+                  -1.7683238983154297,
+                  0,
+                  -0.3088383674621582,
+                  -0.3088383674621582,
+                  0,
+                  0,
+                  -1.6883262395858765,
+                  -1.7581099271774292,
+                  -0.018256429582834244,
+                  0,
+                  -0.9091545343399048,
+                  -0.9091545343399048,
+                  -1.7614083290100098,
+                  0,
+                  -0.2973952293395996,
+                  -0.2973952293395996,
+                  -0.2970612645149231,
+                  -0.2970612645149231,
+                  0,
+                  0,
+                  -1.749696969985962,
+                  -1.6968940496444702,
+                  -0.23777435719966888,
+                  -0.391525536775589,
+                  -1.6960508823394775,
+                  -0.04055256024003029,
+                  -0.16742128133773804,
+                  -0.16742128133773804,
+                  -1.7609723806381226,
+                  -1.4889111518859863,
+                  -1.6827472448349,
+                  0,
+                  -0.3776302933692932,
+                  -0.0001569358864799142,
+                  -0.0001569358864799142,
+                  0,
+                  -0.3118515610694885,
+                  -1.6780657768249512,
+                  -0.153306245803833,
+                  -0.15647004544734955,
+                  -1.6740014553070068,
+                  -1.6703909635543823,
+                  -1.6668589115142822,
+                  1.0698588668232758
+                ],
+                [
+                  -8.206162452697754,
+                  -8.194305419921875,
+                  -8.192976951599121,
+                  -8.19164752960205,
+                  -8.190317153930664,
+                  -8.188983917236328,
+                  -8.187651634216309,
+                  -8.18631649017334,
+                  -8.184980392456055,
+                  -8.183643341064453,
+                  -6.00917387008667,
+                  -0.2815161943435669,
+                  -1.1847941875457764,
+                  -8.182306289672852,
+                  -1.9536445140838623,
+                  -0.3418150842189789,
+                  -4.982486724853516,
+                  -0.10139618813991547,
+                  -0.1014866754412651,
+                  -5.470346927642822,
+                  -2.7354061603546143,
+                  -2.734076499938965,
+                  -8.216124534606934,
+                  -0.2728588283061981,
+                  6.5753374099731445,
+                  4.911645889282227,
+                  6.269437313079834,
+                  6.114118576049805,
+                  -0.059133052825927734,
+                  -0.3261836767196655,
+                  0.4844273030757904,
+                  6.156919479370117,
+                  5.375974178314209,
+                  0.962114691734314,
+                  6.070183277130127,
+                  5.013912200927734,
+                  3.5138964653015137,
+                  5.9461750984191895,
+                  5.178677558898926,
+                  5.925210952758789,
+                  5.923334121704102,
+                  6.356551647186279,
+                  3.4667673110961914,
+                  4.655885219573975,
+                  5.994887351989746,
+                  5.77988338470459,
+                  5.710929870605469,
+                  5.795013427734375,
+                  8.022047996520996,
+                  5.890404224395752,
+                  6.010149955749512,
+                  5.870492935180664,
+                  5.871644973754883,
+                  5.8799967765808105,
+                  5.874433517456055,
+                  5.875585079193115,
+                  5.890290260314941,
+                  5.8788838386535645,
+                  6.031144618988037,
+                  5.906841278076172,
+                  5.349895477294922,
+                  5.8566060066223145,
+                  5.8577470779418945,
+                  5.858888626098633,
+                  5.875491619110107,
+                  5.876644134521484,
+                  5.8777971267700195,
+                  5.878951549530029,
+                  5.8801069259643555,
+                  5.881260395050049,
+                  5.882416725158691,
+                  5.883573055267334,
+                  5.884728908538818,
+                  5.885885715484619,
+                  5.88704252243042,
+                  -5.479681491851807,
+                  2.081895351409912,
+                  -6.872141361236572,
+                  0.5665072798728943,
+                  0.5665072798728943,
+                  -6.776573657989502,
+                  0.6546404361724854,
+                  -5.713719367980957,
+                  -4.622867107391357,
+                  -4.612442970275879,
+                  1.0694271326065063,
+                  -0.07636411488056183,
+                  -0.28635454177856445,
+                  2.503143548965454,
+                  1.3780697584152222,
+                  -4.470236778259277,
+                  1.3780697584152222,
+                  -10.366738319396973,
+                  -10.238542556762695,
+                  -10.027811050415039,
+                  -1.250386357307434,
+                  -4.695317268371582,
+                  -4.938656330108643,
+                  -1.8427090644836426,
+                  -12.987698554992676,
+                  -12.945919036865234,
+                  -4.03195333480835,
+                  -4.213014125823975,
+                  -1.7326819896697998,
+                  -5.033723831176758,
+                  -3.9307851791381836,
+                  -7.920411109924316,
+                  -10.307332038879395,
+                  -8.42306137084961,
+                  -12.921226501464844,
+                  -1.6920180320739746,
+                  -1.6920180320739746,
+                  -2.7884669303894043,
+                  -1.58845853805542,
+                  -10.287444114685059,
+                  -10.266426086425781,
+                  -1.5140690803527832,
+                  -8.395742416381836,
+                  -4.389171600341797,
+                  -4.389171600341797,
+                  -8.223257064819336,
+                  -12.906193733215332,
+                  -3.0318048000335693,
+                  -3.0318048000335693,
+                  -1.1681015491485596,
+                  -1.1681015491485596,
+                  -7.078802585601807,
+                  -7.078802585601807,
+                  -8.217428207397461,
+                  -8.214823722839355,
+                  -1.507145881652832,
+                  -2.6348307132720947,
+                  -8.213528633117676,
+                  -1.3778578042984009,
+                  -0.6605604290962219,
+                  -0.6605604290962219,
+                  -1.608527660369873,
+                  -3.2451369762420654,
+                  -8.20853328704834,
+                  -3.124406576156616,
+                  -10.252610206604004,
+                  -0.7873831391334534,
+                  -0.7873831391334534,
+                  -1.0244369506835938,
+                  -1.655895471572876,
+                  -8.203614234924316,
+                  -1.1213743686676025,
+                  -0.33362898230552673,
+                  -8.20184326171875,
+                  -8.200522422790527,
+                  -8.199199676513672,
+                  8.2325153508095
+                ],
+                [
+                  -2.7479774951934814,
+                  -2.4476144313812256,
+                  -2.568859815597534,
+                  -2.364476442337036,
+                  -2.373599052429199,
+                  -2.3995022773742676,
+                  -2.260730028152466,
+                  -2.2198781967163086,
+                  -2.2088282108306885,
+                  -2.1562201976776123,
+                  -0.6651404500007629,
+                  -0.6651404500007629,
+                  -0.6580901741981506,
+                  -2.1167514324188232,
+                  -1.5647130012512207,
+                  -0.2648264765739441,
+                  -3.077446699142456,
+                  -5.544035911560059,
+                  -0.03853687644004822,
+                  -1.7625417709350586,
+                  -0.9034914374351501,
+                  -0.844692051410675,
+                  -3.7403204441070557,
+                  2.4452669620513916,
+                  -3.845796823501587,
+                  -3.509103298187256,
+                  -3.477968454360962,
+                  -6.823051929473877,
+                  3.2699766159057617,
+                  7.625660419464111,
+                  -5.95911979675293,
+                  -0.10544633120298386,
+                  -4.32466983795166,
+                  -0.75754314661026,
+                  -1.8391108512878418,
+                  -3.7889411449432373,
+                  -1.3991824388504028,
+                  -11.264108657836914,
+                  -0.7887094616889954,
+                  -1.6835473775863647,
+                  -1.885402798652649,
+                  -2.440140962600708,
+                  -2.8319151401519775,
+                  0.24010762572288513,
+                  -2.1680760383605957,
+                  -1.428443431854248,
+                  -1.4187121391296387,
+                  -1.2572635412216187,
+                  -22.904010772705078,
+                  -1.2585841417312622,
+                  -10.102970123291016,
+                  -1.362741231918335,
+                  -1.350877046585083,
+                  -1.3393226861953735,
+                  -1.3267021179199219,
+                  -1.3165665864944458,
+                  -1.3064303398132324,
+                  -1.2953953742980957,
+                  -1.290991187095642,
+                  -1.1725213527679443,
+                  -3.2323126792907715,
+                  -1.2548044919967651,
+                  -1.2468255758285522,
+                  -1.2372007369995117,
+                  -1.1354511976242065,
+                  -1.1271425485610962,
+                  -1.1181058883666992,
+                  -1.1105440855026245,
+                  -1.103110432624817,
+                  -1.0949819087982178,
+                  -1.0881267786026,
+                  -1.0802974700927734,
+                  -1.0739140510559082,
+                  -1.066359043121338,
+                  -1.060355544090271,
+                  -1.712438941001892,
+                  9.643630027770996,
+                  2.1035735607147217,
+                  -1.7878673076629639,
+                  -1.7878673076629639,
+                  5.628354072570801,
+                  -0.004114994313567877,
+                  -1.9667832851409912,
+                  12.896073341369629,
+                  0,
+                  -0.19743427634239197,
+                  0,
+                  1.8416128158569336,
+                  -1.145432949066162,
+                  0.32251083850860596,
+                  3.5421905517578125,
+                  0.32251083850860596,
+                  14.77611255645752,
+                  14.767191886901855,
+                  14.7864408493042,
+                  -3.442422389984131,
+                  5.397801399230957,
+                  6.28978967666626,
+                  2.4103169441223145,
+                  14.519906997680664,
+                  14.518494606018066,
+                  -1.658692717552185,
+                  8.930375099182129,
+                  -0.1666198968887329,
+                  -4.135587692260742,
+                  11.070180892944336,
+                  9.052103042602539,
+                  5.495031833648682,
+                  14.730304718017578,
+                  14.524868965148926,
+                  6.323746204376221,
+                  6.323746204376221,
+                  2.986785411834717,
+                  7.127420425415039,
+                  2.8471243381500244,
+                  -8.679953575134277,
+                  15.508533477783203,
+                  12.211554527282715,
+                  7.334938049316406,
+                  7.334938049316406,
+                  14.617025375366211,
+                  14.408224105834961,
+                  3.878265857696533,
+                  3.878265857696533,
+                  6.26254940032959,
+                  6.26254940032959,
+                  7.738028049468994,
+                  7.738028049468994,
+                  -3.7867140769958496,
+                  -3.644382953643799,
+                  -2.3814494609832764,
+                  -3.6630172729492188,
+                  -3.8831353187561035,
+                  -4.202592372894287,
+                  -1.0546581745147705,
+                  -1.0546581745147705,
+                  -1.2239645719528198,
+                  -1.651926875114441,
+                  -3.0486032962799072,
+                  -3.9109737873077393,
+                  -8.88134765625,
+                  -0.46094459295272827,
+                  -0.46094459295272827,
+                  -7.564337730407715,
+                  -0.8852559924125671,
+                  -2.6895687580108643,
+                  -1.168856143951416,
+                  -0.6432282328605652,
+                  -2.6025259494781494,
+                  -2.563729763031006,
+                  -2.5134479999542236,
+                  -0.5201702446092513
+                ],
+                [
+                  -14.446009635925293,
+                  -5.855257987976074,
+                  -3.402888536453247,
+                  -3.007894515991211,
+                  -3.058009624481201,
+                  -14.447273254394531,
+                  -2.8815698623657227,
+                  -5.00857400894165,
+                  -2.9716639518737793,
+                  -2.7698583602905273,
+                  -1.036392331123352,
+                  -1.036392331123352,
+                  -0.9771283864974976,
+                  -2.7108840942382812,
+                  1.1368117332458496,
+                  -4.456508159637451,
+                  5.310478687286377,
+                  1.3318947553634644,
+                  -3.8532321453094482,
+                  -2.3237900733947754,
+                  -1.178873062133789,
+                  -1.0941652059555054,
+                  12.101330757141113,
+                  -1.6175997257232666,
+                  -1.4069844484329224,
+                  -1.4144408702850342,
+                  -1.3853048086166382,
+                  -1.4546774625778198,
+                  -0.600537121295929,
+                  -4.424189567565918,
+                  -0.39318808913230896,
+                  -3.8671090602874756,
+                  -1.735602855682373,
+                  -1.069540023803711,
+                  -2.369924783706665,
+                  -2.3698201179504395,
+                  -2.3697118759155273,
+                  -2.453824043273926,
+                  -2.369603395462036,
+                  -2.369492769241333,
+                  -2.3706490993499756,
+                  -2.369288444519043,
+                  -2.3691744804382324,
+                  -2.3703744411468506,
+                  -2.3702902793884277,
+                  -2.3702046871185303,
+                  -2.3701183795928955,
+                  -2.368648052215576,
+                  -2.3685247898101807,
+                  -2.3683998584747314,
+                  -2.3697149753570557,
+                  -2.369621992111206,
+                  -2.3695285320281982,
+                  -2.369433641433716,
+                  -2.369337558746338,
+                  -2.3692402839660645,
+                  -2.3691415786743164,
+                  -2.369041681289673,
+                  -2.368941307067871,
+                  -2.367229700088501,
+                  -2.3687186241149902,
+                  -2.3686137199401855,
+                  -2.368506908416748,
+                  -2.3683993816375732,
+                  -2.3665771484375,
+                  -2.366424560546875,
+                  -2.3662705421447754,
+                  -2.3661131858825684,
+                  -2.3659541606903076,
+                  -2.365793228149414,
+                  -2.3656294345855713,
+                  -2.365463972091675,
+                  -2.365295886993408,
+                  -2.3651254177093506,
+                  -2.364952325820923,
+                  0,
+                  -6.842914581298828,
+                  -1.7117999792099,
+                  0,
+                  0,
+                  2.4890964031219482,
+                  -0.6766447424888611,
+                  -0.567445695400238,
+                  -0.6558501720428467,
+                  0,
+                  0,
+                  0,
+                  -0.9048569798469543,
+                  -0.7868314981460571,
+                  -0.8119439482688904,
+                  2.35404372215271,
+                  -0.8119439482688904,
+                  -6.186814785003662,
+                  -2.366800546646118,
+                  -2.3666574954986572,
+                  -2.3603224754333496,
+                  -0.2512468695640564,
+                  -0.29159989953041077,
+                  -0.13322152197360992,
+                  0,
+                  0,
+                  -0.0008022444089874625,
+                  -4.71047830581665,
+                  -3.6123878955841064,
+                  4.958019733428955,
+                  -4.5844902992248535,
+                  -0.1498596966266632,
+                  -2.0848429203033447,
+                  -2.364290475845337,
+                  0,
+                  -0.32792288064956665,
+                  -0.32792288064956665,
+                  -0.11718268692493439,
+                  -3.135477304458618,
+                  8.291893005371094,
+                  15.555580139160156,
+                  -13.325701713562012,
+                  -0.6126914024353027,
+                  -1.1152762174606323,
+                  -1.1152762174606323,
+                  -2.226454496383667,
+                  0,
+                  -0.15833432972431183,
+                  -0.15833432972431183,
+                  -0.2597978115081787,
+                  -0.2597978115081787,
+                  0,
+                  0,
+                  12.181330680847168,
+                  12.177777290344238,
+                  3.362919569015503,
+                  6.4581618309021,
+                  12.181636810302734,
+                  8.356012344360352,
+                  -1.7165290117263794,
+                  -1.7165290117263794,
+                  5.599095821380615,
+                  6.736865520477295,
+                  11.913436889648438,
+                  8.570409774780273,
+                  18.729806900024414,
+                  -2.4687650203704834,
+                  -2.4687650203704834,
+                  12.493293762207031,
+                  -0.27571696043014526,
+                  11.910141944885254,
+                  3.0952961444854736,
+                  -3.586834192276001,
+                  11.912694931030273,
+                  11.912753105163574,
+                  -3.180744171142578,
+                  2.374035844635386
+                ],
+                [
+                  -0.32192593812942505,
+                  -0.28135618567466736,
+                  -0.2926427125930786,
+                  -0.2557474970817566,
+                  -0.26064202189445496,
+                  -0.28173860907554626,
+                  -0.24356865882873535,
+                  -0.24351313710212708,
+                  -0.24425135552883148,
+                  -0.23125769197940826,
+                  -0.09006839990615845,
+                  -0.09006839990615845,
+                  -0.08238409459590912,
+                  -0.2259558141231537,
+                  -0.0905693769454956,
+                  -0.0905693769454956,
+                  -0.11053873598575592,
+                  -0.16205807030200958,
+                  -0.03883012756705284,
+                  -0.20455031096935272,
+                  -0.1036805510520935,
+                  -0.09614136070013046,
+                  -0.15278835594654083,
+                  -0.25346770882606506,
+                  -0.06570924818515778,
+                  -0.060086939483881,
+                  -0.05597915127873421,
+                  -0.06307987123727798,
+                  -0.017087062820792198,
+                  -0.050837285816669464,
+                  -0.017087062820792198,
+                  -0.1128082200884819,
+                  -0.1343710571527481,
+                  -0.1338857114315033,
+                  -0.20964506268501282,
+                  -0.2056868076324463,
+                  -0.2031538486480713,
+                  -0.2385234832763672,
+                  -0.1971920281648636,
+                  -0.19466978311538696,
+                  -0.2248719483613968,
+                  -0.18953102827072144,
+                  -0.18677359819412231,
+                  -0.21286356449127197,
+                  -0.2100330889225006,
+                  -0.20715852081775665,
+                  -0.20413838326931,
+                  -0.17687098681926727,
+                  -0.17504000663757324,
+                  -0.17328006029129028,
+                  -0.19223560392856598,
+                  -0.19011646509170532,
+                  -0.1878858208656311,
+                  -0.18603549897670746,
+                  -0.18391573429107666,
+                  -0.18228788673877716,
+                  -0.180642768740654,
+                  -0.17882700264453888,
+                  -0.17737141251564026,
+                  -0.16141806542873383,
+                  -0.17373211681842804,
+                  -0.17244282364845276,
+                  -0.17117692530155182,
+                  -0.16984115540981293,
+                  -0.1574515849351883,
+                  -0.15668325126171112,
+                  -0.15599708259105682,
+                  -0.15539517998695374,
+                  -0.15490275621414185,
+                  -0.15445402264595032,
+                  -0.15408867597579956,
+                  -0.15377892553806305,
+                  -0.15352222323417664,
+                  -0.1533135175704956,
+                  -0.15315228700637817,
+                  0,
+                  -0.11202456802129745,
+                  -0.1032441109418869,
+                  -0.0001008426261250861,
+                  -0.0001008426261250861,
+                  -0.06479542702436447,
+                  0,
+                  -0.00011647870996966958,
+                  -0.05188731104135513,
+                  0,
+                  0,
+                  0,
+                  -0.02627105638384819,
+                  -0.02627105638384819,
+                  -0.025926971808075905,
+                  -0.09946422278881073,
+                  -0.025926971808075905,
+                  -0.15489499270915985,
+                  -0.15472112596035004,
+                  -0.15455514192581177,
+                  -0.004966367967426777,
+                  -0.02578767202794552,
+                  -0.051237981766462326,
+                  -0.02578767202794552,
+                  0,
+                  0,
+                  -0.023972734808921814,
+                  -0.08891133219003677,
+                  0,
+                  0,
+                  -0.05645652115345001,
+                  0,
+                  -0.052202094346284866,
+                  -0.15288648009300232,
+                  0,
+                  -0.02596498280763626,
+                  -0.02596498280763626,
+                  0,
+                  0,
+                  -0.15278619527816772,
+                  -0.1528077870607376,
+                  -0.005330170039087534,
+                  0,
+                  -0.07709236443042755,
+                  -0.07709236443042755,
+                  -0.1528276652097702,
+                  0,
+                  -0.02544359304010868,
+                  -0.02544359304010868,
+                  -0.025334632024168968,
+                  -0.025334632024168968,
+                  0,
+                  0,
+                  -0.15279021859169006,
+                  -0.15278621017932892,
+                  -0.021038755774497986,
+                  -0.03719904646277428,
+                  -0.15278621017932892,
+                  0,
+                  -0.014635647647082806,
+                  -0.014635647647082806,
+                  0,
+                  -0.042268283665180206,
+                  -0.15278607606887817,
+                  0,
+                  -0.04076174274086952,
+                  0,
+                  0,
+                  0,
+                  -0.02765323780477047,
+                  -0.1527860313653946,
+                  -0.01612306572496891,
+                  -0.017085574567317963,
+                  -0.1527860015630722,
+                  -0.152785986661911,
+                  14.13292407989502,
+                  0.15278653754675342
+                ]
+              ]
+            }
+          }
+        }
+      }
+    },
+    "intentDomains": {},
+    "extraSentences": [
+      [
+        "fr",
+        "bonjour"
+      ],
+      [
+        "fr",
+        "salut"
+      ],
+      [
+        "fr",
+        "hello"
+      ],
+      [
+        "fr",
+        "coucou"
+      ],
+      [
+        "fr",
+        "yo"
+      ],
+      [
+        "fr",
+        "hey"
+      ],
+      [
+        "fr",
+        "bonsoir"
+      ],
+      [
+        "fr",
+        "cc"
+      ],
+      [
+        "fr",
+        "slt"
+      ],
+      [
+        "fr",
+        "bjr"
+      ],
+      [
+        "fr",
+        "hey le bot"
+      ],
+      [
+        "fr",
+        "hello there"
+      ],
+      [
+        "fr",
+        "hi"
+      ],
+      [
+        "fr",
+        "bonjour ça va"
+      ],
+      [
+        "fr",
+        "salut comment tu vas"
+      ],
+      [
+        "fr",
+        "bonjour bonjour"
+      ],
+      [
+        "fr",
+        "good morning"
+      ],
+      [
+        "fr",
+        "good afternoon"
+      ],
+      [
+        "fr",
+        "yo le bot"
+      ],
+      [
+        "fr",
+        "slt ça va"
+      ],
+      [
+        "fr",
+        "cc comment ça va"
+      ],
+      [
+        "fr",
+        "hey assistant"
+      ],
+      [
+        "fr",
+        "bonjour assistant"
+      ],
+      [
+        "fr",
+        "je cherche"
+      ],
+      [
+        "fr",
+        "je veux"
+      ],
+      [
+        "fr",
+        "je voudrais"
+      ],
+      [
+        "fr",
+        "je recherche"
+      ],
+      [
+        "fr",
+        "je suis à la recherche"
+      ],
+      [
+        "fr",
+        "tu as"
+      ],
+      [
+        "fr",
+        "vous avez"
+      ],
+      [
+        "fr",
+        "disponible"
+      ],
+      [
+        "fr",
+        "trouver"
+      ],
+      [
+        "fr",
+        "acheter"
+      ],
+      [
+        "fr",
+        "montre"
+      ],
+      [
+        "fr",
+        "montrer"
+      ],
+      [
+        "fr",
+        "donne"
+      ],
+      [
+        "fr",
+        "voir"
+      ],
+      [
+        "fr",
+        "affiche"
+      ],
+      [
+        "fr",
+        "afficher"
+      ],
+      [
+        "fr",
+        "liste"
+      ],
+      [
+        "fr",
+        "catalogue"
+      ],
+      [
+        "fr",
+        "produit"
+      ],
+      [
+        "fr",
+        "produits"
+      ],
+      [
+        "fr",
+        "article"
+      ],
+      [
+        "fr",
+        "articles"
+      ],
+      [
+        "fr",
+        "item"
+      ],
+      [
+        "fr",
+        "items"
+      ],
+      [
+        "fr",
+        "meuble"
+      ],
+      [
+        "fr",
+        "meubles"
+      ],
+      [
+        "fr",
+        "mobilier"
+      ],
+      [
+        "fr",
+        "déco"
+      ],
+      [
+        "fr",
+        "décoration"
+      ],
+      [
+        "fr",
+        "lampe"
+      ],
+      [
+        "fr",
+        "lampes"
+      ],
+      [
+        "fr",
+        "luminaire"
+      ],
+      [
+        "fr",
+        "luminaires"
+      ],
+      [
+        "fr",
+        "lustre"
+      ],
+      [
+        "fr",
+        "lustres"
+      ],
+      [
+        "fr",
+        "chaise"
+      ],
+      [
+        "fr",
+        "chaises"
+      ],
+      [
+        "fr",
+        "siège"
+      ],
+      [
+        "fr",
+        "sièges"
+      ],
+      [
+        "fr",
+        "fauteuil"
+      ],
+      [
+        "fr",
+        "fauteuils"
+      ],
+      [
+        "fr",
+        "table"
+      ],
+      [
+        "fr",
+        "tables"
+      ],
+      [
+        "fr",
+        "bureau"
+      ],
+      [
+        "fr",
+        "bureaux"
+      ],
+      [
+        "fr",
+        "canapé"
+      ],
+      [
+        "fr",
+        "canapés"
+      ],
+      [
+        "fr",
+        "sofa"
+      ],
+      [
+        "fr",
+        "armoire"
+      ],
+      [
+        "fr",
+        "armoires"
+      ],
+      [
+        "fr",
+        "commode"
+      ],
+      [
+        "fr",
+        "commodes"
+      ],
+      [
+        "fr",
+        "étagère"
+      ],
+      [
+        "fr",
+        "étagères"
+      ],
+      [
+        "fr",
+        "lit"
+      ],
+      [
+        "fr",
+        "lits"
+      ],
+      [
+        "fr",
+        "matelas"
+      ],
+      [
+        "fr",
+        "vaisselle"
+      ],
+      [
+        "fr",
+        "couvert"
+      ],
+      [
+        "fr",
+        "verre"
+      ],
+      [
+        "fr",
+        "assiette"
+      ],
+      [
+        "fr",
+        "électroménager"
+      ],
+      [
+        "fr",
+        "frigo"
+      ],
+      [
+        "fr",
+        "lave-linge"
+      ],
+      [
+        "fr",
+        "cuisinière"
+      ],
+      [
+        "fr",
+        "jardin"
+      ],
+      [
+        "fr",
+        "extérieur"
+      ],
+      [
+        "fr",
+        "je cherche un produit"
+      ],
+      [
+        "fr",
+        "je veux acheter"
+      ],
+      [
+        "fr",
+        "montre moi des produits"
+      ],
+      [
+        "fr",
+        "quels produits avez-vous"
+      ],
+      [
+        "fr",
+        "tu as quoi comme articles"
+      ],
+      [
+        "fr",
+        "je recherche un meuble"
+      ],
+      [
+        "fr",
+        "je veux une lampe"
+      ],
+      [
+        "fr",
+        "donne moi des idées déco"
+      ],
+      [
+        "fr",
+        "montre les chaises"
+      ],
+      [
+        "fr",
+        "affiche les tables"
+      ],
+      [
+        "fr",
+        "je cherche de la décoration"
+      ],
+      [
+        "fr",
+        "vous avez des canapés"
+      ],
+      [
+        "fr",
+        "je veux du mobilier"
+      ],
+      [
+        "fr",
+        "trouve moi une armoire"
+      ],
+      [
+        "fr",
+        "je recherche des meubles salon"
+      ],
+      [
+        "fr",
+        "donne moi des lampes"
+      ],
+      [
+        "fr",
+        "montre tout"
+      ],
+      [
+        "fr",
+        "qu est ce que vous vendez"
+      ],
+      [
+        "fr",
+        "catalogue produits"
+      ],
+      [
+        "fr",
+        "liste des articles"
+      ],
+      [
+        "fr",
+        "recommandation"
+      ],
+      [
+        "fr",
+        "recommandations"
+      ],
+      [
+        "fr",
+        "conseil"
+      ],
+      [
+        "fr",
+        "conseils"
+      ],
+      [
+        "fr",
+        "suggestion"
+      ],
+      [
+        "fr",
+        "suggestions"
+      ],
+      [
+        "fr",
+        "que me conseilles"
+      ],
+      [
+        "fr",
+        "tu recommandes quoi"
+      ],
+      [
+        "fr",
+        "des idées"
+      ],
+      [
+        "fr",
+        "donne des idées"
+      ],
+      [
+        "fr",
+        "qu est-ce qui est populaire"
+      ],
+      [
+        "fr",
+        "produits tendance"
+      ],
+      [
+        "fr",
+        "top produits"
+      ],
+      [
+        "fr",
+        "aide-moi à choisir"
+      ],
+      [
+        "fr",
+        "je sais pas quoi prendre"
+      ],
+      [
+        "fr",
+        "je suis indécis"
+      ],
+      [
+        "fr",
+        "inspire moi"
+      ],
+      [
+        "fr",
+        "nouveautés"
+      ],
+      [
+        "fr",
+        "meilleurs produits"
+      ],
+      [
+        "fr",
+        "coup de cœur"
+      ],
+      [
+        "fr",
+        "qu est-ce que je devrais acheter"
+      ],
+      [
+        "fr",
+        "tu penses à quoi"
+      ],
+      [
+        "fr",
+        "guide moi"
+      ],
+      [
+        "fr",
+        "aide à décider"
+      ],
+      [
+        "fr",
+        "je hésite"
+      ],
+      [
+        "fr",
+        "choix difficile"
+      ],
+      [
+        "fr",
+        "best-sellers"
+      ],
+      [
+        "fr",
+        "produits phares"
+      ],
+      [
+        "fr",
+        "ce qui se vend bien"
+      ],
+      [
+        "fr",
+        "préférés des clients"
+      ],
+      [
+        "fr",
+        "que prendre"
+      ],
+      [
+        "fr",
+        "quoi choisir"
+      ],
+      [
+        "fr",
+        "donne ton avis"
+      ],
+      [
+        "fr",
+        "aide"
+      ],
+      [
+        "fr",
+        "help"
+      ],
+      [
+        "fr",
+        "assistance"
+      ],
+      [
+        "fr",
+        "support"
+      ],
+      [
+        "fr",
+        "que peux-tu faire"
+      ],
+      [
+        "fr",
+        "fonctionnalités"
+      ],
+      [
+        "fr",
+        "tu fais quoi"
+      ],
+      [
+        "fr",
+        "aide moi"
+      ],
+      [
+        "fr",
+        "besoin d aide"
+      ],
+      [
+        "fr",
+        "comment ça marche"
+      ],
+      [
+        "fr",
+        "comment utiliser"
+      ],
+      [
+        "fr",
+        "guide"
+      ],
+      [
+        "fr",
+        "tutoriel"
+      ],
+      [
+        "fr",
+        "je comprends pas"
+      ],
+      [
+        "fr",
+        "explique moi"
+      ],
+      [
+        "fr",
+        "peux tu m aider"
+      ],
+      [
+        "fr",
+        "à quoi tu sers"
+      ],
+      [
+        "fr",
+        "tes fonctionnalités"
+      ],
+      [
+        "fr",
+        "capacités"
+      ],
+      [
+        "fr",
+        "que sais-tu faire"
+      ],
+      [
+        "fr",
+        "aide informatique"
+      ],
+      [
+        "fr",
+        "soutien"
+      ],
+      [
+        "fr",
+        "documentation"
+      ],
+      [
+        "fr",
+        "*"
+      ]
+    ]
+  },
+  "ner": {
+    "settings": {
+      "tag": "ner",
+      "entityPreffix": "%",
+      "entitySuffix": "%"
+    },
+    "rules": {}
+  },
+  "nlgManager": {
+    "settings": {
+      "tag": "nlg-manager"
+    },
+    "responses": {
+      "fr": {
+        "salutation": [
+          {
+            "answer": "Bonjour ! 👋 Je suis votre assistant shopping. Comment puis-je vous aider ?"
+          },
+          {
+            "answer": "Salut ! Ravie de vous voir. Que cherchez-vous comme produit aujourd'hui ?"
+          },
+          {
+            "answer": "Hello ! 🤗 Besoin d'aide pour trouver des meubles ou de la décoration ?"
+          }
+        ],
+        "recherche_produit": [
+          {
+            "answer": "Je cherche les produits correspondants dans notre catalogue..."
+          },
+          {
+            "answer": "Je vais vous montrer nos produits disponibles !"
+          },
+          {
+            "answer": "Voici ce que j'ai trouvé pour vous :"
+          }
+        ],
+        "recommandation": [
+          {
+            "answer": "Je vous recommande ces produits populaires :"
+          },
+          {
+            "answer": "Voici mes suggestions basées sur vos goûts :"
+          },
+          {
+            "answer": "D'après ce que je sais, ces articles pourraient vous plaire :"
+          }
+        ],
+        "aide": [
+          {
+            "answer": "Je peux vous aider à : 🔍 Trouver des produits, 💡 Faire des recommandations, 💰 Vous informer sur les prix, 🚚 Donner les infos livraison ! Dites-moi ce que vous cherchez."
+          },
+          {
+            "answer": "Je suis votre assistant shopping ! Je peux rechercher des produits, faire des suggestions et répondre à vos questions sur notre catalogue."
+          }
+        ],
+        "fallback": [
+          {
+            "answer": "Je ne suis pas sûr de comprendre. Pouvez-vous reformuler ?"
+          },
+          {
+            "answer": "Désolé, je n'ai pas saisi. Essayez avec d'autres mots !"
+          },
+          {
+            "answer": "Je suis spécialisé dans les produits de décoration et meubles. Que cherchez-vous exactement ?"
+          }
+        ]
+      }
+    }
+  },
+  "actionManager": {
+    "settings": {
+      "tag": "action-manager"
+    },
+    "actions": {}
+  },
+  "slotManager": {}
+}

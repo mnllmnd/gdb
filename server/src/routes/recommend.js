@@ -1,7 +1,7 @@
 import express from 'express';
 import natural from 'natural';
 import nlpManager from '../../nlp/index.js';
-import { query as dbQuery } from '../db.js';
+import tfidfCache from '../tfidf_cache.js';
 
 const router = express.Router();
 
@@ -51,50 +51,9 @@ const cosineSimilarity = (a = {}, b = {}) => {
   return dot / (magA * magB);
 };
 
-// Construire les vecteurs TF-IDF pour les produits + requête
-const buildTfidfVectors = (products, query) => {
-  const TfIdf = natural.TfIdf;
-  const tfidf = new TfIdf();
-
-  // Ajouter un document par produit
-  // IMPORTANT: pour mieux prendre en compte les "détails" d'un produit
-  // (description, attributs textuels), on concatène title + description + category
-  // et on extrait des mots-clés depuis le titre+description et on les répète
-  // de manière à légèrement augmenter leur poids TF dans le document.
-  // Cela améliore la précision lorsque l'utilisateur mentionne des détails
-  // (couleur, matériau, parfum, taille, etc.) dans sa requête.
-  products.forEach(p => {
-    const title = (p.name || '').toString();
-    const desc = (p.description || '').toString();
-    const cat = (p.category || '').toString();
-
-    // Extraire mots-clés depuis title+description
-    const prodKeywords = simpleKeywords(`${title} ${desc}`);
-
-    // Répéter les mots-clés une ou deux fois pour les booster dans le TF
-    const boosted = prodKeywords.length ? prodKeywords.join(' ') + ' ' + prodKeywords.join(' ') : '';
-
-    const docText = `${title} ${desc} ${cat} ${boosted}`.trim();
-    tfidf.addDocument(docText);
-  });
-
-  // Ajouter la requête comme dernier document
-  tfidf.addDocument(query || '');
-  const queryIndex = products.length;
-
-  // Pour chaque doc, construire un map term->tfidf
-  const docs = [];
-  for (let i = 0; i <= queryIndex; i++) {
-    const map = {};
-    // listTerms renvoie des { term, tfidf } triés
-    tfidf.listTerms(i).forEach(t => {
-      map[t.term] = t.tfidf;
-    });
-    docs.push(map);
-  }
-
-  return { docs, queryIndex };
-};
+// NOTE: TF-IDF vectors for products are precomputed at server startup by
+// `server/src/tfidf_cache.js`. We compute a query vector on each request via
+// the same tokenization+idf values and then compare using cosine similarity.
 
 // POST / (endpoint principal pour recommandations)
 router.post('/', async (req, res) => {
@@ -121,26 +80,14 @@ router.post('/', async (req, res) => {
       detectedIntent = 'gift.man';
     }
 
-        // Lire les produits et catégories depuis la base de données
-      // Use p.title (column exists) as product name; COALESCE with p.name caused errors when p.name did not exist
-      const prodRes = await dbQuery('SELECT p.id, p.title AS name, p.description, p.price, c.name AS category, p.image_url FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.price IS NOT NULL');
-        const productsFromDb = (prodRes?.rows || []).map(r => ({
-          id: r.id,
-          name: r.name || 'Produit',
-          price: Number(r.price) || 0,
-          description: r.description || '',
-          category: (r.category || '').toLowerCase(),
-          image: r.image_url || null
-        }));
-
-        // Si aucun produit disponible, retourner vide
+        // Use precomputed TF-IDF cache (products loaded at startup)
+        const productsFromDb = tfidfCache.getProducts() || []
         if (!productsFromDb.length) {
           return res.json({ query: text, detectedIntent, baseIntent, keywords, budget: budget || null, results: [] });
         }
 
-        // Récupérer la liste des catégories réelles pour adapter le mapping
-        const catRes = await dbQuery('SELECT id, name FROM categories');
-        const categoriesList = (catRes?.rows || []).map(c => (c.name || '').toLowerCase());
+        // Récupérer la liste des catégories réelles à partir des produits
+        const categoriesList = Array.from(new Set(productsFromDb.map(p => (p.category || '').toLowerCase()).filter(Boolean)))
 
         // Dictionnaire de mots-clés -> termes de catégorie (on cherche la catégorie réelle correspondante)
         const SYNONYM_GROUPS = {
@@ -189,17 +136,17 @@ router.post('/', async (req, res) => {
 
         const isPreferredCategory = (p) => preferredCategories.size === 0 ? false : preferredCategories.has((p.category || '').toLowerCase());
 
-  // Construire TF-IDF et vecteurs à partir des produits récupérés
-  const { docs, queryIndex } = buildTfidfVectors(productsFromDb, text);
-  const queryVec = docs[queryIndex];
+  // Utiliser le cache TF-IDF pré-calculé
+  const productVectors = tfidfCache.getProductVectors()
+  const queryVec = tfidfCache.computeQueryVector(text)
 
     // Paramètres de pondération : ajuster selon besoin
     const WEIGHT_SEMANTIC = 0.8; // importance de la similarité sémantique
     const WEIGHT_INTENT = 0.2;   // importance d'un boost basé sur l'intent / mots-clés
 
     // Évaluer chaque produit
-  let scored = productsFromDb.map((p, i) => {
-      const docVec = docs[i] || {};
+    let scored = productsFromDb.map((p) => {
+      const docVec = productVectors.get(p.id) || {};
       const sim = cosineSimilarity(queryVec, docVec);
 
       // Boost simple si mots-clés correspondent au nom/catégorie
