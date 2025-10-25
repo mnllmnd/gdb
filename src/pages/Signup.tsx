@@ -155,6 +155,7 @@ export default function Signup() {
 
           <Button
             colorScheme="blue"
+            bg="black"
             size="lg"
             w="full"
             shadow="md"
@@ -171,6 +172,7 @@ export default function Signup() {
             as={RouterLink}
             to="/login"
             variant="outline"
+            color="gray.800"
             size="lg"
             w="full"
             _hover={{

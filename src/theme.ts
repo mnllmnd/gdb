@@ -7,18 +7,17 @@ const theme = extendTheme({
   },
   colors: {
     brand: {
-      50: '#cbc5eac1',
-      100: '#BAE3FF',
-      200: '#fab37cff',
-      300: '#f3a647df',
-      400: '#d68131c3',
-      500: '#bf71318c',
-      600: '#b75b3088',
-      700: '#ab643ba8',
-      800: '#ad6e33ff',
-      900: '#c67635c3',
-      980: '#ab6231c3',
-    },
+    50: '#fdf6f0',
+    100: '#ad6931ff',
+    200: '#ffffff',
+    300: '#eaae94ff',
+    400: '#dd9c70',
+    500: '#cc7c4a',
+    600: '#b86235',
+    700: '#964d2d',
+    800: '#ffffffff',
+    900: '#9b5035ff',
+  },
     accent: {
       50: '#b292d3ff',
       100: '#c2b9e6ff',
@@ -100,9 +99,18 @@ const theme = extendTheme({
           left: 0,
           width: '100%',
           height: '100%',
-          bg: 'rgba(169, 105, 73, 0.43)', // Ajustez l'opacité selon vos besoins
+          bg: 'rgba(153, 116, 98, 1)', // Ajustez l'opacité selon vos besoins
           zIndex: -1,
         },
+      },
+      /* Ensure buttons and menu items are readable on light backgrounds.
+         This is a safe, small override so ghost/outline variants don't appear
+         white-on-white when a global background or overlay is present. */
+      '.chakra-button': {
+        color: 'gray.800',
+      },
+      '.chakra-menu__menuitem, .chakra-menu__menuitem:hover, .chakra-menu__menuitem:focus': {
+        color: 'gray.800',
       },
 
       // ✅ Header avec fond solide

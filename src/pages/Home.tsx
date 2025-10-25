@@ -11,8 +11,14 @@ import {
   GridItem,
   useBreakpointValue,
   IconButton,
+  useColorModeValue,
+  HStack,
+  Badge,
+  Fade,
+  ScaleFade,
+  SimpleGrid,
 } from '@chakra-ui/react'
-import { CloseIcon } from '@chakra-ui/icons'
+import { CloseIcon, StarIcon } from '@chakra-ui/icons'
 import FilterNav from '../components/FilterNav'
 import AppTutorial from '../components/AppTutorial'
 import ShopCard from '../components/ShopCard'
@@ -44,6 +50,7 @@ interface Shop {
 
 export default function Home() {
   const [shops, setShops] = React.useState<Shop[]>([])
+  const [shopsMap, setShopsMap] = React.useState<Record<string, any>>({})
   const [products, setProducts] = React.useState<Product[]>([])
   const [categories, setCategories] = React.useState<Category[]>([])
   const [categorizedProducts, setCategorizedProducts] = React.useState<Record<number, Product[]>>({})
@@ -51,7 +58,17 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = React.useState<number | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
 
-  const cardHeight = useBreakpointValue({ base: '90px', md: '180px' })
+  // Déplacer tous les hooks conditionnels en haut
+  const cardHeight = useBreakpointValue({ base: '120px', md: '200px' })
+  const bgGradient = useColorModeValue(
+    'linear(to-br, brand.500, brand.600)',
+    'linear(to-br, brand.600, brand.700)'
+  )
+  const sectionBg = useColorModeValue('brand.200', 'gray.800')
+  const categoryBg = useColorModeValue('brand.50', 'brand.900')
+  const textColor = useColorModeValue('gray.800', 'white')
+  const pageBg = useColorModeValue('gray.50', 'gray.900')
+  const borderColor = useColorModeValue('gray.200', 'gray.600')
 
   React.useEffect(() => {
     async function loadData() {
@@ -63,6 +80,14 @@ export default function Home() {
         ])
         
         setShops(shopsData)
+        // build shops lookup maps for quick access by id or owner
+        const byId: Record<string, any> = {}
+        const byOwner: Record<string, any> = {}
+        ;(shopsData || []).forEach((s: any) => {
+          if (s?.id) byId[String(s.id)] = s
+          if (s?.owner_id) byOwner[String(s.owner_id)] = s
+        })
+        setShopsMap({ byId, byOwner })
         setCategories(categoriesData)
         setProducts(productsData)
         
@@ -169,13 +194,28 @@ export default function Home() {
     }
 
     return (
-      <Grid templateColumns={{ base: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' }} gap={2}>
-        {shops.map((shop) => (
-          <GridItem key={shop.id}>
-            <ShopCard {...shop} id={String(shop.id)} compact height={cardHeight} />
-          </GridItem>
-        ))}
-      </Grid>
+      <ScaleFade in={!isLoading} initialScale={0.95}>
+        <SimpleGrid 
+          columns={{ base: 1, sm: 2, md: 3, lg: 4 }} 
+          spacing={{ base: 3, md: 4 }}
+          px={{ base: 2, md: 0 }}
+        >
+          {shops.map((shop, index) => (
+            <Box 
+              key={shop.id} 
+              transition="all 0.3s ease"
+              _hover={{ transform: 'translateY(-4px)' }}
+            >
+              <ShopCard 
+                {...shop} 
+                id={String(shop.id)} 
+                compact 
+                height={cardHeight}
+              />
+            </Box>
+          ))}
+        </SimpleGrid>
+      </ScaleFade>
     )
   }
 
@@ -187,26 +227,44 @@ export default function Home() {
     return (
       <VStack spacing={8} align="stretch">
         {selectedCategory === null ? (
-          <>
-            {renderUncategorizedProducts()}
-            {categories
-              .filter(category => (categorizedProducts[category.id] || []).length > 0)
-              .map(category => renderProductCategory(category))}
-          </>
+          <Fade in={!isLoading}>
+            <VStack spacing={8}>
+              {renderUncategorizedProducts()}
+              {categories
+                .filter(category => (categorizedProducts[category.id] || []).length > 0)
+                .map((category, index) => (
+                  <Box key={category.id} style={{ animationDelay: `${index * 100}ms` }}>
+                    {renderProductCategory(category)}
+                  </Box>
+                ))}
+            </VStack>
+          </Fade>
         ) : (
-          <Grid templateColumns={{ base: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)', lg: 'repeat(5, 1fr)' }} gap={2}>
-            {(categorizedProducts[selectedCategory] || []).map((product) => (
-              <GridItem key={product.id}>
-                <ProductCard
-                  id={String(product.id)}
-                  title={product.title || product.name || ''}
-                  price={product.price ?? product.amount}
-                  image_url={product.image_url ?? product.product_image}
-                  height={cardHeight}
-                />
-              </GridItem>
-            ))}
-          </Grid>
+          <ScaleFade in={!isLoading}>
+            <SimpleGrid 
+              columns={{ base: 2, sm: 3, md: 4, lg: 5 }} 
+              spacing={3}
+              px={{ base: 2, md: 0 }}
+            >
+              {(categorizedProducts[selectedCategory] || []).map((product) => (
+                <Box 
+                  key={product.id}
+                  transition="all 0.3s ease"
+                  _hover={{ transform: 'translateY(-2px)' }}
+                >
+                  <ProductCard
+                    id={String(product.id)}
+                    title={product.title || product.name || ''}
+                    price={product.price ?? product.amount}
+                    image_url={product.image_url ?? product.product_image}
+                    height={cardHeight}
+                    shopName={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.name}
+                    shopDomain={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.domain}
+                  />
+                </Box>
+              ))}
+            </SimpleGrid>
+          </ScaleFade>
         )}
       </VStack>
     )
@@ -217,21 +275,61 @@ export default function Home() {
     if (uncategorizedProducts.length === 0) return null
 
     return (
-      <Box mb={8} bg="brand.700" p={{ base: 4, md: 6 }} borderRadius="lg">
-        <Heading size="lg" mb={4} color="white" textAlign="center">Autres produits</Heading>
-        <Grid templateColumns={{ base: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)', lg: 'repeat(5, 1fr)' }} gap={2}>
-          {uncategorizedProducts.map((product) => (
-            <GridItem key={product.id}>
-              <ProductCard
-                id={String(product.id)}
-                title={product.title || product.name || ''}
-                price={product.price ?? product.amount}
-                image_url={product.image_url ?? product.product_image}
-                height={cardHeight}
-              />
-            </GridItem>
-          ))}
-        </Grid>
+      <Box 
+        mb={8} 
+        bg={categoryBg}
+        p={{ base: 4, md: 6 }} 
+        borderRadius="xl" 
+        border="1px solid"
+        borderColor="brand.100"
+        boxShadow="sm"
+        position="relative"
+        overflow="hidden"
+      >
+        <Box
+          position="absolute"
+          top={-2}
+          right={-2}
+          bg="brand.500"
+          borderRadius="full"
+          p={2}
+          boxShadow="md"
+        >
+          <StarIcon color="white" boxSize={3} />
+        </Box>
+        <VStack spacing={4} align="stretch">
+          <HStack justify="space-between" align="center">
+            <Heading size="md" color={textColor}>Découvertes</Heading>
+            <Badge colorScheme="brand" variant="subtle" fontSize="sm">
+              {uncategorizedProducts.length} produit(s)
+            </Badge>
+          </HStack>
+          <SimpleGrid 
+            columns={{ base: 2, sm: 3, md: 4, lg: 5 }} 
+            spacing={3}
+          >
+            {uncategorizedProducts.map((product) => {
+              const shop = (shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)])
+              return (
+                <Box 
+                  key={product.id}
+                  transition="all 0.3s ease"
+                  _hover={{ transform: 'translateY(-2px)' }}
+                >
+                  <ProductCard
+                    id={String(product.id)}
+                    title={product.title || product.name || ''}
+                    price={product.price ?? product.amount}
+                    image_url={product.image_url ?? product.product_image}
+                    height={cardHeight}
+                    shopName={shop?.name}
+                    shopDomain={shop?.domain}
+                  />
+                </Box>
+              )
+            })}
+          </SimpleGrid>
+        </VStack>
       </Box>
     )
   }
@@ -242,57 +340,63 @@ export default function Home() {
 
     return (
       <Box 
-          key={category.id} 
-          bg="#9d7b6a77"
-          color="white"
-          p={{ base: 4, md: 6 }} 
-          borderRadius="lg" 
-          mb={6}
-        >
-        <Heading size="lg" mb={4} textAlign="center" color="white">{category.name}</Heading>
-        <Grid templateColumns={{ base: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)', lg: 'repeat(5, 1fr)' }} gap={4}>
-          {categoryProducts.map((product) => (
-            <GridItem key={product.id}>
-              <ProductCard
-                id={String(product.id)}
-                title={product.title || product.name || ''}
-                price={product.price ?? product.amount}
-                image_url={product.image_url ?? product.product_image}
-                height={cardHeight}
-              />
-            </GridItem>
-          ))}
-        </Grid>
+        key={category.id} 
+        bg={sectionBg}
+        p={{ base: 4, md: 6 }} 
+        borderRadius="xl" 
+        mb={6}
+        border="1px solid"
+        borderColor={borderColor}
+        boxShadow="sm"
+        transition="all 0.3s ease"
+        _hover={{
+          boxShadow: 'md',
+          borderColor: 'brand.300'
+        }}
+      >
+        <VStack spacing={4} align="stretch">
+          <HStack justify="space-between" align="center">
+            <Heading size="lg" color={textColor}>{category.name}</Heading>
+            <Badge colorScheme="brand" fontSize="sm" px={2} py={1} borderRadius="full">
+              {categoryProducts.length} article(s)
+            </Badge>
+          </HStack>
+          <SimpleGrid 
+            columns={{ base: 2, sm: 3, md: 4, lg: 5 }} 
+            spacing={3}
+          >
+            {categoryProducts.map((product) => {
+              const shop = (shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)])
+              return (
+                <Box 
+                  key={product.id}
+                  transition="all 0.3s ease"
+                  _hover={{ transform: 'translateY(-2px)' }}
+                >
+                  <ProductCard
+                    id={String(product.id)}
+                    title={product.title || product.name || ''}
+                    price={product.price ?? product.amount}
+                    image_url={product.image_url ?? product.product_image}
+                    height={cardHeight}
+                    shopName={shop?.name}
+                    shopDomain={shop?.domain}
+                  />
+                </Box>
+              )
+            })}
+          </SimpleGrid>
+        </VStack>
       </Box>
     )
   }
 
   return (
-    <Box>
+    <Box minH="100vh" bg={pageBg}>
       <AppTutorial />
-      <Box bg="brand.500" color="white" py={16} position="relative" overflow="hidden">
-        <Box 
-          position="absolute" 
-          top="0" 
-          left="0" 
-          right="0" 
-          bottom="0" 
-          bg="brand.600" 
-          transform="skewY(-6deg)" 
-          transformOrigin="top left" 
-        />
-        <Container maxW="container.xl" position="relative">
-          <VStack spacing={6} align="stretch">
-            <Box textAlign="center">
-              <Text fontSize="xl" color="whiteAlpha.900">
-                {currentView === 'products' 
-                  ? 'Les meilleurs produits, directement des artisans' 
-                  : 'Découvrez les boutiques locales'}
-              </Text>
-            </Box>
-          </VStack>
-        </Container>
-      </Box>
+      
+      {/* Hero Section améliorée */}
+     
 
       <FilterNav 
         view={currentView} 
@@ -302,14 +406,16 @@ export default function Home() {
         onCategoryChange={setSelectedCategory}
       />
 
-      <Container maxW={{ base: '95%', md: '85%', lg: '80%' }} py={4}>
+      <Container maxW={{ base: '100%', lg: '90%', xl: '85%' }} py={8} px={{ base: 4, md: 6 }}>
         {isLoading ? (
-          <Center py={4}><Spinner size="md" /></Center>
+          <Center py={12}>
+            <VStack spacing={4}>
+              <Spinner size="xl" color="brand.500" thickness="3px" />
+              <Text color={textColor} fontSize="lg">Chargement...</Text>
+            </VStack>
+          </Center>
         ) : (
-          (() => {
-            const content = currentView === 'products' ? renderProductsView() : renderShopsView()
-            return content
-          })()
+          currentView === 'products' ? renderProductsView() : renderShopsView()
         )}
       </Container>
     </Box>
@@ -317,17 +423,31 @@ export default function Home() {
 }
 
 function NoResults({ message, onClear }: { readonly message: string; readonly onClear: () => void }) {
+  const textColor = useColorModeValue('gray.600', 'gray.400')
+  
   return (
-    <Box textAlign="center" py={8}>
-      <Text fontSize="lg" mb={4}>{message}</Text>
-      <IconButton
-        aria-label="Effacer la recherche"
-        icon={<CloseIcon />}
-        onClick={onClear}
-        size="md"
-        colorScheme="brand"
-        variant="outline"
-      />
-    </Box>
+    <Center py={16} textAlign="center">
+      <VStack spacing={4}>
+        <Box
+          p={6}
+          borderRadius="full"
+          bg={useColorModeValue('gray.100', 'gray.700')}
+        >
+          <CloseIcon boxSize={8} color={textColor} />
+        </Box>
+        <Text fontSize="xl" color={textColor} fontWeight="medium">
+          {message}
+        </Text>
+        <IconButton
+          aria-label="Effacer la recherche"
+          icon={<CloseIcon />}
+          onClick={onClear}
+          size="md"
+          colorScheme="brand"
+          variant="ghost"
+          borderRadius="full"
+        />
+      </VStack>
+    </Center>
   )
 }

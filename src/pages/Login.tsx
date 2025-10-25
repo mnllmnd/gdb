@@ -129,6 +129,7 @@ export default function Login() {
           <Button
             type="submit"
             colorScheme="blue"
+            bg="black"
             size="lg"
             w="full"
             shadow="sm"
@@ -144,6 +145,7 @@ export default function Login() {
           <Button
             leftIcon={<FcGoogle />}
             variant="outline"
+            color="gray.800"
             size="lg"
             w="full"
             onClick={async () => {

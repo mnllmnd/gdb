@@ -137,12 +137,36 @@ export default function CartPage() {
                 </Text>
               </Box>
             </HStack>
+<Stack mt={4} direction={{ base: 'column', sm: 'row' }} spacing={3} justify="flex-end">
+  <Button
+    variant="outline"
+    colorScheme="gray"
+    onClick={() => { cart.clear(); setItems([]); }}
+    isDisabled={items.length === 0}
+  >
+    Vider le panier
+  </Button>
 
-            <Stack mt={4} direction={{ base: 'column', sm: 'row' }} spacing={3} justify="flex-end">
-              <Button variant="outline" onClick={() => { cart.clear(); setItems([]); }} isDisabled={items.length === 0}>Vider le panier</Button>
-              <Button onClick={() => nav(-1)}>Continuer mes achats</Button>
-                <Button colorScheme="brand" onClick={checkout} isLoading={loading}>Passer la commande</Button>
-            </Stack>
+  <Button
+    bg={useColorModeValue('blue.800', 'blue.400')}
+    color="white"
+    _hover={{ bg: useColorModeValue('blue.600', 'blue.500') }}
+    onClick={() => nav(-1)}
+  >
+    Continuer mes achats
+  </Button>
+
+  <Button
+    bg={useColorModeValue('green.800', 'green.400')}
+    color="white"
+    _hover={{ bg: useColorModeValue('green.600', 'green.500') }}
+    onClick={checkout}
+    isLoading={loading}
+  >
+    Passer la commande
+  </Button>
+</Stack>
+
           </Box>
         </Stack>
       )}

@@ -1,6 +1,13 @@
 import React, { useState } from 'react'
-import { Box, Image, Heading, Text, Stack, Button, useToast, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, FormControl, FormLabel, Input, Textarea, useDisclosure, useBreakpointValue } from '@chakra-ui/react'
-import { FaCreditCard, FaPlus } from 'react-icons/fa'
+import { 
+  Box, Image, Heading, Text, Stack, Button, useToast, Modal, ModalOverlay, 
+  ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, 
+  FormControl, FormLabel, Input, Textarea, useDisclosure, useBreakpointValue, 
+  Link as ChakraLink, Badge, HStack, VStack, Icon, Flex, ScaleFade, Fade,
+  useColorModeValue
+} from '@chakra-ui/react'
+import { Link as RouterLink } from 'react-router-dom'
+import { FaStore, FaShoppingCart, FaEye } from 'react-icons/fa'
 import cart from '../utils/cart'
 import { getItem } from '../utils/localAuth'
 import { highRes, PRODUCT_PLACEHOLDER } from '../utils/image'
@@ -12,40 +19,31 @@ export default function ProductCard({
   price,
   image,
   image_url,
-  height = { base: '80px', md: '160px' }, // much smaller heights as requested
+  shopName = null,
+  shopDomain = null,
+  height = { base: '140px', md: '200px' },
 }: Readonly<{
   id: string
   title?: string
   price: number | string | null | undefined
   image?: string
   image_url?: string
+  shopName?: string | null
+  shopDomain?: string | null
   height?: any
 }>) {
   const [isHovered, setIsHovered] = useState(false)
   const toast = useToast()
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  const [name, setName] = useState('')
-  const [phone, setPhone] = useState('')
-  const [address, setAddress] = useState('')
-  // getItem is imported at top of file from ../utils/localAuth
-
-  // Prefill name and phone when modal opens from stored user info; keep address empty
-  React.useEffect(() => {
-    if (!isOpen) return
-    try {
-      const raw = getItem('user')
-      if (raw) {
-        const u = JSON.parse(raw)
-        if (u) {
-          setName(u.display_name ?? u.name ?? '')
-          setPhone(u.phone ?? u.mobile ?? u.phone_number ?? '')
-        }
-      }
-    } catch (e) {
-      // ignore
-    }
-    setAddress('')
-  }, [isOpen])
+  
+  // Colors for light/dark mode
+  const cardBg = useColorModeValue('white', 'gray.800')
+  const borderColor = useColorModeValue('gray.200', 'gray.600')
+  const textColor = useColorModeValue('gray.800', 'white')
+  const subtleTextColor = useColorModeValue('gray.600', 'gray.400')
+  const priceBg = useColorModeValue('green.50', 'green.900')
+  const priceText = useColorModeValue('green.800', 'green.200')
+  const shopBadgeBg = useColorModeValue('brand.50', 'brand.900')
+  const shopBadgeText = useColorModeValue('brand.700', 'brand.200')
 
   // compute numeric price and display text safely
   const numericPrice = (() => {
@@ -60,226 +58,258 @@ export default function ProductCard({
   // Format price: remove decimals and show thousands separators using French locale
   const formattedPrice = (() => {
     if (numericPrice == null) return null
-    // remove any fractional part
     const whole = Math.floor(numericPrice)
     try {
       return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(whole)
     } catch (e) {
-      // fallback
       return String(whole)
     }
   })()
+
   const [hasImage, setHasImage] = useState<boolean | null>(null)
   const { isOpen: isImageOpen, onOpen: onImageOpen, onClose: onImageClose } = useDisclosure()
   const modalSize = useBreakpointValue({ base: 'full', md: 'xl' })
 
-  // Resolve the final src we will use and probe it to confirm it loads
-  // prefer `image_url` (DB) over legacy `image` prop
+  // Resolve the final src we will use
   const chosen = image_url ?? image
   const resolvedSrc = (highRes(chosen, { width: 1000, quality: 80 }) ?? chosen) as string | undefined
+  
   React.useEffect(() => {
     let mounted = true
-    // if there's no resolved src, mark as no image
     if (!resolvedSrc) {
       setHasImage(false)
       return () => { mounted = false }
     }
     if (typeof document === 'undefined') {
-      // can't probe in non-browser environment — assume image will be handled by <img>
       setHasImage(null)
       return () => { mounted = false }
     }
     const probe = document.createElement('img')
     probe.onload = () => { if (mounted) setHasImage(true) }
     probe.onerror = () => { if (mounted) setHasImage(false) }
-    // start loading
     probe.src = resolvedSrc
     return () => { mounted = false; probe.onload = null; probe.onerror = null }
   }, [resolvedSrc])
 
-  async function placeOrder() {
-    try {
-        const payload = {
-        product_id: id,
-        product_title: title,
-        price: numericPrice,
-        buyer_id: getItem('user') ? JSON.parse(getItem('user') as string).id : null,
-        payment_method: 'cash_on_delivery',
-        buyer_name: name || null,
-        buyer_phone: phone || null,
-        address: address || null,
-          product_image: chosen || null,
-      }
-      const token = getItem('token') ?? undefined
-      await api.orders.create(payload, token)
-      toast({ title: 'Commande créée', status: 'success', duration: 3000 })
-      onClose()
-      setName('')
-      setPhone('')
-      setAddress('')
-    } catch (err) {
-      console.error(err)
-      toast({ title: 'Erreur', description: 'Impossible de créer la commande', status: 'error' })
-    }
-  }
-
   function addToCart() {
     try {
       const numeric = numericPrice
-  cart.add({ id, title: title || 'Sans titre', price: numeric, image: chosen ?? null }, 1)
-      toast({ title: 'Ajouté au panier', status: 'success', duration: 2000 })
+      cart.add({ id, title: title || 'Sans titre', price: numeric, image: chosen ?? null }, 1)
+      toast({ 
+        title: 'Ajouté au panier 🛒', 
+        status: 'success', 
+        duration: 2000,
+        position: 'top-right'
+      })
     } catch (err) {
       console.error(err)
-      toast({ title: 'Erreur', description: "Impossible d'ajouter au panier", status: 'error' })
+      toast({ 
+        title: 'Erreur', 
+        description: "Impossible d'ajouter au panier", 
+        status: 'error',
+        duration: 3000,
+        position: 'top-right'
+      })
     }
   }
 
   return (
-    <Box
-      borderWidth="1px"
-      borderRadius="var(--card-radius)"
-      overflow="hidden"
-      bg="white"
-      boxShadow="var(--card-shadow)"
-      transition="all 160ms ease"
-      _hover={{ transform: 'translateY(-6px)', boxShadow: 'lg' }}
-    >
-      <Box position="relative"       height={height ?? { base: '90px', md: '180px' }} bg="gray.50" display="flex" alignItems="center" justifyContent="center" overflow="hidden">
-        <Image
-          src={resolvedSrc ?? PRODUCT_PLACEHOLDER}
-          alt={title}
-          objectFit="cover"
-          objectPosition="center center"
-          width="100%"
-          height="100%"
-          onError={(e: any) => { e.currentTarget.src = PRODUCT_PLACEHOLDER }}
-          cursor="zoom-in"
-          role="button"
+    <ScaleFade in={true} initialScale={0.95}>
+      <Box
+        borderWidth="1px"
+        borderRadius="xl"
+        overflow="hidden"
+        bg={cardBg}
+        boxShadow="sm"
+        transition="all 0.3s ease"
+        _hover={{ 
+          transform: 'translateY(-8px)',
+          boxShadow: 'xl',
+          borderColor: 'brand.300'
+        }}
+        position="relative"
+        borderColor={borderColor}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        height="100%"
+        display="flex"
+        flexDirection="column"
+      >
+        {/* Image Section */}
+        <Box 
+          position="relative" 
+          height={height} 
+          bg="gray.50" 
+          display="flex" 
+          alignItems="center" 
+          justifyContent="center" 
+          overflow="hidden"
+          cursor="pointer"
           onClick={onImageOpen}
-        />
-        {hasImage === false && (
-          <Box position="absolute" bottom="8px" left="8px" bg="blackAlpha.600" color="white" px={2} py={1} borderRadius="md" fontSize="xs">
-            Pas d'image
-          </Box>
-        )}
-      </Box>
-  <Box p={1.5}>
-        <Stack spacing={1}>
-          <Heading size="xs" color="black" fontWeight="600" noOfLines={2}>{title || 'Sans titre'}</Heading>
-          <Box
-            bg="green.50"
-            display="inline-flex"
-            alignItems="baseline"
-            px={2}
-            py={1}
-            borderRadius="md"
-            mt={1}
-          >
-            {formattedPrice == null ? (
-              <Text fontSize="sm" color="gray.600">—</Text>
-            ) : (
-              <>
-                <Text fontSize={{ base: 'lg', md: 'xl' }} color="green.800" fontWeight="700" mr={2}>
-                  {formattedPrice}
-                </Text>
-                <Text fontSize={{ base: 'xs', md: 'sm' }} color="green.700" fontWeight="600">FCFA</Text>
-              </>
+        >
+          <Image
+            src={resolvedSrc ?? PRODUCT_PLACEHOLDER}
+            alt={title}
+            objectFit="cover"
+            objectPosition="center center"
+            width="100%"
+            height="100%"
+            transition="transform 0.3s ease"
+            _hover={{ transform: 'scale(1.05)' }}
+            onError={(e: any) => { e.currentTarget.src = PRODUCT_PLACEHOLDER }}
+          />
+          
+          {/* Hover Overlay */}
+          <Fade in={isHovered}>
+            <Box
+              position="absolute"
+              top="0"
+              left="0"
+              right="0"
+              bottom="0"
+              bg="blackAlpha.200"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Badge colorScheme="whiteAlpha" bg="blackAlpha.600" color="white" px={3} py={2}>
+                <HStack spacing={1}>
+                  <Icon as={FaEye} />
+                  <Text>Voir</Text>
+                </HStack>
+              </Badge>
+            </Box>
+          </Fade>
+
+          {hasImage === false && (
+            <Badge 
+              position="absolute" 
+              bottom="12px" 
+              left="12px" 
+              colorScheme="orange" 
+              px={2} 
+              py={1} 
+              borderRadius="md" 
+              fontSize="xs"
+            >
+              Pas d'image
+            </Badge>
+          )}
+
+          {/* Price Badge */}
+          {formattedPrice && (
+            <Badge
+              position="absolute"
+              top="12px"
+              right="12px"
+              bg="white"
+              color="green.600"
+              fontSize="sm"
+              fontWeight="bold"
+              px={3}
+              py={1}
+              borderRadius="full"
+              boxShadow="md"
+            >
+              {formattedPrice} FCFA
+            </Badge>
+          )}
+        </Box>
+
+        {/* Content Section */}
+        <Box p={4} flex="1" display="flex" flexDirection="column">
+          <VStack spacing={3} align="stretch" flex="1">
+            {/* Product Title */}
+            <Heading 
+              size="sm" 
+              color={textColor} 
+              fontWeight="700" 
+              noOfLines={2}
+              lineHeight="1.4"
+              minH="2.8rem"
+            >
+              {title || 'Sans titre'}
+            </Heading>
+
+            {/* Shop Info */}
+            {shopName && (
+              <HStack spacing={2}>
+                <Icon as={FaStore} color={shopBadgeText} boxSize={3} />
+                {shopDomain ? (
+                  <ChakraLink
+                    as={RouterLink}
+                    to={`/shop/${encodeURIComponent(shopDomain)}`}
+                    fontSize="sm"
+                    fontWeight="600"
+                    color={shopBadgeText}
+                    _hover={{ 
+                      textDecoration: 'none',
+                      color: 'brand.600'
+                    }}
+                    noOfLines={1}
+                  >
+                    {shopName}
+                  </ChakraLink>
+                ) : (
+                  <Text fontSize="sm" fontWeight="600" color={shopBadgeText} noOfLines={1}>
+                    {shopName}
+                  </Text>
+                )}
+              </HStack>
             )}
-          </Box>
-          <Box>
-            <Stack direction={{ base: 'column', md: 'row' }} spacing={2.5}>
+
+            {/* Action Button - Only Add to Cart */}
+            <VStack spacing={2} mt="auto">
               <Button 
-                onClick={onOpen} 
-                width={{ base: '100%', md: 'auto' }} 
-                borderRadius="md" 
-                boxShadow="sm" 
+                onClick={addToCart}
+                width="100%"
+                borderRadius="lg"
                 size="sm"
-                px={4}
-                title="Commander"
-                height="36px"
-                bg="black"
+                height="40px"
+                bg="brand.500"
                 color="white"
                 _hover={{ 
-                  transform: 'scale(1.05)',
-                  boxShadow: 'md',
-                  bg: 'gray.800'
+                  transform: 'translateY(-2px)',
+                  boxShadow: 'lg',
+                  bg: 'brand.600'
                 }}
                 _active={{
-                  bg: 'gray.700'
+                  bg: 'brand.700'
                 }}
                 transition="all 0.2s ease"
-                display="flex"
-                alignItems="center"
-                gap={2}
+                leftIcon={<Icon as={FaShoppingCart} />}
               >
-                <Text fontSize="18px">📦</Text>
+                Ajouter au panier
               </Button>
-              <Button 
-                onClick={addToCart} 
-                width={{ base: '100%', md: 'auto' }} 
-                borderRadius="md" 
-                size="sm"
-                px={4}
-                title="Ajouter au panier"
-                height="36px"
-                bg="white"
-                color="black"
-                border="1px solid"
-                borderColor="gray.300"
-                _hover={{ 
-                  bg: "gray.50",
-                  transform: 'scale(1.05)',
-                  borderColor: "gray.400"
-                }}
-                _active={{
-                  bg: "gray.100"
-                }}
-                transition="all 0.2s ease"
-                display="flex"
-                alignItems="center"
-                gap={2}
-              >
-                <Text fontSize="18px">🛒</Text>
-              </Button>
-            </Stack>
-          </Box>
-        </Stack>
+            </VStack>
+          </VStack>
+        </Box>
+
+        {/* Image Lightbox Modal */}
+        <Modal isOpen={isImageOpen} onClose={onImageClose} size={modalSize} isCentered>
+          <ModalOverlay bg="blackAlpha.800" />
+          <ModalContent bg="transparent" boxShadow="none" maxW="90vw">
+            <ModalCloseButton 
+              color="white" 
+              bg="blackAlpha.600" 
+              _hover={{ bg: 'blackAlpha.800' }}
+              size="lg"
+              borderRadius="full"
+              zIndex={1}
+            />
+            <ModalBody display="flex" alignItems="center" justifyContent="center" p={0}>
+              <Image 
+                src={resolvedSrc ?? PRODUCT_PLACEHOLDER} 
+                alt={title} 
+                objectFit="contain" 
+                maxH="85vh"
+                borderRadius="lg"
+                onError={(e: any) => { e.currentTarget.src = PRODUCT_PLACEHOLDER }} 
+              />
+            </ModalBody>
+          </ModalContent>
+        </Modal>
       </Box>
-      <Modal isOpen={isOpen} onClose={onClose} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Finaliser la commande</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <FormControl mb={3}>
-              <FormLabel>Nom complet</FormLabel>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nom du client" />
-            </FormControl>
-            <FormControl mb={3}>
-              <FormLabel>Téléphone</FormLabel>
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Numéro de téléphone" />
-            </FormControl>
-            <FormControl mb={3}>
-              <FormLabel>Adresse / Lieu de livraison</FormLabel>
-              <Textarea value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Ex: quartier, rue, point de repère" />
-            </FormControl>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={onClose}>Annuler</Button>
-            <Button colorScheme="brand" onClick={placeOrder}>Confirmer la commande</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-      {/* Image lightbox modal — show full image when clicked (mobile full-screen) */}
-      <Modal isOpen={isImageOpen} onClose={onImageClose} size={modalSize} isCentered>
-        <ModalOverlay bg="blackAlpha.800" />
-        <ModalContent bg="transparent" boxShadow="none">
-          <ModalCloseButton color="white" />
-          <ModalBody display="flex" alignItems="center" justifyContent="center" p={0}>
-            <Image src={resolvedSrc ?? PRODUCT_PLACEHOLDER} alt={title} objectFit="contain" maxH="90vh" onError={(e: any) => { e.currentTarget.src = PRODUCT_PLACEHOLDER }} />
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-    </Box>
+    </ScaleFade>
   )
 }
