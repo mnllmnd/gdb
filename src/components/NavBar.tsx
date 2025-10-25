@@ -48,11 +48,13 @@ export default function NavBar() {
   const [searchQuery, setSearchQuery] = useState('')
   
   // Couleurs harmonieuses
-  const navBg = useColorModeValue('whiteAlpha.950', 'gray.900')
+  // Le header doit utiliser la couleur demandée (#D1B7A1) en mode clair.
+  // En mode sombre on conserve le gris foncé par défaut.
+  const navBg = useColorModeValue('#D1B7A1', 'gray.900')
   const navBorder = useColorModeValue('gray.100', 'gray.700')
   const textColor = useColorModeValue('gray.800', 'white')
   const subtleTextColor = useColorModeValue('gray.600', 'gray.300')
-  const brandColor = useColorModeValue('brand.600', 'brand.300')
+  const brandColor = useColorModeValue('brand.500', 'brand.500')
   const hoverBg = useColorModeValue('gray.50', 'gray.700')
   const menuBg = useColorModeValue('white', 'gray.800')
   const menuBorder = useColorModeValue('gray.200', 'gray.600')

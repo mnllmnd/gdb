@@ -8,15 +8,15 @@ const theme = extendTheme({
   colors: {
     brand: {
     50: '#fdf6f0',
-    100: '#aa553cd5',
+    100: '#ffffffff',
     200: '#ffffff',
     300: '#eaae94ff',
-    400: '#dc8166ff',
-    500: '#cf7253ff',
-    600: '#b86235',
-    700: '#a84c35ff',
-    800: '#ffffffff',
-    900: '#9b5035ff',
+    400: '#f2cba1',
+    500: '#D1B7A1',
+    600: '#D1B7A1',
+    700: '#D1B7A1',
+    800: '#D1B7A1',
+    900: '#D1B7A1',
   },
     accent: {
       50: '#b292d3ff',
@@ -99,7 +99,7 @@ const theme = extendTheme({
           left: 0,
           width: '100%',
           height: '100%',
-          bg: 'rgba(153, 116, 98, 1)', // Ajustez l'opacité selon vos besoins
+          bg: '#D1B7A1', // Ajustez l'opacité selon vos besoins
           zIndex: -1,
         },
       },
@@ -117,7 +117,7 @@ const theme = extendTheme({
       header: {
         position: 'relative',
         zIndex: 10,
-        bg: 'white',
+        bg: '#D1B7A1',
         backdropFilter: 'blur(6px)',
         borderBottom: '1px solid',
         borderColor: 'gray.200',
