@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { forwardRef, useImperativeHandle } from 'react'
 import {
   Box,
   Select,
@@ -34,8 +34,13 @@ function onlyDigits(s: string) {
   return s?.replace(/\D/g, '') || ''
 }
 
-export default function Recommendations() {
+type Props = {
+  hideTrigger?: boolean
+}
+
+const Recommendations = forwardRef(({ hideTrigger = false }: Props, ref) => {
   const { isOpen, onOpen, onClose } = useDisclosure()
+  useImperativeHandle(ref, () => ({ open: onOpen }))
   const [occasion, setOccasion] = React.useState('cadeau femme')
   const [budget, setBudget] = React.useState<string>('20000')
   const [queryText, setQueryText] = React.useState('')
@@ -45,7 +50,6 @@ export default function Recommendations() {
 
   // Palette douce et élégante
   const accentColor = '#8B5E3C'
-  const accentHover = '#734B2E'
   const lightAccent = '#EAD7C1'
   const bgGradient = 'linear-gradient(145deg, #F9F6F3 0%, #F1E8E0 100%)'
   const textColor = '#4B3A2F'
@@ -84,26 +88,28 @@ export default function Recommendations() {
 
   return (
     <>
-      {/* Bouton principal */}
-      <Box textAlign="center" mt={4}>
-        <Button
-          onClick={onOpen}
-          bgGradient="linear(to-r, #b16d56ff, #9f6044ff)"
-          color="white"
-          borderRadius="2xl"
-          px={8}
-          py={6}
-          fontSize="md"
-          fontWeight="semibold"
-          _hover={{
-            transform: 'translateY(-2px)',
-            bgGradient: 'linear(to-r, #a55347ff, #8d4d3bff)',
-          }}
-          transition="all 0.2s ease-in-out"
-        >
-          Tu cherches?
-        </Button>
-      </Box>
+      {/* Bouton principal (optionnel) */}
+      {!hideTrigger && (
+        <Box textAlign="center" mt={4}>
+          <Button
+            onClick={onOpen}
+            bgGradient="linear(to-r, #b16d56ff, #9f6044ff)"
+            color="white"
+            borderRadius="2xl"
+            px={8}
+            py={6}
+            fontSize="md"
+            fontWeight="semibold"
+            _hover={{
+              transform: 'translateY(-2px)',
+              bgGradient: 'linear(to-r, #a55347ff, #8d4d3bff)',
+            }}
+            transition="all 0.2s ease-in-out"
+          >
+            Tu cherches?
+          </Button>
+        </Box>
+      )}
 
       <Modal isOpen={isOpen} onClose={onClose} size={modalSize} isCentered>
         <ModalOverlay bg="blackAlpha.400" backdropFilter="blur(2px)" />
@@ -326,4 +332,6 @@ export default function Recommendations() {
       </Modal>
     </>
   )
-}
+})
+
+export default Recommendations

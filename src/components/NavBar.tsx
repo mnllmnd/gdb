@@ -35,6 +35,7 @@ import { signOut, getCurrentUser } from '../services/auth'
 import api from '../services/api'
 import cart from '../utils/cart'
 import SearchBar from './SearchBar'
+import Recommendations from './Recommendations'
 
 export default function NavBar() {
   type User = { display_name?: string; phone?: string; role?: string; id?: string }
@@ -66,6 +67,7 @@ export default function NavBar() {
   const toast = useToast()
   const showMobileMenu = useBreakpointValue({ base: true, md: false })
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const recRef = React.useRef<any>(null)
 
   // Scroll effect
   useEffect(() => {
@@ -475,6 +477,21 @@ export default function NavBar() {
               >
                 Découvrir
               </Button>
+              <Button
+                onClick={() => {
+                  onClose()
+                  // Open recommendations modal from sidebar
+                  setTimeout(() => recRef.current?.open?.(), 150)
+                }}
+                variant="ghost"
+                size="md"
+                leftIcon={<span>🔎</span>}
+                color={textColor}
+                _hover={{ bg: hoverBg }}
+                justifyContent="flex-start"
+              >
+                Tu cherches?
+              </Button>
               {user && (
                 <Button 
                   as={RouterLink} 
@@ -638,6 +655,8 @@ export default function NavBar() {
                   </Button>
             </VStack>
           </DrawerBody>
+          {/* Recommendations modal mounted at navbar level so sidebar button can open it */}
+          <Recommendations ref={recRef} hideTrigger />
           <DrawerFooter borderTopWidth="1px" borderColor={menuBorder}>
             <Text fontSize="sm" color={subtleTextColor}>Dalal ak jamm</Text>
           </DrawerFooter>

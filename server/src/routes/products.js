@@ -1,14 +1,18 @@
 import express from 'express'
 import { query } from '../db.js'
 import { authenticate, requireRole } from '../middleware/auth.js'
+import cache from '../cache.js'
 
 const router = express.Router()
 
 // List products
 router.get('/', async (req, res) => {
   try {
-    const r = await query('SELECT * FROM products ORDER BY created_at DESC')
-    res.json(r.rows)
+    // Serve from in-memory cache for speed
+  const offset = Number.parseInt(req.query.offset || '0', 10)
+  const limit = Number.parseInt(req.query.limit || '100', 10)
+    const list = cache.listProducts({ offset, limit })
+    return res.json(list)
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Failed to list products' })
@@ -26,7 +30,9 @@ router.post('/', authenticate, requireRole('seller'), async (req, res) => {
       'INSERT INTO products (title, description, price, image_url, category_id, seller_id) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *',
       [title, description || null, price, image_url || null, category_id, req.user.id]
     )
+    // Refresh cache in background (best-effort)
     res.json(r.rows[0])
+    try { const { query: dbQuery } = await import('../db.js'); cache.refresh(dbQuery) } catch (e) { console.warn('Cache refresh after create failed', e.message) }
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Failed to create product' })
@@ -50,6 +56,7 @@ router.put('/:id', authenticate, async (req, res) => {
       [title ?? p.title, description ?? p.description, price ?? p.price, image_url ?? p.image_url, category_id ?? p.category_id, id]
     )
     res.json(updated.rows[0])
+    try { const { query: dbQuery } = await import('../db.js'); cache.refresh(dbQuery) } catch (e) { console.warn('Cache refresh after update failed', e.message) }
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Failed to update' })
@@ -66,6 +73,7 @@ router.delete('/:id', authenticate, async (req, res) => {
     if (req.user.role !== 'admin' && p.seller_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' })
     await query('DELETE FROM products WHERE id = $1', [id])
     res.json({ success: true })
+    try { const { query: dbQuery } = await import('../db.js'); cache.refresh(dbQuery) } catch (e) { console.warn('Cache refresh after delete failed', e.message) }
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Failed to delete' })

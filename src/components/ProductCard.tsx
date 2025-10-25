@@ -227,12 +227,10 @@ export default function ProductCard({
                   borderRadius="lg"
                   border="1px solid"
                   borderColor={useColorModeValue('green.200', 'green.700')}
+                  whiteSpace="nowrap"
                 >
                   {formattedPrice} FCFA
                 </Text>
-                
-                {/* Optional: Add a small tag for discount or special offer */}
-               
               </Flex>
             )}
 

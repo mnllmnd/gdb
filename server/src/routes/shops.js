@@ -1,6 +1,7 @@
 import express from 'express'
 import { query } from '../db.js'
 import { authenticate, generateToken } from '../middleware/auth.js'
+import cache from '../cache.js'
 
 const router = express.Router()
 
@@ -23,16 +24,17 @@ router.post('/', authenticate, async (req, res) => {
         [name || existing.rows[0].name, domain || existing.rows[0].domain, logo_url || existing.rows[0].logo_url, description || existing.rows[0].description, req.user.id]
       )
       const out = updated.rows[0]
-      if (req.newToken) return res.json({ ...out, token: req.newToken })
-      return res.json(out)
+      res.json(req.newToken ? { ...out, token: req.newToken } : out)
+      try { const { query: dbQuery } = await import('../db.js'); cache.refresh(dbQuery) } catch (e) { console.warn('Cache refresh after shop update failed', e.message) }
+      return
     }
     const r = await query(
       'INSERT INTO shops (owner_id, name, domain, logo_url, description) VALUES ($1,$2,$3,$4,$5) RETURNING *',
       [req.user.id, name || null, domain || null, logo_url || null, description || null]
     )
     const out = r.rows[0]
-    if (req.newToken) return res.json({ ...out, token: req.newToken })
-    res.json(out)
+    res.json(req.newToken ? { ...out, token: req.newToken } : out)
+    try { const { query: dbQuery } = await import('../db.js'); cache.refresh(dbQuery) } catch (e) { console.warn('Cache refresh after shop create failed', e.message) }
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Failed to save shop' })
@@ -42,6 +44,7 @@ router.post('/', authenticate, async (req, res) => {
 // Get shop for current seller
 router.get('/me', authenticate, async (req, res) => {
   try {
+    // read from DB for single-owner query (freshness) — quick
     const r = await query('SELECT * FROM shops WHERE owner_id = $1', [req.user.id])
     if (r.rowCount === 0) return res.status(404).json({ error: 'No shop' })
     res.json(r.rows[0])
@@ -55,6 +58,9 @@ router.get('/me', authenticate, async (req, res) => {
 router.get('/domain/:domain', async (req, res) => {
   try {
     const { domain } = req.params
+    // Try in-memory cache first
+    const cached = cache.getShopByDomain(domain)
+    if (cached) return res.json(cached)
     const r = await query('SELECT * FROM shops WHERE domain = $1', [domain])
     if (r.rowCount === 0) return res.status(404).json({ error: 'Not found' })
     res.json(r.rows[0])
@@ -67,8 +73,8 @@ router.get('/domain/:domain', async (req, res) => {
 // Public: list shops
 router.get('/', async (req, res) => {
   try {
-    const r = await query('SELECT id, owner_id, name, domain, logo_url, description FROM shops ORDER BY created_at DESC')
-    res.json(r.rows)
+    // Serve cached shops for speed
+    return res.json(cache.getShops())
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Failed to list shops' })
@@ -200,6 +206,7 @@ router.delete('/:id', authenticate, async (req, res) => {
     await query('DELETE FROM shops WHERE id = $1', [id])
     await query('COMMIT;')
     res.json({ success: true })
+  try { const { query: dbQuery } = await import('../db.js'); cache.refresh(dbQuery) } catch (e) { console.warn('Cache refresh after shop delete failed', e.message) }
     } catch (err) {
     console.error(err)
     try {

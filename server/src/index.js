@@ -2,6 +2,7 @@
 import express from 'express';
 import nlpManager, { init as initNlp } from '../nlp/index.js';
 import tfidfCache from './tfidf_cache.js';
+import cache from './cache.js';
 import detectEmotion from '../nlp/emotions.js';
 import recommend from '../nlp/recommend.js';
 import dotenv from 'dotenv';
@@ -182,6 +183,8 @@ const start = async () => {
     // import db query helper lazily to avoid circular imports
     const { query: dbQuery } = await import('./db.js')
     await tfidfCache.init(dbQuery)
+    // initialize general cache (products/shops/categories)
+    try { await cache.init(dbQuery) } catch (err) { console.warn('General cache init failed', err.message) }
   } catch (err) {
     console.warn('TF-IDF cache init error:', err.message)
   }
