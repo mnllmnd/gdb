@@ -516,6 +516,7 @@ export const ChatPopup = () => {
           <Button
             onClick={sendMessage}
             colorScheme="blue"
+            bg="brand.500"
             size="sm"
             isLoading={isLoading}
             loadingText="..."
