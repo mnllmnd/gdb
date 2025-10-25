@@ -485,6 +485,21 @@ export default function NavBar() {
                   Mes commandes
                 </Button>
               )}
+              {user && (
+                <Button
+                  as={RouterLink}
+                  to="/profile"
+                  onClick={onClose}
+                  variant="ghost"
+                  size="md"
+                  leftIcon={<span>👤</span>}
+                  color={textColor}
+                  _hover={{ bg: hoverBg }}
+                  justifyContent="flex-start"
+                >
+                  Mon profil
+                </Button>
+              )}
               <Button 
                 as={RouterLink} 
                 to="/tutoriel" 

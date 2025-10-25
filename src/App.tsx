@@ -18,6 +18,7 @@ import CartPage from './pages/Cart';
 import Products from './pages/Products';
 import ProductView from './pages/ProductView';
 import TutorielPage from './pages/Tutoriel';
+import Profile from './pages/Profile';
 import { ChatPopup } from './components/ChatPopup';
 
 export default function App() {
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/products" element={<Products />} />
           <Route path="/products/:id" element={<ProductView />} />
           <Route path="/tutoriel" element={<TutorielPage />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </Box>
       <BottomNav />
