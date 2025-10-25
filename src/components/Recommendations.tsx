@@ -188,9 +188,9 @@ export default function Recommendations() {
 >
   <option value="cadeau femme">🎀 Cadeau pour femme</option>
   <option value="cadeau homme">🎁 Cadeau pour homme</option>
-  <option value="anniversaire">🎉 Anniversaire</option>
+  <option value="fêtes">🎉 fêtes</option>
   <option value="mariage">💍 Mariage</option>
-  <option value="noel">🎄 Noël</option>
+  <option value="plaisir"> ❤ juste Pour faire plaisir</option>
   <option value="decoration">🏡 Décoration maison</option>
 </Select>
 
