@@ -57,7 +57,26 @@ const buildTfidfVectors = (products, query) => {
   const tfidf = new TfIdf();
 
   // Ajouter un document par produit
-  products.forEach(p => tfidf.addDocument(`${p.name} ${p.description} ${p.category}`));
+  // IMPORTANT: pour mieux prendre en compte les "détails" d'un produit
+  // (description, attributs textuels), on concatène title + description + category
+  // et on extrait des mots-clés depuis le titre+description et on les répète
+  // de manière à légèrement augmenter leur poids TF dans le document.
+  // Cela améliore la précision lorsque l'utilisateur mentionne des détails
+  // (couleur, matériau, parfum, taille, etc.) dans sa requête.
+  products.forEach(p => {
+    const title = (p.name || '').toString();
+    const desc = (p.description || '').toString();
+    const cat = (p.category || '').toString();
+
+    // Extraire mots-clés depuis title+description
+    const prodKeywords = simpleKeywords(`${title} ${desc}`);
+
+    // Répéter les mots-clés une ou deux fois pour les booster dans le TF
+    const boosted = prodKeywords.length ? prodKeywords.join(' ') + ' ' + prodKeywords.join(' ') : '';
+
+    const docText = `${title} ${desc} ${cat} ${boosted}`.trim();
+    tfidf.addDocument(docText);
+  });
 
   // Ajouter la requête comme dernier document
   tfidf.addDocument(query || '');
@@ -212,12 +231,33 @@ router.post('/', async (req, res) => {
       return arr.filter(s => s.product.price <= maxBudget)
     }
 
-    const sortAndTake = (arr, topN = 6) => {
+    // Sélectionner uniquement les produits réellement pertinents.
+    // On n'impose plus un top fixe (ex: 6). Au lieu de cela :
+    // - Seuil absolu minimal (minAbsolute) en score final pour accepter un produit
+    // - Seuil relatif (relativeThreshold) par rapport au score du 1er produit
+    // Cela permet de ne retourner qu'un seul produit très pertinent, ou plusieurs
+    // si leurs scores restent proches du meilleur.
+    const selectRelevant = (arr, opts = {}) => {
+      const { minAbsolute = 0.02, relativeThreshold = 0.5, maxResults = 10 } = opts;
+      if (!Array.isArray(arr) || arr.length === 0) return [];
+
+      // Trier par score décroissant (et prix croissant comme tie-breaker)
       arr.sort((a, b) => {
-        if (b.finalScore === a.finalScore) return a.product.price - b.product.price
-        return b.finalScore - a.finalScore
-      })
-      return arr.slice(0, topN).map(s => ({
+        if (b.finalScore === a.finalScore) return a.product.price - b.product.price;
+        return b.finalScore - a.finalScore;
+      });
+
+      const topScore = arr[0].finalScore || 0;
+
+      // Si le meilleur résultat est sous le seuil absolu, on considère qu'il
+      // n'y a pas de produit suffisamment pertinent.
+      if (topScore < minAbsolute) return [];
+
+      // Garde tous les produits dont le score >= max(minAbsolute, topScore * relativeThreshold)
+      const cutoff = Math.max(minAbsolute, topScore * relativeThreshold);
+      const kept = arr.filter(s => s.finalScore >= cutoff).slice(0, maxResults);
+
+      return kept.map(s => ({
         id: s.product.id,
         name: s.product.name,
         category: s.product.category,
@@ -227,12 +267,12 @@ router.post('/', async (req, res) => {
         score: Number((s.finalScore).toFixed(4)),
         semantic: Number((s.sim).toFixed(4)),
         intentBoost: Number((s.intentBoost).toFixed(4))
-      }))
-    }
+      }));
+    };
 
     // Première passe: appliquer budget si fourni
-    let filteredScored = applyBudgetFilter(scored, budget)
-    let result = sortAndTake(filteredScored)
+  let filteredScored = applyBudgetFilter(scored, budget)
+  let result = selectRelevant(filteredScored)
 
     // Si aucun résultat, essayer l'élargissement automatique :
     // - si preferredCategories renseignées, chercher produits de ces catégories sans contrainte stricte de mot-clé
@@ -246,12 +286,13 @@ router.post('/', async (req, res) => {
         relaxedFiltered = relaxedFiltered.filter(s => isPreferredCategory(s.product) || s.sim > 0)
       }
       relaxedFiltered = applyBudgetFilter(relaxedFiltered, budget)
-      result = sortAndTake(relaxedFiltered)
+      result = selectRelevant(relaxedFiltered)
     }
 
     // Dernier recours : si toujours vide, enlever filtre budget pour proposer quelque chose
     if ((result || []).length === 0 && budget) {
-      result = sortAndTake(scored)
+      // Dernier recours : proposer les meilleurs produits même hors budget
+      result = selectRelevant(scored, { minAbsolute: 0.01, relativeThreshold: 0.35 })
     }
 
     return res.json({

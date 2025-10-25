@@ -20,6 +20,7 @@ import {
   Center,
   VStack,
   Text,
+  Divider,
   Menu,
   MenuButton,
   MenuList,
@@ -444,6 +445,10 @@ export default function NavBar() {
           </DrawerHeader>
           <DrawerBody>
             <VStack align="stretch" spacing={2} mt={2}>
+              {/* Client section */}
+              <Box px={3} py={2}>
+                <Text fontSize="sm" color={subtleTextColor} fontWeight="600">Client</Text>
+              </Box>
               <Button 
                 as={RouterLink} 
                 to="/" 
@@ -514,6 +519,30 @@ export default function NavBar() {
               >
                 Tutoriel
               </Button>
+
+              {/* Auth actions (client) */}
+              {user ? (
+                <>
+                  <Box px={3} py={2}>
+                    <Text fontSize="sm" color={subtleTextColor}>Connecté en tant que</Text>
+                    <Text fontSize="md" fontWeight="600" color={textColor}>
+                      {user.display_name ?? user.phone}
+                    </Text>
+                  </Box>
+                 
+                </>
+              ) : (
+                <>
+                 
+                </>
+              )}
+
+              <Divider borderColor={menuBorder} my={3} />
+
+              {/* Boutiquier / Vendeur section */}
+              <Box px={3} py={2}>
+                <Text fontSize="sm" color={subtleTextColor} fontWeight="600">Boutiquier</Text>
+              </Box>
               <Button
                 onClick={() => {
                   onClose()
@@ -564,15 +593,11 @@ export default function NavBar() {
                   Admin
                 </Button>
               )}
-              {user ? (
-                <>
-                  <Box px={3} py={2}>
-                    <Text fontSize="sm" color={subtleTextColor}>Connecté en tant que</Text>
-                    <Text fontSize="md" fontWeight="600" color={textColor}>
-                      {user.display_name ?? user.phone}
-                    </Text>
-                  </Box>
-                  <Button 
+               <Box px={3} py={2}>
+                <Text fontSize="sm" color={subtleTextColor} fontWeight="600">Pour tous</Text>
+              </Box>
+
+               <Button 
                     size="md" 
                     variant="ghost"
                     color={textColor}
@@ -587,10 +612,7 @@ export default function NavBar() {
                   >
                     Se déconnecter
                   </Button>
-                </>
-              ) : (
-                <>
-                  <Button 
+                   <Button 
                     as={RouterLink} 
                     to="/login" 
                     onClick={onClose} 
@@ -614,8 +636,6 @@ export default function NavBar() {
                   >
                     S'inscrire
                   </Button>
-                </>
-              )}
             </VStack>
           </DrawerBody>
           <DrawerFooter borderTopWidth="1px" borderColor={menuBorder}>
