@@ -35,9 +35,7 @@ export default function ShopCard(props: ShopCardProps) {
   const hi = highRes(cover, { width: 1200, quality: 85 }) ?? SHOP_PLACEHOLDER
 
   // Tailles adaptatives
-  // Responsive sizes; if compact, use smaller defaults so multiple cards fit per row
   const cardHeight = height ?? useBreakpointValue({ base: compact ? '80px' : '100px', md: compact ? '100px' : '140px' })
-  // Slightly reduce logo size so the cover image is more visible
   const logoSize = useBreakpointValue({ base: compact ? '36px' : '40px', md: compact ? '44px' : '48px' })
   const headingSize = useBreakpointValue({ base: compact ? 'xs' : 'xs', md: compact ? 'xs' : 'sm' })
   const padding = useBreakpointValue({ base: compact ? 2 : 3, md: compact ? 3 : 4 })
@@ -56,18 +54,19 @@ export default function ShopCard(props: ShopCardProps) {
 
   const location = useLocation()
 
+  // Gestion du clic sur le nom/boutique
+  const handleShopClick = (e: React.MouseEvent) => {
+    e.stopPropagation() // Empêche la propagation si nécessaire
+  }
+
   return (
     <Box
-      as={RouterLink}
-      to={`/shop/${encodeURIComponent(s?.domain || s?.id || '')}`}
-      state={{ from: `${location.pathname}${location.search}${location.hash || ''}` }}
+      // ✅ SUPPRIMÉ: as={RouterLink} - La carte entière n'est plus cliquable
       display="flex"
       flexDirection="column"
       width="100%"
-      // let the parent grid control column sizing; when compact we should fill the grid cell
       maxW={compact ? '100%' : { base: '100%', sm: '360px', md: '320px' }}
       mx="auto"
-      // ensure cards have a minimum height so all cards in the grid are symmetric
       minH={useBreakpointValue({ base: compact ? '220px' : '260px', md: compact ? '240px' : '300px' })}
       borderRadius="2xl"
       overflow="hidden"
@@ -77,36 +76,71 @@ export default function ShopCard(props: ShopCardProps) {
       boxShadow={currentElevation.shadow}
       transition="transform 220ms ease, box-shadow 220ms ease"
       _hover={{ transform: 'translateY(-6px)', boxShadow: currentElevation.hoverShadow }}
+      cursor="default" // ✅ Curseur par défaut pour toute la carte
     >
-      <AspectRatio ratio={compact ? 4 / 3 : 3 / 2} w="100%" flexShrink={0}>
-        <Image
-          src={hi}
-          alt={s?.name || s?.domain || 'cover'}
-          objectFit="cover"
-          objectPosition="center"
-          onError={(e: any) => { e.currentTarget.src = SHOP_PLACEHOLDER }}
-          loading="lazy"
-        />
-      </AspectRatio>
+      {/* ✅ Zone cliquable: Image de couverture */}
+      <Box
+        as={RouterLink}
+        to={`/shop/${encodeURIComponent(s?.domain || s?.id || '')}`}
+        state={{ from: `${location.pathname}${location.search}${location.hash || ''}` }}
+        display="block"
+        flexShrink={0}
+        cursor="pointer" // ✅ Curseur pointer pour indiquer que c'est cliquable
+        _hover={{ opacity: 0.9 }}
+      >
+        <AspectRatio ratio={compact ? 4 / 3 : 3 / 2} w="100%">
+          <Image
+            src={hi}
+            alt={s?.name || s?.domain || 'cover'}
+            objectFit="cover"
+            objectPosition="center"
+            onError={(e: any) => { e.currentTarget.src = SHOP_PLACEHOLDER }}
+            loading="lazy"
+          />
+        </AspectRatio>
+      </Box>
 
       <VStack align="stretch" spacing={compact ? 2 : 3} p={padding} flex={1}>
         <HStack align="start" spacing={3}>
-          <Image
-            src={highRes(cover, { width: 320, quality: 85 }) ?? SHOP_PLACEHOLDER}
-            alt={s?.name || s?.domain || 'logo'}
-            boxSize={logoSize}
-            objectFit="cover"
-            borderRadius="xl"
-            onError={(e: any) => { e.currentTarget.src = SHOP_PLACEHOLDER }}
-            borderWidth="2px"
-            borderColor={useColorModeValue('white', 'gray.700')}
-            boxShadow="sm"
+          {/* ✅ Zone cliquable: Logo */}
+          <Box
+            as={RouterLink}
+            to={`/shop/${encodeURIComponent(s?.domain || s?.id || '')}`}
+            state={{ from: `${location.pathname}${location.search}${location.hash || ''}` }}
+            cursor="pointer"
+            _hover={{ transform: 'scale(1.05)' }}
+            transition="transform 0.2s ease"
             flexShrink={0}
-          />
+          >
+            <Image
+              src={highRes(cover, { width: 320, quality: 85 }) ?? SHOP_PLACEHOLDER}
+              alt={s?.name || s?.domain || 'logo'}
+              boxSize={logoSize}
+              objectFit="cover"
+              borderRadius="xl"
+              onError={(e: any) => { e.currentTarget.src = SHOP_PLACEHOLDER }}
+              borderWidth="2px"
+              borderColor={useColorModeValue('white', 'gray.700')}
+              boxShadow="sm"
+            />
+          </Box>
 
-          <Box minW={0}>
+          <Box minW={0} flex={1}>
+            {/* ✅ Zone cliquable: Nom de la boutique */}
             <HStack align="center" spacing={3}>
-              <Heading size={headingSize} noOfLines={2} fontWeight="700" color={useColorModeValue('gray.800', 'white')}>
+              <Heading
+                as={RouterLink}
+                to={`/shop/${encodeURIComponent(s?.domain || s?.id || '')}`}
+                state={{ from: `${location.pathname}${location.search}${location.hash || ''}` }}
+                size={headingSize}
+                noOfLines={2}
+                fontWeight="700"
+                color={useColorModeValue('gray.800', 'white')}
+                cursor="pointer"
+                _hover={{ color: useColorModeValue('brand.600', 'brand.300') }}
+                transition="color 0.2s ease"
+                onClick={handleShopClick}
+              >
                 {s?.name || s?.domain}
               </Heading>
               {s?.followers != null && (
@@ -116,6 +150,7 @@ export default function ShopCard(props: ShopCardProps) {
               )}
             </HStack>
 
+            {/* ✅ Description NON cliquable */}
             <Tooltip label={s?.description || 'Boutique locale de qualité'} hasArrow openDelay={300} placement="top-start">
               <Text
                 color={useColorModeValue('gray.600', 'gray.300')}
@@ -135,6 +170,7 @@ export default function ShopCard(props: ShopCardProps) {
           </Box>
         </HStack>
 
+        {/* ✅ Bouton Follow - Zone NON cliquable pour la navigation */}
         <HStack spacing={2} pt={1} mt="auto">
           <FollowButton id={String(s?.id)} compact={compact} />
         </HStack>
