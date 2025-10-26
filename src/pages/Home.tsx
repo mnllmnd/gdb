@@ -237,32 +237,7 @@ const SmoothCarousel: React.FC<{
       </Box>
       
       {/* Indicateur visuel de pause */}
-      {isPaused && (
-        <Box
-          position="absolute"
-          top="50%"
-          left="50%"
-          transform="translate(-50%, -50%)"
-          bg="blackAlpha.600"
-          color="white"
-          px={3}
-          py={1}
-          borderRadius="md"
-          fontSize="sm"
-          opacity={0}
-          animation="fadeInOut 2s ease-in-out"
-          css={{
-            '@keyframes fadeInOut': {
-              '0%': { opacity: 0 },
-              '20%': { opacity: 1 },
-              '80%': { opacity: 1 },
-              '100%': { opacity: 0 }
-            }
-          }}
-        >
-          Reprise dans 2s...
-        </Box>
-      )}
+      
     </Box>
   )
 }
@@ -473,7 +448,7 @@ export default function Home() {
             <Box mb={6}>
               <Heading size="md" color="black">Nouveautés</Heading>
               <Text fontSize="sm" color={secondaryTextColor} mb={2}>
-                🤍
+                🖤
               </Text>
 
               <SmoothCarousel speed={70}>
