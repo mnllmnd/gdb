@@ -11,11 +11,11 @@ const theme = extendTheme({
     100: '#ffffffff',
     200: '#ffffff',
     300: '#eaae94ff',
-    400: '#f2cba1',
-    500: '#c4a68dff',
+    400: '#dab193ff',
+    500: '#c69f89ff',
     600: '#ccad92ff',
-    700: '#c6ab93ff',
-    800: '#c4a992ff',
+    700: '#ba917dff',
+    800: '#c49b83ff',
     900: '#c1a68fff',
   },
     accent: {
@@ -99,7 +99,7 @@ const theme = extendTheme({
           left: 0,
           width: '100%',
           height: '100%',
-          bg: '#D1B7A1', // Ajustez l'opacité selon vos besoins
+          bg: '#d1b2a1ff', // Ajustez l'opacité selon vos besoins
           zIndex: -1,
         },
       },
