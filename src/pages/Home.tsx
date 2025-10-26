@@ -25,6 +25,7 @@ import AppTutorial from '../components/AppTutorial'
 import ShopCard from '../components/ShopCard'
 import ProductCard from '../components/ProductCard'
 import api from '../services/api'
+import InfiniteCarousel from '../components/InfiniteCarousel'
 
 interface Product {
   id: number
@@ -49,249 +50,12 @@ interface Shop {
   name: string
 }
 
-// Composant Carousel GPU optimisé avec pause au clic
-const SmoothCarousel: React.FC<{ 
-  children: React.ReactNode; 
-  speed?: number;
-}> = ({ children, speed = 40 }) => {
-  const containerRef = React.useRef<HTMLDivElement>(null)
-  const contentRef = React.useRef<HTMLDivElement>(null)
-  const [isPaused, setIsPaused] = React.useState(false)
-  const pauseTimeoutRef = React.useRef<number | null>(null)
-  const isPausedRef = React.useRef<boolean>(isPaused)
-  // interaction and measurement refs
-  const isInteractingRef = React.useRef(false)
-  const startXRef = React.useRef<number | null>(null)
-  const startYRef = React.useRef<number | null>(null)
-  const isDraggingRef = React.useRef(false)
-  const [isDragging, setIsDragging] = React.useState(false)
-  const startPosRef = React.useRef<number>(0)
-  const positionRef = React.useRef<number>(0)
-  const contentWidthRef = React.useRef<number>(0)
-  const resumeTimerRef = React.useRef<number | null>(null)
-  
-  // keep a ref in sync so the animation loop doesn't need to re-subscribe on pause changes
-  React.useEffect(() => {
-    isPausedRef.current = isPaused
-  }, [isPaused])
-
-  React.useEffect(() => {
-    const container = containerRef.current
-    const content = contentRef.current
-    if (!container || !content) return
-
-    let animationId: number
-    let lastTime: number | null = null
-    // ensure positionRef initial value
-    positionRef.current = positionRef.current || 0
-    const isMobile = /Mobi|Android/i.test(navigator.userAgent)
-    const adjustedSpeed = isMobile ? speed * 1 : speed
-
-    // measure content width (one copy)
-    const measure = () => {
-      try {
-        const w = Math.max(1, content.scrollWidth / 2)
-        contentWidthRef.current = w
-      } catch (e) {
-        contentWidthRef.current = 0
-      }
-    }
-    measure()
-    let ro: ResizeObserver | null = null
-    try {
-      ro = new ResizeObserver(() => measure())
-      ro.observe(content)
-    } catch (e) {
-      ro = null
-    }
-
-    const animate = (currentTime: number) => {
-      if (!lastTime) lastTime = currentTime
-      const deltaTime = Math.min(currentTime - lastTime, 40)
-      lastTime = currentTime
-      // read paused state from ref to avoid re-creating the animation loop on pause toggles
-      if (!isPausedRef.current && !isInteractingRef.current && contentWidthRef.current > 0) {
-        positionRef.current += (deltaTime * adjustedSpeed) / 1000 
-        const contentWidth = contentWidthRef.current
-        if (positionRef.current >= contentWidth) positionRef.current -= contentWidth
-        content.style.transform = `translate3d(${-positionRef.current}px, 0, 0)`
-      }
-
-      animationId = requestAnimationFrame(animate)
-    }
-
-    animationId = requestAnimationFrame(animate)
-
-    return () => {
-      if (animationId) cancelAnimationFrame(animationId)
-      // clear timers on unmount
-      if (pauseTimeoutRef.current) window.clearTimeout(pauseTimeoutRef.current)
-      if (resumeTimerRef.current) { window.clearTimeout(resumeTimerRef.current); resumeTimerRef.current = null }
-      if (ro) try { ro.disconnect() } catch (e) { /* ignore */ }
-    }
-  }, [speed])
-
-  // Gestion de la pause temporaire au clic
-  const handleClick = () => {
-    setIsPaused(true)
-    
-    // Clear any existing timeout
-    if (pauseTimeoutRef.current) {
-      window.clearTimeout(pauseTimeoutRef.current)
-    }
-    
-    // Reprendre automatiquement après 2 secondes
-    pauseTimeoutRef.current = window.setTimeout(() => {
-      setIsPaused(false)
-    }, 2000)
-  }
-
-  // Pause au survol (optionnel - pour plus de contrôle)
-  const handleMouseEnter = () => {
-    setIsPaused(true)
-  }
-
-  const handleMouseLeave = () => {
-    // resume only if not interacting
-    if (!isInteractingRef.current) setIsPaused(false)
-    if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current)
-  }
-
-  // Pointer handlers for swipe/drag (user interaction overrides auto-scroll)
-  const onPointerDown = (e: React.PointerEvent) => {
-    // record start positions but don't assume a horizontal drag yet
-    startXRef.current = e.clientX
-    startYRef.current = e.clientY
-    isDraggingRef.current = false
-    startPosRef.current = positionRef.current
-    // cancel any scheduled resume
-    if (resumeTimerRef.current) { window.clearTimeout(resumeTimerRef.current); resumeTimerRef.current = null }
-  }
-
-  const onPointerMove = (e: React.PointerEvent) => {
-    const clientX = e.clientX
-    const clientY = e.clientY
-    if (startXRef.current == null || startYRef.current == null) return
-
-    const dx = clientX - startXRef.current
-    const dy = clientY - startYRef.current
-
-    // If we haven't decided direction yet, check thresholds
-    if (!isDraggingRef.current && !isInteractingRef.current) {
-      const absDx = Math.abs(dx)
-      const absDy = Math.abs(dy)
-      const threshold = 8
-      if (absDx > threshold && absDx > absDy * 1.5) {
-        // begin horizontal drag
-        isDraggingRef.current = true
-        setIsDragging(true)
-        isInteractingRef.current = true
-        // pause auto-scroll immediately
-        setIsPaused(true)
-        isPausedRef.current = true
-        // capture pointer so we continue receiving events
-        try { (e.target as Element).setPointerCapture((e as any).pointerId) } catch (err) { /* ignore */ }
-        // also disable pointer events on children to avoid phantom hover styles
-        const c = contentRef.current
-        if (c) {
-          Array.from(c.children).forEach(ch => { (ch as HTMLElement).style.pointerEvents = 'none' })
-        }
-      } else if (absDy > threshold && absDy > absDx * 1.5) {
-        // vertical gesture: let page scroll
-        isDraggingRef.current = false
-        isInteractingRef.current = false
-        return
-      } else {
-        return
-      }
-    }
-
-    if (!isDraggingRef.current) return
-
-    e.preventDefault()
-    const newPos = startPosRef.current - dx
-    const w = contentWidthRef.current || (contentRef.current ? contentRef.current.scrollWidth / 2 : 0)
-    if (w > 0) {
-      let norm = ((newPos % w) + w) % w
-      positionRef.current = norm
-    } else {
-      positionRef.current = newPos
-    }
-    if (contentRef.current) contentRef.current.style.transform = `translate3d(${-positionRef.current}px,0,0)`
-  }
-
-  const onPointerUp = (e: React.PointerEvent) => {
-    // if we were dragging, schedule resume and re-enable children
-    if (isDraggingRef.current || isInteractingRef.current) {
-      isDraggingRef.current = false
-      setIsDragging(false)
-      isInteractingRef.current = false
-      if (resumeTimerRef.current) window.clearTimeout(resumeTimerRef.current)
-      resumeTimerRef.current = window.setTimeout(() => {
-        resumeTimerRef.current = null
-        setIsPaused(false)
-        isPausedRef.current = false
-      }, 1200)
-      const c = contentRef.current
-      if (c) Array.from(c.children).forEach(ch => { (ch as HTMLElement).style.pointerEvents = '' })
-    }
-
-    startXRef.current = null
-    startYRef.current = null
-    try { (e.target as Element).releasePointerCapture((e as any).pointerId) } catch (err) { /* ignore */ }
-  }
-
-  // ensure child pointer-events are restored on unmount or when component is removed
-  React.useEffect(() => {
-    return () => {
-      const c = contentRef.current
-      if (c) Array.from(c.children).forEach(ch => { (ch as HTMLElement).style.pointerEvents = '' })
-    }
-  }, [])
-
+// Thin wrapper: use the extracted InfiniteCarousel component
+const SmoothCarousel: React.FC<{ children: React.ReactNode; speed?: number }> = ({ children, speed = 40 }) => {
   return (
-    <Box 
-      ref={containerRef}
-      overflow="hidden"
-      position="relative"
-      sx={{
-        '&::-webkit-scrollbar': { display: 'none' },
-        msOverflowStyle: 'none',
-        scrollbarWidth: 'none',
-        touchAction: 'pan-y'
-      }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      <Box
-        ref={contentRef}
-        display="flex"
-        willChange="transform"
-        style={{ 
-          transform: 'translate3d(0,0,0)',
-          backfaceVisibility: 'hidden',
-          perspective: 1000
-        }}
-        onClick={handleClick}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        cursor="pointer"
-        userSelect="none"
-        css={{
-          WebkitUserSelect: 'none',
-          MozUserSelect: 'none',
-          msUserSelect: 'none',
-        }}
-      >
-        {children}
-        {children} {/* Duplication pour l'effet infini */}
-      </Box>
-      
-      {/* Indicateur visuel de pause */}
-      
-    </Box>
+    <InfiniteCarousel speed={speed} mobileSpeed={Math.round(speed * 0.7)} resumeDelay={1200}>
+      {children}
+    </InfiniteCarousel>
   )
 }
 
@@ -501,7 +265,7 @@ export default function Home() {
             <Box mb={6}>
               <Heading size="md" color="black">Nouveautés</Heading>
               <Text fontSize="sm" color={secondaryTextColor} mb={2}>
-                🖤
+                😻
               </Text>
 
               <SmoothCarousel speed={70}>
