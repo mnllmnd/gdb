@@ -62,6 +62,9 @@ const SmoothCarousel: React.FC<{
   // interaction and measurement refs
   const isInteractingRef = React.useRef(false)
   const startXRef = React.useRef<number | null>(null)
+  const startYRef = React.useRef<number | null>(null)
+  const isDraggingRef = React.useRef(false)
+  const [isDragging, setIsDragging] = React.useState(false)
   const startPosRef = React.useRef<number>(0)
   const positionRef = React.useRef<number>(0)
   const contentWidthRef = React.useRef<number>(0)
@@ -156,24 +159,56 @@ const SmoothCarousel: React.FC<{
 
   // Pointer handlers for swipe/drag (user interaction overrides auto-scroll)
   const onPointerDown = (e: React.PointerEvent) => {
-    const clientX = (e as React.PointerEvent).clientX
-    isInteractingRef.current = true
-    startXRef.current = clientX
+    // record start positions but don't assume a horizontal drag yet
+    startXRef.current = e.clientX
+    startYRef.current = e.clientY
+    isDraggingRef.current = false
     startPosRef.current = positionRef.current
-    // ensure auto-scroll is paused immediately when user starts interacting
-    setIsPaused(true)
-    isPausedRef.current = true
-    // capture pointer to receive move/up even if cursor leaves element
-    try { (e.target as Element).setPointerCapture((e as any).pointerId) } catch (err) { /* ignore */ }
     // cancel any scheduled resume
-    if (resumeTimerRef.current) { clearTimeout(resumeTimerRef.current); resumeTimerRef.current = null }
+    if (resumeTimerRef.current) { window.clearTimeout(resumeTimerRef.current); resumeTimerRef.current = null }
   }
 
   const onPointerMove = (e: React.PointerEvent) => {
-    if (!isInteractingRef.current) return
-    const clientX = (e as React.PointerEvent).clientX
-    if (startXRef.current == null) { startXRef.current = clientX; return }
+    const clientX = e.clientX
+    const clientY = e.clientY
+    if (startXRef.current == null || startYRef.current == null) return
+
     const dx = clientX - startXRef.current
+    const dy = clientY - startYRef.current
+
+    // If we haven't decided direction yet, check thresholds
+    if (!isDraggingRef.current && !isInteractingRef.current) {
+      const absDx = Math.abs(dx)
+      const absDy = Math.abs(dy)
+      const threshold = 8
+      if (absDx > threshold && absDx > absDy * 1.5) {
+        // begin horizontal drag
+        isDraggingRef.current = true
+        setIsDragging(true)
+        isInteractingRef.current = true
+        // pause auto-scroll immediately
+        setIsPaused(true)
+        isPausedRef.current = true
+        // capture pointer so we continue receiving events
+        try { (e.target as Element).setPointerCapture((e as any).pointerId) } catch (err) { /* ignore */ }
+        // also disable pointer events on children to avoid phantom hover styles
+        const c = contentRef.current
+        if (c) {
+          Array.from(c.children).forEach(ch => { (ch as HTMLElement).style.pointerEvents = 'none' })
+        }
+      } else if (absDy > threshold && absDy > absDx * 1.5) {
+        // vertical gesture: let page scroll
+        isDraggingRef.current = false
+        isInteractingRef.current = false
+        return
+      } else {
+        return
+      }
+    }
+
+    if (!isDraggingRef.current) return
+
+    e.preventDefault()
     const newPos = startPosRef.current - dx
     const w = contentWidthRef.current || (contentRef.current ? contentRef.current.scrollWidth / 2 : 0)
     if (w > 0) {
@@ -186,16 +221,33 @@ const SmoothCarousel: React.FC<{
   }
 
   const onPointerUp = (e: React.PointerEvent) => {
-    isInteractingRef.current = false
+    // if we were dragging, schedule resume and re-enable children
+    if (isDraggingRef.current || isInteractingRef.current) {
+      isDraggingRef.current = false
+      setIsDragging(false)
+      isInteractingRef.current = false
+      if (resumeTimerRef.current) window.clearTimeout(resumeTimerRef.current)
+      resumeTimerRef.current = window.setTimeout(() => {
+        resumeTimerRef.current = null
+        setIsPaused(false)
+        isPausedRef.current = false
+      }, 1200)
+      const c = contentRef.current
+      if (c) Array.from(c.children).forEach(ch => { (ch as HTMLElement).style.pointerEvents = '' })
+    }
+
     startXRef.current = null
-    // resume automatic after short delay to allow user to see result
-    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current)
-    resumeTimerRef.current = setTimeout(() => {
-      resumeTimerRef.current = null
-      setIsPaused(false)
-    }, 1200)
+    startYRef.current = null
     try { (e.target as Element).releasePointerCapture((e as any).pointerId) } catch (err) { /* ignore */ }
   }
+
+  // ensure child pointer-events are restored on unmount or when component is removed
+  React.useEffect(() => {
+    return () => {
+      const c = contentRef.current
+      if (c) Array.from(c.children).forEach(ch => { (ch as HTMLElement).style.pointerEvents = '' })
+    }
+  }, [])
 
   return (
     <Box 
@@ -205,7 +257,8 @@ const SmoothCarousel: React.FC<{
       sx={{
         '&::-webkit-scrollbar': { display: 'none' },
         msOverflowStyle: 'none',
-        scrollbarWidth: 'none'
+        scrollbarWidth: 'none',
+        touchAction: 'pan-y'
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
