@@ -62,6 +62,8 @@ const SmoothCarousel: React.FC<{
   // interaction and measurement refs
   const isInteractingRef = React.useRef(false)
   const startXRef = React.useRef<number | null>(null)
+  const startYRef = React.useRef<number | null>(null)
+  const isDraggingRef = React.useRef(false)
   const startPosRef = React.useRef<number>(0)
   const positionRef = React.useRef<number>(0)
   const contentWidthRef = React.useRef<number>(0)
@@ -156,24 +158,53 @@ const SmoothCarousel: React.FC<{
 
   // Pointer handlers for swipe/drag (user interaction overrides auto-scroll)
   const onPointerDown = (e: React.PointerEvent) => {
-    const clientX = (e as React.PointerEvent).clientX
-    isInteractingRef.current = true
+    const clientX = e.clientX
+    const clientY = e.clientY
+    // record start positions; don't assume horizontal drag yet
     startXRef.current = clientX
+    startYRef.current = clientY
+    isDraggingRef.current = false
     startPosRef.current = positionRef.current
-    // ensure auto-scroll is paused immediately when user starts interacting
-    setIsPaused(true)
-    isPausedRef.current = true
-    // capture pointer to receive move/up even if cursor leaves element
-    try { (e.target as Element).setPointerCapture((e as any).pointerId) } catch (err) { /* ignore */ }
     // cancel any scheduled resume
-    if (resumeTimerRef.current) { clearTimeout(resumeTimerRef.current); resumeTimerRef.current = null }
+    if (resumeTimerRef.current) { window.clearTimeout(resumeTimerRef.current); resumeTimerRef.current = null }
   }
 
   const onPointerMove = (e: React.PointerEvent) => {
-    if (!isInteractingRef.current) return
-    const clientX = (e as React.PointerEvent).clientX
-    if (startXRef.current == null) { startXRef.current = clientX; return }
+    const clientX = e.clientX
+    const clientY = e.clientY
+    if (startXRef.current == null || startYRef.current == null) return
+
     const dx = clientX - startXRef.current
+    const dy = clientY - startYRef.current
+
+    // If we haven't yet decided drag direction, check thresholds
+    if (!isDraggingRef.current && !isInteractingRef.current) {
+      const absDx = Math.abs(dx)
+      const absDy = Math.abs(dy)
+      const threshold = 8
+      // horizontal drag if dx exceeds threshold and is significantly more than dy
+      if (absDx > threshold && absDx > absDy * 1.5) {
+        isDraggingRef.current = true
+        isInteractingRef.current = true
+        // immediately pause auto-scroll
+        setIsPaused(true)
+        isPausedRef.current = true
+        // capture pointer to receive up even if finger leaves element
+        try { (e.target as Element).setPointerCapture((e as any).pointerId) } catch (err) { /* ignore */ }
+      } else if (absDy > threshold && absDy > absDx * 1.5) {
+        // vertical scroll: do not treat as carousel interaction; allow page to scroll
+        isDraggingRef.current = false
+        isInteractingRef.current = false
+        return
+      } else {
+        return // not enough movement yet
+      }
+    }
+
+    if (!isDraggingRef.current) return
+
+    // we've initiated a horizontal drag
+    e.preventDefault()
     const newPos = startPosRef.current - dx
     const w = contentWidthRef.current || (contentRef.current ? contentRef.current.scrollWidth / 2 : 0)
     if (w > 0) {
@@ -186,14 +217,21 @@ const SmoothCarousel: React.FC<{
   }
 
   const onPointerUp = (e: React.PointerEvent) => {
-    isInteractingRef.current = false
+    // If we were dragging horizontally, schedule resume
+    if (isDraggingRef.current || isInteractingRef.current) {
+      isDraggingRef.current = false
+      isInteractingRef.current = false
+      // resume automatic after short delay to allow user to see result
+      if (resumeTimerRef.current) window.clearTimeout(resumeTimerRef.current)
+      resumeTimerRef.current = window.setTimeout(() => {
+        resumeTimerRef.current = null
+        setIsPaused(false)
+        isPausedRef.current = false
+      }, 1200)
+    }
+
     startXRef.current = null
-    // resume automatic after short delay to allow user to see result
-    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current)
-    resumeTimerRef.current = setTimeout(() => {
-      resumeTimerRef.current = null
-      setIsPaused(false)
-    }, 1200)
+    startYRef.current = null
     try { (e.target as Element).releasePointerCapture((e as any).pointerId) } catch (err) { /* ignore */ }
   }
 
@@ -205,7 +243,8 @@ const SmoothCarousel: React.FC<{
       sx={{
         '&::-webkit-scrollbar': { display: 'none' },
         msOverflowStyle: 'none',
-        scrollbarWidth: 'none'
+        scrollbarWidth: 'none',
+        touchAction: 'pan-y'
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}

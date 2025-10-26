@@ -307,7 +307,7 @@ export default function ProductCard({
                   transition="all 0.2s ease"
                   
                 >
-                 🛒 Panier
+                 🛒
                 </Button>
 
                 <Button
