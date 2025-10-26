@@ -48,6 +48,7 @@ interface Category {
 interface Shop {
   id: number
   name: string
+  followers?: number
 }
 
 // Thin wrapper: use the extracted InfiniteCarousel component
@@ -61,6 +62,7 @@ const SmoothCarousel: React.FC<{ children: React.ReactNode; speed?: number }> = 
 
 export default function Home() {
   const [shops, setShops] = React.useState<Shop[]>([])
+  const [popularShops, setPopularShops] = React.useState<Shop[]>([])
   const [shopsMap, setShopsMap] = React.useState<Record<string, any>>({})
   const [products, setProducts] = React.useState<Product[]>([])
   const [categories, setCategories] = React.useState<Category[]>([])
@@ -94,10 +96,11 @@ export default function Home() {
   React.useEffect(() => {
     async function loadData() {
       try {
-        const [shopsData, categoriesData, productsData] = await Promise.all([
+        const [shopsData, categoriesData, productsData, popularData] = await Promise.all([
           api.shops.list(),
           api.categories.list(),
           api.products.list(),
+          api.shops.popular(),
         ])
         
         setShops(shopsData)
@@ -111,6 +114,7 @@ export default function Home() {
         setShopsMap({ byId, byOwner })
         setCategories(categoriesData)
         setProducts(productsData)
+  setPopularShops(popularData || [])
         
         const productsByCategory: Record<number, Product[]> = {}
         if (productsData) {
@@ -219,27 +223,50 @@ export default function Home() {
 
     return (
       <ScaleFade in={!isLoading} initialScale={0.95}>
-        <SimpleGrid 
-          columns={{ base: 2, sm: 2, md: 3, lg: 4 }} 
-          spacing={{ base: 3, md: 4 }}
-          px={{ base: 2, md: 0 }}
-        >
-          {shops.map((shop, index) => (
-            <Box 
-              key={shop.id} 
-              transition="all 0.3s ease"
-              _hover={{ transform: 'translateY(-4px)' }}
-              height="100%"
-            >
-              <ShopCard 
-                {...shop} 
-                id={String(shop.id)} 
-                compact 
-                height={cardHeight}
-              />
+        <VStack spacing={6} align="stretch">
+          {popularShops && popularShops.length > 0 && (
+            <Box>
+              <HStack justify="space-between" align="center" mb={3}>
+                <Heading size="md">Boutiques en vedette</Heading>
+                <Text fontSize="sm" color={secondaryTextColor}>Les plus suivies</Text>
+              </HStack>
+              <SimpleGrid columns={{ base: 2, sm: 3, md: 4 }} spacing={3} mb={4}>
+                {popularShops.map((s) => (
+                  <Box key={s.id} height="100%">
+                    <ShopCard {...s} id={String(s.id)} height={cardHeight} />
+                  </Box>
+                ))}
+              </SimpleGrid>
             </Box>
-          ))}
-        </SimpleGrid>
+          )}
+
+          <SimpleGrid 
+            columns={{ base: 2, sm: 2, md: 3, lg: 4 }} 
+            spacing={{ base: 3, md: 4 }}
+            px={{ base: 2, md: 0 }}
+          >
+            {(() => {
+              // Exclude shops already shown in popularShops to avoid duplicates
+              const popularIds = new Set((popularShops || []).map(p => String(p.id)))
+              const filtered = (shops || []).filter(s => !popularIds.has(String(s.id)))
+              return filtered.map((shop) => (
+                <Box 
+                  key={shop.id} 
+                  transition="all 0.3s ease"
+                  _hover={{ transform: 'translateY(-4px)' }}
+                  height="100%"
+                >
+                  <ShopCard 
+                    {...shop} 
+                    id={String(shop.id)} 
+                    compact 
+                    height={cardHeight}
+                  />
+                </Box>
+              ))
+            })()}
+          </SimpleGrid>
+        </VStack>
       </ScaleFade>
     )
   }

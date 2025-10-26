@@ -37,7 +37,8 @@ export default function ShopCard(props: ShopCardProps) {
   // Tailles adaptatives
   // Responsive sizes; if compact, use smaller defaults so multiple cards fit per row
   const cardHeight = height ?? useBreakpointValue({ base: compact ? '80px' : '100px', md: compact ? '100px' : '140px' })
-  const logoSize = useBreakpointValue({ base: compact ? '36px' : '48px', md: compact ? '44px' : '56px' })
+  // Slightly reduce logo size so the cover image is more visible
+  const logoSize = useBreakpointValue({ base: compact ? '36px' : '40px', md: compact ? '44px' : '48px' })
   const headingSize = useBreakpointValue({ base: compact ? 'xs' : 'xs', md: compact ? 'xs' : 'sm' })
   const padding = useBreakpointValue({ base: compact ? 2 : 3, md: compact ? 3 : 4 })
   const logoTopOffset = useBreakpointValue({ base: '18px', md: '24px' })
@@ -74,11 +75,12 @@ export default function ShopCard(props: ShopCardProps) {
       transition="transform 220ms ease, box-shadow 220ms ease"
       _hover={{ transform: 'translateY(-6px)', boxShadow: currentElevation.hoverShadow }}
     >
-      <AspectRatio ratio={compact ? 4 / 3 : 16 / 8} w="100%" flexShrink={0}>
+      <AspectRatio ratio={compact ? 4 / 3 : 3 / 2} w="100%" flexShrink={0}>
         <Image
           src={hi}
           alt={s?.name || s?.domain || 'cover'}
           objectFit="cover"
+          objectPosition="center"
           onError={(e: any) => { e.currentTarget.src = SHOP_PLACEHOLDER }}
           loading="lazy"
         />
@@ -93,7 +95,7 @@ export default function ShopCard(props: ShopCardProps) {
             objectFit="cover"
             borderRadius="xl"
             onError={(e: any) => { e.currentTarget.src = SHOP_PLACEHOLDER }}
-            borderWidth="3px"
+            borderWidth="2px"
             borderColor={useColorModeValue('white', 'gray.700')}
             boxShadow="sm"
             flexShrink={0}
@@ -105,11 +107,11 @@ export default function ShopCard(props: ShopCardProps) {
             </Heading>
             <Text
               color={useColorModeValue('gray.600', 'gray.300')}
-              noOfLines={compact ? 2 : 3}
+              noOfLines={compact ? 2 : 4}
               fontSize={compact ? 'sm' : 'md'}
               sx={{
                 display: '-webkit-box',
-                WebkitLineClamp: compact ? 2 : 3,
+                WebkitLineClamp: compact ? 2 : 4,
                 WebkitBoxOrient: 'vertical',
                 overflow: 'hidden',
               }}

@@ -148,6 +148,25 @@ router.get('/search', async (req, res) => {
   }
 })
 
+// Public: popular shops (ordered by follower count)
+router.get('/popular', async (req, res) => {
+  try {
+    const r = await query(
+      `SELECT s.id, s.owner_id, s.name, s.domain, s.logo_url, s.description, COALESCE(sf.cnt,0)::int AS followers
+       FROM shops s
+       LEFT JOIN (
+         SELECT shop_id, COUNT(*) as cnt FROM shop_follows GROUP BY shop_id
+       ) sf ON sf.shop_id = s.id
+       ORDER BY followers DESC NULLS LAST, s.created_at DESC
+       LIMIT 12`
+    )
+    res.json(r.rows)
+  } catch (err) {
+    console.error('Failed to fetch popular shops', err)
+    res.status(500).json({ error: 'Failed to fetch popular shops' })
+  }
+})
+
 // Follow a shop
 router.post('/:id/follow', authenticate, async (req, res) => {
   const { id } = req.params
