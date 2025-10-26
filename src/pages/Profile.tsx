@@ -83,7 +83,7 @@ export default function ProfilePage() {
         </VStack>
         <HStack mt={4} spacing={3}>
           <Button colorScheme="brand" onClick={() => navigate('/orders')}>Mes commandes</Button>
-          <Button variant="outline" onClick={() => { signOut(); navigate('/login') }}>Se déconnecter</Button>
+          <Button variant="outline" onClick={() => { signOut(); navigate('/login') }} bg="white">Se déconnecter</Button>
         </HStack>
       </Box>
 
@@ -104,14 +104,14 @@ export default function ProfilePage() {
                 <Text>{shop.description}</Text>
                 <HStack mt={3} spacing={3}>
                   <Button as="a" href={`/shop/${shop.domain}`} colorScheme="brand">Voir la boutique</Button>
-                  <Button onClick={() => navigate('/seller/shop')} variant="outline">Gérer la boutique</Button>
+                  <Button onClick={() => navigate('/seller/shop')} variant="outline" bg="white">Gérer la boutique</Button>
                 </HStack>
               </VStack>
             )
             return (
               <VStack align="start">
                 <Text>Aucune boutique trouvée pour ce compte.</Text>
-                <Button colorScheme="brand" onClick={() => navigate('/seller')}>Créer / configurer ma boutique</Button>
+                <Button colorScheme="brand" onClick={() => navigate('/seller')} bg="white">Créer / configurer ma boutique</Button>
               </VStack>
             )
           })()}
