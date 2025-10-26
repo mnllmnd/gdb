@@ -103,7 +103,17 @@ export default function ShopCard(props: ShopCardProps) {
             <Heading size={headingSize} noOfLines={2} fontWeight="700" color={useColorModeValue('gray.800', 'white')}>
               {s?.name || s?.domain}
             </Heading>
-            <Text color={useColorModeValue('gray.600', 'gray.300')} noOfLines={compact ? 2 : 3} fontSize={compact ? 'sm' : 'md'}>
+            <Text
+              color={useColorModeValue('gray.600', 'gray.300')}
+              noOfLines={compact ? 2 : 3}
+              fontSize={compact ? 'sm' : 'md'}
+              sx={{
+                display: '-webkit-box',
+                WebkitLineClamp: compact ? 2 : 3,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
+            >
               {s?.description || 'Boutique locale de qualité'}
             </Text>
           </Box>
