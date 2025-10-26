@@ -220,7 +220,7 @@ export default function Home() {
     return (
       <ScaleFade in={!isLoading} initialScale={0.95}>
         <SimpleGrid 
-          columns={{ base: 1, sm: 2, md: 3, lg: 4 }} 
+          columns={{ base: 2, sm: 2, md: 3, lg: 4 }} 
           spacing={{ base: 3, md: 4 }}
           px={{ base: 2, md: 0 }}
         >

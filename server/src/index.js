@@ -186,18 +186,28 @@ const start = async () => {
     await tfidfCache.init(dbQuery)
     // initialize general cache (products/shops/categories)
     try { await cache.init(dbQuery) } catch (err) { console.warn('General cache init failed', err.message) }
-    // Run categories migration/fix if SQL file present to ensure category_id exists
+    // Apply all SQL migrations found in src/migrations (simple, idempotent execution)
     try {
-      const migPath = path.join(__dirname, 'migrations', 'fix_categories.sql')
-      if (fs.existsSync(migPath)) {
-        const sql = fs.readFileSync(migPath, 'utf8')
-        await dbQuery(sql)
-        console.log('✅ Applied categories migration/fix from fix_categories.sql')
+      const migrationsDir = path.join(__dirname, 'migrations')
+      if (fs.existsSync(migrationsDir)) {
+        const files = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort()
+        for (const file of files) {
+          try {
+            const full = path.join(migrationsDir, file)
+            const sql = fs.readFileSync(full, 'utf8')
+            if (sql && sql.trim().length > 0) {
+              await dbQuery(sql)
+              console.log(`✅ Applied migration: ${file}`)
+            }
+          } catch (e) {
+            console.warn(`Failed to apply migration ${file}:`, e.message)
+          }
+        }
       } else {
-        console.log('ℹ️  No categories migration file found at', migPath)
+        console.log('ℹ️  No migrations directory found at', migrationsDir)
       }
     } catch (e) {
-      console.warn('Failed to apply categories migration/fix:', e.message)
+      console.warn('Failed to run migrations:', e.message)
     }
     // Ensure likes table exists (for product likes feature)
     try {

@@ -86,6 +86,12 @@ export const api = {
     deleteOrder: (orderId: string, token?: string) => request(`/shops/me/orders/${encodeURIComponent(orderId)}`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     // Public: search shops by query (name or product title)
     search: (q: string) => request(`/shops/search?q=${encodeURIComponent(q)}`),
+  // Follow/unfollow and status
+  follow: (id: string, token?: string) => request(`/shops/${id}/follow`, { method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+  unfollow: (id: string, token?: string) => request(`/shops/${id}/follow`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+  followStatus: (id: string, token?: string) => request(`/shops/${id}/follow_status`, { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+  followers: (id: string) => request(`/shops/${id}/followers`),
+  following: (token?: string) => request('/shops/me/following', { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
   },
   recommend: {
     find: (payload: any) => request('/recommend', { method: 'POST', body: JSON.stringify(payload) })

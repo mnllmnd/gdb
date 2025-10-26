@@ -66,4 +66,58 @@ router.get('/me/likes', authenticate, async (req, res) => {
   }
 })
 
+// Follow a user
+router.post('/:id/follow', authenticate, async (req, res) => {
+  const { id } = req.params
+  try {
+    // ensure target user exists
+    const u = await query('SELECT id FROM users WHERE id = $1', [id])
+    if (u.rowCount === 0) return res.status(404).json({ error: 'User not found' })
+    if (String(id) === String(req.user.id)) return res.status(400).json({ error: 'Cannot follow yourself' })
+    await query('INSERT INTO user_follows (follower_id, followed_user_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [req.user.id, id])
+    const cnt = await query('SELECT COUNT(*)::int AS count FROM user_follows WHERE followed_user_id = $1', [id])
+    res.json({ followed: true, count: Number(cnt.rows[0]?.count || 0) })
+  } catch (err) {
+    console.error('Failed to follow user', err)
+    res.status(500).json({ error: 'Failed to follow' })
+  }
+})
+
+// Unfollow a user
+router.delete('/:id/follow', authenticate, async (req, res) => {
+  const { id } = req.params
+  try {
+    await query('DELETE FROM user_follows WHERE follower_id = $1 AND followed_user_id = $2', [req.user.id, id])
+    const cnt = await query('SELECT COUNT(*)::int AS count FROM user_follows WHERE followed_user_id = $1', [id])
+    res.json({ followed: false, count: Number(cnt.rows[0]?.count || 0) })
+  } catch (err) {
+    console.error('Failed to unfollow user', err)
+    res.status(500).json({ error: 'Failed to unfollow' })
+  }
+})
+
+// Get followers of a user
+router.get('/:id/followers', async (req, res) => {
+  const { id } = req.params
+  try {
+    const cnt = await query('SELECT COUNT(*)::int AS count FROM user_follows WHERE followed_user_id = $1', [id])
+    const rows = await query('SELECT u.id, u.display_name, u.email FROM user_follows uf JOIN users u ON u.id = uf.follower_id WHERE uf.followed_user_id = $1 ORDER BY uf.created_at DESC LIMIT 50', [id])
+    res.json({ count: Number(cnt.rows[0]?.count || 0), users: rows.rows })
+  } catch (err) {
+    console.error('Failed to fetch followers', err)
+    res.status(500).json({ error: 'Failed to fetch followers' })
+  }
+})
+
+// Get users the current user is following
+router.get('/me/following', authenticate, async (req, res) => {
+  try {
+    const r = await query('SELECT u.id, u.display_name, u.email FROM user_follows uf JOIN users u ON u.id = uf.followed_user_id WHERE uf.follower_id = $1 ORDER BY uf.created_at DESC', [req.user.id])
+    res.json(r.rows)
+  } catch (err) {
+    console.error('Failed to fetch following list', err)
+    res.status(500).json({ error: 'Failed to fetch following' })
+  }
+})
+
 export default router

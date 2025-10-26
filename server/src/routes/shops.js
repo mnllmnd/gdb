@@ -1,4 +1,5 @@
 import express from 'express'
+import jwt from 'jsonwebtoken'
 import { query } from '../db.js'
 import { authenticate, generateToken } from '../middleware/auth.js'
 import cache from '../cache.js'
@@ -54,6 +55,45 @@ router.get('/me', authenticate, async (req, res) => {
   }
 })
 
+// Get follow status and count for a shop (optional auth)
+router.get('/:id/follow_status', async (req, res) => {
+  const { id } = req.params
+  try {
+    let userId = null
+    const authHeader = req.headers.authorization
+    if (authHeader) {
+      try {
+        const token = authHeader.replace('Bearer ', '')
+        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+        userId = decoded.id
+      } catch (e) {
+        userId = null
+      }
+    }
+    const cnt = await query('SELECT COUNT(*)::int AS count FROM shop_follows WHERE shop_id = $1', [id])
+    let followed = false
+    if (userId) {
+      const r = await query('SELECT 1 FROM shop_follows WHERE shop_id = $1 AND user_id = $2', [id, userId])
+      followed = r.rowCount > 0
+    }
+    res.json({ followed, count: Number(cnt.rows[0]?.count || 0) })
+  } catch (err) {
+    console.error('Failed to get shop follow status', err)
+    res.status(500).json({ error: 'Failed to get follow status' })
+  }
+})
+
+// List shops the current user follows
+router.get('/me/following', authenticate, async (req, res) => {
+  try {
+    const r = await query('SELECT s.* FROM shop_follows sf JOIN shops s ON s.id = sf.shop_id WHERE sf.user_id = $1 ORDER BY sf.created_at DESC', [req.user.id])
+    res.json(r.rows)
+  } catch (err) {
+    console.error('Failed to fetch followed shops', err)
+    res.status(500).json({ error: 'Failed to fetch followed shops' })
+  }
+})
+
 // Public: get shop by domain
 router.get('/domain/:domain', async (req, res) => {
   try {
@@ -105,6 +145,48 @@ router.get('/search', async (req, res) => {
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Failed to search shops' })
+  }
+})
+
+// Follow a shop
+router.post('/:id/follow', authenticate, async (req, res) => {
+  const { id } = req.params
+  try {
+    // ensure shop exists
+    const s = await query('SELECT id FROM shops WHERE id = $1', [id])
+    if (s.rowCount === 0) return res.status(404).json({ error: 'Shop not found' })
+    await query('INSERT INTO shop_follows (user_id, shop_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [req.user.id, id])
+    const cnt = await query('SELECT COUNT(*)::int AS count FROM shop_follows WHERE shop_id = $1', [id])
+    res.json({ followed: true, count: Number(cnt.rows[0]?.count || 0) })
+  } catch (err) {
+    console.error('Failed to follow shop', err)
+    res.status(500).json({ error: 'Failed to follow' })
+  }
+})
+
+// Unfollow a shop
+router.delete('/:id/follow', authenticate, async (req, res) => {
+  const { id } = req.params
+  try {
+    await query('DELETE FROM shop_follows WHERE user_id = $1 AND shop_id = $2', [req.user.id, id])
+    const cnt = await query('SELECT COUNT(*)::int AS count FROM shop_follows WHERE shop_id = $1', [id])
+    res.json({ followed: false, count: Number(cnt.rows[0]?.count || 0) })
+  } catch (err) {
+    console.error('Failed to unfollow shop', err)
+    res.status(500).json({ error: 'Failed to unfollow' })
+  }
+})
+
+// Get followers of a shop (count and optional list)
+router.get('/:id/followers', async (req, res) => {
+  const { id } = req.params
+  try {
+    const cnt = await query('SELECT COUNT(*)::int AS count FROM shop_follows WHERE shop_id = $1', [id])
+    const rows = await query('SELECT u.id, u.display_name, u.email FROM shop_follows sf JOIN users u ON u.id = sf.user_id WHERE sf.shop_id = $1 ORDER BY sf.created_at DESC LIMIT 50', [id])
+    res.json({ count: Number(cnt.rows[0]?.count || 0), users: rows.rows })
+  } catch (err) {
+    console.error('Failed to fetch shop followers', err)
+    res.status(500).json({ error: 'Failed to fetch followers' })
   }
 })
 

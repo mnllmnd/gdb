@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Container, Heading, Text, Spinner, Box, useBreakpointValue, Grid, GridItem, VStack } from '@chakra-ui/react'
 import api from '../services/api'
+import FollowButton from '../components/FollowButton'
 import ProductCard from '../components/ProductCard'
 import BackButton from '../components/BackButton'
 
@@ -71,9 +72,14 @@ export default function ShopView() {
         <Spinner />
       ) : (
         <>
-          <Box mb={6}>
-            <Heading>{shop.name || shop.domain}</Heading>
-            <Text color="white">{shop.description}</Text>
+          <Box mb={6} display="flex" alignItems="center" justifyContent="space-between">
+            <div>
+              <Heading>{shop.name || shop.domain}</Heading>
+              <Text color="white">{shop.description}</Text>
+            </div>
+            <div>
+              <FollowButton id={String(shop.id)} />
+            </div>
           </Box>
 
           <Heading size="md" mb={4}>Produits</Heading>
