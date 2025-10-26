@@ -1,7 +1,7 @@
 import express from 'express'
 import bcrypt from 'bcrypt'
 import { query } from '../db.js'
-import { generateToken } from '../middleware/auth.js'
+import { generateToken, authenticate } from '../middleware/auth.js'
 
 const router = express.Router()
 
@@ -52,6 +52,17 @@ router.post('/login', async (req, res) => {
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Login failed' })
+  }
+})
+
+// Return liked products for current user
+router.get('/me/likes', authenticate, async (req, res) => {
+  try {
+    const r = await query('SELECT p.* FROM likes l JOIN products p ON p.id = l.product_id WHERE l.user_id = $1 ORDER BY l.created_at DESC', [req.user.id])
+    res.json(r.rows)
+  } catch (err) {
+    console.error('Failed to fetch liked products', err)
+    res.status(500).json({ error: 'Failed to fetch likes' })
   }
 })
 

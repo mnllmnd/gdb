@@ -7,11 +7,12 @@ import {
   useColorModeValue
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
-import { FaStore, FaShoppingCart, FaEye } from 'react-icons/fa'
+import { FaStore, FaShoppingCart, FaEye, FaHeart, FaRegHeart } from 'react-icons/fa'
 import cart from '../utils/cart'
 import { getItem } from '../utils/localAuth'
 import { highRes, PRODUCT_PLACEHOLDER } from '../utils/image'
 import api from '../services/api'
+import { FaCartShopping } from 'react-icons/fa6'
 
 export default function ProductCard({
   id,
@@ -67,6 +68,8 @@ export default function ProductCard({
   })()
 
   const [hasImage, setHasImage] = useState<boolean | null>(null)
+  const [liked, setLiked] = useState<boolean | null>(null)
+  const [likesCount, setLikesCount] = useState<number | null>(null)
   const { isOpen: isImageOpen, onOpen: onImageOpen, onClose: onImageClose } = useDisclosure()
   const modalSize = useBreakpointValue({ base: 'full', md: 'xl' })
 
@@ -90,6 +93,24 @@ export default function ProductCard({
     probe.src = resolvedSrc
     return () => { mounted = false; probe.onload = null; probe.onerror = null }
   }, [resolvedSrc])
+
+  // Load like state for this product (if user is logged in we also get whether current user liked it)
+  React.useEffect(() => {
+    let mounted = true
+    const token = globalThis.localStorage?.getItem('token') ?? undefined
+    const load = async () => {
+      try {
+        const res = await api.products.getLikes(id, token)
+        if (!mounted) return
+        setLikesCount(typeof res.count === 'number' ? res.count : Number(res.count || 0))
+        setLiked(Boolean(res.liked))
+      } catch (err) {
+        // ignore
+      }
+    }
+    load()
+    return () => { mounted = false }
+  }, [id])
 
   function addToCart() {
     try {
@@ -263,27 +284,66 @@ export default function ProductCard({
 
             {/* Action Button - Only Add to Cart */}
             <VStack spacing={2} mt="auto">
-              <Button 
-                onClick={addToCart}
-                width="100%"
-                borderRadius="lg"
-                size="sm"
-                height="40px"
-                bg="brand.500"
-                color="white"
-                _hover={{ 
-                  transform: 'translateY(-2px)',
-                  boxShadow: 'lg',
-                  bg: 'brand.600'
-                }}
-                _active={{
-                  bg: 'brand.700'
-                }}
-                transition="all 0.2s ease"
-                leftIcon={<Icon as={FaShoppingCart} />}
-              >
-                Ajouter au panier
-              </Button>
+              <HStack width="100%" spacing={2}>
+                <Button 
+                  onClick={addToCart}
+                  flex="1"
+                  borderRadius="lg"
+                  size="sm"
+                  height="40px"
+                  variant="outline"
+                  bg="transparent"
+               
+                  _hover={{ 
+                    transform: 'translateY(-2px)',
+                    
+                   
+                  }}
+                  _active={{
+                    
+                  }}
+                   
+                  colorScheme="teal"
+                  transition="all 0.2s ease"
+                  
+                >
+                 🛒 Panier
+                </Button>
+
+                <Button
+                  aria-label={liked ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                  onClick={async () => {
+                    const token = globalThis.localStorage?.getItem('token') ?? undefined
+                    if (!token) {
+                      toast({ title: 'Connectez-vous', description: 'Veuillez vous connecter pour ajouter aux favoris.', status: 'info', duration: 2500 })
+                      return
+                    }
+                    try {
+                      if (liked) {
+                        const res = await api.products.unlike(id, token)
+                        setLiked(false)
+                        if (res && typeof res.count === 'number') setLikesCount(res.count)
+                      } else {
+                        const res = await api.products.like(id, token)
+                        setLiked(true)
+                        if (res && typeof res.count === 'number') setLikesCount(res.count)
+                      }
+                    } catch (err) {
+                      console.error('Like action failed', err)
+                      toast({ title: 'Erreur', description: 'Impossible de mettre à jour les favoris', status: 'error', duration: 2500 })
+                    }
+                  }}
+                  size="sm"
+                  height="40px"
+                  borderRadius="lg"
+                  variant="outline"
+                >
+                  <HStack spacing={2} align="center">
+                    <Icon as={liked ? FaHeart : FaRegHeart} color={liked ? 'red.400' : undefined} />
+                    <Text fontSize="sm">{likesCount ?? ''}</Text>
+                  </HStack>
+                </Button>
+              </HStack>
             </VStack>
           </VStack>
         </Box>

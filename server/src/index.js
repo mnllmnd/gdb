@@ -185,6 +185,18 @@ const start = async () => {
     await tfidfCache.init(dbQuery)
     // initialize general cache (products/shops/categories)
     try { await cache.init(dbQuery) } catch (err) { console.warn('General cache init failed', err.message) }
+    // Ensure likes table exists (for product likes feature)
+    try {
+      await dbQuery(`CREATE TABLE IF NOT EXISTS likes (
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+        PRIMARY KEY (user_id, product_id)
+      )`)
+      console.log('✅ Likes table ensured')
+    } catch (e) {
+      console.warn('Failed to ensure likes table:', e.message)
+    }
   } catch (err) {
     console.warn('TF-IDF cache init error:', err.message)
   }

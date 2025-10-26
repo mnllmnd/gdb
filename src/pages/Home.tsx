@@ -77,6 +77,48 @@ export default function Home() {
   const loadMoreCount = 6
   const [visibleByCategory, setVisibleByCategory] = React.useState<Record<number, number>>({})
   const [visibleUncategorized, setVisibleUncategorized] = React.useState<number>(initialCount)
+  // Carousel controls for the "Nouveautés" section
+  const carouselRef = React.useRef<HTMLDivElement | null>(null)
+  const [carouselPaused, setCarouselPaused] = React.useState(false)
+
+  React.useEffect(() => {
+    const el = carouselRef.current
+    if (!el) return
+
+    let interval: ReturnType<typeof setInterval> | null = null
+
+    const startAuto = () => {
+      if (interval) clearInterval(interval)
+      const step = Math.max(el.clientWidth * 0.7, 150)
+      interval = setInterval(() => {
+        if (!el) return
+        // if we're at (or very near) the end, smoothly go back to the start
+        if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 10) {
+          el.scrollTo({ left: 0, behavior: 'smooth' })
+        } else {
+          el.scrollBy({ left: step, behavior: 'smooth' })
+        }
+      }, 3000)
+    }
+
+    if (!carouselPaused) startAuto()
+
+    const onVisibilityChange = () => {
+      // pause when tab is hidden to avoid weird jumps
+      if (document.hidden) {
+        if (interval) clearInterval(interval)
+      } else if (!carouselPaused) {
+        startAuto()
+      }
+    }
+
+    document.addEventListener('visibilitychange', onVisibilityChange)
+
+    return () => {
+      if (interval) clearInterval(interval)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
+  }, [carouselPaused, products.length])
 
   React.useEffect(() => {
     async function loadData() {
@@ -256,6 +298,11 @@ export default function Home() {
   </Text>
 
   <HStack
+    ref={carouselRef}
+    onMouseEnter={() => setCarouselPaused(true)}
+    onMouseLeave={() => setCarouselPaused(false)}
+    onTouchStart={() => setCarouselPaused(true)}
+    onTouchEnd={() => setCarouselPaused(false)}
     spacing={3}
     overflowX="auto"
     py={2}

@@ -1,4 +1,5 @@
 import express from 'express'
+import jwt from 'jsonwebtoken'
 import { query } from '../db.js'
 import { authenticate, requireRole } from '../middleware/auth.js'
 import cache from '../cache.js'
@@ -80,4 +81,62 @@ router.delete('/:id', authenticate, async (req, res) => {
   }
 })
 
+// Get likes info for a product (count and whether current user liked it)
+router.get('/:id/likes', async (req, res) => {
+  const { id } = req.params
+  try {
+    let userId = null
+    const authHeader = req.headers.authorization
+    if (authHeader) {
+      try {
+        const token = authHeader.replace('Bearer ', '')
+        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+        userId = decoded.id
+      } catch (e) {
+        // ignore invalid token — treat as anonymous
+        userId = null
+      }
+    }
+
+    const cnt = await query('SELECT COUNT(*)::int AS count FROM likes WHERE product_id = $1', [id])
+    const count = Number(cnt.rows[0]?.count || 0)
+    let liked = false
+    if (userId) {
+      const r = await query('SELECT 1 FROM likes WHERE product_id = $1 AND user_id = $2', [id, userId])
+      liked = r.rowCount > 0
+    }
+    res.json({ count, liked })
+  } catch (err) {
+    console.error('Failed to get likes', err)
+    res.status(500).json({ error: 'Failed to get likes' })
+  }
+})
+
+// Like a product
+router.post('/:id/like', authenticate, async (req, res) => {
+  const { id } = req.params
+  try {
+    await query('INSERT INTO likes (user_id, product_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [req.user.id, id])
+    const cnt = await query('SELECT COUNT(*)::int AS count FROM likes WHERE product_id = $1', [id])
+    res.json({ liked: true, count: Number(cnt.rows[0]?.count || 0) })
+  } catch (err) {
+    console.error('Like failed', err)
+    res.status(500).json({ error: 'Like failed' })
+  }
+})
+
+// Unlike a product
+router.delete('/:id/like', authenticate, async (req, res) => {
+  const { id } = req.params
+  try {
+    await query('DELETE FROM likes WHERE user_id = $1 AND product_id = $2', [req.user.id, id])
+    const cnt = await query('SELECT COUNT(*)::int AS count FROM likes WHERE product_id = $1', [id])
+    res.json({ liked: false, count: Number(cnt.rows[0]?.count || 0) })
+  } catch (err) {
+    console.error('Unlike failed', err)
+    res.status(500).json({ error: 'Unlike failed' })
+  }
+})
+
 export default router
+

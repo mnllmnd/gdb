@@ -45,11 +45,14 @@ export const api = {
   },
   products: {
     list: () => request('/products'),
+    getLikes: (id: string, token?: string) => request(`/products/${id}/likes`, { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     create: (payload: any, token?: string) =>
       request('/products', { method: 'POST', body: JSON.stringify(payload), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     update: (id: string, payload: any, token?: string) =>
       request(`/products/${id}`, { method: 'PUT', body: JSON.stringify(payload), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     delete: (id: string, token?: string) => request(`/products/${id}`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+    like: (id: string, token?: string) => request(`/products/${id}/like`, { method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+    unlike: (id: string, token?: string) => request(`/products/${id}/like`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
   },
   uploads: {
     uploadFile: async (file: File, token?: string) => {
@@ -86,6 +89,9 @@ export const api = {
   },
   recommend: {
     find: (payload: any) => request('/recommend', { method: 'POST', body: JSON.stringify(payload) })
+  },
+  user: {
+    myLikes: (token?: string) => request('/auth/me/likes', { headers: token ? { Authorization: `Bearer ${token}` } : {} })
   },
   admin: {
     users: (token?: string) => request('/admin/users', { headers: token ? { Authorization: `Bearer ${token}` } : {} }),

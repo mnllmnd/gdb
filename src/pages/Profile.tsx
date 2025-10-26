@@ -1,5 +1,6 @@
 import React from 'react'
 import { Box, Heading, Text, Avatar, VStack, HStack, Button, Spinner, useColorModeValue } from '@chakra-ui/react'
+import ProductCard from '../components/ProductCard'
 import { getCurrentUser, signOut } from '../services/auth'
 import api from '../services/api'
 import { useNavigate } from 'react-router-dom'
@@ -8,6 +9,7 @@ export default function ProfilePage() {
   const user = React.useMemo(() => getCurrentUser(), [])
   const [shop, setShop] = React.useState<any | null>(null)
   const [loading, setLoading] = React.useState(false)
+  const [likedProducts, setLikedProducts] = React.useState<any[] | null>(null)
   const navigate = useNavigate()
   const subtle = useColorModeValue('gray.600', 'gray.400')
   const borderColor = useColorModeValue('gray.100', 'gray.700')
@@ -30,6 +32,25 @@ export default function ProfilePage() {
       }
     }
     load()
+    return () => { mounted = false }
+  }, [user])
+
+  // Load liked products for the profile section
+  React.useEffect(() => {
+    let mounted = true
+    const loadLikes = async () => {
+      if (!user) return
+      try {
+        const token = globalThis.localStorage?.getItem('token') ?? undefined
+        const likes = await api.user.myLikes(token)
+        if (!mounted) return
+        setLikedProducts(likes || [])
+      } catch (err) {
+        console.error('Failed to load liked products', err)
+        if (mounted) setLikedProducts([])
+      }
+    }
+    loadLikes()
     return () => { mounted = false }
   }, [user])
 
@@ -96,6 +117,28 @@ export default function ProfilePage() {
           })()}
         </Box>
       )}
+
+      <Box mt={6} p={6} borderRadius="lg" border="1px solid" borderColor={borderColor}>
+        <Heading size="md" mb={3}>Produits aimés</Heading>
+        {likedProducts === null ? (
+          <Spinner />
+        ) : likedProducts.length === 0 ? (
+          <Text>Vous n'avez aimé aucun produit pour le moment.</Text>
+        ) : (
+          <VStack align="stretch" spacing={3}>
+            {likedProducts.map(p => (
+              <Box key={p.id}>
+                <ProductCard
+                  id={String(p.id)}
+                  title={p.title || p.name || ''}
+                  price={p.price}
+                  image_url={p.image_url ?? p.product_image}
+                />
+              </Box>
+            ))}
+          </VStack>
+        )}
+      </Box>
     </Box>
   )
 }
