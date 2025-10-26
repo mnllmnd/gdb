@@ -342,11 +342,7 @@ export default function ProductCard({
                     {shopName}
                   </Text>
                 )}
-                {shopId && (
-                  <Box ml="auto">
-                    <FollowButton id={String(shopId)} compact />
-                  </Box>
-                )}
+               
               </HStack>
             )}
 
