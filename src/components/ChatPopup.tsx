@@ -9,6 +9,7 @@ import {
 import { ChevronUpIcon, ChevronDownIcon } from '@chakra-ui/icons';
 import axios from 'axios';
 import { API_ROOT } from '../services/api'
+import api from '../services/api'
 import { PRODUCT_PLACEHOLDER } from '../utils/image'
 
 // Définition des types TypeScript
@@ -108,6 +109,31 @@ export const ChatPopup = () => {
     }
   };
 
+  // Client-side cache for recommendation requests to make chat snappier
+  const recCache = React.useRef<Record<string, { ts: number; results: Product[] }>>({});
+  const CACHE_TTL = 1000 * 60 * 5 // 5 minutes
+
+  // Use the same recommendation endpoint as Recommendations.tsx
+  const fetchRecommendations = async (text: string) => {
+    const key = (text || '').trim().toLowerCase();
+    if (!key) return [] as Product[];
+    const cached = recCache.current[key];
+    if (cached && (Date.now() - cached.ts) < CACHE_TTL) {
+      return cached.results
+    }
+
+    try {
+      const payload: any = { text: key }
+      const res: any = await api.recommend.find(payload)
+      const results: Product[] = res?.results || []
+      recCache.current[key] = { ts: Date.now(), results }
+      return results
+    } catch (err) {
+      console.error('Erreur recommandation:', err)
+      return []
+    }
+  }
+
   // Fonction pour obtenir les produits populaires
   const getPopularProducts = async () => {
     try {
@@ -160,26 +186,31 @@ export const ChatPopup = () => {
       let realProducts: Product[] = [];
       
       if (res.data.intent === 'recherche_produit' || res.data.intent === 'recommandation') {
-        // Extraire les mots-clés de la recherche
-        const searchKeywords = extractSearchKeywords(input);
-        
-        if (searchKeywords.length > 0) {
-          realProducts = await searchRealProducts(searchKeywords.join(' '));
-        } else {
-          // Si pas de mots-clés spécifiques, montrer les produits populaires
-          realProducts = await getPopularProducts();
+        // Use the same recommendation API as the Recommendations modal.
+        // This gives more relevant, cached results quickly.
+        const queryText = input.trim()
+        let recResults: Product[] = await fetchRecommendations(queryText)
+
+        // Fallback to keyword search or popular products if recommendation endpoint returned nothing
+        if (!recResults || recResults.length === 0) {
+          const searchKeywords = extractSearchKeywords(input);
+          if (searchKeywords.length > 0) {
+            recResults = await searchRealProducts(searchKeywords.join(' '));
+          } else {
+            recResults = await getPopularProducts();
+          }
         }
-        
-        setRecommendations(realProducts);
-        
+
+        setRecommendations(recResults);
+
         // Message de recommandations avec les VRAIS produits
-        if (realProducts.length > 0) {
+        if (recResults.length > 0) {
           const recommendationMessage: ChatMessage = {
             from: 'bot',
-            text: `J'ai trouvé ${realProducts.length} produit(s) correspondant à votre recherche :`,
+            text: `J'ai trouvé ${recResults.length} produit(s) correspondant à votre recherche :`,
             timestamp: new Date(),
             type: 'recommendations',
-            products: realProducts
+            products: recResults
           };
           setMessages(prev => [...prev, recommendationMessage]);
         } else {
@@ -481,9 +512,6 @@ export const ChatPopup = () => {
           bg="blue.50"
           flexShrink={0}
         >
-          <Text fontSize="sm" fontWeight="bold" mb={2}>
-            🛍️ Produits trouvés ({recommendations.length})
-          </Text>
           <HStack spacing={2} overflowX="auto">
             {recommendations.slice(0, 3).map((product, idx) => (
               <Tag key={idx} colorScheme="blue" size="sm" borderRadius="full">
