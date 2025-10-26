@@ -19,7 +19,7 @@ import {
   ScaleFade,
   SimpleGrid,
 } from '@chakra-ui/react'
-import { CloseIcon, StarIcon } from '@chakra-ui/icons'
+import { CloseIcon, StarIcon, ArrowUpIcon } from '@chakra-ui/icons'
 import FilterNav from '../components/FilterNav'
 import AppTutorial from '../components/AppTutorial'
 import ShopCard from '../components/ShopCard'
@@ -70,6 +70,7 @@ export default function Home() {
   const [currentView, setCurrentView] = React.useState<'shops' | 'products'>('products')
   const [selectedCategory, setSelectedCategory] = React.useState<number | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
+  const [showScrollTop, setShowScrollTop] = React.useState(false)
 
   // Déplacer tous les hooks conditionnels en haut
   const cardHeight = useBreakpointValue({ base: '120px', md: '200px' })
@@ -138,6 +139,16 @@ export default function Home() {
       }
     }
     loadData()
+  }, [])
+
+  // show scroll-to-top button when scrolled down
+  React.useEffect(() => {
+    const onScroll = () => {
+      setShowScrollTop(window.scrollY > 300)
+    }
+    window.addEventListener('scroll', onScroll)
+    onScroll()
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
   const handleSearch = React.useCallback(async (searchQuery: string) => {
@@ -528,6 +539,21 @@ export default function Home() {
           currentView === 'products' ? renderProductsView() : renderShopsView()
         )}
       </Container>
+
+      {/* Scroll-to-top button */}
+      <IconButton
+        aria-label="Remonter en haut"
+        icon={<ArrowUpIcon />}
+        position="fixed"
+        right={{ base: 4, md: 8 }}
+        bottom={{ base: 80, md: 12 }}
+        zIndex={2000}
+        borderRadius="full"
+        boxShadow="lg"
+        display={showScrollTop ? 'inline-flex' : 'none'}
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        colorScheme="brand"
+      />
     </Box>
   )
 }

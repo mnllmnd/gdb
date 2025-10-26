@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Box, Image, Heading, Text, Stack, Button, useBreakpointValue, useColorModeValue, HStack, Icon, AspectRatio, VStack } from '@chakra-ui/react'
+import { Box, Image, Heading, Text, Stack, Button, useBreakpointValue, useColorModeValue, HStack, Icon, AspectRatio, VStack, Tooltip, Badge } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { highRes, SHOP_PLACEHOLDER } from '../utils/image'
 import api from '../services/api'
@@ -102,22 +102,33 @@ export default function ShopCard(props: ShopCardProps) {
           />
 
           <Box minW={0}>
-            <Heading size={headingSize} noOfLines={2} fontWeight="700" color={useColorModeValue('gray.800', 'white')}>
-              {s?.name || s?.domain}
-            </Heading>
-            <Text
-              color={useColorModeValue('gray.600', 'gray.300')}
-              noOfLines={compact ? 2 : 4}
-              fontSize={compact ? 'sm' : 'md'}
-              sx={{
-                display: '-webkit-box',
-                WebkitLineClamp: compact ? 2 : 4,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-              }}
-            >
-              {s?.description || 'Boutique locale de qualité'}
-            </Text>
+            <HStack align="center" spacing={3}>
+              <Heading size={headingSize} noOfLines={2} fontWeight="700" color={useColorModeValue('gray.800', 'white')}>
+                {s?.name || s?.domain}
+              </Heading>
+              {s?.followers != null && (
+                <Badge colorScheme="yellow" variant="subtle" fontSize="sm" px={2} py={1} borderRadius="md">
+                  ★ {s.followers}
+                </Badge>
+              )}
+            </HStack>
+
+            <Tooltip label={s?.description || 'Boutique locale de qualité'} hasArrow openDelay={300} placement="top-start">
+              <Text
+                color={useColorModeValue('gray.600', 'gray.300')}
+                noOfLines={compact ? 2 : 4}
+                fontSize={compact ? 'sm' : 'md'}
+                sx={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: compact ? 2 : 4,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  cursor: 'help'
+                }}
+              >
+                {s?.description || 'Boutique locale de qualité'}
+              </Text>
+            </Tooltip>
           </Box>
         </HStack>
 

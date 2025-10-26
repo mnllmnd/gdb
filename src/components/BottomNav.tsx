@@ -50,37 +50,21 @@ export default function BottomNav() {
         size="lg"
       />
 
-      {/* Panier */}
-      <Box position="relative">
-        <IconButton
-          as={Link}
-          to="/cart"
-          aria-label="Panier"
-          icon={<span style={{ fontSize: 24 }}>🛒</span>}
-          bg="whiteAlpha.900"
-          _hover={{ bg: 'whiteAlpha.800', transform: 'scale(1.05)' }}
-          color="black"
-          borderRadius="full"
-          boxShadow="md"
-          size="lg"
-        />
-        {count > 0 && (
-          <Box
-            position="absolute"
-            top={-2}
-            right={-2}
-            bg="red.500"
-            color="white"
-            px={2}
-            py={0}
-            borderRadius="full"
-            fontSize="xs"
-            fontWeight="bold"
-          >
-            {count}
-          </Box>
-        )}
-      </Box>
+      {/* Feed (mobile) */}
+      <IconButton
+        as={Link}
+        to="/feed"
+        aria-label="Fil"
+        icon={<span style={{ fontSize: 22 }}>🔥</span>}
+        bg="whiteAlpha.900"
+        _hover={{ bg: 'whiteAlpha.800', transform: 'scale(1.05)' }}
+        color="black"
+        borderRadius="full"
+        boxShadow="md"
+        size="lg"
+      />
+
+      
     </HStack>
   )
 }

@@ -97,6 +97,9 @@ export const api = {
   recommend: {
     find: (payload: any) => request('/recommend', { method: 'POST', body: JSON.stringify(payload) })
   },
+  feed: {
+    list: (page = 1, limit = 20, token?: string) => request(`/feed?limit=${encodeURIComponent(String(limit))}&page=${encodeURIComponent(String(page))}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+  },
   user: {
     myLikes: (token?: string) => request('/auth/me/likes', { headers: token ? { Authorization: `Bearer ${token}` } : {} })
   },

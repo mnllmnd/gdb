@@ -228,6 +228,17 @@ export default function NavBar() {
               >
                 Produits
               </Button>
+              <Button 
+                as={RouterLink}
+                to="/feed"
+                variant="ghost"
+                size="md"
+                leftIcon={<span>🔥</span>}
+                color={textColor}
+                _hover={{ bg: hoverBg, color: brandColor }}
+              >
+                Fil
+              </Button>
               <Center height="40px">
                 <SearchBar
                   value={searchQuery}

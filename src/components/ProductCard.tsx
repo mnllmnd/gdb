@@ -71,6 +71,7 @@ export default function ProductCard({
 
   const [hasImage, setHasImage] = useState<boolean | null>(null)
   const [liked, setLiked] = useState<boolean | null>(null)
+  const [showHeart, setShowHeart] = useState(false)
   const [likesCount, setLikesCount] = useState<number | null>(null)
   const { isOpen: isImageOpen, onOpen: onImageOpen, onClose: onImageClose } = useDisclosure()
   const modalSize = useBreakpointValue({ base: 'full', md: 'xl' })
@@ -169,6 +170,31 @@ export default function ProductCard({
           overflow="hidden"
           cursor="pointer"
           onClick={onImageOpen}
+          onDoubleClick={async (e) => {
+            // double-tap / double-click to like (Instagram-like)
+            e.stopPropagation()
+            try {
+              const token = globalThis.localStorage?.getItem('token') ?? undefined
+              if (!token) {
+                toast({ title: 'Connectez-vous', description: 'Veuillez vous connecter pour ajouter aux favoris.', status: 'info', duration: 2500 })
+                return
+              }
+              // if already liked do nothing (behaviour: double-tap only likes)
+              if (liked) {
+                // show heart animation anyway
+                setShowHeart(true)
+                setTimeout(() => setShowHeart(false), 700)
+                return
+              }
+              const res = await api.products.like(id, token)
+              setLiked(true)
+              if (res && typeof res.count === 'number') setLikesCount(res.count)
+              setShowHeart(true)
+              setTimeout(() => setShowHeart(false), 700)
+            } catch (err) {
+              console.error('Double-tap like failed', err)
+            }
+          }}
         >
           <Image
             src={resolvedSrc ?? PRODUCT_PLACEHOLDER}
@@ -181,6 +207,29 @@ export default function ProductCard({
             _hover={{ transform: 'scale(1.05)' }}
             onError={(e: any) => { e.currentTarget.src = PRODUCT_PLACEHOLDER }}
           />
+          {/* Double-tap heart animation */}
+          {/** showHeart state will render a large heart then fade */}
+          {typeof window !== 'undefined' && (
+            <>
+              {showHeart && (
+                <Box
+                  position="absolute"
+                  pointerEvents="none"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  top="0"
+                  left="0"
+                  right="0"
+                  bottom="0"
+                >
+                  <ScaleFade initialScale={0.4} in={showHeart}>
+                    <Box fontSize={{ base: '48px', md: '72px' }} color="white" textShadow="0 2px 10px rgba(0,0,0,0.6)">❤️</Box>
+                  </ScaleFade>
+                </Box>
+              )}
+            </>
+          )}
           
           {/* Hover Overlay */}
           <Fade in={isHovered}>
