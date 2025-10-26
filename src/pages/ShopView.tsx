@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useLocation } from 'react-router-dom'
 import { Container, Heading, Text, Spinner, Box, useBreakpointValue, Grid, GridItem, VStack } from '@chakra-ui/react'
 import api from '../services/api'
 import FollowButton from '../components/FollowButton'
@@ -10,6 +10,7 @@ interface Category { id: number; name: string }
 
 export default function ShopView() {
   const { domain } = useParams()
+  const location = useLocation()
   const [shop, setShop] = useState<Record<string, any> | null>(null)
   const [products, setProducts] = useState<any[] | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
@@ -67,7 +68,7 @@ export default function ShopView() {
 
   return (
     <Container maxW="container.lg" py={8} pb={{ base: '120px', md: 8 }} overflow="visible">
-      <BackButton />
+      <BackButton to={location.state?.from} />
       {shop === null ? (
         <Spinner />
       ) : (

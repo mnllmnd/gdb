@@ -67,10 +67,38 @@ export default function Home() {
   const [products, setProducts] = React.useState<Product[]>([])
   const [categories, setCategories] = React.useState<Category[]>([])
   const [categorizedProducts, setCategorizedProducts] = React.useState<Record<number, Product[]>>({})
-  const [currentView, setCurrentView] = React.useState<'shops' | 'products'>('products')
+  
+  // ✅ SOLUTION : Persister la vue dans le localStorage
+  const [currentView, setCurrentView] = React.useState<'shops' | 'products'>(() => {
+    const savedView = localStorage.getItem('homeView')
+    return savedView === 'shops' ? 'shops' : 'products'
+  })
+
+  // ✅ Sauvegarder automatiquement la vue actuelle
+  React.useEffect(() => {
+    localStorage.setItem('homeView', currentView)
+  }, [currentView])
+
   const [selectedCategory, setSelectedCategory] = React.useState<number | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
   const [showScrollTop, setShowScrollTop] = React.useState(false)
+
+  // ✅ Option bonus : Persister la position du scroll
+  React.useEffect(() => {
+    const handleBeforeUnload = () => {
+      localStorage.setItem('homeScroll', String(window.scrollY))
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [])
+
+  // ✅ Restaurer la position du scroll au chargement
+  React.useEffect(() => {
+    const savedScroll = localStorage.getItem('homeScroll')
+    if (savedScroll) {
+      window.scrollTo(0, Number(savedScroll))
+    }
+  }, [])
 
   // Déplacer tous les hooks conditionnels en haut
   const cardHeight = useBreakpointValue({ base: '120px', md: '200px' })
@@ -322,6 +350,7 @@ export default function Home() {
                       price={product.price ?? product.amount}
                       image_url={product.image_url ?? product.product_image}
                       height={cardHeight}
+                      shopId={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]) )?.id || product.shop_id || product.seller_id}
                       shopName={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.name}
                       shopDomain={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.domain}
                     />
@@ -365,6 +394,7 @@ export default function Home() {
                     price={product.price ?? product.amount}
                     image_url={product.image_url ?? product.product_image}
                     height={cardHeight}
+                    shopId={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]) )?.id || product.shop_id || product.seller_id}
                     shopName={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.name}
                     shopDomain={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.domain}
                   />
@@ -432,8 +462,9 @@ export default function Home() {
                     price={product.price ?? product.amount}
                     image_url={product.image_url ?? product.product_image}
                     height={cardHeight}
-                    shopName={shop?.name}
-                    shopDomain={shop?.domain}
+                            shopId={shop?.id || product.shop_id || product.seller_id}
+                            shopName={shop?.name}
+                            shopDomain={shop?.domain}
                   />
                 </Box>
               )
@@ -498,8 +529,9 @@ export default function Home() {
                     price={product.price ?? product.amount}
                     image_url={product.image_url ?? product.product_image}
                     height={cardHeight}
-                    shopName={shop?.name}
-                    shopDomain={shop?.domain}
+                          shopId={shop?.id || product.shop_id || product.seller_id}
+                          shopName={shop?.name}
+                          shopDomain={shop?.domain}
                   />
                 </Box>
               )

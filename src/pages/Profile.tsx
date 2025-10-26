@@ -133,6 +133,7 @@ export default function ProfilePage() {
                   title={p.title || p.name || ''}
                   price={p.price}
                   image_url={p.image_url ?? p.product_image}
+                  shopId={p.shop_id || p.seller_id}
                 />
               </Box>
             ))}

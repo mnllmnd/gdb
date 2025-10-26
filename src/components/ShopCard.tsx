@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Box, Image, Heading, Text, Stack, Button, useBreakpointValue, useColorModeValue, HStack, Icon, AspectRatio, VStack, Tooltip, Badge } from '@chakra-ui/react'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink, useLocation } from 'react-router-dom'
 import { highRes, SHOP_PLACEHOLDER } from '../utils/image'
 import api from '../services/api'
 import { getItem } from '../utils/localAuth'
@@ -54,10 +54,13 @@ export default function ShopCard(props: ShopCardProps) {
   const currentElevation = elevationConfig[elevation]
   const borderColor = useColorModeValue('gray.200', 'gray.600')
 
+  const location = useLocation()
+
   return (
     <Box
       as={RouterLink}
       to={`/shop/${encodeURIComponent(s?.domain || s?.id || '')}`}
+      state={{ from: `${location.pathname}${location.search}${location.hash || ''}` }}
       display="flex"
       flexDirection="column"
       width="100%"

@@ -234,6 +234,7 @@ export default function Products() {
                       title={p.title || p.name} 
                       price={p.price ?? p.amount} 
                       image_url={p.image_url ?? p.product_image} 
+                      shopId={shop?.id || p.shop_id || p.seller_id}
                       shopName={shop?.name}
                       shopDomain={shop?.domain}
                     />
@@ -295,6 +296,7 @@ export default function Products() {
                           title={p.title || p.name}
                           price={p.price ?? p.amount}
                           image_url={p.image_url ?? p.product_image}
+                          shopId={shop?.id || p.shop_id || p.seller_id}
                           shopName={shop?.name}
                           shopDomain={shop?.domain}
                         />

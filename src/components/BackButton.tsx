@@ -28,6 +28,9 @@ export default function BackButton({
   const handleClick = () => {
     if (to) {
       navigate(to)
+    } else if (location && (location.state as any)?.from) {
+      // If the current location was reached with a 'from' state, prefer returning there
+      navigate((location.state as any).from)
     } else {
       navigate(-1)
     }

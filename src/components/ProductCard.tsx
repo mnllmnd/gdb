@@ -6,13 +6,14 @@ import {
   Link as ChakraLink, Badge, HStack, VStack, Icon, Flex, ScaleFade, Fade,
   useColorModeValue
 } from '@chakra-ui/react'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink, useLocation } from 'react-router-dom'
 import { FaStore, FaShoppingCart, FaEye, FaHeart, FaRegHeart } from 'react-icons/fa'
 import cart from '../utils/cart'
 import { getItem } from '../utils/localAuth'
 import { highRes, PRODUCT_PLACEHOLDER } from '../utils/image'
 import api from '../services/api'
 import { FaCartShopping } from 'react-icons/fa6'
+import FollowButton from './FollowButton'
 
 export default function ProductCard({
   id,
@@ -23,6 +24,7 @@ export default function ProductCard({
   image_url,
   shopName = null,
   shopDomain = null,
+  shopId = null,
   height = { base: '130px', md: '160px' },
 }: Readonly<{
   id: string
@@ -33,6 +35,7 @@ export default function ProductCard({
   image_url?: string
   shopName?: string | null
   shopDomain?: string | null
+  shopId?: string | null
   height?: any
 }>) {
   const [isHovered, setIsHovered] = useState(false)
@@ -75,6 +78,7 @@ export default function ProductCard({
   const [likesCount, setLikesCount] = useState<number | null>(null)
   const { isOpen: isImageOpen, onOpen: onImageOpen, onClose: onImageClose } = useDisclosure()
   const modalSize = useBreakpointValue({ base: 'full', md: 'xl' })
+  const location = useLocation()
 
   // Resolve the final src we will use
   const chosen = image_url ?? image
@@ -321,6 +325,7 @@ export default function ProductCard({
                   <ChakraLink
                     as={RouterLink}
                     to={`/shop/${encodeURIComponent(shopDomain)}`}
+                    state={{ from: `${location.pathname}${location.search}${location.hash || ''}` }}
                     fontSize="sm"
                     fontWeight="600"
                     color={shopBadgeText}
@@ -336,6 +341,11 @@ export default function ProductCard({
                   <Text fontSize="sm" fontWeight="600" color={shopBadgeText} noOfLines={1}>
                     {shopName}
                   </Text>
+                )}
+                {shopId && (
+                  <Box ml="auto">
+                    <FollowButton id={String(shopId)} compact />
+                  </Box>
                 )}
               </HStack>
             )}

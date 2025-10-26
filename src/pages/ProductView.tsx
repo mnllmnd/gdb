@@ -1,12 +1,14 @@
 import React from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { Container, Heading, Box, Image, Text, Spinner, Center, Button } from '@chakra-ui/react'
 import api from '../services/api'
 import ProductCard from '../components/ProductCard'
+import BackButton from '../components/BackButton'
 
 export default function ProductView() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const [product, setProduct] = React.useState<any | null>(null)
   const [loading, setLoading] = React.useState(true)
 
@@ -41,13 +43,14 @@ export default function ProductView() {
       <Box textAlign="center">
         <Heading size="lg">Produit introuvable</Heading>
         <Text mt={3}>Le produit demandé est introuvable ou a été supprimé.</Text>
-        <Button mt={6} onClick={() => navigate('/products')}>Retour aux produits</Button>
+        <Button mt={6} onClick={() => navigate(location.state?.from || '/products')}>Retour</Button>
       </Box>
     </Container>
   )
 
   return (
     <Container maxW="container.md" py={8}>
+      <BackButton to={location.state?.from} />
       <Heading mb={4}>{product.title || product.name}</Heading>
       <Box mb={4}>
         <Image src={product.image_url ?? product.product_image} alt={product.title || product.name} maxH="400px" objectFit="cover" borderRadius="md" />
