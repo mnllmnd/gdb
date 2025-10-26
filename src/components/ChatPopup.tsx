@@ -494,7 +494,7 @@ export const ChatPopup = () => {
               <Flex align="flex-end" gap={2}>
                 <Avatar size="xs" name="Assistant" bg="blue.500" />
                 <Box bg="gray.100" px={3} py={2} borderRadius="lg">
-                  <Text fontSize="sm">🔍 Je recherche dans notre catalogue...</Text>
+                  <Text fontSize="sm">🔍 Chargement...</Text>
                 </Box>
               </Flex>
             </Box>
