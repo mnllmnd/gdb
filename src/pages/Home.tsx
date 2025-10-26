@@ -49,15 +49,29 @@ interface Shop {
   name: string
 }
 
-// Composant Carousel GPU optimisé
+// Composant Carousel GPU optimisé avec pause au clic
 const SmoothCarousel: React.FC<{ 
   children: React.ReactNode; 
   speed?: number;
-  paused?: boolean;
-}> = ({ children, speed = 40, paused = false }) => {
+}> = ({ children, speed = 40 }) => {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const contentRef = React.useRef<HTMLDivElement>(null)
+  const [isPaused, setIsPaused] = React.useState(false)
+  const pauseTimeoutRef = React.useRef<number | null>(null)
+  const isPausedRef = React.useRef<boolean>(isPaused)
+  // interaction and measurement refs
+  const isInteractingRef = React.useRef(false)
+  const startXRef = React.useRef<number | null>(null)
+  const startPosRef = React.useRef<number>(0)
+  const positionRef = React.useRef<number>(0)
+  const contentWidthRef = React.useRef<number>(0)
+  const resumeTimerRef = React.useRef<number | null>(null)
   
+  // keep a ref in sync so the animation loop doesn't need to re-subscribe on pause changes
+  React.useEffect(() => {
+    isPausedRef.current = isPaused
+  }, [isPaused])
+
   React.useEffect(() => {
     const container = containerRef.current
     const content = contentRef.current
@@ -65,25 +79,39 @@ const SmoothCarousel: React.FC<{
 
     let animationId: number
     let lastTime: number | null = null
-    let position = 0
+    // ensure positionRef initial value
+    positionRef.current = positionRef.current || 0
     const isMobile = /Mobi|Android/i.test(navigator.userAgent)
-    const adjustedSpeed = isMobile ? speed * 0.6 : speed // Plus lent sur mobile
+    const adjustedSpeed = isMobile ? speed * 0.6 : speed
+
+    // measure content width (one copy)
+    const measure = () => {
+      try {
+        const w = Math.max(1, content.scrollWidth / 2)
+        contentWidthRef.current = w
+      } catch (e) {
+        contentWidthRef.current = 0
+      }
+    }
+    measure()
+    let ro: ResizeObserver | null = null
+    try {
+      ro = new ResizeObserver(() => measure())
+      ro.observe(content)
+    } catch (e) {
+      ro = null
+    }
 
     const animate = (currentTime: number) => {
       if (!lastTime) lastTime = currentTime
-      const deltaTime = Math.min(currentTime - lastTime, 40) // Cap à 40ms
+      const deltaTime = Math.min(currentTime - lastTime, 40)
       lastTime = currentTime
-
-      if (!paused) {
-        position += (deltaTime * adjustedSpeed) / 1000
-        const contentWidth = content.scrollWidth / 2 // Car nous dupliquons le contenu
-        
-        if (position >= contentWidth) {
-          position -= contentWidth
-        }
-
-        // Utilisation de transform3d pour l'accélération GPU
-        content.style.transform = `translate3d(${-position}px, 0, 0)`
+      // read paused state from ref to avoid re-creating the animation loop on pause toggles
+      if (!isPausedRef.current && !isInteractingRef.current && contentWidthRef.current > 0) {
+        positionRef.current += (deltaTime * adjustedSpeed) / 1000
+        const contentWidth = contentWidthRef.current
+        if (positionRef.current >= contentWidth) positionRef.current -= contentWidth
+        content.style.transform = `translate3d(${-positionRef.current}px, 0, 0)`
       }
 
       animationId = requestAnimationFrame(animate)
@@ -93,8 +121,81 @@ const SmoothCarousel: React.FC<{
 
     return () => {
       if (animationId) cancelAnimationFrame(animationId)
+      // clear timers on unmount
+      if (pauseTimeoutRef.current) window.clearTimeout(pauseTimeoutRef.current)
+      if (resumeTimerRef.current) { window.clearTimeout(resumeTimerRef.current); resumeTimerRef.current = null }
+      if (ro) try { ro.disconnect() } catch (e) { /* ignore */ }
     }
-  }, [speed, paused])
+  }, [speed])
+
+  // Gestion de la pause temporaire au clic
+  const handleClick = () => {
+    setIsPaused(true)
+    
+    // Clear any existing timeout
+    if (pauseTimeoutRef.current) {
+      window.clearTimeout(pauseTimeoutRef.current)
+    }
+    
+    // Reprendre automatiquement après 2 secondes
+    pauseTimeoutRef.current = window.setTimeout(() => {
+      setIsPaused(false)
+    }, 2000)
+  }
+
+  // Pause au survol (optionnel - pour plus de contrôle)
+  const handleMouseEnter = () => {
+    setIsPaused(true)
+  }
+
+  const handleMouseLeave = () => {
+    // resume only if not interacting
+    if (!isInteractingRef.current) setIsPaused(false)
+    if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current)
+  }
+
+  // Pointer handlers for swipe/drag (user interaction overrides auto-scroll)
+  const onPointerDown = (e: React.PointerEvent) => {
+    const clientX = (e as React.PointerEvent).clientX
+    isInteractingRef.current = true
+    startXRef.current = clientX
+    startPosRef.current = positionRef.current
+    // ensure auto-scroll is paused immediately when user starts interacting
+    setIsPaused(true)
+    isPausedRef.current = true
+    // capture pointer to receive move/up even if cursor leaves element
+    try { (e.target as Element).setPointerCapture((e as any).pointerId) } catch (err) { /* ignore */ }
+    // cancel any scheduled resume
+    if (resumeTimerRef.current) { clearTimeout(resumeTimerRef.current); resumeTimerRef.current = null }
+  }
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!isInteractingRef.current) return
+    const clientX = (e as React.PointerEvent).clientX
+    if (startXRef.current == null) { startXRef.current = clientX; return }
+    const dx = clientX - startXRef.current
+    const newPos = startPosRef.current - dx
+    const w = contentWidthRef.current || (contentRef.current ? contentRef.current.scrollWidth / 2 : 0)
+    if (w > 0) {
+      let norm = ((newPos % w) + w) % w
+      positionRef.current = norm
+    } else {
+      positionRef.current = newPos
+    }
+    if (contentRef.current) contentRef.current.style.transform = `translate3d(${-positionRef.current}px,0,0)`
+  }
+
+  const onPointerUp = (e: React.PointerEvent) => {
+    isInteractingRef.current = false
+    startXRef.current = null
+    // resume automatic after short delay to allow user to see result
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current)
+    resumeTimerRef.current = setTimeout(() => {
+      resumeTimerRef.current = null
+      setIsPaused(false)
+    }, 1200)
+    try { (e.target as Element).releasePointerCapture((e as any).pointerId) } catch (err) { /* ignore */ }
+  }
 
   return (
     <Box 
@@ -106,6 +207,8 @@ const SmoothCarousel: React.FC<{
         msOverflowStyle: 'none',
         scrollbarWidth: 'none'
       }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <Box
         ref={contentRef}
@@ -116,10 +219,50 @@ const SmoothCarousel: React.FC<{
           backfaceVisibility: 'hidden',
           perspective: 1000
         }}
+        onClick={handleClick}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        cursor="pointer"
+        userSelect="none"
+        css={{
+          WebkitUserSelect: 'none',
+          MozUserSelect: 'none',
+          msUserSelect: 'none',
+        }}
       >
         {children}
         {children} {/* Duplication pour l'effet infini */}
       </Box>
+      
+      {/* Indicateur visuel de pause */}
+      {isPaused && (
+        <Box
+          position="absolute"
+          top="50%"
+          left="50%"
+          transform="translate(-50%, -50%)"
+          bg="blackAlpha.600"
+          color="white"
+          px={3}
+          py={1}
+          borderRadius="md"
+          fontSize="sm"
+          opacity={0}
+          animation="fadeInOut 2s ease-in-out"
+          css={{
+            '@keyframes fadeInOut': {
+              '0%': { opacity: 0 },
+              '20%': { opacity: 1 },
+              '80%': { opacity: 1 },
+              '100%': { opacity: 0 }
+            }
+          }}
+        >
+          Reprise dans 2s...
+        </Box>
+      )}
     </Box>
   )
 }
@@ -134,7 +277,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = React.useState<number | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
 
-  // Déplacer tous les hooks conditionnels en haut - CORRECTION ICI
+  // Déplacer tous les hooks conditionnels en haut
   const cardHeight = useBreakpointValue({ base: '120px', md: '200px' })
   const cardWidth = useBreakpointValue({ base: '45%', sm: '45%', md: '180px' })
   const initialCount = useBreakpointValue({ base: 4, md: 6 }) || 6
@@ -155,9 +298,6 @@ export default function Home() {
   const loadMoreCount = 6
   const [visibleByCategory, setVisibleByCategory] = React.useState<Record<number, number>>({})
   const [visibleUncategorized, setVisibleUncategorized] = React.useState<number>(initialCount)
-  
-  // Carousel controls - version optimisée
-  const [carouselPaused, setCarouselPaused] = React.useState(false)
 
   React.useEffect(() => {
     async function loadData() {
@@ -333,36 +473,29 @@ export default function Home() {
             <Box mb={6}>
               <Heading size="md" color="black">Nouveautés</Heading>
               <Text fontSize="sm" color={secondaryTextColor} mb={2}>
-                Faites défiler →
+                Cliquez pour une pause de 2 secondes
               </Text>
 
-              <Box
-                onMouseEnter={() => setCarouselPaused(true)}
-                onMouseLeave={() => setCarouselPaused(false)}
-                onTouchStart={() => setCarouselPaused(true)}
-                onTouchEnd={() => setCarouselPaused(false)}
-              >
-                <SmoothCarousel speed={40} paused={carouselPaused}>
-                  {newProducts.map((product) => (
-                    <Box
-                      key={product.id}
-                      flex="0 0 auto"
-                      w={cardWidth}
-                      px={1.5} // Petit espacement entre les cartes
-                    >
-                      <ProductCard
-                        id={String(product.id)}
-                        title={product.title || product.name || ''}
-                        price={product.price ?? product.amount}
-                        image_url={product.image_url ?? product.product_image}
-                        height={cardHeight}
-                        shopName={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.name}
-                        shopDomain={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.domain}
-                      />
-                    </Box>
-                  ))}
-                </SmoothCarousel>
-              </Box>
+              <SmoothCarousel speed={40}>
+                {newProducts.map((product) => (
+                  <Box
+                    key={product.id}
+                    flex="0 0 auto"
+                    w={cardWidth}
+                    px={1.5}
+                  >
+                    <ProductCard
+                      id={String(product.id)}
+                      title={product.title || product.name || ''}
+                      price={product.price ?? product.amount}
+                      image_url={product.image_url ?? product.product_image}
+                      height={cardHeight}
+                      shopName={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.name}
+                      shopDomain={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.domain}
+                    />
+                  </Box>
+                ))}
+              </SmoothCarousel>
             </Box>
           )
         })()}
