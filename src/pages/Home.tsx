@@ -22,7 +22,6 @@ import {
 import { CloseIcon, StarIcon } from '@chakra-ui/icons'
 import FilterNav from '../components/FilterNav'
 import AppTutorial from '../components/AppTutorial'
-// Recommendations moved to NavBar sidebar
 import ShopCard from '../components/ShopCard'
 import ProductCard from '../components/ProductCard'
 import api from '../services/api'
@@ -50,6 +49,81 @@ interface Shop {
   name: string
 }
 
+// Composant Carousel GPU optimisé
+const SmoothCarousel: React.FC<{ 
+  children: React.ReactNode; 
+  speed?: number;
+  paused?: boolean;
+}> = ({ children, speed = 40, paused = false }) => {
+  const containerRef = React.useRef<HTMLDivElement>(null)
+  const contentRef = React.useRef<HTMLDivElement>(null)
+  
+  React.useEffect(() => {
+    const container = containerRef.current
+    const content = contentRef.current
+    if (!container || !content) return
+
+    let animationId: number
+    let lastTime: number | null = null
+    let position = 0
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent)
+    const adjustedSpeed = isMobile ? speed * 0.6 : speed // Plus lent sur mobile
+
+    const animate = (currentTime: number) => {
+      if (!lastTime) lastTime = currentTime
+      const deltaTime = Math.min(currentTime - lastTime, 40) // Cap à 40ms
+      lastTime = currentTime
+
+      if (!paused) {
+        position += (deltaTime * adjustedSpeed) / 1000
+        const contentWidth = content.scrollWidth / 2 // Car nous dupliquons le contenu
+        
+        if (position >= contentWidth) {
+          position -= contentWidth
+        }
+
+        // Utilisation de transform3d pour l'accélération GPU
+        content.style.transform = `translate3d(${-position}px, 0, 0)`
+      }
+
+      animationId = requestAnimationFrame(animate)
+    }
+
+    animationId = requestAnimationFrame(animate)
+
+    return () => {
+      if (animationId) cancelAnimationFrame(animationId)
+    }
+  }, [speed, paused])
+
+  return (
+    <Box 
+      ref={containerRef}
+      overflow="hidden"
+      position="relative"
+      sx={{
+        '&::-webkit-scrollbar': { display: 'none' },
+        msOverflowStyle: 'none',
+        scrollbarWidth: 'none'
+      }}
+    >
+      <Box
+        ref={contentRef}
+        display="flex"
+        willChange="transform"
+        style={{ 
+          transform: 'translate3d(0,0,0)',
+          backfaceVisibility: 'hidden',
+          perspective: 1000
+        }}
+      >
+        {children}
+        {children} {/* Duplication pour l'effet infini */}
+      </Box>
+    </Box>
+  )
+}
+
 export default function Home() {
   const [shops, setShops] = React.useState<Shop[]>([])
   const [shopsMap, setShopsMap] = React.useState<Record<string, any>>({})
@@ -60,8 +134,12 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = React.useState<number | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
 
-  // Déplacer tous les hooks conditionnels en haut
+  // Déplacer tous les hooks conditionnels en haut - CORRECTION ICI
   const cardHeight = useBreakpointValue({ base: '120px', md: '200px' })
+  const cardWidth = useBreakpointValue({ base: '45%', sm: '45%', md: '180px' })
+  const initialCount = useBreakpointValue({ base: 4, md: 6 }) || 6
+  
+  // Tous les useColorModeValue doivent être déclarés au même niveau
   const bgGradient = useColorModeValue(
     'linear(to-br, brand.500, brand.600)',
     'linear(to-br, brand.600, brand.700)'
@@ -71,67 +149,15 @@ export default function Home() {
   const textColor = useColorModeValue('gray.800', 'white')
   const pageBg = useColorModeValue('gray.50', 'gray.900')
   const borderColor = useColorModeValue('gray.200', 'gray.600')
+  const secondaryTextColor = useColorModeValue('black', 'brand.500')
 
   // Pagination / lazy loading UX
-  const initialCount = useBreakpointValue({ base: 4, md: 6 }) || 6
   const loadMoreCount = 6
   const [visibleByCategory, setVisibleByCategory] = React.useState<Record<number, number>>({})
   const [visibleUncategorized, setVisibleUncategorized] = React.useState<number>(initialCount)
-  // Carousel controls for the "Nouveautés" section
-  const carouselRef = React.useRef<HTMLDivElement | null>(null)
+  
+  // Carousel controls - version optimisée
   const [carouselPaused, setCarouselPaused] = React.useState(false)
-
-  React.useEffect(() => {
-    const el = carouselRef.current
-    if (!el) return
-
-    let rafId: number | null = null
-    let lastTime: number | null = null
-
-    // pixels per millisecond (adjust for speed)
-    const pxPerMs = 0.06 // ~120px per second
-
-    const step = (time: number) => {
-      if (!lastTime) lastTime = time
-      const delta = time - lastTime
-      lastTime = time
-      if (!el) return
-      if (!carouselPaused && !document.hidden) {
-        el.scrollLeft += delta * pxPerMs
-        // When we've scrolled past half (we render duplicated content), wrap seamlessly
-        const half = el.scrollWidth / 2
-        if (el.scrollLeft >= half) {
-          el.scrollLeft -= half
-        }
-      }
-      rafId = requestAnimationFrame(step)
-    }
-
-    // ensure we start somewhere in the first half
-    el.scrollLeft = 0
-    rafId = requestAnimationFrame(step)
-
-    const onVisibilityChange = () => {
-      if (document.hidden) {
-        // pause animation by resetting lastTime so delta is ignored on resume
-        lastTime = null
-      }
-    }
-
-    const onResize = () => {
-      // resetting ensures calculations of half stay correct
-      lastTime = null
-    }
-
-    document.addEventListener('visibilitychange', onVisibilityChange)
-    window.addEventListener('resize', onResize)
-
-    return () => {
-      if (rafId) cancelAnimationFrame(rafId)
-      document.removeEventListener('visibilitychange', onVisibilityChange)
-      window.removeEventListener('resize', onResize)
-    }
-  }, [carouselPaused, products.length])
 
   React.useEffect(() => {
     async function loadData() {
@@ -227,7 +253,7 @@ export default function Home() {
     // Reset visible counts when product list changes (fresh search/filter)
     setVisibleByCategory({})
     setVisibleUncategorized(initialCount)
-  }, [products])
+  }, [products, initialCount])
 
   // Reload data when the view changes (shops <-> products)
   React.useEffect(() => {
@@ -292,7 +318,7 @@ export default function Home() {
 
     return (
       <VStack spacing={8} align="stretch">
-        {/* Nouveautés carousel horizontal (les produits récents) */}
+        {/* Nouveautés carousel horizontal optimisé */}
         {(() => {
           const newProducts = [...(products || [])]
             .sort((a, b) => {
@@ -304,52 +330,43 @@ export default function Home() {
           if (!newProducts.length) return null
 
           return (
-           <Box mb={6}>
-  <Heading size="md" color="black">Nouveautés</Heading>
-  <Text fontSize="sm" color={useColorModeValue('black', 'brand.500')} mb={2}>
-    Faites défiler →
-  </Text>
+            <Box mb={6}>
+              <Heading size="md" color="black">Nouveautés</Heading>
+              <Text fontSize="sm" color={secondaryTextColor} mb={2}>
+                Faites défiler →
+              </Text>
 
-  <HStack
-    ref={carouselRef}
-    onMouseEnter={() => setCarouselPaused(true)}
-    onMouseLeave={() => setCarouselPaused(false)}
-    onTouchStart={() => setCarouselPaused(true)}
-    onTouchEnd={() => setCarouselPaused(false)}
-    spacing={3}
-    overflowX="hidden"
-    py={2}
-    px={0} // Pas de padding pour que le peek soit visible
-    css={{
-      // Disable scroll snapping for continuous infinite animation
-      scrollSnapType: 'none',
-      '& > *': { scrollSnapAlign: 'none' },
-      // Prevent scrollbar visual jump on some browsers
-      '&::-webkit-scrollbar': { display: 'none' }
-    }}
-  >
-    {[...newProducts, ...newProducts].map((product, idx) => (
-      <Box
-        key={idx < newProducts.length ? product.id : `${product.id}-dup-${idx - newProducts.length}`}
-        flex="0 0 auto"
-        w={{ base: '45%', sm: '45%', md: '180px' }} // 2 produits visibles + peek
-      >
-        <ProductCard
-          id={String(product.id)}
-          title={product.title || product.name || ''}
-          price={product.price ?? product.amount}
-          image_url={product.image_url ?? product.product_image}
-          height={cardHeight}
-          shopName={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.name}
-          shopDomain={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.domain}
-        />
-      </Box>
-    ))}
-  </HStack>
-</Box>
-
+              <Box
+                onMouseEnter={() => setCarouselPaused(true)}
+                onMouseLeave={() => setCarouselPaused(false)}
+                onTouchStart={() => setCarouselPaused(true)}
+                onTouchEnd={() => setCarouselPaused(false)}
+              >
+                <SmoothCarousel speed={40} paused={carouselPaused}>
+                  {newProducts.map((product) => (
+                    <Box
+                      key={product.id}
+                      flex="0 0 auto"
+                      w={cardWidth}
+                      px={1.5} // Petit espacement entre les cartes
+                    >
+                      <ProductCard
+                        id={String(product.id)}
+                        title={product.title || product.name || ''}
+                        price={product.price ?? product.amount}
+                        image_url={product.image_url ?? product.product_image}
+                        height={cardHeight}
+                        shopName={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.name}
+                        shopDomain={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.domain}
+                      />
+                    </Box>
+                  ))}
+                </SmoothCarousel>
+              </Box>
+            </Box>
           )
         })()}
+        
         {selectedCategory === null ? (
           <Fade in={!isLoading}>
             <VStack spacing={8}>
@@ -542,8 +559,6 @@ export default function Home() {
         onCategoryChange={setSelectedCategory}
       />
 
-  {/* Section recommandations intelligente moved to sidebar */}
-
       <Container maxW={{ base: '100%', lg: '90%', xl: '85%' }} py={8} px={{ base: 4, md: 6 }}>
         {isLoading ? (
           <Center py={12}>
@@ -560,6 +575,7 @@ export default function Home() {
   )
 }
 
+// Composant NoResults séparé pour éviter les hooks conditionnels
 function NoResults({ message, onClear }: { readonly message: string; readonly onClear: () => void }) {
   const textColor = useColorModeValue('gray.600', 'gray.400')
   
