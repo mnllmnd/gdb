@@ -89,7 +89,7 @@ export default function Home() {
     let lastTime: number | null = null
 
     // pixels per millisecond (adjust for speed)
-    const pxPerMs = 0.12 // ~120px per second
+    const pxPerMs = 0.06 // ~120px per second
 
     const step = (time: number) => {
       if (!lastTime) lastTime = time
