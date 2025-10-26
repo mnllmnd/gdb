@@ -40,7 +40,10 @@ const theme = extendTheme({
       },
       variants: {
         solid: {
-          bg: 'brand.980',
+          // Use an existing brand token so solid buttons have a visible background.
+          // 'brand.980' did not exist and caused buttons to render without a background
+          // (making text appear invisible). Use the primary brand shade 500 instead.
+          bg: 'brand.500',
           color: 'white',
           _hover: {
             bg: 'brand.600',
