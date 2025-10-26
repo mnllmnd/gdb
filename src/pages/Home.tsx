@@ -85,38 +85,51 @@ export default function Home() {
     const el = carouselRef.current
     if (!el) return
 
-    let interval: ReturnType<typeof setInterval> | null = null
+    let rafId: number | null = null
+    let lastTime: number | null = null
 
-    const startAuto = () => {
-      if (interval) clearInterval(interval)
-      const step = Math.max(el.clientWidth * 0.7, 150)
-      interval = setInterval(() => {
-        if (!el) return
-        // if we're at (or very near) the end, smoothly go back to the start
-        if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 10) {
-          el.scrollTo({ left: 0, behavior: 'smooth' })
-        } else {
-          el.scrollBy({ left: step, behavior: 'smooth' })
+    // pixels per millisecond (adjust for speed)
+    const pxPerMs = 0.12 // ~120px per second
+
+    const step = (time: number) => {
+      if (!lastTime) lastTime = time
+      const delta = time - lastTime
+      lastTime = time
+      if (!el) return
+      if (!carouselPaused && !document.hidden) {
+        el.scrollLeft += delta * pxPerMs
+        // When we've scrolled past half (we render duplicated content), wrap seamlessly
+        const half = el.scrollWidth / 2
+        if (el.scrollLeft >= half) {
+          el.scrollLeft -= half
         }
-      }, 3000)
+      }
+      rafId = requestAnimationFrame(step)
     }
 
-    if (!carouselPaused) startAuto()
+    // ensure we start somewhere in the first half
+    el.scrollLeft = 0
+    rafId = requestAnimationFrame(step)
 
     const onVisibilityChange = () => {
-      // pause when tab is hidden to avoid weird jumps
       if (document.hidden) {
-        if (interval) clearInterval(interval)
-      } else if (!carouselPaused) {
-        startAuto()
+        // pause animation by resetting lastTime so delta is ignored on resume
+        lastTime = null
       }
     }
 
+    const onResize = () => {
+      // resetting ensures calculations of half stay correct
+      lastTime = null
+    }
+
     document.addEventListener('visibilitychange', onVisibilityChange)
+    window.addEventListener('resize', onResize)
 
     return () => {
-      if (interval) clearInterval(interval)
+      if (rafId) cancelAnimationFrame(rafId)
       document.removeEventListener('visibilitychange', onVisibilityChange)
+      window.removeEventListener('resize', onResize)
     }
   }, [carouselPaused, products.length])
 
@@ -304,17 +317,20 @@ export default function Home() {
     onTouchStart={() => setCarouselPaused(true)}
     onTouchEnd={() => setCarouselPaused(false)}
     spacing={3}
-    overflowX="auto"
+    overflowX="hidden"
     py={2}
     px={0} // Pas de padding pour que le peek soit visible
     css={{
-      scrollSnapType: 'x mandatory',
-      '& > *': { scrollSnapAlign: 'start' }
+      // Disable scroll snapping for continuous infinite animation
+      scrollSnapType: 'none',
+      '& > *': { scrollSnapAlign: 'none' },
+      // Prevent scrollbar visual jump on some browsers
+      '&::-webkit-scrollbar': { display: 'none' }
     }}
   >
-    {newProducts.map(product => (
+    {[...newProducts, ...newProducts].map((product, idx) => (
       <Box
-        key={product.id}
+        key={idx < newProducts.length ? product.id : `${product.id}-dup-${idx - newProducts.length}`}
         flex="0 0 auto"
         w={{ base: '45%', sm: '45%', md: '180px' }} // 2 produits visibles + peek
       >
