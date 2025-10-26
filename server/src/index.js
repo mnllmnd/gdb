@@ -6,6 +6,7 @@ import cache from './cache.js';
 import detectEmotion from '../nlp/emotions.js';
 import recommend from '../nlp/recommend.js';
 import dotenv from 'dotenv';
+import fs from 'fs'
 import helmet from 'helmet';
 import cors from 'cors';
 import path from 'path';
@@ -65,7 +66,7 @@ app.post('/api/message', async (req, res) => {
 
     const response = await nlpManager.process('fr', message);
     const emotion = detectEmotion(message);
-    const recommendations = recommend(userProfile, message);
+  const recommendations = await recommend(userProfile, message);
 
     // Réponse contextuelle basée sur l'intent détecté
     let contextualAnswer = response.answer;
@@ -185,6 +186,19 @@ const start = async () => {
     await tfidfCache.init(dbQuery)
     // initialize general cache (products/shops/categories)
     try { await cache.init(dbQuery) } catch (err) { console.warn('General cache init failed', err.message) }
+    // Run categories migration/fix if SQL file present to ensure category_id exists
+    try {
+      const migPath = path.join(__dirname, 'migrations', 'fix_categories.sql')
+      if (fs.existsSync(migPath)) {
+        const sql = fs.readFileSync(migPath, 'utf8')
+        await dbQuery(sql)
+        console.log('✅ Applied categories migration/fix from fix_categories.sql')
+      } else {
+        console.log('ℹ️  No categories migration file found at', migPath)
+      }
+    } catch (e) {
+      console.warn('Failed to apply categories migration/fix:', e.message)
+    }
     // Ensure likes table exists (for product likes feature)
     try {
       await dbQuery(`CREATE TABLE IF NOT EXISTS likes (
