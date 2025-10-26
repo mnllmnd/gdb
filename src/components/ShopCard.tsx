@@ -57,11 +57,14 @@ export default function ShopCard(props: ShopCardProps) {
     <Box
       as={RouterLink}
       to={`/shop/${encodeURIComponent(s?.domain || s?.id || '')}`}
-      display="block"
+      display="flex"
+      flexDirection="column"
       width="100%"
-  // let the parent grid control column sizing; when compact we should fill the grid cell
-  maxW={compact ? '100%' : { base: '100%', sm: '360px', md: '320px' }}
+      // let the parent grid control column sizing; when compact we should fill the grid cell
+      maxW={compact ? '100%' : { base: '100%', sm: '360px', md: '320px' }}
       mx="auto"
+      // ensure cards have a minimum height so all cards in the grid are symmetric
+      minH={useBreakpointValue({ base: compact ? '220px' : '260px', md: compact ? '240px' : '300px' })}
       borderRadius="2xl"
       overflow="hidden"
       bg={useColorModeValue('white', 'gray.800')}
@@ -71,7 +74,7 @@ export default function ShopCard(props: ShopCardProps) {
       transition="transform 220ms ease, box-shadow 220ms ease"
       _hover={{ transform: 'translateY(-6px)', boxShadow: currentElevation.hoverShadow }}
     >
-      <AspectRatio ratio={compact ? 4 / 3 : 16 / 8} w="100%">
+      <AspectRatio ratio={compact ? 4 / 3 : 16 / 8} w="100%" flexShrink={0}>
         <Image
           src={hi}
           alt={s?.name || s?.domain || 'cover'}
@@ -81,7 +84,7 @@ export default function ShopCard(props: ShopCardProps) {
         />
       </AspectRatio>
 
-      <VStack align="stretch" spacing={compact ? 2 : 3} p={padding}>
+      <VStack align="stretch" spacing={compact ? 2 : 3} p={padding} flex={1}>
         <HStack align="start" spacing={3}>
           <Image
             src={highRes(cover, { width: 320, quality: 85 }) ?? SHOP_PLACEHOLDER}
@@ -106,21 +109,7 @@ export default function ShopCard(props: ShopCardProps) {
           </Box>
         </HStack>
 
-        <HStack spacing={2} pt={1}>
-          <Button
-            as={RouterLink}
-            to={`/shop/${encodeURIComponent(s?.domain || s?.id || '')}`}
-            size={compact ? 'xs' : 'sm'}
-            flex={1}
-            borderRadius="xl"
-            fontWeight="600"
-            bgGradient="linear(to-r, brand.500, brand.600)"
-            color="white"
-            _hover={{ transform: 'translateY(-2px)' }}
-          >
-            {compact ? 'Voir' : 'Visiter'}
-          </Button>
-
+        <HStack spacing={2} pt={1} mt="auto">
           <FollowButton id={String(s?.id)} compact={compact} />
         </HStack>
       </VStack>

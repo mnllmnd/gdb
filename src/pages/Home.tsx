@@ -229,6 +229,7 @@ export default function Home() {
               key={shop.id} 
               transition="all 0.3s ease"
               _hover={{ transform: 'translateY(-4px)' }}
+              height="100%"
             >
               <ShopCard 
                 {...shop} 

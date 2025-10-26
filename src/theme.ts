@@ -86,8 +86,7 @@ const theme = extendTheme({
       },
       body: {
         // ✅ Image de fond qui s'affiche correctement
-        bgImage: "url('https://res.cloudinary.com/dcs9vkwe0/image/upload/v1761050180/cqurnath5a2accqrdwur.jpg')",
-        backgroundRepeat: 'repeat',
+      
        
         position: 'relative',
         zIndex: 0,
@@ -102,7 +101,7 @@ const theme = extendTheme({
           left: 0,
           width: '100%',
           height: '100%',
-          bg: '#d1b2a1ff', // Ajustez l'opacité selon vos besoins
+          bg: '#cec0b3ff', // Ajustez l'opacité selon vos besoins
           zIndex: -1,
         },
       },
