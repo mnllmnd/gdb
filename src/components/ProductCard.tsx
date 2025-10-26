@@ -17,15 +17,17 @@ import { FaCartShopping } from 'react-icons/fa6'
 export default function ProductCard({
   id,
   title,
+  description,
   price,
   image,
   image_url,
   shopName = null,
   shopDomain = null,
-  height = { base: '140px', md: '200px' },
+  height = { base: '130px', md: '160px' },
 }: Readonly<{
   id: string
   title?: string
+  description?: string
   price: number | string | null | undefined
   image?: string
   image_url?: string
@@ -227,7 +229,7 @@ export default function ProductCard({
             <Heading 
               size="sm" 
               color={textColor} 
-              fontWeight="700" 
+              fontWeight="100" 
               noOfLines={2}
               lineHeight="1.4"
               minH="2.8rem"
@@ -235,19 +237,26 @@ export default function ProductCard({
               {title || 'Sans titre'}
             </Heading>
 
+            {/* Product Detail (récupéré depuis la prop `detail`) */}
+            {description && (
+              <Text fontSize="sm" color={subtleTextColor} noOfLines={3}>
+                {description}
+              </Text>
+            )}
+
             {/* Price Display - Moved between title and shop */}
             {formattedPrice && (
               <Flex align="center" justify="space-between">
                 <Text 
                   fontSize="lg" 
-                  fontWeight="800" 
+                  fontWeight="600" 
                   color={priceText}
                   bg={priceBg}
                   px={3}
                   py={1}
                   borderRadius="lg"
-                  border="1px solid"
-                  borderColor={useColorModeValue('green.200', 'green.700')}
+                 
+                 
                   whiteSpace="nowrap"
                 >
                   {formattedPrice} FCFA

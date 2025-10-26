@@ -279,6 +279,7 @@ export default function Home() {
                     <ProductCard
                       id={String(product.id)}
                       title={product.title || product.name || ''}
+                      description={product.description || ''}
                       price={product.price ?? product.amount}
                       image_url={product.image_url ?? product.product_image}
                       height={cardHeight}
@@ -321,6 +322,7 @@ export default function Home() {
                   <ProductCard
                     id={String(product.id)}
                     title={product.title || product.name || ''}
+                    description={product.description || ''}
                     price={product.price ?? product.amount}
                     image_url={product.image_url ?? product.product_image}
                     height={cardHeight}
@@ -387,6 +389,7 @@ export default function Home() {
                   <ProductCard
                     id={String(product.id)}
                     title={product.title || product.name || ''}
+                    description={product.description || ''}
                     price={product.price ?? product.amount}
                     image_url={product.image_url ?? product.product_image}
                     height={cardHeight}
@@ -452,6 +455,7 @@ export default function Home() {
                   <ProductCard
                     id={String(product.id)}
                     title={product.title || product.name || ''}
+                    description={product.description || ''}
                     price={product.price ?? product.amount}
                     image_url={product.image_url ?? product.product_image}
                     height={cardHeight}
