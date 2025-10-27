@@ -28,6 +28,7 @@ import api from '../services/api'
 import ProductCard from '../components/ProductCard'
 import ReelGrid from '../components/ReelGrid'
 import { Link } from 'react-router-dom'
+import ScrollTopButton from '../components/ScrollTopButton'
 
 export default function Feed() {
   const [products, setProducts] = React.useState<any[]>([])
@@ -252,6 +253,7 @@ export default function Feed() {
           </ModalBody>
         </ModalContent>
       </Modal>
+      <ScrollTopButton />
     </Box>
   )
 }

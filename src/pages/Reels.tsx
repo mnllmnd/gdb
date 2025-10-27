@@ -19,6 +19,7 @@ import ReelUploadForm from '../components/ReelUploadForm'
 import { ReelCard, ReelPlayer } from '../components'
 import ReelGrid from '../components/ReelGrid'
 import { useLocation } from 'react-router-dom'
+import ScrollTopButton from '../components/ScrollTopButton'
 
 export default function ReelsPage() {
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -125,7 +126,8 @@ export default function ReelsPage() {
             <ReelUploadForm onSuccess={() => { handleSuccess(); onClose() }} onClose={onClose} />
           </ModalBody>
         </ModalContent>
-      </Modal>
+        </Modal>
+        <ScrollTopButton />
     </Container>
   )
 }
