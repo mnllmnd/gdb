@@ -1,8 +1,9 @@
 import React, { useRef, useState, useEffect } from 'react'
-import { Box, HStack, Icon, Text, Badge, Flex, Image, VStack, useToast } from '@chakra-ui/react'
-import { FaHeart, FaComment, FaShoppingBag, FaPlay, FaPause } from 'react-icons/fa'
+import { Box, HStack, Icon, Text, Badge, Flex, Image, VStack, useToast, Input, Button } from '@chakra-ui/react'
+import { FaHeart, FaRegHeart, FaComment, FaShoppingBag, FaPlay, FaPause } from 'react-icons/fa'
 import { FiMoreHorizontal } from 'react-icons/fi'
 import { getCurrentUser } from '../services/auth'
+import api from '../services/api'
 
 interface ReelCardProps {
   reel: {
@@ -28,6 +29,11 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
   const [isHover, setIsHover] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [showPlayButton, setShowPlayButton] = useState(false)
+  const [likesCount, setLikesCount] = useState(reel.likes_count || 0)
+  const [liked, setLiked] = useState(false)
+  const [commenting, setCommenting] = useState(false)
+  const [commentText, setCommentText] = useState('')
+  const [commentsCount, setCommentsCount] = useState(reel.comments_count || 0)
   const toast = useToast()
 
   // Lecture automatique au hover
@@ -85,9 +91,24 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
       window.location.href = `/login?next=${encodeURIComponent(next)}`
       return
     }
+    // Optimistic toggle like
+    const prevLiked = liked
+    const prevCount = likesCount
+    setLiked(!prevLiked)
+    setLikesCount(prevLiked ? Math.max(0, (prevCount || 0) - 1) : (prevCount || 0) + 1)
 
-    // Logique pour liker (utilisateur connecté)
-    console.log('Like clicked for reel:', reel.id)
+    ;(async () => {
+      try {
+        const res = await api.reels.like(reel.id)
+        if (res && typeof res.liked !== 'undefined') setLiked(res.liked)
+        if (res && typeof res.count !== 'undefined') setLikesCount(res.count)
+      } catch (err) {
+        // rollback on error
+        setLiked(prevLiked)
+        setLikesCount(prevCount)
+        console.error('Failed to like reel', err)
+      }
+    })()
   }
 
   const handleComment = (e: React.MouseEvent) => {
@@ -104,9 +125,37 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
       window.location.href = `/login?next=${encodeURIComponent(next)}`
       return
     }
+    // Show inline comment input
+    setCommenting(prev => !prev)
+  }
 
-    // Logique pour commenter (utilisateur connecté)
-    console.log('Comment clicked for reel:', reel.id)
+  const submitComment = async (e?: React.FormEvent) => {
+    e?.preventDefault()
+    const user = getCurrentUser()
+    if (!user) {
+      toast({ title: 'Connectez-vous', description: 'Veuillez vous connecter pour commenter ce reel.', status: 'info', duration: 3000 })
+      const next = (typeof window !== 'undefined') ? window.location.pathname + window.location.search : '/'
+      window.location.href = `/login?next=${encodeURIComponent(next)}`
+      return
+    }
+    const payload = (commentText || '').trim()
+    if (!payload) return
+
+    const prev = commentsCount
+    // optimistic
+    setCommentsCount(prev + 1)
+    setCommentText('')
+    setCommenting(false)
+    try {
+      const res = await api.reels.comment(reel.id, { body: payload })
+      // server may return updated count
+      if (res && typeof res.count !== 'undefined') setCommentsCount(res.count)
+    } catch (err) {
+      // rollback
+      setCommentsCount(prev)
+      toast({ title: 'Erreur', description: 'Impossible d\'envoyer le commentaire.', status: 'error', duration: 3000 })
+      console.error('Failed to post comment', err)
+    }
   }
 
   const handleShop = (e: React.MouseEvent) => {
@@ -287,10 +336,10 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
             {reel.caption || reel.product_title}
           </Text>
 
-          {/* Action buttons - VStack corrigé */}
+          {/* Action buttons - like/comment/shop */}
           <VStack spacing={2} align="center">
-            {/* Like button */}
-            <Box 
+            {/* Like button (optimistic) */}
+            <Box
               onClick={handleLike}
               _hover={{ transform: 'scale(1.1)' }}
               transition="transform 0.2s"
@@ -304,15 +353,15 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
                 borderColor="whiteAlpha.300"
                 mb={1}
               >
-                <Icon as={FaHeart} color="white" boxSize={4} />
+                <Icon as={liked ? FaHeart : FaRegHeart} color={liked ? 'red.400' : 'white'} boxSize={4} />
               </Flex>
               <Text color="white" fontSize="xs" fontWeight="medium" textAlign="center">
-                {reel.likes_count || 0}
+                {likesCount}
               </Text>
             </Box>
 
             {/* Comment button */}
-            <Box 
+            <Box
               onClick={handleComment}
               _hover={{ transform: 'scale(1.1)' }}
               transition="transform 0.2s"
@@ -329,12 +378,12 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
                 <Icon as={FaComment} color="white" boxSize={4} />
               </Flex>
               <Text color="white" fontSize="xs" fontWeight="medium" textAlign="center">
-                {reel.comments_count || 0}
+                {commentsCount}
               </Text>
             </Box>
 
             {/* Shopping button */}
-            <Box 
+            <Box
               onClick={handleShop}
               _hover={{ transform: 'scale(1.1)' }}
               transition="transform 0.2s"
@@ -352,6 +401,28 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
               </Flex>
             </Box>
           </VStack>
+
+          {/* Inline comment input (shows above actions) */}
+          {commenting && (
+            <Box position="absolute" bottom="72px" left="16px" right="16px" zIndex={4}>
+              <Box bg="blackAlpha.700" p={3} borderRadius="md" backdropFilter="blur(6px)" border="1px solid" borderColor="whiteAlpha.200">
+                <form onSubmit={submitComment}>
+                  <HStack>
+                    <Input
+                      value={commentText}
+                      onChange={(ev) => setCommentText(ev.target.value)}
+                      placeholder="Ajouter un commentaire..."
+                      bg="white"
+                      color="black"
+                      size="sm"
+                    />
+                    <Button type="submit" colorScheme="blue" size="sm">Envoyer</Button>
+                    <Button variant="ghost" size="sm" onClick={() => setCommenting(false)}>Annuler</Button>
+                  </HStack>
+                </form>
+              </Box>
+            </Box>
+          )}
         </Flex>
       </Box>
 

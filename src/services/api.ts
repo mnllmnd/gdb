@@ -129,9 +129,13 @@ export const api = {
       return request(`/reels${q}`, { headers: opts.token ? { Authorization: `Bearer ${opts.token}` } : {} })
     },
     get: (id: string, token?: string) => request(`/reels/${encodeURIComponent(id)}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+    // Fetch comments for a reel (optional pagination)
+    getComments: (id: string, page = 1, limit = 50, token?: string) =>
+      request(`/reels/${encodeURIComponent(id)}/comments?page=${encodeURIComponent(String(page))}&limit=${encodeURIComponent(String(limit))}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     like: (id: string, token?: string) => request(`/reels/${encodeURIComponent(id)}/like`, { method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     comment: (id: string, body: any, token?: string) => request(`/reels/${encodeURIComponent(id)}/comments`, { method: 'POST', body: JSON.stringify(body), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     upload: (payload: any, token?: string) => request(`/reels/upload`, { method: 'POST', body: JSON.stringify(payload), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+  delete: (id: string, token?: string) => request(`/reels/${encodeURIComponent(id)}`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     uploadFile: async (file: File, fields: any = {}, token?: string) => {
       const form = new FormData()
       form.append('reel', file)

@@ -70,16 +70,20 @@ router.get('/', async (req, res) => {
     // basic feed by product_id or global by followed shops (example)
     if (productId) {
       const r = await query(
-  `SELECT pr.*, p.title AS product_title, s.id as shop_id, s.name as shop_name, s.domain as shop_domain, s.logo_url as shop_logo, u.id as uploader_id, u.display_name AS uploader_name
-         FROM product_reels pr
-         JOIN products p ON p.id = pr.product_id
-         JOIN shops s ON s.owner_id = p.seller_id
-         LEFT JOIN users u ON u.id = pr.user_id
-         WHERE pr.product_id = $1 AND pr.is_active = true
-         ORDER BY pr.created_at DESC
-         LIMIT $2 OFFSET $3`,
-        [productId, limit, offset]
-      )
+    `SELECT pr.*, p.title AS product_title,
+             s.id as shop_id, s.name as shop_name, s.domain as shop_domain, s.logo_url as shop_logo,
+             u.id as uploader_id, u.display_name AS uploader_name,
+             (SELECT COUNT(*)::int FROM reel_likes rl WHERE rl.reel_id = pr.id) AS likes_count,
+             (SELECT COUNT(*)::int FROM reel_comments rc WHERE rc.reel_id = pr.id AND rc.is_active = true) AS comments_count
+           FROM product_reels pr
+           JOIN products p ON p.id = pr.product_id
+           JOIN shops s ON s.owner_id = p.seller_id
+           LEFT JOIN users u ON u.id = pr.user_id
+           WHERE pr.product_id = $1 AND pr.is_active = true
+           ORDER BY pr.created_at DESC
+           LIMIT $2 OFFSET $3`,
+          [productId, limit, offset]
+        )
       const totalRes = await query('SELECT COUNT(*)::int AS count FROM product_reels WHERE product_id = $1 AND is_active = true', [productId])
       return res.json({ items: r.rows, total: Number(totalRes.rows[0]?.count || 0), page, limit })
     }
@@ -105,7 +109,11 @@ router.get('/', async (req, res) => {
       }
 
       const r = await query(
-  `SELECT pr.*, p.title AS product_title, s.id as shop_id, s.name as shop_name, s.domain as shop_domain, s.logo_url as shop_logo, u.id as uploader_id, u.display_name AS uploader_name
+  `SELECT pr.*, p.title AS product_title,
+           s.id as shop_id, s.name as shop_name, s.domain as shop_domain, s.logo_url as shop_logo,
+           u.id as uploader_id, u.display_name AS uploader_name,
+           (SELECT COUNT(*)::int FROM reel_likes rl WHERE rl.reel_id = pr.id) AS likes_count,
+           (SELECT COUNT(*)::int FROM reel_comments rc WHERE rc.reel_id = pr.id AND rc.is_active = true) AS comments_count
          FROM product_reels pr
          JOIN products p ON p.id = pr.product_id
          JOIN shops s ON s.owner_id = p.seller_id
@@ -137,16 +145,20 @@ router.get('/', async (req, res) => {
 
     // No followed shops or unauthenticated: return a global recent public reels feed
     const r = await query(
-  `SELECT pr.*, p.title AS product_title, s.id as shop_id, s.name as shop_name, s.domain as shop_domain, s.logo_url as shop_logo, u.id as uploader_id, u.display_name AS uploader_name
-       FROM product_reels pr
-       JOIN products p ON p.id = pr.product_id
-       JOIN shops s ON s.owner_id = p.seller_id
-       LEFT JOIN users u ON u.id = pr.user_id
-       WHERE pr.is_active = true
-       ORDER BY pr.created_at DESC
-       LIMIT $1 OFFSET $2`,
-      [limit, offset]
-    )
+    `SELECT pr.*, p.title AS product_title,
+             s.id as shop_id, s.name as shop_name, s.domain as shop_domain, s.logo_url as shop_logo,
+             u.id as uploader_id, u.display_name AS uploader_name,
+             (SELECT COUNT(*)::int FROM reel_likes rl WHERE rl.reel_id = pr.id) AS likes_count,
+             (SELECT COUNT(*)::int FROM reel_comments rc WHERE rc.reel_id = pr.id AND rc.is_active = true) AS comments_count
+         FROM product_reels pr
+         JOIN products p ON p.id = pr.product_id
+         JOIN shops s ON s.owner_id = p.seller_id
+         LEFT JOIN users u ON u.id = pr.user_id
+         WHERE pr.is_active = true
+         ORDER BY pr.created_at DESC
+         LIMIT $1 OFFSET $2`,
+        [limit, offset]
+      )
 
     const totalRes = await query('SELECT COUNT(*)::int AS count FROM product_reels WHERE is_active = true')
     return res.json({ items: r.rows, total: Number(totalRes.rows[0]?.count || 0), page, limit })
@@ -161,7 +173,7 @@ router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params
     const r = await query(
-      `SELECT pr.*, p.title AS product_title, s.id as shop_id, s.name as shop_name, s.logo_url as shop_logo, u.id as uploader_id, u.display_name AS uploader_name
+      `SELECT pr.*, p.title AS product_title, p.seller_id as seller_id, s.id as shop_id, s.name as shop_name, s.logo_url as shop_logo, u.id as uploader_id, u.display_name AS uploader_name
        FROM product_reels pr
        JOIN products p ON p.id = pr.product_id
        JOIN shops s ON s.owner_id = p.seller_id
@@ -177,6 +189,41 @@ router.get('/:id', async (req, res) => {
   } catch (err) {
     console.error('Failed to fetch reel', err)
     res.status(500).json({ error: 'Failed to fetch reel' })
+  }
+})
+
+// GET /api/reels/:id/comments - paginated
+router.get('/:id/comments', async (req, res) => {
+  try {
+    const { id } = req.params
+    const page = Math.max(1, Number.parseInt(req.query.page || '1', 10))
+    const limit = Math.min(200, Number.parseInt(req.query.limit || '50', 10))
+    const offset = (page - 1) * limit
+
+    const r = await query(
+      `SELECT rc.*, u.display_name as user_name
+       FROM reel_comments rc
+       LEFT JOIN users u ON u.id = rc.user_id
+       WHERE rc.reel_id = $1 AND rc.is_active = true
+       ORDER BY rc.created_at DESC
+       LIMIT $2 OFFSET $3`,
+      [id, limit, offset]
+    )
+
+    const totalRes = await query('SELECT COUNT(*)::int AS count FROM reel_comments WHERE reel_id = $1 AND is_active = true', [id])
+
+    const comments = (r.rows || []).map(row => ({
+      id: row.id,
+      body: row.body,
+      user: { id: row.user_id, name: row.user_name || null, avatar: row.user_avatar || null },
+      parent_comment_id: row.parent_comment_id,
+      created_at: row.created_at,
+    }))
+
+    res.json({ comments, total: Number(totalRes.rows[0]?.count || 0), page, limit })
+  } catch (err) {
+    console.error('Failed to list comments', err)
+    res.status(500).json({ error: 'Failed to list comments' })
   }
 })
 
@@ -218,10 +265,11 @@ router.post('/:id/comments', authenticate, async (req, res) => {
 router.delete('/:id', authenticate, async (req, res) => {
   try {
     const { id } = req.params
-    const r = await query('SELECT pr.*, p.seller_id FROM product_reels pr JOIN products p ON p.id = pr.product_id WHERE pr.id = $1', [id])
+    const r = await query('SELECT pr.*, p.seller_id, pr.user_id as uploader_id FROM product_reels pr JOIN products p ON p.id = pr.product_id WHERE pr.id = $1', [id])
     if (r.rowCount === 0) return res.status(404).json({ error: 'Not found' })
     const reel = r.rows[0]
-    if (String(reel.seller_id) !== String(req.user.id) && req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' })
+    // Allow product seller OR uploader OR admin to soft-delete
+    if (String(reel.seller_id) !== String(req.user.id) && String(reel.uploader_id) !== String(req.user.id) && req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' })
     await query('UPDATE product_reels SET is_active = false WHERE id = $1', [id])
     try {
       const { query: dbq } = await import('../db.js')
