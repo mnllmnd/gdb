@@ -266,7 +266,6 @@ export default function Home() {
           {popularShops && popularShops.length > 0 && (
             <Box>
               <HStack justify="space-between" align="center" mb={3}>
-                <Heading size="md">Boutiques en vedette</Heading>
                 <Text fontSize="sm" color={secondaryTextColor}>Les plus suivies</Text>
               </HStack>
               <SimpleGrid columns={{ base: 2, sm: 3, md: 4 }} spacing={3} mb={4}>
