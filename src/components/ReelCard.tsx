@@ -18,9 +18,7 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerBody,
-  DrawerFooter,
-  Avatar,
-  Divider
+  Avatar
 } from '@chakra-ui/react'
 import { 
   FaHeart, 
@@ -63,7 +61,7 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
   const commentsEndRef = useRef<HTMLDivElement>(null)
   const [isHover, setIsHover] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [isMuted, setIsMuted] = useState(true)
+  const [isMuted, setIsMuted] = useState(false) // 🔊 Son activé par défaut
   const [showPlayButton, setShowPlayButton] = useState(false)
   const [likesCount, setLikesCount] = useState(reel.likes_count || 0)
   const [liked, setLiked] = useState(false)
@@ -76,7 +74,7 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
   const toast = useToast()
   const isMobile = useBreakpointValue({ base: true, md: false })
 
-  // Lecture automatique au hover (desktop) ou au scroll (mobile)
+  // Gestion de la lecture vidéo
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
@@ -122,8 +120,7 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
         })
       },
       { 
-        threshold: 0.6,
-        rootMargin: '0px 0px 0px 0px'
+        threshold: 0.6
       }
     )
 
@@ -157,6 +154,16 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
       video.pause()
     } else {
       video.play().catch(() => {})
+    }
+  }
+
+  // Clic sur la vidéo - seulement play/pause sur mobile
+  const handleVideoClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (isMobile) {
+      togglePlay(e)
+    } else {
+      onOpen(reel)
     }
   }
 
@@ -320,10 +327,18 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
   // Composant pour la section commentaires
   const CommentsSection = () => (
     <Box height="100%" display="flex" flexDirection="column">
-      {/* En-tête */}
-      <Box p={4} borderBottom="1px solid" borderColor="gray.200">
-        <Text fontWeight="bold" fontSize="lg">Commentaires</Text>
-      </Box>
+      <DrawerHeader borderBottomWidth="1px" p={4}>
+        <HStack justify="space-between">
+          <Text fontWeight="bold" fontSize="lg">Commentaires</Text>
+          <IconButton
+            aria-label="Fermer"
+            icon={<FaTimes />}
+            variant="ghost"
+            size="sm"
+            onClick={() => setCommentsOpen(false)}
+          />
+        </HStack>
+      </DrawerHeader>
 
       {/* Liste des commentaires */}
       <Box flex={1} overflowY="auto" p={4}>
@@ -372,6 +387,7 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
             borderRadius="full"
             bg="gray.50"
             border="none"
+            size="sm"
           />
           <IconButton
             aria-label="Envoyer le commentaire"
@@ -393,7 +409,7 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
         overflow="hidden"
         bg="black"
         cursor="pointer"
-        onClick={() => onOpen(reel)}
+        onClick={handleVideoClick}
         position="relative"
         _hover={{ 
           transform: isMobile ? 'none' : 'translateY(-8px)', 
@@ -568,17 +584,18 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
             </Flex>
           </Flex>
 
-          {/* Actions bar - Position différente sur mobile */}
+          {/* Actions bar mobile - Design amélioré */}
           <VStack
             position="absolute"
-            right={4}
-            bottom={isMobile ? 20 : 4}
-            spacing={4}
+            right={3}
+            bottom={isMobile ? 16 : 4}
+            spacing={3}
             color="white"
             zIndex={2}
+            align="center"
           >
-            {/* Like button */}
-            <VStack spacing={1}>
+            {/* Like button avec compteur proche */}
+            <Box textAlign="center">
               <IconButton
                 aria-label="Aimer"
                 icon={liked ? <FaHeart color="red" /> : <FaRegHeart />}
@@ -587,14 +604,15 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
                 size="lg"
                 color="white"
                 _hover={{ bg: 'blackAlpha.300' }}
+                mb={1}
               />
-              <Text fontSize="xs" fontWeight="bold">
+              <Text fontSize="xs" fontWeight="bold" lineHeight="1">
                 {likesCount}
               </Text>
-            </VStack>
+            </Box>
 
-            {/* Comment button */}
-            <VStack spacing={1}>
+            {/* Comment button avec compteur proche */}
+            <Box textAlign="center">
               <IconButton
                 aria-label="Commenter"
                 icon={<FaComment />}
@@ -603,11 +621,12 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
                 size="lg"
                 color="white"
                 _hover={{ bg: 'blackAlpha.300' }}
+                mb={1}
               />
-              <Text fontSize="xs" fontWeight="bold">
+              <Text fontSize="xs" fontWeight="bold" lineHeight="1">
                 {commentsCount}
               </Text>
-            </VStack>
+            </Box>
 
             {/* Shopping button */}
             <IconButton
@@ -627,7 +646,7 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
               position="absolute"
               bottom={4}
               left={4}
-              right={16}
+              right={20} /* Réduit pour laisser de la place aux actions */
               zIndex={2}
             >
               <Text
@@ -686,20 +705,7 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
       >
         <DrawerOverlay />
         <DrawerContent borderTopRadius="2xl" height="85vh">
-          <DrawerHeader borderBottomWidth="1px">
-            <HStack justify="space-between">
-              <Text fontWeight="bold">Commentaires</Text>
-              <IconButton
-                aria-label="Fermer"
-                icon={<FaTimes />}
-                variant="ghost"
-                onClick={() => setCommentsOpen(false)}
-              />
-            </HStack>
-          </DrawerHeader>
-          <DrawerBody p={0}>
-            <CommentsSection />
-          </DrawerBody>
+          <CommentsSection />
         </DrawerContent>
       </Drawer>
     </>
