@@ -501,7 +501,7 @@ export default function NavBar() {
               >
                 Découvrir
               </Button>
-              <Button
+              {/*<Button
                 onClick={() => {
                   onClose()
                   // Open recommendations modal from sidebar
@@ -516,6 +516,7 @@ export default function NavBar() {
               >
                 Tu cherches?
               </Button>
+              */}
               {user && (
                 <Button 
                   as={RouterLink} 
@@ -546,7 +547,8 @@ export default function NavBar() {
                   Mon profil
                 </Button>
               )}
-              <Button 
+
+              {/*<Button
                 as={RouterLink} 
                 to="/tutoriel" 
                 onClick={onClose} 
@@ -560,6 +562,7 @@ export default function NavBar() {
               >
                 Tutoriel
               </Button>
+              */}
 
               {/* Auth actions (client) */}
               {user ? (
