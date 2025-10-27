@@ -25,7 +25,24 @@ type ReqOptions = {
 }
 
 async function request(path: string, options: ReqOptions = {}) {
-  const headers = options.headers ? { 'Content-Type': 'application/json', ...options.headers } : { 'Content-Type': 'application/json' }
+  // Build headers, prefer explicit headers passed in options but fill in Authorization from localStorage when missing
+  const headers: Record<string, string> = { ...(options.headers || {}) }
+  try {
+    const maybeToken = (globalThis as any)?.localStorage?.getItem?.('token')
+    if (maybeToken && !headers['Authorization'] && !headers['authorization']) {
+      headers['Authorization'] = `Bearer ${maybeToken}`
+    }
+  } catch (e) {
+    // ignore if localStorage not available
+  }
+
+  // Only set Content-Type for non-FormData bodies (fetch will set correct multipart boundary for FormData)
+  const maybeBody: any = (options as any).body
+  const isFormData = maybeBody && typeof maybeBody === 'object' && typeof maybeBody.append === 'function'
+  if (options.body && !isFormData) {
+    headers['Content-Type'] = headers['Content-Type'] || 'application/json'
+  }
+
   const res = await fetch(apiBase + path, { ...options, headers })
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: 'unknown' }))
@@ -58,8 +75,10 @@ export const api = {
     uploadFile: async (file: File, token?: string) => {
       const form = new FormData()
       form.append('file', file)
-  const headersVar: Record<string, string> | undefined = token ? { Authorization: `Bearer ${token}` } : undefined
-  const res = await fetch(API_BASE + '/uploads', { method: 'POST', body: form, headers: headersVar })
+      // prefer explicit token param, otherwise fall back to localStorage
+      const tokenVal = token ?? ((globalThis as any)?.localStorage?.getItem?.('token'))
+      const headersVar: Record<string, string> | undefined = tokenVal ? { Authorization: `Bearer ${tokenVal}` } : undefined
+      const res = await fetch(API_BASE + '/uploads', { method: 'POST', body: form, headers: headersVar })
       if (!res.ok) throw await res.json().catch(() => ({ error: 'upload_failed' }))
       return res.json()
     },
@@ -99,6 +118,30 @@ export const api = {
   },
   feed: {
     list: (page = 1, limit = 20, token?: string) => request(`/feed?limit=${encodeURIComponent(String(limit))}&page=${encodeURIComponent(String(page))}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+  },
+  reels: {
+    list: (opts: any = {}) => {
+      const qs = []
+      if (opts.product_id) qs.push(`product_id=${encodeURIComponent(String(opts.product_id))}`)
+      if (opts.page) qs.push(`page=${encodeURIComponent(String(opts.page))}`)
+      if (opts.limit) qs.push(`limit=${encodeURIComponent(String(opts.limit))}`)
+      const q = qs.length ? `?${qs.join('&')}` : ''
+      return request(`/reels${q}`, { headers: opts.token ? { Authorization: `Bearer ${opts.token}` } : {} })
+    },
+    get: (id: string, token?: string) => request(`/reels/${encodeURIComponent(id)}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+    like: (id: string, token?: string) => request(`/reels/${encodeURIComponent(id)}/like`, { method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+    comment: (id: string, body: any, token?: string) => request(`/reels/${encodeURIComponent(id)}/comments`, { method: 'POST', body: JSON.stringify(body), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+    upload: (payload: any, token?: string) => request(`/reels/upload`, { method: 'POST', body: JSON.stringify(payload), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+    uploadFile: async (file: File, fields: any = {}, token?: string) => {
+      const form = new FormData()
+      form.append('reel', file)
+      Object.entries(fields || {}).forEach(([k, v]) => { if (v !== undefined && v !== null) form.append(k, String(v)) })
+      const tokenVal = token ?? ((globalThis as any)?.localStorage?.getItem?.('token'))
+      const headersVar: Record<string, string> | undefined = tokenVal ? { Authorization: `Bearer ${tokenVal}` } : undefined
+      const res = await fetch(API_BASE + '/reels/upload', { method: 'POST', body: form, headers: headersVar })
+      if (!res.ok) throw await res.json().catch(() => ({ error: 'upload_failed' }))
+      return res.json()
+    }
   },
   user: {
     myLikes: (token?: string) => request('/auth/me/likes', { headers: token ? { Authorization: `Bearer ${token}` } : {} })

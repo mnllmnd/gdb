@@ -323,6 +323,17 @@ export default function NavBar() {
               </Box>
               {user ? (
                 <Menu placement="bottom-end">
+                 {/* Desktop: quick upload reel button near user menu */}
+                 <IconButton
+                   as={RouterLink}
+                   to="/reels?upload=1"
+                   aria-label="Poster un Reel"
+                   icon={<span style={{ fontSize: 18 }}>🎬</span>}
+                   variant="ghost"
+                   color={textColor}
+                   size="md"
+                   _hover={{ bg: hoverBg, color: brandColor }}
+                 />
                   <MenuButton
                     as={Button}
                     rightIcon={<ChevronDownIcon />}
@@ -626,6 +637,35 @@ export default function NavBar() {
                <Box px={3} py={2}>
                 <Text fontSize="sm" color={subtleTextColor} fontWeight="600">Pour tous</Text>
               </Box>
+
+              {/* Mobile: quick upload reel button in sidebar/drawer */}
+              {user ? (
+                <Button
+                  as={RouterLink}
+                  to="/reels?upload=1"
+                  onClick={onClose}
+                  size="md"
+                  variant="ghost"
+                  leftIcon={<span>🎬</span>}
+                  color={textColor}
+                  _hover={{ bg: hoverBg }}
+                  justifyContent="flex-start"
+                >
+                  Poster un Reel
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => { onClose(); navigate('/login') }}
+                  size="md"
+                  variant="ghost"
+                  leftIcon={<span>🎬</span>}
+                  color={textColor}
+                  _hover={{ bg: hoverBg }}
+                  justifyContent="flex-start"
+                >
+                  Poster un Reel
+                </Button>
+              )}
 
                <Button 
                     size="md" 
