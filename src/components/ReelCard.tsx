@@ -10,7 +10,6 @@ import {
   VStack, 
   useToast, 
   Input, 
-  Button, 
   IconButton,
   useBreakpointValue,
   Drawer,
@@ -18,7 +17,9 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerBody,
-  Avatar
+  Avatar,
+  InputGroup,
+  InputRightElement
 } from '@chakra-ui/react'
 import { 
   FaHeart, 
@@ -31,7 +32,8 @@ import {
   FaVolumeMute, 
   FaVolumeUp,
   FaPaperPlane,
-  FaTimes
+  FaTimes,
+  FaEllipsisH
 } from 'react-icons/fa'
 import { FiMoreHorizontal } from 'react-icons/fi'
 import { getCurrentUser } from '../services/auth'
@@ -58,10 +60,11 @@ interface ReelCardProps {
 
 export default function ReelCard({ reel, onOpen }: ReelCardProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const commentInputRef = useRef<HTMLInputElement>(null)
   const commentsEndRef = useRef<HTMLDivElement>(null)
   const [isHover, setIsHover] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [isMuted, setIsMuted] = useState(false) // 🔊 Son activé par défaut
+  const [isMuted, setIsMuted] = useState(false)
   const [showPlayButton, setShowPlayButton] = useState(false)
   const [likesCount, setLikesCount] = useState(reel.likes_count || 0)
   const [liked, setLiked] = useState(false)
@@ -133,6 +136,15 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
     }
   }, [isMobile])
 
+  // Focus sur l'input quand le drawer s'ouvre - CORRIGÉ
+  useEffect(() => {
+    if (commentsOpen) {
+      setTimeout(() => {
+        commentInputRef.current?.focus()
+      }, 300) // Légèrement augmenté pour s'assurer que l'animation est terminée
+    }
+  }, [commentsOpen])
+
   // Scroll vers le bas quand nouveau commentaire
   useEffect(() => {
     if (commentsEndRef.current && commentsOpen) {
@@ -157,7 +169,6 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
     }
   }
 
-  // Clic sur la vidéo - seulement play/pause sur mobile
   const handleVideoClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     if (isMobile) {
@@ -224,12 +235,6 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
       setComments(commentsRes.comments || [])
     } catch (err) {
       console.error('Failed to load comments', err)
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de charger les commentaires',
-        status: 'error',
-        duration: 3000,
-      })
     } finally {
       setIsLoadingComments(false)
     }
@@ -238,15 +243,7 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
   const submitComment = async (e?: React.FormEvent) => {
     e?.preventDefault()
     const user = getCurrentUser()
-    if (!user) {
-      toast({ 
-        title: 'Connectez-vous', 
-        description: 'Veuillez vous connecter pour commenter ce reel.', 
-        status: 'info', 
-        duration: 3000 
-      })
-      return
-    }
+    if (!user) return
     
     const payload = commentText.trim()
     if (!payload) return
@@ -261,17 +258,14 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
       created_at: new Date().toISOString()
     }
 
-    // Optimistic update
     setComments(prev => [newComment, ...prev])
     setCommentsCount(prev => prev + 1)
     setCommentText('')
     
     try {
       await api.reels.comment(reel.id, { body: payload })
-      // Recharger les commentaires pour avoir les vrais IDs
       await loadComments()
     } catch (err) {
-      // Rollback
       setComments(prev => prev.filter(c => !c.id.startsWith('temp-')))
       setCommentsCount(prev => prev - 1)
       toast({ 
@@ -280,7 +274,19 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
         status: 'error', 
         duration: 3000 
       })
-      console.error('Failed to post comment', err)
+    }
+  }
+
+  // Gestion améliorée du changement de texte - CORRIGÉ
+  const handleCommentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCommentText(e.target.value)
+  }
+
+  // Gestion de la soumission avec Enter - CORRIGÉ
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      submitComment()
     }
   }
 
@@ -310,94 +316,219 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
     }
   }
 
+  // Fonction améliorée pour formater le temps
   const formatTime = (dateString: string) => {
     const date = new Date(dateString)
     const now = new Date()
-    const diff = now.getTime() - date.getTime()
-    const hours = Math.floor(diff / (1000 * 60 * 60))
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+    const diffMs = now.getTime() - date.getTime()
+    const diffMinutes = Math.floor(diffMs / (1000 * 60))
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+    if (diffMinutes < 1) return "À l'instant"
+    if (diffMinutes < 60) return `Il y a ${diffMinutes} min`
+    if (diffHours < 24) return `Il y a ${diffHours} h`
+    if (diffDays === 1) return `Hier`
+    if (diffDays < 7) return `Il y a ${diffDays} j`
     
-    if (hours < 1) return "À l'instant"
-    if (hours < 24) return `Il y a ${hours}h`
-    if (days === 1) return 'Hier'
-    if (days < 7) return `Il y a ${days}j`
-    return date.toLocaleDateString('fr-FR')
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
   }
 
-  // Composant pour la section commentaires
+  // NOUVELLE FONCTION : Empêcher la fermeture du Drawer lors des interactions avec l'input
+  const handleInputMouseDown = (e: React.MouseEvent) => {
+    e.stopPropagation()
+  }
+
+  const handleInputClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+  }
+
+  // NOUVELLE FONCTION : Gestion personnalisée de la fermeture du Drawer
+  const handleCloseDrawer = () => {
+    setCommentsOpen(false)
+  }
+
+  // Section commentaires avec corrections - CORRIGÉ
   const CommentsSection = () => (
-    <Box height="100%" display="flex" flexDirection="column">
-      <DrawerHeader borderBottomWidth="1px" p={4}>
-        <HStack justify="space-between">
-          <Text fontWeight="bold" fontSize="lg">Commentaires</Text>
+    <Box height="100%" display="flex" flexDirection="column" bg="white">
+      {/* Header élégant avec gradient */}
+      <Box 
+        bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+        color="white"
+        p={4}
+        position="relative"
+      >
+        <Flex justify="space-between" align="center">
+          <Box>
+            <Text fontWeight="bold" fontSize="lg">Commentaires</Text>
+            <Text fontSize="sm" opacity={0.9}>
+              {commentsCount} commentaire{commentsCount > 1 ? 's' : ''}
+            </Text>
+          </Box>
           <IconButton
             aria-label="Fermer"
             icon={<FaTimes />}
             variant="ghost"
-            size="sm"
-            onClick={() => setCommentsOpen(false)}
+            color="white"
+            _hover={{ bg: 'whiteAlpha.200' }}
+            onClick={handleCloseDrawer}
           />
-        </HStack>
-      </DrawerHeader>
-
-      {/* Liste des commentaires */}
-      <Box flex={1} overflowY="auto" p={4}>
-        <VStack spacing={4} align="stretch">
-          {isLoadingComments ? (
-            <Text textAlign="center" color="gray.500">
-              Chargement des commentaires...
-            </Text>
-          ) : comments.length === 0 ? (
-            <Text textAlign="center" color="gray.500" py={8}>
-              Soyez le premier à commenter
-            </Text>
-          ) : (
-            comments.map((comment) => (
-              <HStack key={comment.id} spacing={3} align="start">
-                <Avatar 
-                  size="sm" 
-                  src={comment.user?.avatar} 
-                  name={comment.user?.name}
-                />
-                <Box flex={1}>
-                  <Text fontSize="sm">
-                    <Text as="span" fontWeight="bold" mr={2}>
-                      {comment.user?.name}
-                    </Text>
-                    {comment.body}
-                  </Text>
-                  <Text fontSize="xs" color="gray.500" mt={1}>
-                    {formatTime(comment.created_at)}
-                  </Text>
-                </Box>
-              </HStack>
-            ))
-          )}
-          <div ref={commentsEndRef} />
-        </VStack>
+        </Flex>
       </Box>
 
-      {/* Input de commentaire */}
-      <Box p={4} borderTop="1px solid" borderColor="gray.200">
-        <HStack as="form" onSubmit={submitComment}>
-          <Input
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Ajouter un commentaire..."
-            borderRadius="full"
-            bg="gray.50"
-            border="none"
-            size="sm"
-          />
-          <IconButton
-            aria-label="Envoyer le commentaire"
-            icon={<FaPaperPlane />}
-            colorScheme="blue"
-            size="sm"
-            type="submit"
-            isDisabled={!commentText.trim()}
-          />
-        </HStack>
+      {/* Liste des commentaires - Design moderne */}
+      <Box 
+        flex={1} 
+        overflowY="auto" 
+        p={0}
+        onClick={(e) => e.stopPropagation()} // Empêche la fermeture lors du clic dans la zone
+      >
+        {isLoadingComments ? (
+          <VStack spacing={3} p={6}>
+            {[1, 2, 3].map(i => (
+              <Flex key={i} width="100%" align="center" gap={3}>
+                <Box width="40px" height="40px" borderRadius="full" bg="gray.200" />
+                <Box flex={1}>
+                  <Box height="12px" bg="gray.200" borderRadius="sm" mb={2} width="60%" />
+                  <Box height="10px" bg="gray.200" borderRadius="sm" width="80%" />
+                </Box>
+              </Flex>
+            ))}
+          </VStack>
+        ) : comments.length === 0 ? (
+          <Box 
+            textAlign="center" 
+            py={12} 
+            px={6}
+            onClick={(e) => e.stopPropagation()} // Empêche la fermeture
+          >
+            <Box
+              width="80px"
+              height="80px"
+              borderRadius="full"
+              bg="gray.100"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              mx="auto"
+              mb={4}
+            >
+              <FaComment size={24} color="#9CA3AF" />
+            </Box>
+            <Text fontWeight="medium" color="gray.600" mb={2}>
+              Aucun commentaire
+            </Text>
+            <Text fontSize="sm" color="gray.500">
+              Soyez le premier à commenter ce reel
+            </Text>
+          </Box>
+        ) : (
+          <Box 
+            p={4}
+            onClick={(e) => e.stopPropagation()} // Empêche la fermeture
+          >
+            <VStack spacing={4} align="stretch">
+              {comments.map((comment) => (
+                <Flex key={comment.id} gap={3} align="start">
+                  {/* Avatar */}
+                  <Avatar 
+                    size="sm" 
+                    src={comment.user?.avatar} 
+                    name={comment.user?.name}
+                    border="2px solid"
+                    borderColor="gray.100"
+                  />
+                  
+                  {/* Contenu du commentaire */}
+                  <Box flex={1}>
+                    <Flex align="center" gap={2} mb={1}>
+                      <Text fontWeight="semibold" fontSize="sm" color="gray.800">
+                        {comment.user?.name || 'Utilisateur'}
+                      </Text>
+                      <Text fontSize="xs" color="gray.500">
+                        {formatTime(comment.created_at)}
+                      </Text>
+                    </Flex>
+                    
+                    <Text 
+                      fontSize="sm" 
+                      color="gray.700" 
+                      lineHeight="1.4"
+                      bg="gray.50"
+                      p={3}
+                      borderRadius="xl"
+                      border="1px solid"
+                      borderColor="gray.200"
+                    >
+                      {comment.body}
+                    </Text>
+
+                    {/* Actions du commentaire */}
+                    <HStack spacing={4} mt={2} px={1}>
+                      <HStack spacing={1} cursor="pointer">
+                        <Icon as={FaHeart} color="gray.400" boxSize={3} />
+                        <Text fontSize="xs" color="gray.500">0</Text>
+                      </HStack>
+                      <Text fontSize="xs" color="gray.500" cursor="pointer">
+                        Répondre
+                      </Text>
+                      <Icon as={FaEllipsisH} color="gray.400" boxSize={3} cursor="pointer" />
+                    </HStack>
+                  </Box>
+                </Flex>
+              ))}
+            </VStack>
+            <div ref={commentsEndRef} />
+          </Box>
+        )}
+      </Box>
+
+      {/* Input moderne en bas - CORRECTIONS APPLIQUÉES */}
+      <Box 
+        p={4} 
+        borderTop="1px solid" 
+        borderColor="gray.100"
+        bg="white"
+        position="sticky"
+        bottom={0}
+        onClick={(e) => e.stopPropagation()} // Empêche la fermeture
+      >
+        <form onSubmit={submitComment}>
+          <InputGroup>
+            <Input
+              ref={commentInputRef}
+              placeholder="Écrivez un commentaire..."
+              value={commentText}
+              onChange={handleCommentInputChange}
+              onKeyPress={handleKeyPress}
+              onMouseDown={handleInputMouseDown} // Empêche la fermeture
+              onClick={handleInputClick} // Empêche la fermeture
+              // Désactive les comportements par défaut qui pourraient fermer le drawer
+              onBlur={(e) => {
+                // Empêche le comportement de fermeture automatique
+                e.preventDefault()
+              }}
+            />
+            <InputRightElement>
+              <IconButton
+                aria-label="Envoyer"
+                icon={<FaPaperPlane />}
+                type="submit"
+                isDisabled={!commentText.trim()}
+                onClick={(e) => {
+                  e.stopPropagation() // Important : empêche la propagation
+                }}
+              />
+            </InputRightElement>
+          </InputGroup>
+        </form>
+        
+        {/* Indicateur de caractères */}
+        {commentText.length > 0 && (
+          <Text fontSize="xs" color="gray.500" textAlign="right" mt={2}>
+            {commentText.length}/280
+          </Text>
+        )}
       </Box>
     </Box>
   )
@@ -428,19 +559,6 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
           onMouseEnter={() => !isMobile && setIsHover(true)}
           onMouseLeave={() => !isMobile && setIsHover(false)}
         >
-          {/* Gradient overlay */}
-          <Box
-            position="absolute"
-            top={0}
-            left={0}
-            right={0}
-            bottom={0}
-            background="linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.4) 100%)"
-            zIndex={1}
-            opacity={isHover ? 0.8 : 0.6}
-            transition="opacity 0.3s ease"
-          />
-
           {/* Video element */}
           <video
             ref={videoRef}
@@ -584,7 +702,7 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
             </Flex>
           </Flex>
 
-          {/* Actions bar mobile - Design amélioré */}
+          {/* Actions bar mobile */}
           <VStack
             position="absolute"
             right={3}
@@ -646,7 +764,7 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
               position="absolute"
               bottom={4}
               left={4}
-              right={20} /* Réduit pour laisser de la place aux actions */
+              right={20}
               zIndex={2}
             >
               <Text
@@ -696,15 +814,24 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
         )}
       </Box>
 
-      {/* Drawer des commentaires (Mobile) */}
+      {/* Drawer des commentaires avec corrections - CORRIGÉ */}
       <Drawer
         isOpen={commentsOpen}
         placement="bottom"
-        onClose={() => setCommentsOpen(false)}
-        size="full"
+        onClose={handleCloseDrawer}
+        size="md"
+        closeOnOverlayClick={true}
+        closeOnEsc={true}
       >
         <DrawerOverlay />
-        <DrawerContent borderTopRadius="2xl" height="85vh">
+        <DrawerContent 
+          borderTopRadius="2xl" 
+          height="65vh"
+          maxH="65vh"
+          boxShadow="0 -10px 30px rgba(0,0,0,0.1)"
+          // Empêche la fermeture lors des clics à l'intérieur
+          onClick={(e) => e.stopPropagation()}
+        >
           <CommentsSection />
         </DrawerContent>
       </Drawer>

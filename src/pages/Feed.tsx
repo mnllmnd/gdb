@@ -165,9 +165,10 @@ export default function Feed() {
                   <Text color="gray.600" textAlign="center">
                     Suivez des boutiques pour voir leurs produits ici.
                   </Text>
-                  <Button as={Link} to="/discover" colorScheme="brand">
-                    Découvrir des boutiques
+                  <Button as={Link} to="/products" colorScheme="brand">
+                    Découvrir des produits
                   </Button>
+
                 </VStack>
               </Center>
             ) : (
