@@ -38,7 +38,7 @@ export default function Feed() {
   const [stories, setStories] = React.useState<any[]>([])
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [activeStory, setActiveStory] = React.useState<Record<string, any> | null>(null)
-  const [activeTab, setActiveTab] = React.useState(0)
+  const [activeTab, setActiveTab] = React.useState(0) // Maintenant 0 = Reels, 1 = Personnalisé
 
   React.useEffect(() => {
     let mounted = true
@@ -93,30 +93,55 @@ export default function Feed() {
     <Box py={6} px={{ base: 3, md: 6 }}>
       <Heading size="lg" mb={4}>Fil d'actualité</Heading>
 
-      {/* Navigation Tabs */}
+      {/* Navigation Tabs - Reels en premier */}
       <Tabs 
         variant="enclosed" 
         colorScheme="brand" 
         mb={6}
         onChange={(index) => setActiveTab(index)}
+        defaultIndex={0} // Reels par défaut
       >
         <TabList>
-          <Tab>
-            <HStack spacing={2}>
-              <Icon as={FaUserFriends} />
-              <Text>Personnalisé</Text>
-            </HStack>
-          </Tab>
           <Tab>
             <HStack spacing={2}>
               <Icon as={FaPhotoVideo} />
               <Text>Reels</Text>
             </HStack>
           </Tab>
+          <Tab>
+            <HStack spacing={2}>
+              <Icon as={FaUserFriends} />
+              <Text>Personnalisé</Text>
+            </HStack>
+          </Tab>
         </TabList>
 
         <TabPanels>
-          {/* Tab 1: Fil personnalisé (Produits) */}
+          {/* Tab 1: Reels Section (MAINTENANT PREMIER ONGLET) */}
+          <TabPanel px={0}>
+            <Box mb={4}>
+              <Heading size="md" mb={4}>Reels populaires</Heading>
+              <Text color="gray.600" mb={6}>
+                Découvrez les vidéos tendance de nos créateurs
+              </Text>
+              
+              <ReelGrid limit={12} />
+              
+              <Center mt={8}>
+                <Button 
+                  as={Link} 
+                  to="/reels" 
+                  colorScheme="brand" 
+                  variant="outline"
+                  size="lg"
+                >
+                  Explorer tous les Reels
+                </Button>
+              </Center>
+            </Box>
+          </TabPanel>
+
+          {/* Tab 2: Fil personnalisé (Produits) */}
           <TabPanel px={0}>
             {/* Stories strip - seulement dans l'onglet Personnalisé */}
             {stories && stories.length > 0 && (
@@ -168,7 +193,6 @@ export default function Feed() {
                   <Button as={Link} to="/products" colorScheme="brand">
                     Découvrir des produits
                   </Button>
-
                 </VStack>
               </Center>
             ) : (
@@ -200,30 +224,6 @@ export default function Feed() {
                 )}
               </>
             )}
-          </TabPanel>
-
-          {/* Tab 2: Reels Section */}
-          <TabPanel px={0}>
-            <Box mb={4}>
-              <Heading size="md" mb={4}>Reels populaires</Heading>
-              <Text color="gray.600" mb={6}>
-                Découvrez les vidéos tendance de nos créateurs
-              </Text>
-              
-              <ReelGrid limit={12} />
-              
-              <Center mt={8}>
-                <Button 
-                  as={Link} 
-                  to="/reels" 
-                  colorScheme="brand" 
-                  variant="outline"
-                  size="lg"
-                >
-                  Explorer tous les Reels
-                </Button>
-              </Center>
-            </Box>
           </TabPanel>
         </TabPanels>
       </Tabs>
