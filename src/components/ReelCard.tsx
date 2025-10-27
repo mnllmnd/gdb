@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react'
-import { Box, HStack, Icon, Text, Badge, Flex, Image, VStack, useToast, Input, Button } from '@chakra-ui/react'
-import { FaHeart, FaRegHeart, FaComment, FaShoppingBag, FaPlay, FaPause } from 'react-icons/fa'
+import { Box, HStack, Icon, Text, Badge, Flex, Image, VStack, useToast, Input, Button, IconButton } from '@chakra-ui/react'
+import { FaHeart, FaRegHeart, FaComment, FaShoppingBag, FaPlay, FaPause, FaTrash } from 'react-icons/fa'
 import { FiMoreHorizontal } from 'react-icons/fi'
 import { getCurrentUser } from '../services/auth'
 import api from '../services/api'
@@ -164,6 +164,24 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
     console.log('Shop clicked for reel:', reel.id)
   }
 
+  const user = getCurrentUser()
+  const isOwner = user && String(user.id) === String(reel.uploader_id)
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!globalThis.confirm('Supprimer ce reel ? Cette action est irréversible.')) return
+    try {
+      const token = (globalThis as any)?.localStorage?.getItem?.('token')
+      await api.reels.delete(reel.id, token)
+      toast({ title: 'Reel supprimé', status: 'success' })
+      // Effet simple: recharger la page pour que la liste se mette à jour. On peut remplacer par un callback prop plus propre.
+      if (typeof window !== 'undefined') window.location.reload()
+    } catch (err: any) {
+      console.error('Failed to delete reel', err)
+      toast({ title: 'Erreur', description: err?.error || err?.message || 'Impossible de supprimer le reel', status: 'error' })
+    }
+  }
+
   return (
     <Box
       borderRadius="xl"
@@ -298,17 +316,32 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
             </Flex>
           )}
 
-          {/* Menu button */}
-          <Flex
-            bg="blackAlpha.600"
-            p={2}
-            borderRadius="full"
-            backdropFilter="blur(10px)"
-            border="1px solid"
-            borderColor="whiteAlpha.300"
-            _hover={{ bg: 'blackAlpha.800' }}
-          >
-            <Icon as={FiMoreHorizontal} color="white" boxSize={4} />
+          {/* Menu button + delete for owner */}
+          <Flex align="center" gap={2}>
+            <Flex
+              bg="blackAlpha.600"
+              p={2}
+              borderRadius="full"
+              backdropFilter="blur(10px)"
+              border="1px solid"
+              borderColor="whiteAlpha.300"
+              _hover={{ bg: 'blackAlpha.800' }}
+            >
+              <Icon as={FiMoreHorizontal} color="white" boxSize={4} />
+            </Flex>
+
+            {isOwner && (
+              <IconButton
+                aria-label="Supprimer le reel"
+                icon={<Icon as={FaTrash} color="white" />}
+                size="sm"
+                colorScheme="red"
+                variant="ghost"
+                onClick={handleDelete}
+                title="Supprimer"
+                _hover={{ bg: 'blackAlpha.800' }}
+              />
+            )}
           </Flex>
         </Flex>
 

@@ -2,59 +2,92 @@ import express from 'express'
 import { query } from '../db.js'
 import { authenticate, requireRole } from '../middleware/auth.js'
 import multer from 'multer'
-import { uploadReelStream } from '../cloudinary.js'
-
-// multer for handling multipart uploads (memoryStorage for streaming to Cloudinary)
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 30 * 1024 * 1024 } // 30 MB limit (adjust as needed)
-})
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import fs from 'node:fs'
 import { uploadReel } from '../cloudinary.js'
 import cache from '../cache.js'
 import reelCache from '../reel_cache.js'
+
+// Use diskStorage for large mobile videos (avoid buffering big files in memory)
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const uploadDir = path.join(__dirname, '..', '..', 'uploads', 'reels')
+try { fs.mkdirSync(uploadDir, { recursive: true }) } catch (e) { console.debug('create reels upload dir', e && e.message) }
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir)
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname)
+    const name = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`
+    cb(null, name)
+  }
+})
+
+// Increase limit to 100 MB and accept only video/* mimetypes
+const upload = multer({
+  storage,
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100 MB
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype || !file.mimetype.startsWith('video/')) return cb(new Error('Invalid file type'))
+    cb(null, true)
+  }
+})
 
 const router = express.Router()
 
 // POST /api/reels/upload
 // multipart/form-data expected with file field 'reel' and fields: product_id, caption, visibility
-router.post('/upload', authenticate, requireRole('seller'), upload.single('reel'), async (req, res) => {
-  try {
-    // Accept multipart: file field 'reel' + product_id + caption + visibility
-    const file = req.file
-    const { product_id, caption, visibility } = req.body
-    const userId = req.user.id
-
-    if (!file) return res.status(400).json({ error: 'No file uploaded (expected field: reel)' })
-
-    // Validate product ownership
-    const p = await query('SELECT * FROM products WHERE id = $1', [product_id])
-    if (p.rowCount === 0) return res.status(404).json({ error: 'Product not found' })
-    if (String(p.rows[0].seller_id) !== String(userId)) return res.status(403).json({ error: 'Forbidden' })
-
-    // Optional: validate mimetype and duration client-side; here we check mimetype
-    if (!file.mimetype.startsWith('video/')) return res.status(400).json({ error: 'Invalid file type' })
-
-    // Stream buffer to Cloudinary
-    const uploadRes = await uploadReelStream({ buffer: file.buffer }, { folder: `reels/${product_id}` })
-
-    // store metadata
-    const r = await query(
-      `INSERT INTO product_reels (product_id, user_id, cloudinary_public_id, cloudinary_url, caption, duration_seconds, visibility)
-       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
-      [product_id, userId, uploadRes.public_id, uploadRes.secure_url, caption || null, Math.floor(uploadRes.duration) || null, visibility || 'public']
-    )
-
-    try {
-      const { query: dbq } = await import('../db.js')
-      cache.refresh(dbq).catch(e => console.warn('Cache refresh (post-upload) failed', e && e.message))
-    } catch (err) {
-      console.warn('Cache refresh (import) failed', err && err.message)
+router.post('/upload', authenticate, requireRole('seller'), (req, res) => {
+  // Use the upload.single wrapper so we can capture multer errors and handle disk file cleanup
+  upload.single('reel')(req, res, async function (err) {
+    if (err) {
+      console.error('Multer upload error', err)
+      // Multer errors often have a code (e.g., 'LIMIT_FILE_SIZE')
+      if (err.code === 'LIMIT_FILE_SIZE') return res.status(400).json({ error: 'File too large' })
+      return res.status(400).json({ error: err.message || 'upload_error' })
     }
-    res.json({ reel: r.rows[0] })
-  } catch (err) {
-    console.error('Upload reel failed', err)
-    res.status(500).json({ error: 'Upload failed' })
-  }
+    try {
+      // Accept multipart: file field 'reel' + product_id + caption + visibility
+      const file = req.file
+      const { product_id, caption, visibility } = req.body
+      const userId = req.user.id
+
+      if (!file) return res.status(400).json({ error: 'No file uploaded (expected field: reel)' })
+
+      // Validate product ownership
+      const p = await query('SELECT * FROM products WHERE id = $1', [product_id])
+      if (p.rowCount === 0) return res.status(404).json({ error: 'Product not found' })
+      if (String(p.rows[0].seller_id) !== String(userId)) return res.status(403).json({ error: 'Forbidden' })
+
+      // Stream local file path to Cloudinary (uploadReel accepts paths)
+      const localPath = file.path
+      const uploadRes = await uploadReel(localPath, { folder: `reels/${product_id}` })
+
+      // remove local file
+      try { fs.unlinkSync(localPath) } catch (error_) { console.debug('failed to remove local upload', error_) }
+
+      // store metadata
+      const r = await query(
+        `INSERT INTO product_reels (product_id, user_id, cloudinary_public_id, cloudinary_url, caption, duration_seconds, visibility)
+         VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
+        [product_id, userId, uploadRes.public_id, uploadRes.secure_url, caption || null, Math.floor(uploadRes.duration) || null, visibility || 'public']
+      )
+
+      try {
+        const { query: dbq } = await import('../db.js')
+        cache.refresh(dbq).catch(e => console.warn('Cache refresh (post-upload) failed', e && e.message))
+      } catch (err2) {
+        console.warn('Cache refresh (import) failed', err2 && err2.message)
+      }
+      res.json({ reel: r.rows[0] })
+    } catch (err2) {
+      console.error('Upload reel failed', err2)
+      res.status(500).json({ error: 'Upload failed' })
+    }
+  })
 })
 
 // GET /api/reels?product_id=&page=&limit=

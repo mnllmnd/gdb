@@ -98,9 +98,7 @@ export default function ReelUploadForm({ onSuccess, onClose }: Props) {
           accept="video/*,video/quicktime,.mov"
           onChange={(e: any) => setFile(e.target.files?.[0] ?? null)}
         />
-        <Text fontSize="sm" color="gray.600" mt={2}>
-          Formats supportés : mp4, mov (captures iPhone), webm — taille max 30 MB.
-        </Text>
+      
       </FormControl>
 
       <FormControl mb={3} isRequired>
