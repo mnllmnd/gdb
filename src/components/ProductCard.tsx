@@ -83,16 +83,17 @@ export default function ProductCard({
   const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure()
   
   // ✅ Taille modale adaptative pour mobile
+  // Use a smaller modal on mobile so it doesn't take the whole screen.
   const modalSize = useBreakpointValue({ 
-    base: 'full', 
-    sm: '95%', 
+    base: 'sm',
+    sm: 'sm',
     md: 'xl',
     lg: '2xl'
   })
   
-  // ✅ Hauteur max pour mobile
+  // ✅ Hauteur max pour mobile (keep some gap from top/bottom)
   const modalMaxHeight = useBreakpointValue({
-    base: '90vh',
+    base: '80vh',
     md: 'auto'
   })
 
@@ -439,7 +440,18 @@ export default function ProductCard({
                 {title}
               </Text>
             </ModalHeader>
-            <ModalCloseButton size="lg" />
+            {/* Prominent close control on mobile: fixed so user can always escape */}
+            <ModalCloseButton 
+              size="lg"
+              zIndex={50}
+              // fixed position on small screens, normal on larger
+              position={{ base: 'fixed', md: 'absolute' }}
+              top={{ base: 3, md: undefined }}
+              right={{ base: 3, md: undefined }}
+              bg={{ base: 'blackAlpha.700', md: 'transparent' }}
+              color={{ base: 'white', md: undefined }}
+              _hover={{ bg: { base: 'blackAlpha.800', md: undefined } }}
+            />
             <ModalBody pb={6}>
               <VStack spacing={4} align="stretch">
                 {/* Image */}
