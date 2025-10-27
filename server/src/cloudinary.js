@@ -2,10 +2,24 @@ import cloudinaryModule from 'cloudinary'
 const cloudinary = cloudinaryModule.v2 || cloudinaryModule
 
 // configure via CLOUDINARY_URL or environment vars
+// Accept several common env var name variants to be robust when deploying (Render / .env files).
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || process.env.Cloudinary_Cloud_Name || process.env.Cloudinary_CloudName || process.env.CLOUDINARY_CLOUDNAME || process.env.Cloudinary_Cloudname
+const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY || process.env.Cloudinary_API_Key || process.env.CloudinaryApiKey || process.env.CLOUDINARY_APIKEY || process.env.Cloudinary_Api_Key
+const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || process.env.Cloudinary_API_Secret || process.env.CloudinaryApiSecret || process.env.CLOUDINARY_APISECRET || process.env.Cloudinary_Api_Secret
+
+if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
+  // Helpful warning in logs to make debugging on Render easier
+  console.warn('Cloudinary environment variables missing or incomplete. Expected env vars (one of):', {
+    CLOUDINARY_CLOUD_NAME: !!CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY: !!CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET: !!CLOUDINARY_API_SECRET,
+  })
+}
+
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: CLOUDINARY_CLOUD_NAME,
+  api_key: CLOUDINARY_API_KEY,
+  api_secret: CLOUDINARY_API_SECRET,
   secure: true,
 })
 

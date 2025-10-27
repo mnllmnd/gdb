@@ -13,8 +13,8 @@ services:
       - key: NODE_ENV
         value: production
     # Note: don't store secrets inside render.yaml in plaintext; set them in the Render dashboard
-    # Example env vars to set in the Render dashboard for this service:
-    # DATABASE_URL, JWT_SECRET, Cloudinary_API_Key, Cloudinary_API_Secret, Cloudinary_Cloud_Name
+  # Example env vars to set in the Render dashboard for this service:
+  # DATABASE_URL, JWT_SECRET, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET, CLOUDINARY_CLOUD_NAME
 
   - type: static
     name: marketplace-frontend
