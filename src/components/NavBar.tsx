@@ -48,8 +48,6 @@ export default function NavBar() {
   const [searchQuery, setSearchQuery] = useState('')
   
   // Couleurs harmonieuses
-  // Le header doit utiliser la couleur demandée (#D1B7A1) en mode clair.
-  // En mode sombre on conserve le gris foncé par défaut.
   const navBg = useColorModeValue('#D1B7A1', 'gray.900')
   const navBorder = useColorModeValue('gray.100', 'gray.700')
   const textColor = useColorModeValue('gray.800', 'white')
@@ -125,6 +123,18 @@ export default function NavBar() {
     return () => { mounted = false }
   }, [user, toast])
 
+  const handleLogout = () => {
+    signOut()
+    setUser(null)
+    navigate('/login')
+    toast({
+      title: "À bientôt !",
+      description: "Vous avez été déconnecté avec succès",
+      status: "info",
+      duration: 3000,
+    })
+  }
+
   return (
     <Box
       as="nav"
@@ -136,7 +146,7 @@ export default function NavBar() {
       py={3}
       position="sticky"
       top={0}
-      zIndex={1400} // Z-index très élevé pour la navbar
+      zIndex={1400}
       backdropFilter="saturate(180%) blur(10px)"
       transition="all 0.3s ease"
     >
@@ -155,6 +165,7 @@ export default function NavBar() {
               className="nav-hamburger"
               color={textColor}
               variant="ghost"
+              _hover={{ bg: hoverBg }}
             />
             <Spacer />
             <SearchBar
@@ -169,10 +180,15 @@ export default function NavBar() {
                 aria-label="Panier"
                 icon={<span style={{ fontSize: 20 }}>🛒</span>}
                 bg="whiteAlpha.900"
-                _hover={{ bg: 'whiteAlpha.800', transform: 'scale(1.05)' }}
+                _hover={{ 
+                  bg: 'whiteAlpha.800', 
+                  transform: 'scale(1.05)',
+                  boxShadow: 'md'
+                }}
                 color={textColor}
                 borderRadius="full"
                 boxShadow="sm"
+                transition="all 0.2s ease"
               />
               {cartCount > 0 && (
                 <Box
@@ -187,7 +203,7 @@ export default function NavBar() {
                   fontSize="xs"
                   fontWeight="bold"
                   boxShadow="sm"
-                  zIndex={1500} // Au-dessus de tout
+                  zIndex={1500}
                 >
                   {cartCount}
                 </Box>
@@ -198,7 +214,14 @@ export default function NavBar() {
           // Desktop layout
           <>
             <HStack spacing={4} align="center">
-              <Avatar size="sm" name="Sama Bitik" bg={brandColor} color="white" />
+              <Avatar 
+                size="sm" 
+                name="Sama Bitik" 
+                bg={brandColor} 
+                color="white" 
+                _hover={{ transform: 'scale(1.1)' }}
+                transition="transform 0.2s ease"
+              />
               <Heading size="md" color={textColor} fontWeight="800">Sama Bitik</Heading>
             </HStack>
 
@@ -213,7 +236,12 @@ export default function NavBar() {
                 size="md" 
                 leftIcon={<span>🏠</span>} 
                 color={textColor}
-                _hover={{ bg: hoverBg, color: brandColor }}
+                _hover={{ 
+                  bg: hoverBg, 
+                  color: brandColor,
+                  transform: 'translateY(-1px)'
+                }}
+                transition="all 0.2s ease"
               >
                 Accueil
               </Button>
@@ -224,7 +252,12 @@ export default function NavBar() {
                 size="md" 
                 leftIcon={<span>🛍️</span>} 
                 color={textColor}
-                _hover={{ bg: hoverBg, color: brandColor }}
+                _hover={{ 
+                  bg: hoverBg, 
+                  color: brandColor,
+                  transform: 'translateY(-1px)'
+                }}
+                transition="all 0.2s ease"
               >
                 Produits
               </Button>
@@ -235,7 +268,12 @@ export default function NavBar() {
                 size="md"
                 leftIcon={<span>🔥</span>}
                 color={textColor}
-                _hover={{ bg: hoverBg, color: brandColor }}
+                _hover={{ 
+                  bg: hoverBg, 
+                  color: brandColor,
+                  transform: 'translateY(-1px)'
+                }}
+                transition="all 0.2s ease"
               >
                 Fil
               </Button>
@@ -263,9 +301,12 @@ export default function NavBar() {
                 className="nav-my-shop"
                 leftIcon={<span>🏪</span>}
                 _hover={{ 
-                  bg: 'brand.700',
+                  bg: 'brand.500',
                   transform: 'translateY(-2px)',
                   boxShadow: 'lg'
+                }}
+                _active={{
+                  transform: 'translateY(0)'
                 }}
                 transition="all 0.2s ease"
               >
@@ -280,7 +321,12 @@ export default function NavBar() {
                   ml={2} 
                   size="md" 
                   color={textColor}
-                  _hover={{ bg: hoverBg, color: brandColor }}
+                  _hover={{ 
+                    bg: hoverBg, 
+                    color: brandColor,
+                    transform: 'translateY(-1px)'
+                  }}
+                  transition="all 0.2s ease"
                 >
                   Admin
                 </Button>
@@ -315,35 +361,47 @@ export default function NavBar() {
                     fontWeight="bold"
                     boxShadow="sm"
                     animation="pulse 2s infinite"
-                    zIndex={1500} // Au-dessus de tout
+                    zIndex={1500}
                   >
                     {cartCount}
                   </Box>
                 )}
               </Box>
+              
+              {/* Bouton Reel pour desktop */}
+              <IconButton
+                as={RouterLink}
+                to="/reels?upload=1"
+                aria-label="Poster un Reel"
+                icon={<span style={{ fontSize: 18 }}>🎬</span>}
+                variant="ghost"
+                color={textColor}
+                size="md"
+                _hover={{ 
+                  bg: hoverBg, 
+                  color: brandColor,
+                  transform: 'scale(1.1)'
+                }}
+                transition="all 0.2s ease"
+              />
+
+              {/* Affichage conditionnel : soit menu utilisateur, soit bouton connexion */}
               {user ? (
                 <Menu placement="bottom-end">
-                 {/* Desktop: quick upload reel button near user menu */}
-                 <IconButton
-                   as={RouterLink}
-                   to="/reels?upload=1"
-                   aria-label="Poster un Reel"
-                   icon={<span style={{ fontSize: 18 }}>🎬</span>}
-                   variant="ghost"
-                   color={textColor}
-                   size="md"
-                   _hover={{ bg: hoverBg, color: brandColor }}
-                 />
                   <MenuButton
                     as={Button}
                     rightIcon={<ChevronDownIcon />}
                     variant="ghost"
                     color={textColor}
-                    _hover={{ bg: hoverBg }}
+                    _hover={{ 
+                      bg: hoverBg,
+                      transform: 'translateY(-1px)'
+                    }}
                     _expanded={{ bg: hoverBg }}
                     px={3}
                     py={2}
                     borderRadius="lg"
+                    transition="all 0.2s ease"
                   >
                     <HStack spacing={2}>
                       <Avatar 
@@ -352,6 +410,8 @@ export default function NavBar() {
                         bg={brandColor}
                         color="white"
                         fontSize="xs"
+                        _hover={{ transform: 'scale(1.1)' }}
+                        transition="transform 0.2s ease"
                       />
                       <VStack spacing={0} align="start">
                         <Text fontSize="sm" fontWeight="600">
@@ -365,7 +425,6 @@ export default function NavBar() {
                       </VStack>
                     </HStack>
                   </MenuButton>
-                  {/* Utilisation de Portal pour forcer le menu au-dessus de tout */}
                   <Portal>
                     <MenuList 
                       bg={menuBg} 
@@ -374,8 +433,7 @@ export default function NavBar() {
                       borderRadius="xl"
                       py={2}
                       minW="240px"
-                      zIndex={1600} // Z-index très élevé
-                      position="relative"
+                      zIndex={1600}
                     >
                       <MenuItem 
                         as={RouterLink} 
@@ -384,7 +442,6 @@ export default function NavBar() {
                         color={textColor}
                         _hover={{ bg: hoverBg }}
                         py={3}
-                        onClick={onClose}
                       >
                         Mon profil
                       </MenuItem>
@@ -395,7 +452,6 @@ export default function NavBar() {
                         color={textColor}
                         _hover={{ bg: hoverBg }}
                         py={3}
-                        onClick={onClose}
                       >
                         Mes commandes
                       </MenuItem>
@@ -407,24 +463,13 @@ export default function NavBar() {
                           color={textColor}
                           _hover={{ bg: hoverBg }}
                           py={3}
-                          onClick={onClose}
                         >
                           Ma boutique
                         </MenuItem>
                       )}
                       <MenuDivider borderColor={menuBorder} />
                       <MenuItem 
-                        onClick={() => { 
-                          signOut(); 
-                          setUser(null); 
-                          navigate('/login');
-                          toast({
-                            title: "À bientôt !",
-                            description: "Vous avez été déconnecté avec succès",
-                            status: "info",
-                            duration: 3000,
-                          })
-                        }} 
+                        onClick={handleLogout}
                         icon={<span style={{ fontSize: '16px' }}>👋</span>}
                         color={textColor}
                         _hover={{ bg: hoverBg }}
@@ -445,13 +490,16 @@ export default function NavBar() {
                   color="white"
                   leftIcon={<span>✨</span>}
                   _hover={{ 
-                    bg: 'brand.700',
+                    bg: 'brand.600',
                     transform: 'translateY(-2px)',
                     boxShadow: 'lg'
                   }}
+                  _active={{
+                    transform: 'translateY(0)'
+                  }}
                   transition="all 0.2s ease"
                 >
-                  Commencer
+                  Connexion
                 </Button>
               )}
             </HStack>
@@ -462,7 +510,7 @@ export default function NavBar() {
       {/* Mobile drawer */}
       <Drawer placement="left" onClose={onClose} isOpen={isOpen} size="xs">
         <DrawerOverlay />
-        <DrawerContent bg={menuBg} zIndex={1700}> {/* Z-index très élevé pour le drawer */}
+        <DrawerContent bg={menuBg} zIndex={1700}>
           <DrawerHeader borderBottomWidth="1px" borderColor={menuBorder}>
             <HStack spacing={2}>
               <Avatar size="sm" name="Sama Bitik" bg={brandColor} color="white" />
@@ -485,6 +533,7 @@ export default function NavBar() {
                 color={textColor}
                 _hover={{ bg: hoverBg }}
                 justifyContent="flex-start"
+                transition="all 0.2s ease"
               >
                 Accueil
               </Button>
@@ -498,25 +547,11 @@ export default function NavBar() {
                 color={textColor}
                 _hover={{ bg: hoverBg }}
                 justifyContent="flex-start"
+                transition="all 0.2s ease"
               >
                 Découvrir
               </Button>
-              {/*<Button
-                onClick={() => {
-                  onClose()
-                  // Open recommendations modal from sidebar
-                  setTimeout(() => recRef.current?.open?.(), 150)
-                }}
-                variant="ghost"
-                size="md"
-                leftIcon={<span>🔎</span>}
-                color={textColor}
-                _hover={{ bg: hoverBg }}
-                justifyContent="flex-start"
-              >
-                Tu cherches?
-              </Button>
-              */}
+
               {user && (
                 <Button 
                   as={RouterLink} 
@@ -528,6 +563,7 @@ export default function NavBar() {
                   color={textColor}
                   _hover={{ bg: hoverBg }}
                   justifyContent="flex-start"
+                  transition="all 0.2s ease"
                 >
                   Mes commandes
                 </Button>
@@ -543,28 +579,16 @@ export default function NavBar() {
                   color={textColor}
                   _hover={{ bg: hoverBg }}
                   justifyContent="flex-start"
+                  transition="all 0.2s ease"
                 >
                   Mon profil
                 </Button>
               )}
 
-              {/*<Button
-                as={RouterLink} 
-                to="/tutoriel" 
-                onClick={onClose} 
-                variant="ghost" 
-                size="md" 
-                leftIcon={<span>📚</span>} 
-                className="nav-tutoriel" 
-                color={textColor}
-                _hover={{ bg: hoverBg }}
-                justifyContent="flex-start"
-              >
-                Tutoriel
-              </Button>
-              */}
+              {/* Section authentification mobile */}
+              <Divider borderColor={menuBorder} my={3} />
 
-              {/* Auth actions (client) */}
+              {/* Affichage conditionnel mobile : soit déconnexion, soit connexion/inscription */}
               {user ? (
                 <>
                   <Box px={3} py={2}>
@@ -573,11 +597,55 @@ export default function NavBar() {
                       {user.display_name ?? user.phone}
                     </Text>
                   </Box>
-                 
+                  
+                  {/* Bouton déconnexion seulement */}
+                  <Button 
+                    size="md" 
+                    variant="ghost"
+                    color={textColor}
+                    _hover={{ bg: hoverBg }}
+                    onClick={() => { 
+                      onClose()
+                      handleLogout()
+                    }}
+                    justifyContent="flex-start"
+                    leftIcon={<span>👋</span>}
+                    transition="all 0.2s ease"
+                  >
+                    Se déconnecter
+                  </Button>
                 </>
               ) : (
                 <>
-                 
+                  {/* Boutons connexion/inscription seulement */}
+                  <Button 
+                    as={RouterLink} 
+                    to="/login" 
+                    onClick={onClose} 
+                    size="md" 
+                    variant="ghost"
+                    color={textColor}
+                    _hover={{ bg: hoverBg }}
+                    justifyContent="flex-start"
+                    leftIcon={<span>✨</span>}
+                    transition="all 0.2s ease"
+                  >
+                    Connexion
+                  </Button>
+                  <Button 
+                    as={RouterLink} 
+                    to="/signup" 
+                    onClick={onClose} 
+                    size="md" 
+                    variant="ghost"
+                    color={textColor}
+                    _hover={{ bg: hoverBg }}
+                    justifyContent="flex-start"
+                    leftIcon={<span>🚀</span>}
+                    transition="all 0.2s ease"
+                  >
+                    S'inscrire
+                  </Button>
                 </>
               )}
 
@@ -603,9 +671,9 @@ export default function NavBar() {
                 color="white"
                 size="md"
                 leftIcon={<span>🏪</span>}
-                className="nav-vendre"
-                _hover={{ bg: 'brand.700' }}
+                _hover={{ bg: 'brand.600' }}
                 justifyContent="flex-start"
+                transition="all 0.2s ease"
               >
                 Vendre
               </Button>
@@ -615,10 +683,12 @@ export default function NavBar() {
                   to="/seller/shop" 
                   onClick={onClose} 
                   size="sm" 
+                  bg="brand.500"
                   variant="ghost"
-                  color={textColor}
+                  color="white"
                   _hover={{ bg: hoverBg }}
                   justifyContent="flex-start"
+                  transition="all 0.2s ease"
                 >
                   Ma boutique
                 </Button>
@@ -633,15 +703,20 @@ export default function NavBar() {
                   color={textColor}
                   _hover={{ bg: hoverBg }}
                   justifyContent="flex-start"
+                  transition="all 0.2s ease"
                 >
                   Admin
                 </Button>
               )}
-               <Box px={3} py={2}>
+
+              <Divider borderColor={menuBorder} my={3} />
+
+              {/* Pour tous */}
+              <Box px={3} py={2}>
                 <Text fontSize="sm" color={subtleTextColor} fontWeight="600">Pour tous</Text>
               </Box>
 
-              {/* Mobile: quick upload reel button in sidebar/drawer */}
+              {/* Bouton Reel mobile */}
               {user ? (
                 <Button
                   as={RouterLink}
@@ -653,8 +728,9 @@ export default function NavBar() {
                   color={textColor}
                   _hover={{ bg: hoverBg }}
                   justifyContent="flex-start"
+                  transition="all 0.2s ease"
                 >
-                  Poster un Reel
+                  Reels
                 </Button>
               ) : (
                 <Button
@@ -665,53 +741,13 @@ export default function NavBar() {
                   color={textColor}
                   _hover={{ bg: hoverBg }}
                   justifyContent="flex-start"
+                  transition="all 0.2s ease"
                 >
                   Poster un Reel
                 </Button>
               )}
-
-               <Button 
-                    size="md" 
-                    variant="ghost"
-                    color={textColor}
-                    _hover={{ bg: hoverBg }}
-                    onClick={() => { 
-                      onClose(); 
-                      signOut(); 
-                      setUser(null); 
-                      navigate('/login') 
-                    }}
-                    justifyContent="flex-start"
-                  >
-                    Se déconnecter
-                  </Button>
-                   <Button 
-                    as={RouterLink} 
-                    to="/login" 
-                    onClick={onClose} 
-                    size="md" 
-                    variant="ghost"
-                    color={textColor}
-                    _hover={{ bg: hoverBg }}
-                    justifyContent="flex-start"
-                  >
-                    Connexion
-                  </Button>
-                  <Button 
-                    as={RouterLink} 
-                    to="/signup" 
-                    onClick={onClose} 
-                    size="md" 
-                    variant="ghost"
-                    color={textColor}
-                    _hover={{ bg: hoverBg }}
-                    justifyContent="flex-start"
-                  >
-                    S'inscrire
-                  </Button>
             </VStack>
           </DrawerBody>
-          {/* Recommendations modal mounted at navbar level so sidebar button can open it */}
           <Recommendations ref={recRef} hideTrigger />
           <DrawerFooter borderTopWidth="1px" borderColor={menuBorder}>
             <Text fontSize="sm" color={subtleTextColor}>Dalal ak jamm</Text>
