@@ -188,6 +188,8 @@ export default function ProductCard({
         height="100%"
         display="flex"
         flexDirection="column"
+        width={{ base: '107%' }}
+
       >
         {/* Image Section */}
         <Box 

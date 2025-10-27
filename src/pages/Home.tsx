@@ -501,21 +501,23 @@ export default function Home() {
     const toShow = categoryProducts.slice(0, visible)
 
     return (
-      <Box 
-        key={category.id} 
-        bg={sectionBg}
-        p={{ base: 4, md: 6 }} 
-        borderRadius="xl" 
-        mb={6}
-        border="1px solid"
-        borderColor={borderColor}
-        boxShadow="sm"
-        transition="all 0.3s ease"
-        _hover={{
-          boxShadow: 'md',
-          borderColor: 'brand.300'
-        }}
-      >
+      <Box
+  key={category.id}
+  bg={sectionBg}
+  p={{ base: 4, md: 6 }}
+  borderRadius="xl"
+  mb={6}
+  border="1px solid"
+  borderColor={borderColor}
+  boxShadow="sm"
+  transition="all 0.3s ease"
+  width="100%"
+  _hover={{
+    boxShadow: 'md',
+    borderColor: 'brand.300',
+  }}
+>
+
         <VStack spacing={4} align="stretch">
           <HStack justify="space-between" align="center">
             <Heading size="lg" color={textColor}>{category.name}</Heading>
