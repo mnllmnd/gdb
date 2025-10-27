@@ -22,20 +22,36 @@ router.get('/', async (req, res) => {
 
 // Create product (seller)
 router.post('/', authenticate, requireRole('seller'), async (req, res) => {
-  const { title, description, price, image_url, category_id } = req.body
+  const { title, description, price, image_url, category_id, quantity } = req.body
   try {
     // ensure the seller has a shop before allowing product creation
     const shopCheck = await query('SELECT id FROM shops WHERE owner_id = $1', [req.user.id])
     if (shopCheck.rowCount === 0) return res.status(400).json({ error: 'You must create a shop before adding products' })
+    // Validate required fields before sending to the DB to provide clearer errors and avoid DB NOT NULL failures
+    if (!title) return res.status(400).json({ error: 'title is required' })
+    // price must be provided and a finite number
+    if (!Number.isFinite(Number(price))) return res.status(400).json({ error: 'price is required and must be a number' })
+    const parsedPrice = Number(price)
+    const qty = Number.isFinite(Number(quantity)) ? Math.max(0, parseInt(Number(quantity), 10)) : 0
+
+    // Log incoming payload and final params for easier debugging when something goes wrong
+    console.debug('Creating product, payload:', { title, description, price, image_url, category_id, quantity, userId: req.user.id })
+    const params = [title, description || null, parsedPrice, image_url || null, category_id, req.user.id, qty]
+    console.debug('INSERT params:', params)
+
     const r = await query(
-      'INSERT INTO products (title, description, price, image_url, category_id, seller_id) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *',
-      [title, description || null, price, image_url || null, category_id, req.user.id]
+      'INSERT INTO products (title, description, price, image_url, category_id, seller_id, quantity) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *',
+      params
     )
     // Refresh cache in background (best-effort)
     res.json(r.rows[0])
     try { const { query: dbQuery } = await import('../db.js'); cache.refresh(dbQuery) } catch (e) { console.warn('Cache refresh after create failed', e.message) }
   } catch (err) {
-    console.error(err)
+    console.error('Create product failed', err)
+    // If this is a PG error about NOT NULL we can provide a clearer message
+    if (err && err.code === '23502' && err.column) {
+      return res.status(400).json({ error: `Missing required column: ${err.column}` })
+    }
     res.status(500).json({ error: 'Failed to create product' })
   }
 })
@@ -43,8 +59,8 @@ router.post('/', authenticate, requireRole('seller'), async (req, res) => {
 // Update product (seller or admin)
 router.put('/:id', authenticate, async (req, res) => {
   const { id } = req.params
-  // include category_id which was missing and caused a ReferenceError
-  const { title, description, price, image_url, category_id } = req.body
+  // include category_id and quantity
+  const { title, description, price, image_url, category_id, quantity } = req.body
   try {
     // check owner
     const product = await query('SELECT * FROM products WHERE id = $1', [id])
@@ -52,14 +68,28 @@ router.put('/:id', authenticate, async (req, res) => {
     const p = product.rows[0]
     if (req.user.role !== 'admin' && p.seller_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' })
     // Use nullish coalescing so falsy values like 0 are preserved correctly
+    const qty = typeof quantity !== 'undefined' ? (Number.isFinite(Number(quantity)) ? Math.max(0, parseInt(Number(quantity), 10)) : p.quantity ?? 0) : p.quantity
+
+    // If the client provided a price, validate it (don't allow explicit null/invalid values to reach the DB)
+    let finalPrice = p.price
+    if (typeof price !== 'undefined') {
+      if (!Number.isFinite(Number(price))) return res.status(400).json({ error: 'price must be a number' })
+      finalPrice = Number(price)
+    }
+
+    const params = [title ?? p.title, description ?? p.description, finalPrice, image_url ?? p.image_url, category_id ?? p.category_id, qty, id]
+    console.debug('UPDATE params:', params)
     const updated = await query(
-      'UPDATE products SET title=$1, description=$2, price=$3, image_url=$4, category_id=$5 WHERE id=$6 RETURNING *',
-      [title ?? p.title, description ?? p.description, price ?? p.price, image_url ?? p.image_url, category_id ?? p.category_id, id]
+      'UPDATE products SET title=$1, description=$2, price=$3, image_url=$4, category_id=$5, quantity=$6 WHERE id=$7 RETURNING *',
+      params
     )
     res.json(updated.rows[0])
     try { const { query: dbQuery } = await import('../db.js'); cache.refresh(dbQuery) } catch (e) { console.warn('Cache refresh after update failed', e.message) }
   } catch (err) {
-    console.error(err)
+    console.error('Update product failed', err)
+    if (err && err.code === '23502' && err.column) {
+      return res.status(400).json({ error: `Missing required column: ${err.column}` })
+    }
     res.status(500).json({ error: 'Failed to update' })
   }
 })

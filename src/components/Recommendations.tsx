@@ -300,6 +300,7 @@ const Recommendations = forwardRef(({ hideTrigger = false }: Props, ref) => {
                               title={r.name}
                               price={r.price}
                               image_url={r.image || r.image_url}
+                              quantity={r.quantity ?? r.quantite ?? r.stock ?? r.amount_available}
                             />
                           </Box>
                         ))}

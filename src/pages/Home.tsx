@@ -349,6 +349,13 @@ export default function Home() {
                       description={product.description || ''}
                       price={product.price ?? product.amount}
                       image_url={product.image_url ?? product.product_image}
+                      quantity={Number( 
+                        product.quantity ??
+                        product.quantite ??
+                        product.stock ??
+                        product.amount_available ??
+                        0
+                      )}
                       height={cardHeight}
                       shopId={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]) )?.id || product.shop_id || product.seller_id}
                       shopName={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.name}
@@ -393,6 +400,13 @@ export default function Home() {
                     description={product.description || ''}
                     price={product.price ?? product.amount}
                     image_url={product.image_url ?? product.product_image}
+                    quantity={Number(
+                      product.quantity ??
+                      product.quantite ??
+                      product.stock ??
+                      product.amount_available ??
+                      0
+                    )}
                     height={cardHeight}
                     shopId={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]) )?.id || product.shop_id || product.seller_id}
                     shopName={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.name}
@@ -528,6 +542,14 @@ export default function Home() {
                     description={product.description || ''}
                     price={product.price ?? product.amount}
                     image_url={product.image_url ?? product.product_image}
+                    quantity={Number(
+                          product.quantity ??
+                          product.quantite ??
+                          product.stock ??
+                          product.amount_available ??
+                          0
+                        )}
+
                     height={cardHeight}
                           shopId={shop?.id || product.shop_id || product.seller_id}
                           shopName={shop?.name}

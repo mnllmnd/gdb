@@ -58,10 +58,26 @@ export default function ProductView() {
       <Box mb={4}>
         <Text fontSize="xl" fontWeight="700">{Math.floor(product.price)} FCFA</Text>
       </Box>
+      {/* Stock detail */}
+      <Box mb={4}>
+        {typeof product.quantity !== 'undefined' && product.quantity !== null ? (
+          product.quantity > 0 ? (
+            <Text color="green.600" fontWeight="600">En stock : {product.quantity} unité(s) disponibles</Text>
+          ) : (
+            <Text color="red.500" fontWeight="700">Rupture de stock</Text>
+          )
+        ) : null}
+      </Box>
       <Box mb={6}>
         <Text>{product.description}</Text>
       </Box>
-      <ProductCard id={String(product.id)} title={product.title || product.name} price={product.price ?? product.amount} image_url={product.image_url ?? product.product_image} />
+      <ProductCard
+        id={String(product.id)}
+        title={product.title || product.name}
+        price={product.price ?? product.amount}
+        image_url={product.image_url ?? product.product_image}
+        quantity={product.quantity ?? product.quantite ?? product.stock ?? product.amount_available}
+      />
     </Container>
   )
 }

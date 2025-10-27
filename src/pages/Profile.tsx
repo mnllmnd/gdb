@@ -132,7 +132,8 @@ export default function ProfilePage() {
                   id={String(p.id)}
                   title={p.title || p.name || ''}
                   price={p.price}
-                  image_url={p.image_url ?? p.product_image}
+                    image_url={p.image_url ?? p.product_image}
+                    quantity={p.quantity ?? p.quantite ?? p.stock ?? p.amount_available}
                   shopId={p.shop_id || p.seller_id}
                 />
               </Box>

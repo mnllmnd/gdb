@@ -98,6 +98,7 @@ export default function Feed() {
                 price={p.price ?? p.amount}
                 image_url={p.image_url ?? p.product_image}
                 shopId={p.shop_id || p.seller_id || p.shopId}
+                quantity={p.quantity ?? p.quantite ?? p.stock ?? p.amount_available}
                 shopName={p.shop_name}
                 shopDomain={p.shop_domain}
               />

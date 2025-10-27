@@ -36,6 +36,7 @@ export default function ProductEditor() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState<number | undefined>(undefined)
+  const [quantity, setQuantity] = useState<number | undefined>(0)
   const [file, setFile] = useState<File | null>(null)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -62,6 +63,7 @@ export default function ProductEditor() {
           setPrice(p.price)
           setImageUrl(p.image_url || p.image || null)
           setSelectedCategory(p.category_id)
+          setQuantity(typeof p.quantity !== 'undefined' && p.quantity !== null ? Number(p.quantity) : 0)
         }
       })
       .catch(() => {})
@@ -185,6 +187,8 @@ export default function ProductEditor() {
         price: typeof price === 'number' ? price : (price ? Number(price) : null),
         category_id: selectedCategory,
       }
+      // include quantity if provided
+      if (typeof quantity !== 'undefined' && quantity !== null) payload.quantity = Number(quantity)
       if (image_url) payload.image_url = image_url
 
       if (id) {
@@ -313,6 +317,27 @@ export default function ProductEditor() {
                   boxShadow: '0 0 0 1px blue.500'
                 }}
                 placeholder="5000"
+              />
+            </NumberInput>
+          </FormControl>
+
+          <FormControl>
+            <FormLabel color={labelColor} fontWeight="600" fontSize="sm" mb={2}>
+              Quantité disponible
+            </FormLabel>
+            <NumberInput min={0} value={quantity} onChange={(v) => setQuantity(Number(v) || 0)}>
+              <NumberInputField
+                bg="white"
+                color="gray.800"
+                borderRadius="lg"
+                border="2px solid"
+                borderColor={borderColor}
+                _hover={{ borderColor: 'gray.300' }}
+                _focus={{
+                  borderColor: 'blue.500',
+                  boxShadow: '0 0 0 1px blue.500'
+                }}
+                placeholder="0"
               />
             </NumberInput>
           </FormControl>
