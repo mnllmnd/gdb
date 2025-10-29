@@ -10,6 +10,9 @@ import {
   Button,
   useToast,
   Text,
+  Progress,
+  HStack,
+  Spinner,
 } from '@chakra-ui/react'
 import api from '../services/api'
 import { getCurrentUser } from '../services/auth'
@@ -27,6 +30,8 @@ export default function ReelUploadForm({ onSuccess, onClose }: Props) {
   const [caption, setCaption] = useState('')
   const [visibility, setVisibility] = useState('public')
   const [loading, setLoading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<{ loaded: number; total?: number; percent?: number } | null>(null)
+  const [uploadController, setUploadController] = useState<AbortController | null>(null)
   const toast = useToast()
   const navigate = useNavigate()
 
@@ -63,14 +68,31 @@ export default function ReelUploadForm({ onSuccess, onClose }: Props) {
     }
 
     setLoading(true)
+    setUploadProgress({ loaded: 0 })
+    const controller = new AbortController()
+    setUploadController(controller)
     try {
       const token = globalThis.localStorage?.getItem('token') ?? undefined
-      await api.reels.uploadFile(file, { product_id: productId, caption, visibility }, token)
+      await api.reels.uploadFile(
+        file,
+        { product_id: productId, caption, visibility },
+        token,
+        (progress) => {
+          // progress = { loaded, total?, percent? }
+          setUploadProgress(progress as any)
+        },
+        controller.signal
+      )
       toast({ title: 'Reel publié', status: 'success' })
       onSuccess && onSuccess()
       onClose && onClose()
     } catch (err: any) {
       console.error('Upload failed', err)
+      // detect abort
+      const msg = String(err?.message || err)
+      if (err && (err.name === 'CanceledError' || err.code === 'ERR_CANCELED' || /cancel/i.test(msg))) {
+        toast({ title: 'Téléversement annulé', status: 'info' })
+      }
       const message = err && (err.error || err.message || String(err))
       if (message === 'Forbidden' || /forbid/i.test(String(message))) {
         toast({ title: 'Interdit', description: "Vous n'êtes pas autorisé à publier pour ce produit (propriétaire requis)", status: 'error', duration: 6000 })
@@ -81,6 +103,8 @@ export default function ReelUploadForm({ onSuccess, onClose }: Props) {
       }
     } finally {
       setLoading(false)
+      setUploadProgress(null)
+      setUploadController(null)
     }
   }
 
@@ -100,6 +124,27 @@ export default function ReelUploadForm({ onSuccess, onClose }: Props) {
         />
       
       </FormControl>
+
+      {uploadProgress && (
+        <Box mb={3}>
+          <HStack spacing={3} alignItems="center">
+            {uploadProgress.percent != null ? (
+              <Text fontSize="sm">{uploadProgress.percent}%</Text>
+            ) : (
+              <HStack>
+                <Spinner size="sm" />
+                <Text fontSize="sm">Téléversement en cours</Text>
+              </HStack>
+            )}
+            {uploadProgress.total ? (
+              <Text fontSize="xs" color="gray.500">{(uploadProgress.loaded / (1024 * 1024)).toFixed(2)} / {(uploadProgress.total / (1024 * 1024)).toFixed(2)} MB</Text>
+            ) : (
+              <Text fontSize="xs" color="gray.500">{(uploadProgress.loaded / (1024 * 1024)).toFixed(2)} MB</Text>
+            )}
+          </HStack>
+          <Progress mt={2} value={uploadProgress.percent ?? undefined} isIndeterminate={uploadProgress.percent == null} size="sm" />
+        </Box>
+      )}
 
       <FormControl mb={3} isRequired>
         <FormLabel>Produit</FormLabel>
@@ -121,7 +166,18 @@ export default function ReelUploadForm({ onSuccess, onClose }: Props) {
         </Select>
       </FormControl>
 
-      <Button type="submit" colorScheme="teal" isLoading={loading} isDisabled={products.length === 0}>Publier</Button>
+      <HStack spacing={3}>
+        <Button type="submit" colorScheme="teal" isLoading={loading} isDisabled={products.length === 0}>Publier</Button>
+        {uploadController && (
+          <Button variant="ghost" colorScheme="red" onClick={() => {
+            uploadController.abort()
+            setLoading(false)
+            setUploadProgress(null)
+            setUploadController(null)
+            toast({ title: 'Annulé', status: 'info' })
+          }}>Annuler</Button>
+        )}
+      </HStack>
     </Box>
   )
 }

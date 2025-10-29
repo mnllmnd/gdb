@@ -1,3 +1,5 @@
+import axios from 'axios'
+
 // Normalize the API base so values like ':4000/api' (missing host/protocol)
 // become a valid absolute URL (http://localhost:4000/api). Also remove
 // an accidental trailing slash to keep concatenation predictable.
@@ -73,15 +75,65 @@ export const api = {
     unlike: (id: string, token?: string) => request(`/products/${id}/like`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
   },
   uploads: {
-    uploadFile: async (file: File, token?: string) => {
+  // uploadFile supports two call signatures for backward compatibility:
+  // 1) uploadFile(file: File, token?: string)
+  // 2) uploadFile(file: File, fields?: Record<string, any>, token?: string, onProgress?: (progress: {loaded:number, total?:number, percent?:number}) => void)
+  // The 2nd signature adds a progress callback and arbitrary form fields. The callback receives
+  // an object with loaded bytes, optional total bytes, and optional percent (0..100).
+  uploadFile: async (file: File, arg2?: any, arg3?: any, arg4?: any) => {
+      // normalize arguments
+      let fields: Record<string, any> = {}
+      let token: string | undefined
+  let onProgress: ((progress: { loaded: number; total?: number; percent?: number }) => void) | undefined
+  let signal: AbortSignal | undefined
+
+      if (typeof arg2 === 'string' || arg2 === undefined) {
+        // signature (file, token?, onProgress?) OR (file, token)
+        token = arg2
+        onProgress = arg3
+      } else {
+        // signature (file, fields, token?, onProgress?)
+        fields = arg2 || {}
+        token = arg3
+        onProgress = arg4
+      }
+
+      // detect AbortSignal passed in any arg position (arg2/arg3/arg4)
+      const maybeSignals = [arg2, arg3, arg4]
+      for (const a of maybeSignals) {
+        if (a && typeof a === 'object' && typeof (a as AbortSignal).aborted === 'boolean') {
+          signal = a as AbortSignal
+          break
+        }
+      }
+
       const form = new FormData()
       form.append('file', file)
-      // prefer explicit token param, otherwise fall back to localStorage
+      Object.entries(fields || {}).forEach(([k, v]) => {
+        if (v !== undefined && v !== null) form.append(k, String(v))
+      })
+
       const tokenVal = token ?? ((globalThis as any)?.localStorage?.getItem?.('token'))
-      const headersVar: Record<string, string> | undefined = tokenVal ? { Authorization: `Bearer ${tokenVal}` } : undefined
-      const res = await fetch(API_BASE + '/uploads', { method: 'POST', body: form, headers: headersVar })
-      if (!res.ok) throw await res.json().catch(() => ({ error: 'upload_failed' }))
-      return res.json()
+      const headersVar: Record<string, string> = {}
+      if (tokenVal) headersVar['Authorization'] = `Bearer ${tokenVal}`
+
+      const res = await axios.post(API_BASE + '/uploads', form, {
+        headers: { ...headersVar, Accept: 'application/json' },
+        onUploadProgress: (evt: any) => {
+          if (typeof onProgress === 'function') {
+            const loaded = typeof evt.loaded === 'number' ? evt.loaded : 0
+            const total = typeof evt.total === 'number' ? evt.total : undefined
+            const percent = total ? Math.round((loaded * 100) / total) : undefined
+            onProgress({ loaded, total, percent })
+          }
+        },
+        signal,
+        // allow very large uploads
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+      })
+
+      return res.data
     },
   },
   orders: {
@@ -137,15 +189,32 @@ export const api = {
     comment: (id: string, body: any, token?: string) => request(`/reels/${encodeURIComponent(id)}/comments`, { method: 'POST', body: JSON.stringify(body), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     upload: (payload: any, token?: string) => request(`/reels/upload`, { method: 'POST', body: JSON.stringify(payload), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
   delete: (id: string, token?: string) => request(`/reels/${encodeURIComponent(id)}`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
-    uploadFile: async (file: File, fields: any = {}, token?: string) => {
+  // upload reel with optional progress callback
+  // onProgress receives { loaded, total?, percent? }
+  uploadFile: async (file: File, fields: any = {}, token?: string, onProgress?: (progress: { loaded: number; total?: number; percent?: number }) => void, signal?: AbortSignal) => {
       const form = new FormData()
       form.append('reel', file)
       Object.entries(fields || {}).forEach(([k, v]) => { if (v !== undefined && v !== null) form.append(k, String(v)) })
       const tokenVal = token ?? ((globalThis as any)?.localStorage?.getItem?.('token'))
-      const headersVar: Record<string, string> | undefined = tokenVal ? { Authorization: `Bearer ${tokenVal}` } : undefined
-      const res = await fetch(API_BASE + '/reels/upload', { method: 'POST', body: form, headers: headersVar })
-      if (!res.ok) throw await res.json().catch(() => ({ error: 'upload_failed' }))
-      return res.json()
+      const headersVar: Record<string, string> = {}
+      if (tokenVal) headersVar['Authorization'] = `Bearer ${tokenVal}`
+
+      const res = await axios.post(API_BASE + '/reels/upload', form, {
+        headers: { ...headersVar, Accept: 'application/json' },
+        onUploadProgress: (evt: any) => {
+          if (typeof onProgress === 'function') {
+            const loaded = typeof evt.loaded === 'number' ? evt.loaded : 0
+            const total = typeof evt.total === 'number' ? evt.total : undefined
+            const percent = total ? Math.round((loaded * 100) / total) : undefined
+            onProgress({ loaded, total, percent })
+          }
+        },
+        signal,
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+      })
+
+      return res.data
     }
   },
   user: {
