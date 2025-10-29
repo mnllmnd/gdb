@@ -136,6 +136,23 @@ app.get('/api/nlp/health', async (req, res) => {
 // Servir les fichiers uploadés
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// If a frontend `dist` folder is present (built app), serve it and fallback to index.html
+const clientDist = path.join(__dirname, '../../dist')
+if (fs.existsSync(clientDist)) {
+  console.log('📦 Serving frontend from', clientDist)
+  app.use(express.static(clientDist))
+
+  // For any non-API request, send index.html so client-side router can handle the route
+  app.get('*', (req, res, next) => {
+    const url = req.originalUrl || req.url
+    // don't override API or uploads routes
+    if (url.startsWith('/api') || url.startsWith('/uploads')) return next()
+    res.sendFile(path.join(clientDist, 'index.html'), (err) => {
+      if (err) return next(err)
+    })
+  })
+}
+
 // Route de base
 app.get('/', (req, res) => res.json({ 
   ok: true, 
