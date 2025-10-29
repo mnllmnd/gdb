@@ -21,17 +21,27 @@ export default function ReelGrid({ productId, limit }: any) {
   React.useEffect(() => {
     // detect transition active: non-null -> null
     if (prevActiveRef.current && !active && lastActiveIdRef.current) {
-      try {
-        const el = document.getElementById(`reel-${lastActiveIdRef.current}`)
-        if (el) {
-          // center the reel in view
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      const attemptScroll = () => {
+        try {
+          const el = document.getElementById(`reel-${lastActiveIdRef.current}`)
+          if (el) {
+            // Use 'nearest' to avoid forcing center alignment which can cause odd jumps for items near
+            // the end of the document. If element isn't present yet (due to a reload), we'll retry once.
+            el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' })
+            // clear after successful scroll
+            lastActiveIdRef.current = null
+            return true
+          }
+        } catch (e) {
+          console.debug('Failed to scroll back to reel', e)
         }
-      } catch (e) {
-        console.debug('Failed to scroll back to reel', e)
+        return false
       }
-      // clear
-      lastActiveIdRef.current = null
+
+      // Try immediately; if not found, retry shortly to allow a parent reload to re-render items
+      if (!attemptScroll()) {
+        setTimeout(() => { attemptScroll() }, 220)
+      }
     }
     prevActiveRef.current = active
   }, [active])

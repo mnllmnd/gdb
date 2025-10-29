@@ -1,6 +1,6 @@
 import express from 'express'
 import { query } from '../db.js'
-import { authenticate, requireRole } from '../middleware/auth.js'
+import { authenticate, requireRole, maybeAuthenticate } from '../middleware/auth.js'
 import multer from 'multer'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -93,7 +93,7 @@ router.post('/upload', authenticate, requireRole('seller'), (req, res) => {
 // GET /api/reels?product_id=&page=&limit=
 // Public endpoint: returns reels for a product or personalized feed for authenticated users (followed shops),
 // otherwise returns a global recent reels feed.
-router.get('/', async (req, res) => {
+router.get('/', maybeAuthenticate, async (req, res) => {
   try {
     const productId = req.query.product_id
     const limit = Math.min(50, Number.parseInt(req.query.limit || '12', 10))
@@ -118,7 +118,20 @@ router.get('/', async (req, res) => {
           [productId, limit, offset]
         )
       const totalRes = await query('SELECT COUNT(*)::int AS count FROM product_reels WHERE product_id = $1 AND is_active = true', [productId])
-      return res.json({ items: r.rows, total: Number(totalRes.rows[0]?.count || 0), page, limit })
+      // If authenticated, annotate each row with whether the current user liked it
+      let items = r.rows
+      if (req.user && req.user.id && items.length > 0) {
+        try {
+          const ids = items.map(it => it.id)
+          const likedRes = await query('SELECT reel_id FROM reel_likes WHERE reel_id = ANY($1::uuid[]) AND user_id = $2', [ids, req.user.id])
+          const likedSet = new Set((likedRes.rows || []).map(rw => String(rw.reel_id)))
+          items = items.map(it => ({ ...it, user_has_liked: likedSet.has(String(it.id)) }))
+        } catch (e) {
+          console.warn('Failed to resolve user likes for reels list', e && e.message)
+        }
+      }
+
+      return res.json({ items, total: Number(totalRes.rows[0]?.count || 0), page, limit })
     }
 
     // If user authenticated, try to return reels from followed shops; otherwise return global recent reels
@@ -138,6 +151,19 @@ router.get('/', async (req, res) => {
       const cached = reelCache.getCache(cacheKey)
       if (cached) {
         res.setHeader('X-Cache', 'HIT')
+        // If we have an authenticated user, augment the cached items with per-user like flags
+        if (req.user && req.user.id && cached && Array.isArray(cached.items) && cached.items.length > 0) {
+          try {
+            const ids = cached.items.map(it => it.id)
+            const likedRes = await query('SELECT reel_id FROM reel_likes WHERE reel_id = ANY($1::uuid[]) AND user_id = $2', [ids, req.user.id])
+            const likedSet = new Set((likedRes.rows || []).map(rw => String(rw.reel_id)))
+            const items = cached.items.map(it => ({ ...it, user_has_liked: likedSet.has(String(it.id)) }))
+            return res.json({ ...cached, items, cached: true })
+          } catch (e) {
+            console.warn('Failed to augment cached reels with user likes', e && e.message)
+            return res.json({ ...cached, cached: true })
+          }
+        }
         return res.json({ ...cached, cached: true })
       }
 
@@ -166,7 +192,19 @@ router.get('/', async (req, res) => {
         [shopIds]
       )
 
-      const payload = { items: r.rows, total: Number(totalRes.rows[0]?.count || 0), page, limit }
+      let items = r.rows
+      if (req.user && req.user.id && items.length > 0) {
+        try {
+          const ids = items.map(it => it.id)
+          const likedRes = await query('SELECT reel_id FROM reel_likes WHERE reel_id = ANY($1::uuid[]) AND user_id = $2', [ids, req.user.id])
+          const likedSet = new Set((likedRes.rows || []).map(rw => String(rw.reel_id)))
+          items = items.map(it => ({ ...it, user_has_liked: likedSet.has(String(it.id)) }))
+        } catch (e) {
+          console.warn('Failed to resolve user likes for reels list', e && e.message)
+        }
+      }
+
+      const payload = { items, total: Number(totalRes.rows[0]?.count || 0), page, limit }
       try {
         reelCache.setCache(cacheKey, payload, 15 * 1000)
       } catch (e) {
@@ -194,7 +232,20 @@ router.get('/', async (req, res) => {
       )
 
     const totalRes = await query('SELECT COUNT(*)::int AS count FROM product_reels WHERE is_active = true')
-    return res.json({ items: r.rows, total: Number(totalRes.rows[0]?.count || 0), page, limit })
+    // For the global recent feed, also annotate with per-user like when possible
+    let items = r.rows
+    if (req.user && req.user.id && items.length > 0) {
+      try {
+        const ids = items.map(it => it.id)
+        const likedRes = await query('SELECT reel_id FROM reel_likes WHERE reel_id = ANY($1::uuid[]) AND user_id = $2', [ids, req.user.id])
+        const likedSet = new Set((likedRes.rows || []).map(rw => String(rw.reel_id)))
+        items = items.map(it => ({ ...it, user_has_liked: likedSet.has(String(it.id)) }))
+      } catch (e) {
+        console.warn('Failed to resolve user likes for reels list', e && e.message)
+      }
+    }
+
+    return res.json({ items, total: Number(totalRes.rows[0]?.count || 0), page, limit })
   } catch (err) {
     console.error('Failed to list reels', err)
     res.status(500).json({ error: 'Failed to list reels' })
@@ -202,7 +253,7 @@ router.get('/', async (req, res) => {
 })
 
 // GET /api/reels/:id (public)
-router.get('/:id', async (req, res) => {
+router.get('/:id', maybeAuthenticate, async (req, res) => {
   try {
     const { id } = req.params
     const r = await query(
@@ -218,7 +269,18 @@ router.get('/:id', async (req, res) => {
     const reel = r.rows[0]
     const commentsCountRes = await query('SELECT COUNT(*)::int AS count FROM reel_comments WHERE reel_id = $1 AND is_active = true', [id])
     const likesCountRes = await query('SELECT COUNT(*)::int AS count FROM reel_likes WHERE reel_id = $1', [id])
-    res.json({ reel, comments: Number(commentsCountRes.rows[0]?.count || 0), likes: Number(likesCountRes.rows[0]?.count || 0) })
+    // Determine whether the current user liked this reel
+    let user_has_liked = false
+    try {
+      if (req.user && req.user.id) {
+        const ul = await query('SELECT 1 FROM reel_likes WHERE reel_id = $1 AND user_id = $2', [id, req.user.id])
+        user_has_liked = ul.rowCount > 0
+      }
+    } catch (e) {
+      console.warn('Failed to resolve user_has_liked for reel', e && e.message)
+    }
+
+    res.json({ reel, comments: Number(commentsCountRes.rows[0]?.count || 0), likes: Number(likesCountRes.rows[0]?.count || 0), user_has_liked })
   } catch (err) {
     console.error('Failed to fetch reel', err)
     res.status(500).json({ error: 'Failed to fetch reel' })

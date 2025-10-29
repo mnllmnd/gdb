@@ -54,8 +54,15 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
   const [isMuted, setIsMuted] = useState(false)
   const [showPlayButton, setShowPlayButton] = useState(false)
   const [likesCount, setLikesCount] = useState(reel.likes_count || 0)
-  const [liked, setLiked] = useState(false)
+  const [liked, setLiked] = useState(Boolean((reel as any).user_has_liked || (reel as any).liked || false))
   const [commentsCount, setCommentsCount] = useState(reel.comments_count || 0)
+
+  // Keep local state synchronized when the reel prop changes (avoid overwrites on parent reload)
+  useEffect(() => {
+    setLikesCount(reel.likes_count || 0)
+    setCommentsCount(reel.comments_count || 0)
+    setLiked(Boolean((reel as any).user_has_liked || (reel as any).liked || false))
+  }, [reel.id])
   
   const toast = useToast()
   const isMobile = useBreakpointValue({ base: true, md: false })
@@ -166,6 +173,7 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
     ;(async () => {
       try {
         const res = await api.reels.like(reel.id)
+        console.debug('api.reels.like response for', reel.id, res)
         if (res && typeof res.liked !== 'undefined') setLiked(res.liked)
         if (res && typeof res.count !== 'undefined') setLikesCount(res.count)
       } catch (err) {
