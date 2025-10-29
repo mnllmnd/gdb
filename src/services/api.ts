@@ -62,6 +62,7 @@ export const api = {
   },
   products: {
     list: () => request('/products'),
+    get: (id: string, token?: string) => request(`/products/${encodeURIComponent(id)}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     getLikes: (id: string, token?: string) => request(`/products/${id}/likes`, { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     create: (payload: any, token?: string) =>
       request('/products', { method: 'POST', body: JSON.stringify(payload), headers: token ? { Authorization: `Bearer ${token}` } : {} }),

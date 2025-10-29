@@ -79,6 +79,12 @@ router.post('/upload', authenticate, requireRole('seller'), (req, res) => {
       try {
         const { query: dbq } = await import('../db.js')
         cache.refresh(dbq).catch(e => console.warn('Cache refresh (post-upload) failed', e && e.message))
+        // Invalidate reels-specific in-memory cache so newly uploaded reels are visible immediately
+        try {
+          reelCache.clearCache()
+        } catch (e) {
+          console.warn('Failed to clear reel cache (post-upload)', e && e.message)
+        }
       } catch (err2) {
         console.warn('Cache refresh (import) failed', err2 && err2.message)
       }

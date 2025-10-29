@@ -10,6 +10,15 @@ import {
   VStack, 
   useToast, 
   IconButton,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalCloseButton,
+  Button,
+  Spinner,
   useBreakpointValue,
   Avatar
 } from '@chakra-ui/react'
@@ -26,7 +35,10 @@ import {
 } from 'react-icons/fa'
 import { FiMoreHorizontal } from 'react-icons/fi'
 import { getCurrentUser } from '../services/auth'
-import api from '../services/api'
+import { useNavigate } from 'react-router-dom'
+import api, { API_BASE } from '../services/api'
+import { useDisclosure } from '@chakra-ui/react'
+import cart from '../utils/cart'
 
 interface ReelCardProps {
   reel: {
@@ -34,6 +46,8 @@ interface ReelCardProps {
     cloudinary_url: string
     caption?: string
     product_title?: string
+    product_id?: string
+    product_price?: number
     shop_name?: string
     uploader_name?: string
     uploader_id?: string
@@ -48,8 +62,12 @@ interface ReelCardProps {
 }
 
 export default function ReelCard({ reel, onOpen }: ReelCardProps) {
+  const navigate = useNavigate()
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isHover, setIsHover] = useState(false)
+  const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure()
+  const [productData, setProductData] = useState<any | null>(null)
+  const [loadingProduct, setLoadingProduct] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [showPlayButton, setShowPlayButton] = useState(false)
@@ -148,7 +166,31 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
     if (isMobile) {
       togglePlay(e)
     } else {
-      onOpen(reel)
+      openProductModal()
+    }
+  }
+
+  // Open modal and load product if available
+  const openProductModal = async (e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    if (reel.product_id) {
+      try {
+        setLoadingProduct(true)
+        // Use api wrapper to fetch product
+        const token = (globalThis as any)?.localStorage?.getItem?.('token') ?? undefined
+        const res = await api.products.get(String(reel.product_id), token)
+        setProductData(res)
+      } catch (err) {
+        console.error('Failed to load product for reel modal', err)
+        setProductData(null)
+      } finally {
+        setLoadingProduct(false)
+        onDetailOpen()
+      }
+    } else {
+      // no product, just open modal with caption
+      setProductData(null)
+      onDetailOpen()
     }
   }
 
@@ -186,7 +228,16 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
 
   const handleShop = (e: React.MouseEvent) => {
     e.stopPropagation()
-    console.log('Shop clicked for reel:', reel.id)
+    // Navigate to the product detail page when the shopping button is clicked
+    try {
+      if (reel.product_id) {
+        navigate(`/products/${encodeURIComponent(String(reel.product_id))}`, { state: { from: window.location.pathname } })
+        return
+      }
+    } catch (err) {
+      console.error('Failed to navigate to product page', err)
+    }
+    console.log('Shop clicked for reel (no product id):', reel.id)
   }
 
   const user = getCurrentUser()
@@ -293,6 +344,39 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
             />
           </Flex>
         )}
+
+          {/* Centre 'Voir' badge overlay */}
+          {(
+            isHover || !isMobile
+          ) && (
+            <Flex
+              position="absolute"
+              top={0}
+              left={0}
+              right={0}
+              bottom={0}
+              align="center"
+              justify="center"
+              zIndex={3}
+              pointerEvents="none"
+            >
+              <Badge
+                colorScheme="whiteAlpha"
+                bg="blackAlpha.600"
+                color="white"
+                px={3}
+                py={2}
+                cursor="pointer"
+                pointerEvents="auto"
+                onClick={(e) => { e.stopPropagation(); openProductModal() }}
+              >
+                <HStack spacing={1}>
+                  <Icon as={FaPlay} />
+                  <Text>Voir</Text>
+                </HStack>
+              </Badge>
+            </Flex>
+          )}
 
         {/* Top bar avec shop et menu */}
         <Flex
@@ -428,7 +512,7 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
             aria-label="Ajouter au panier"
             icon={<FaShoppingBag />}
             variant="ghost"
-            onClick={handleShop}
+            onClick={(e) => { e.stopPropagation(); openProductModal() }}
             size="lg"
             color="white"
             _hover={{ bg: 'blackAlpha.300' }}
@@ -438,12 +522,12 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
         {/* Caption mobile */}
         {isMobile && (
           <Box
-            position="absolute"
-            bottom={4}
-            left={4}
-            right={20}
-            zIndex={2}
-          >
+              position="absolute"
+              bottom={14}
+              left={4}
+              right={24}
+              zIndex={2}
+            >
             <Text
               color="white"
               fontSize="sm"
@@ -489,6 +573,97 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
           </HStack>
         </Box>
       )}
+
+      {/* Small modal view like ProductCard's "Voir" */}
+      <Modal isOpen={isDetailOpen} onClose={onDetailClose} size={{ base: 'sm', md: 'xl' }} isCentered>
+        <ModalOverlay bg="blackAlpha.600" />
+        <ModalContent borderRadius={{ base: 'xl', md: '2xl' }} maxW={{ base: '95vw', md: '720px' }}>
+          <ModalHeader pb={3}>
+            <Text fontSize="lg" fontWeight="bold" noOfLines={2}>{reel.product_title || reel.caption}</Text>
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={4}>
+            {loadingProduct ? (
+              <Flex width="100%" height="240px" align="center" justify="center"><Spinner size="xl" /></Flex>
+            ) : productData ? (
+              // Render product details directly: image, price, stock, description
+              <Flex direction={{ base: 'column', md: 'row' }} gap={4}>
+                <Box flex="0 0 40%" minW={{ base: '100%', md: '220px' }}>
+                  <Image
+                    src={productData.image_url || productData.image}
+                    alt={productData.title}
+                    width="100%"
+                    height={{ base: '220px', md: '240px' }}
+                    objectFit="cover"
+                    borderRadius="md"
+                    onError={(e:any) => { e.currentTarget.src = '' }}
+                  />
+                </Box>
+                <Box flex="1">
+                  <Text fontSize="lg" fontWeight="700">{productData.title}</Text>
+                  {typeof productData.price !== 'undefined' && (
+                    <Text mt={2} fontSize="xl" fontWeight="700" color="green.700">{Number(productData.price).toLocaleString('fr-FR')} FCFA</Text>
+                  )}
+                  {typeof productData.quantity !== 'undefined' && (
+                    <Badge mt={2} colorScheme={productData.quantity > 0 ? 'green' : 'red'}>
+                      {productData.quantity > 0 ? `En stock (${productData.quantity})` : 'Rupture de stock'}
+                    </Badge>
+                  )}
+
+                  {productData.description && (
+                    <Text mt={3} color="gray.600" fontSize="sm">{productData.description}</Text>
+                  )}
+
+                  {productData.shop_name && (
+                    <Text mt={3} fontSize="sm" color="gray.500">Boutique: {productData.shop_name}</Text>
+                  )}
+                </Box>
+              </Flex>
+            ) : (
+              // Fallback: simple product info from reel
+              <Box>
+                <Text fontSize="md" fontWeight="600">{reel.product_title || 'Produit'}</Text>
+                {typeof reel.product_price !== 'undefined' && (
+                  <Text mt={2} color="gray.600">{Number(reel.product_price).toLocaleString('fr-FR')} FCFA</Text>
+                )}
+                {reel.caption && <Text mt={3} color="gray.600" fontSize="sm">{reel.caption}</Text>}
+              </Box>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <HStack spacing={3} width="100%" justify="space-between">
+              <HStack spacing={2}>
+                <Button onClick={(e) => { e.stopPropagation(); handleLike(e as any) }} colorScheme={liked ? 'red' : 'gray'}>
+                  {liked ? '♥' : '♡'} {likesCount}
+                </Button>
+                <Button
+                  colorScheme="teal"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    try {
+                      const price = typeof productData?.price !== 'undefined' ? Number(productData.price) : null
+                      cart.add({
+                        id: productData?.id || String(reel.product_id || ''),
+                        title: productData?.title || reel.product_title || 'Produit',
+                        price,
+                        image: productData?.image_url ?? productData?.image ?? null,
+                      }, 1)
+                      toast({ title: 'Ajouté au panier 🛒', status: 'success', duration: 2000, position: 'top-right' })
+                    } catch (err) {
+                      console.error('Failed to add to cart', err)
+                      toast({ title: 'Erreur', description: 'Impossible d\'ajouter au panier', status: 'error' })
+                    }
+                  }}
+                  isDisabled={productData && typeof productData.quantity !== 'undefined' ? productData.quantity <= 0 : false}
+                >
+                  Ajouter au panier
+                </Button>
+              </HStack>
+              <Button variant="ghost" onClick={onDetailClose}>Fermer</Button>
+            </HStack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   )
 }

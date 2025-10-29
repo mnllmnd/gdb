@@ -20,6 +20,23 @@ router.get('/', async (req, res) => {
   }
 })
 
+// Get single product by id (public)
+router.get('/:id', async (req, res) => {
+  const { id } = req.params
+  try {
+    // Try cache first
+    const cached = cache.getProductById(id)
+    if (cached) return res.json(cached)
+
+    const product = await query('SELECT * FROM products WHERE id = $1', [id])
+    if (product.rowCount === 0) return res.status(404).json({ error: 'Not found' })
+    return res.json(product.rows[0])
+  } catch (err) {
+    console.error('Failed to get product', err)
+    res.status(500).json({ error: 'Failed to get product' })
+  }
+})
+
 // Create product (seller)
 router.post('/', authenticate, requireRole('seller'), async (req, res) => {
   const { title, description, price, image_url, category_id, quantity } = req.body
@@ -43,9 +60,15 @@ router.post('/', authenticate, requireRole('seller'), async (req, res) => {
       'INSERT INTO products (title, description, price, image_url, category_id, seller_id, quantity) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *',
       params
     )
-    // Refresh cache in background (best-effort)
+    // Refresh cache before responding so the new product is immediately visible to other users
+    try {
+      const { query: dbQuery } = await import('../db.js')
+      await cache.refresh(dbQuery)
+    } catch (e) {
+      console.warn('Cache refresh after create failed', e.message)
+      // fallthrough: still return the created product even if cache refresh failed
+    }
     res.json(r.rows[0])
-    try { const { query: dbQuery } = await import('../db.js'); cache.refresh(dbQuery) } catch (e) { console.warn('Cache refresh after create failed', e.message) }
   } catch (err) {
     console.error('Create product failed', err)
     // If this is a PG error about NOT NULL we can provide a clearer message
