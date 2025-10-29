@@ -204,6 +204,7 @@ export default function ReelCard({ reel, onOpen }: ReelCardProps) {
 
   return (
     <Box
+      id={`reel-${reel.id}`}
       borderRadius="xl"
       overflow="hidden"
       bg="black"

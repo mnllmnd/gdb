@@ -8,6 +8,33 @@ export default function ReelGrid({ productId, limit }: any) {
   // allow parent to pass a smaller limit for condensed sections (e.g. feed)
   const { items, loading, reload } = useReels({ productId, limit })
   const [active, setActive] = React.useState<any | null>(null)
+  const lastActiveIdRef = React.useRef<string | null>(null)
+  const prevActiveRef = React.useRef<any | null>(null)
+
+  // When opening the player, remember which reel was opened so we can restore scroll/focus on close
+  const openPlayer = (reel: any) => {
+    lastActiveIdRef.current = String(reel.id)
+    setActive(reel)
+  }
+
+  // After the player closes, scroll the previously opened reel back into view to avoid jumping to the first video
+  React.useEffect(() => {
+    // detect transition active: non-null -> null
+    if (prevActiveRef.current && !active && lastActiveIdRef.current) {
+      try {
+        const el = document.getElementById(`reel-${lastActiveIdRef.current}`)
+        if (el) {
+          // center the reel in view
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      } catch (e) {
+        console.debug('Failed to scroll back to reel', e)
+      }
+      // clear
+      lastActiveIdRef.current = null
+    }
+    prevActiveRef.current = active
+  }, [active])
 
   return (
     <Box>
@@ -16,7 +43,7 @@ export default function ReelGrid({ productId, limit }: any) {
       ) : (
         <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={4}>
           {items.map((r: any) => (
-            <ReelCard key={r.id} reel={r} onOpen={(reel: any) => setActive(reel)} />
+            <ReelCard key={r.id} reel={r} onOpen={(reel: any) => openPlayer(reel)} />
           ))}
         </SimpleGrid>
       )}
