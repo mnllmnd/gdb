@@ -1,13 +1,23 @@
 import axios from 'axios'
 
 // Normalize the API base so values like ':4000/api' (missing host/protocol)
-// become a valid absolute URL (http://localhost:4000/api). Also remove
-// an accidental trailing slash to keep concatenation predictable.
-const rawBase: string = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api'
-let apiBase: string = rawBase.trim()
+// become a valid absolute URL. Prefer VITE_API_URL; when not set, fall back
+// at runtime to the current page origin + /api so a static site served on
+// Render will call the backend on the same origin instead of returning 404.
+const envBase = (import.meta.env.VITE_API_URL ?? '').toString().trim()
+let apiBase: string = envBase
+// If no env var provided, and we're running in the browser, use location.origin
+if (!apiBase) {
+  if (typeof window !== 'undefined' && window.location) {
+    apiBase = `${window.location.origin}/api`
+  } else {
+    // fallback for local dev builds where window may be undefined
+    apiBase = 'http://localhost:4000/api'
+  }
+}
 // If env provides something like ":4000/api" prepend localhost
 if (apiBase.startsWith(':')) apiBase = `http://localhost${apiBase}`
-// Ensure we have a protocol; if not, treat as localhost
+// Ensure we have a protocol; if not, treat as http
 if (!/^https?:\/\//i.test(apiBase)) apiBase = `http://${apiBase}`
 // remove trailing slash for consistent concatenation
 apiBase = apiBase.replace(/\/$/, '')
