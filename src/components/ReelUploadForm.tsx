@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import {
-  Container,
   Box,
   FormControl,
   FormLabel,
@@ -13,6 +12,11 @@ import {
   Progress,
   HStack,
   Spinner,
+  VStack,
+  Card,
+  CardBody,
+  Heading,
+  useColorModeValue,
 } from '@chakra-ui/react'
 import api from '../services/api'
 import { getCurrentUser } from '../services/auth'
@@ -35,6 +39,9 @@ export default function ReelUploadForm({ onSuccess, onClose }: Props) {
   const toast = useToast()
   const navigate = useNavigate()
 
+  const bgCard = useColorModeValue('white', 'gray.800')
+  const borderColor = useColorModeValue('gray.200', 'gray.700')
+
   useEffect(() => {
     let mounted = true
     ;(async () => {
@@ -46,14 +53,15 @@ export default function ReelUploadForm({ onSuccess, onClose }: Props) {
           setProducts([])
           return
         }
-        // Only show products owned by current user (seller)
         const owned = (list || []).filter((p: any) => String(p.seller_id) === String(me.id))
         setProducts(owned)
       } catch (err) {
         console.error('Failed to load products', err)
       }
     })()
-    return () => { mounted = false }
+    return () => {
+      mounted = false
+    }
   }, [])
 
   async function handleSubmit(e: any) {
@@ -77,10 +85,7 @@ export default function ReelUploadForm({ onSuccess, onClose }: Props) {
         file,
         { product_id: productId, caption, visibility },
         token,
-        (progress) => {
-          // progress = { loaded, total?, percent? }
-          setUploadProgress(progress as any)
-        },
+        (progress) => setUploadProgress(progress as any),
         controller.signal
       )
       toast({ title: 'Reel publié', status: 'success' })
@@ -88,14 +93,13 @@ export default function ReelUploadForm({ onSuccess, onClose }: Props) {
       onClose && onClose()
     } catch (err: any) {
       console.error('Upload failed', err)
-      // detect abort
       const msg = String(err?.message || err)
       if (err && (err.name === 'CanceledError' || err.code === 'ERR_CANCELED' || /cancel/i.test(msg))) {
         toast({ title: 'Téléversement annulé', status: 'info' })
       }
       const message = err && (err.error || err.message || String(err))
       if (message === 'Forbidden' || /forbid/i.test(String(message))) {
-        toast({ title: 'Interdit', description: "Vous n'êtes pas autorisé à publier pour ce produit (propriétaire requis)", status: 'error', duration: 6000 })
+        toast({ title: 'Interdit', description: "Vous n'êtes pas autorisé à publier pour ce produit.", status: 'error' })
       } else if (message === 'Missing auth header' || /auth/i.test(String(message))) {
         toast({ title: 'Non authentifié', description: 'Connectez-vous pour publier un reel', status: 'error' })
       } else {
@@ -103,81 +107,156 @@ export default function ReelUploadForm({ onSuccess, onClose }: Props) {
       }
     } finally {
       setLoading(false)
-      setUploadProgress(null)
       setUploadController(null)
+      setUploadProgress(null)
     }
   }
 
   return (
-    <Box as="form" onSubmit={handleSubmit}>
-      {products.length === 0 && (
-        <Text mb={3} color="gray.600">Vous n'avez aucun produit. Créez un produit dans votre boutique pour pouvoir publier un reel.</Text>
-      )}
+    <Card bg={bgCard} borderColor={borderColor} borderWidth="1px" shadow="md" rounded="2xl" p={6}>
+      <CardBody as="form" onSubmit={handleSubmit}>
+        <VStack spacing={5} align="stretch">
+          <Heading size="md" mb={2}>
+            Publier un Reel
+          </Heading>
 
-      <FormControl mb={3} isRequired>
-        <FormLabel>Fichier vidéo</FormLabel>
-        {/* Accept common video types and explicitly include QuickTime/.mov (iPhone screen recordings) */}
-        <Input
-          type="file"
-          accept="video/*,video/quicktime,.mov"
-          onChange={(e: any) => setFile(e.target.files?.[0] ?? null)}
-        />
-      
-      </FormControl>
+          {products.length === 0 && (
+            <Text fontSize="sm" color="gray.500">
+              Vous n'avez aucun produit. Créez-en un pour pouvoir publier un reel.
+            </Text>
+          )}
 
-      {uploadProgress && (
-        <Box mb={3}>
-          <HStack spacing={3} alignItems="center">
-            {uploadProgress.percent != null ? (
-              <Text fontSize="sm">{uploadProgress.percent}%</Text>
-            ) : (
-              <HStack>
-                <Spinner size="sm" />
-                <Text fontSize="sm">Téléversement en cours</Text>
+          <FormControl isRequired>
+  <FormLabel>Fichier vidéo</FormLabel>
+  <Box
+    border="2px dashed"
+    borderColor={file ? 'teal.400' : useColorModeValue('gray.300', 'gray.600')}
+    borderRadius="xl"
+    p={6}
+    textAlign="center"
+    transition="all 0.2s"
+    _hover={{ borderColor: 'teal.500', bg: useColorModeValue('gray.50', 'gray.700') }}
+  >
+    <input
+      id="file-upload"
+      type="file"
+      accept="video/*,video/quicktime,.mov"
+      style={{ display: 'none' }}
+      onChange={(e: any) => setFile(e.target.files?.[0] ?? null)}
+    />
+    <label htmlFor="file-upload">
+      <Button as="span" colorScheme="teal" variant="solid" rounded="full">
+        Choisir un fichier
+      </Button>
+    </label>
+    {file ? (
+      <Text mt={3} fontSize="sm" color="teal.600">
+        {file.name} ({(file.size / (1024 * 1024)).toFixed(2)} Mo)
+      </Text>
+    ) : (
+      <Text mt={2} fontSize="sm" color="gray.500">
+        Formats acceptés : mp4, mov, avi...
+      </Text>
+    )}
+  </Box>
+</FormControl>
+
+
+          {uploadProgress && (
+            <Box>
+              <HStack justify="space-between">
+                <Text fontSize="sm" color="teal.500" fontWeight="medium">
+                  {uploadProgress.percent ? `${uploadProgress.percent}%` : 'Téléversement...'}
+                </Text>
+                {uploadProgress.total && (
+                  <Text fontSize="xs" color="gray.500">
+                    {(uploadProgress.loaded / (1024 * 1024)).toFixed(2)} / {(uploadProgress.total / (1024 * 1024)).toFixed(2)} MB
+                  </Text>
+                )}
               </HStack>
-            )}
-            {uploadProgress.total ? (
-              <Text fontSize="xs" color="gray.500">{(uploadProgress.loaded / (1024 * 1024)).toFixed(2)} / {(uploadProgress.total / (1024 * 1024)).toFixed(2)} MB</Text>
-            ) : (
-              <Text fontSize="xs" color="gray.500">{(uploadProgress.loaded / (1024 * 1024)).toFixed(2)} MB</Text>
+              <Progress
+                mt={2}
+                value={uploadProgress.percent ?? undefined}
+                isIndeterminate={uploadProgress.percent == null}
+                colorScheme="teal"
+                rounded="full"
+                size="sm"
+              />
+            </Box>
+          )}
+
+          <FormControl isRequired>
+            <FormLabel>Produit lié</FormLabel>
+            <Select
+              placeholder="Choisir un produit"
+              value={productId ?? ''}
+              onChange={(e) => setProductId(e.target.value)}
+              variant="filled"
+              bg={useColorModeValue('gray.50', 'gray.700')}
+            >
+              {products.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.title || p.name}
+                </option>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl>
+            <FormLabel>Légende</FormLabel>
+            <Textarea
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              placeholder="Petit texte pour accompagner le reel"
+              resize="vertical"
+              variant="filled"
+              bg={useColorModeValue('gray.50', 'gray.700')}
+            />
+          </FormControl>
+
+          <FormControl>
+            <FormLabel>Visibilité</FormLabel>
+            <Select
+              value={visibility}
+              onChange={(e) => setVisibility(e.target.value)}
+              variant="filled"
+              bg={useColorModeValue('gray.50', 'gray.700')}
+            >
+              <option value="public">Public</option>
+              <option value="private">Privé</option>
+            </Select>
+          </FormControl>
+
+          <HStack spacing={3} pt={2}>
+            <Button
+              type="submit"
+              colorScheme="teal"
+              isLoading={loading}
+              isDisabled={products.length === 0}
+              flex="1"
+              rounded="full"
+            >
+              Publier
+            </Button>
+            {uploadController && (
+              <Button
+                variant="outline"
+                colorScheme="red"
+                rounded="full"
+                onClick={() => {
+                  uploadController.abort()
+                  setLoading(false)
+                  setUploadProgress(null)
+                  setUploadController(null)
+                  toast({ title: 'Téléversement annulé', status: 'info' })
+                }}
+              >
+                Annuler
+              </Button>
             )}
           </HStack>
-          <Progress mt={2} value={uploadProgress.percent ?? undefined} isIndeterminate={uploadProgress.percent == null} size="sm" />
-        </Box>
-      )}
-
-      <FormControl mb={3} isRequired>
-        <FormLabel>Produit</FormLabel>
-        <Select placeholder="Choisir un produit" value={productId ?? ''} onChange={(e) => setProductId(e.target.value)}>
-          {products.map(p => <option key={p.id} value={p.id}>{p.title || p.name}</option>)}
-        </Select>
-      </FormControl>
-
-      <FormControl mb={3}>
-        <FormLabel>Légende</FormLabel>
-        <Textarea value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="Petit texte pour accompagner le reel" />
-      </FormControl>
-
-      <FormControl mb={4}>
-        <FormLabel>Visibilité</FormLabel>
-        <Select value={visibility} onChange={(e) => setVisibility(e.target.value)}>
-          <option value="public">Public</option>
-          <option value="private">Privé</option>
-        </Select>
-      </FormControl>
-
-      <HStack spacing={3}>
-        <Button type="submit" colorScheme="teal" isLoading={loading} isDisabled={products.length === 0}>Publier</Button>
-        {uploadController && (
-          <Button variant="ghost" colorScheme="red" onClick={() => {
-            uploadController.abort()
-            setLoading(false)
-            setUploadProgress(null)
-            setUploadController(null)
-            toast({ title: 'Annulé', status: 'info' })
-          }}>Annuler</Button>
-        )}
-      </HStack>
-    </Box>
+        </VStack>
+      </CardBody>
+    </Card>
   )
 }
