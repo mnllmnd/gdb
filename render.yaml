@@ -12,6 +12,10 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      # Allow the frontend to be accepted by CORS when static site is on a different origin
+      - key: CLIENT_URL
+        # Frontend URL (provided by user)
+        value: https://gdb-qqgr.onrender.com
     # Note: don't store secrets inside render.yaml in plaintext; set them in the Render dashboard
   # Example env vars to set in the Render dashboard for this service:
   # DATABASE_URL, JWT_SECRET, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET, CLOUDINARY_CLOUD_NAME
@@ -26,6 +30,10 @@ services:
     buildCommand: "npm ci && npm run build"
     # Vite outputs to `dist` by default (at the repo root). Ensure Render publishes this folder.
     publishPath: "dist"
+    # Set frontend env var pointing to the backend so client-side API calls go to the correct origin
+    envVars:
+      - key: VITE_API_URL
+        value: https://gdb-back.onrender.com/api
     # Ensure SPA routing: rewrite all paths to /index.html so client-side routing works on refresh
     routes:
       - type: rewrite
