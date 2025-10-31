@@ -4,6 +4,8 @@ import { authenticate } from '../middleware/auth.js'
 import cache from '../cache.js'
 import dotenv from 'dotenv'
 dotenv.config()
+import fs from 'fs'
+import path from 'path'
 
 const router = express.Router()
 
@@ -120,6 +122,59 @@ router.get('/cache', async (req, res) => {
   } catch (err) {
     console.error('Failed to inspect cache:', err)
     return res.status(500).json({ error: 'Failed to inspect cache' })
+  }
+})
+
+// Admin: delete persisted snapshot file and refresh from DB
+router.post('/cache/clear-snapshot', async (req, res) => {
+  const adminToken = process.env.ADMIN_TOKEN
+  const providedToken = req.headers['x-admin-token'] || req.body?.admin_token
+  let allowed = false
+  if (req.user && req.user.role === 'admin') allowed = true
+  if (!allowed && adminToken && providedToken && String(providedToken) === String(adminToken)) allowed = true
+  if (!allowed) return res.status(403).json({ error: 'Forbidden' })
+
+  try {
+    const cacheFile = path.resolve(process.cwd(), 'server', 'data', 'cache_snapshot.json')
+    if (fs.existsSync(cacheFile)) {
+      fs.unlinkSync(cacheFile)
+      console.log('Admin: cache snapshot file removed')
+    }
+    const { query: dbQuery } = await import('../db.js')
+    const refreshed = await cache.refresh(dbQuery)
+    if (!refreshed) return res.status(500).json({ error: 'Failed to refresh cache after clearing snapshot' })
+    return res.json({ success: true, message: 'Snapshot cleared and cache refreshed' })
+  } catch (err) {
+    console.error('Failed to clear snapshot and refresh cache:', err)
+    return res.status(500).json({ error: 'Failed to clear snapshot and refresh cache', details: err.message })
+  }
+})
+
+// Admin: verify DB counts vs in-memory cache counts
+router.get('/cache/verify', async (req, res) => {
+  const adminToken = process.env.ADMIN_TOKEN
+  const providedToken = req.headers['x-admin-token'] || req.query?.admin_token
+  let allowed = false
+  if (req.user && req.user.role === 'admin') allowed = true
+  if (!allowed && adminToken && providedToken && String(providedToken) === String(adminToken)) allowed = true
+  if (!allowed) return res.status(403).json({ error: 'Forbidden' })
+
+  try {
+    // Query DB for counts
+    const p = await query('SELECT COUNT(*)::int AS count FROM products')
+    const s = await query('SELECT COUNT(*)::int AS count FROM shops')
+    const c = await query('SELECT COUNT(*)::int AS count FROM categories')
+    const dbCounts = { products: Number(p.rows[0]?.count || 0), shops: Number(s.rows[0]?.count || 0), categories: Number(c.rows[0]?.count || 0) }
+
+    const cacheProducts = cache.getProducts() || []
+    const cacheShops = cache.getShops() || []
+    const cacheCategories = cache.getCategories() || []
+    const cacheCounts = { products: cacheProducts.length, shops: cacheShops.length, categories: cacheCategories.length }
+
+    return res.json({ db: dbCounts, cache: cacheCounts, match: (dbCounts.products === cacheCounts.products && dbCounts.shops === cacheCounts.shops && dbCounts.categories === cacheCounts.categories) })
+  } catch (err) {
+    console.error('Failed to verify cache vs DB:', err)
+    return res.status(500).json({ error: 'Failed to verify cache vs DB', details: err.message })
   }
 })
 
