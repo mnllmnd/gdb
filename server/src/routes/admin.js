@@ -1,6 +1,9 @@
 import express from 'express'
 import { query } from '../db.js'
 import { authenticate } from '../middleware/auth.js'
+import cache from '../cache.js'
+import dotenv from 'dotenv'
+dotenv.config()
 
 const router = express.Router()
 
@@ -77,6 +80,46 @@ router.delete('/users/:id', async (req, res) => {
     await query('ROLLBACK')
     console.error('Error deleting user:', err)
     res.status(500).json({ error: err.message || 'Failed to delete user' })
+  }
+})
+
+// Admin: force cache refresh (protected)
+router.post('/cache/refresh', async (req, res) => {
+  // Allow either authenticated admin users or a valid ADMIN_TOKEN header for out-of-band access
+  const adminToken = process.env.ADMIN_TOKEN
+  const providedToken = req.headers['x-admin-token'] || req.body?.admin_token
+  let allowed = false
+  if (req.user && req.user.role === 'admin') allowed = true
+  if (!allowed && adminToken && providedToken && String(providedToken) === String(adminToken)) allowed = true
+  if (!allowed) return res.status(403).json({ error: 'Forbidden' })
+
+  try {
+    const { query: dbQuery } = await import('../db.js')
+    await cache.refresh(dbQuery)
+    return res.json({ success: true, message: 'Cache refreshed' })
+  } catch (err) {
+    console.error('Cache refresh failed (admin):', err)
+    return res.status(500).json({ error: 'Cache refresh failed', details: err.message })
+  }
+})
+
+// Admin: inspect current cache (counts)
+router.get('/cache', async (req, res) => {
+  const adminToken = process.env.ADMIN_TOKEN
+  const providedToken = req.headers['x-admin-token'] || req.query?.admin_token
+  let allowed = false
+  if (req.user && req.user.role === 'admin') allowed = true
+  if (!allowed && adminToken && providedToken && String(providedToken) === String(adminToken)) allowed = true
+  if (!allowed) return res.status(403).json({ error: 'Forbidden' })
+
+  try {
+    const products = cache.getProducts()
+    const shops = cache.getShops()
+    const categories = cache.getCategories()
+    return res.json({ products: products.length, shops: shops.length, categories: categories.length })
+  } catch (err) {
+    console.error('Failed to inspect cache:', err)
+    return res.status(500).json({ error: 'Failed to inspect cache' })
   }
 })
 

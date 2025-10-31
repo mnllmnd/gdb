@@ -13,6 +13,24 @@ router.get('/', async (req, res) => {
   const offset = Number.parseInt(req.query.offset || '0', 10)
   const limit = Number.parseInt(req.query.limit || '100', 10)
     const list = cache.listProducts({ offset, limit })
+    // If cache is empty (e.g. stale snapshot or wasn't initialized), fall back to DB
+    if (!list || list.length === 0) {
+      try {
+        const r = await query('SELECT * FROM products ORDER BY created_at DESC LIMIT $1 OFFSET $2', [limit, offset])
+        const rows = r.rows || []
+        // attempt to refresh cache in background for future requests
+        try {
+          const { query: dbQuery } = await import('../db.js')
+          cache.refresh(dbQuery).catch(e => console.warn('Background cache.refresh failed', e && e.message))
+        } catch (e) {
+          console.warn('Failed to start background cache refresh', e && e.message)
+        }
+        return res.json(rows)
+      } catch (err) {
+        console.warn('DB fallback for products list failed', err && err.message)
+        // continue to return whatever the cache returned (empty array)
+      }
+    }
     return res.json(list)
   } catch (err) {
     console.error(err)

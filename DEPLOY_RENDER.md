@@ -53,6 +53,49 @@ Prerequisites
 - If you see `SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string`, ensure your `DATABASE_URL` is an exact string without surrounding quotes. The backend already trims and validates the value.
 - Inspect server logs in Render for stack traces.
 
+Deploying frontend on Vercel while keeping backend on Render
+----------------------------------------------------------
+
+If you prefer to host the static frontend on Vercel and keep the backend on Render (recommended when uploads are large), follow these steps:
+
+1. Ensure `vercel.json` is present at the repository root. It should contain rewrites that:
+  - Proxy `/api/*` requests to your backend on Render (so the browser sees a single origin and avoids CORS issues).
+  - Fallback to `index.html` for any other route so SPA routing works on refresh.
+
+  Example (already included in this repo):
+
+  {
+    "version": 2,
+    "builds": [
+     { "src": "package.json", "use": "@vercel/static-build", "config": { "distDir": "dist" } }
+    ],
+    "rewrites": [
+     { "source": "/api/(.*)", "destination": "https://gdb-back.onrender.com/api/$1" },
+     { "source": "/(.*)", "destination": "/index.html" }
+    ]
+  }
+
+2. Commit & push `vercel.json`, then import the repository in the Vercel dashboard (or link it to your Git provider) and create a new project.
+
+3. Build settings on Vercel (project settings):
+  - Install Command: `npm ci`
+  - Build Command: `npm run build`
+  - Output Directory: `dist`
+
+4. Environment variables (optional but useful):
+  - In Vercel project settings, set `VITE_API_URL` to your Render backend API base (for example `https://gdb-back.onrender.com/api`). The rewrite already proxies `/api` to the backend, but this env var can still be useful for client-side absolute links or diagnostics.
+
+5. On Render (backend service): ensure `CLIENT_URL` includes your Vercel domain so the backend's CORS allows requests from Vercel (example: `https://<your-vercel-app>.vercel.app`). We already set `CLIENT_URL` in `render.yaml` to `https://gdb-qqgr.onrender.com` — update it if you switch frontend domain.
+
+6. Deploy & test:
+  - After Vercel build completes, open the Vercel URL and navigate to a nested route (e.g. `/boutiques/123`) and refresh — it should render the SPA and not produce a 404.
+  - Test an API call (e.g., attempt to post a reel while not authenticated). The request should be proxied to `https://gdb-back.onrender.com/api/...` and the backend should respond with 401/403 JSON when appropriate.
+
+Notes:
+- This approach keeps upload-heavy endpoints on Render (no change needed to multer or disk storage) while benefiting from Vercel's CDN and fast static hosting.
+- If you ever migrate upload endpoints to Vercel, you'll need to refactor upload flow to use direct-to-Cloudinary or chunked/resumable uploads because serverless functions have stricter limits.
+
+
 If you want, I can:
 - Add a small Express static middleware to `server/src/index.js` so a single service can serve both frontend and backend (monolithic option).
 - Add a GitHub Action or Render deploy hook to run migrations automatically before backend deploys.
