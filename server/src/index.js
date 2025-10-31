@@ -44,6 +44,21 @@ if (CLIENT_URL) {
 }
 app.use(express.json());
 
+// Disable HTTP caching for all API responses to ensure clients always get fresh data
+app.use('/api', (req, res, next) => {
+  try {
+    // Instruct browsers and intermediate proxies not to cache
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    res.set('Pragma', 'no-cache')
+    res.set('Expires', '0')
+    // For some CDNs / reverse proxies
+    res.set('Surrogate-Control', 'no-store')
+  } catch (e) {
+    // ignore
+  }
+  next()
+})
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
@@ -133,14 +148,29 @@ app.get('/api/nlp/health', async (req, res) => {
   }
 });
 
-// Servir les fichiers uploadés
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Servir les fichiers uploadés (no cache)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
+  maxAge: 0,
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    res.setHeader('Pragma', 'no-cache')
+    res.setHeader('Expires', '0')
+  }
+}));
 
 // If a frontend `dist` folder is present (built app), serve it and fallback to index.html
 const clientDist = path.join(__dirname, '../../dist')
 if (fs.existsSync(clientDist)) {
   console.log('📦 Serving frontend from', clientDist)
-  app.use(express.static(clientDist))
+  // Serve frontend static files with no-cache headers to avoid serving stale assets
+  app.use(express.static(clientDist, {
+    maxAge: 0,
+    setHeaders: (res) => {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+      res.setHeader('Pragma', 'no-cache')
+      res.setHeader('Expires', '0')
+    }
+  }))
 
   // For any non-API request, send index.html so client-side router can handle the route
   app.get('*', (req, res, next) => {
