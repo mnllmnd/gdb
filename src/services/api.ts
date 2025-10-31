@@ -55,7 +55,11 @@ async function request(path: string, options: ReqOptions = {}) {
     headers['Content-Type'] = headers['Content-Type'] || 'application/json'
   }
 
-  const res = await fetch(apiBase + path, { ...options, headers })
+  try {
+    if (!headers['Cache-Control'] && !headers['cache-control']) headers['Cache-Control'] = 'no-store'
+  } catch (e) {}
+  const fetchOptions = { cache: 'no-store' as RequestCache, ...options, headers }
+  const res = await fetch(apiBase + path, fetchOptions)
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: 'unknown' }))
     throw err
@@ -126,6 +130,8 @@ export const api = {
       const tokenVal = token ?? ((globalThis as any)?.localStorage?.getItem?.('token'))
       const headersVar: Record<string, string> = {}
       if (tokenVal) headersVar['Authorization'] = `Bearer ${tokenVal}`
+      // prefer explicit no-store for upload requests
+      headersVar['Cache-Control'] = headersVar['Cache-Control'] || 'no-store'
 
       const res = await axios.post(API_BASE + '/uploads', form, {
         headers: { ...headersVar, Accept: 'application/json' },
@@ -208,6 +214,8 @@ export const api = {
       const tokenVal = token ?? ((globalThis as any)?.localStorage?.getItem?.('token'))
       const headersVar: Record<string, string> = {}
       if (tokenVal) headersVar['Authorization'] = `Bearer ${tokenVal}`
+      // avoid caching of reel upload requests
+      headersVar['Cache-Control'] = headersVar['Cache-Control'] || 'no-store'
 
       const res = await axios.post(API_BASE + '/reels/upload', form, {
         headers: { ...headersVar, Accept: 'application/json' },

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Box } from '@chakra-ui/react';
 import Home from './pages/Home';
@@ -24,6 +24,34 @@ import Profile from './pages/Profile';
 import { ChatPopup } from './components/ChatPopup';
 
 export default function App() {
+  // Clear client-side caches on initial load to avoid stale content
+  useEffect(() => {
+    try { localStorage.clear() } catch (e) { /* ignore */ }
+    try { sessionStorage.clear() } catch (e) { /* ignore */ }
+
+    // Clear CacheStorage (the caches API)
+    try {
+      if ('caches' in window) {
+        caches.keys && caches.keys().then(keys => keys.forEach(k => { try { caches.delete(k) } catch {} }))
+      }
+    } catch (e) { /* ignore */ }
+
+    // Unregister any service workers
+    try {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations && navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => { try { r.unregister() } catch {} }))
+        navigator.serviceWorker.getRegistration && navigator.serviceWorker.getRegistration().then(r => { if (r) try { r.unregister() } catch {} })
+      }
+    } catch (e) { /* ignore */ }
+
+    // Best-effort: remove all IndexedDB databases where the browser exposes the list
+    try {
+      if ('indexedDB' in window && typeof (indexedDB as any).databases === 'function') {
+        ;(indexedDB as any).databases().then((dbs: any[]) => dbs.forEach(d => { try { if (d && d.name) indexedDB.deleteDatabase(d.name) } catch {} })).catch(() => {})
+      }
+    } catch (e) { /* ignore */ }
+  }, [])
+
   return (
     <BrowserRouter>
       <NavBar />
