@@ -27,10 +27,11 @@ INSERT INTO categories (id, name) VALUES
 (5, 'Maison'),
 (6, 'Cosmétiques'),
 (7, 'Alimentation'),
-(8, 'Autres');
+(8, 'Livre'),
+(9, 'Autres');
 
 -- S'assurer que la séquence est mise à jour correctement
-SELECT setval('categories_id_seq', 8);
+SELECT setval('categories_id_seq', 9);
 
 -- Ajouter la colonne category_id si elle n'existe pas
 DO $$ 
@@ -45,7 +46,8 @@ BEGIN
 END $$;
 
 -- Mettre à jour tous les produits sans catégorie pour utiliser la catégorie "Autres"
-UPDATE products SET category_id = 8 WHERE category_id IS NULL;
+-- Update default category to 'Autres' (id 9) for existing products without a category
+UPDATE products SET category_id = 9 WHERE category_id IS NULL;
 
 -- Ajouter la contrainte de clé étrangère
 ALTER TABLE products 

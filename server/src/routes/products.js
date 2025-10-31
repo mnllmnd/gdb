@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken'
 import { query } from '../db.js'
 import { authenticate, requireRole } from '../middleware/auth.js'
 import cache from '../cache.js'
+import cleanText from '../utils/clean_text.js'
 
 const router = express.Router()
 
@@ -62,8 +63,12 @@ router.post('/', authenticate, requireRole('seller'), async (req, res) => {
     // ensure the seller has a shop before allowing product creation
     const shopCheck = await query('SELECT id FROM shops WHERE owner_id = $1', [req.user.id])
     if (shopCheck.rowCount === 0) return res.status(400).json({ error: 'You must create a shop before adding products' })
-    // Validate required fields before sending to the DB to provide clearer errors and avoid DB NOT NULL failures
-    if (!title) return res.status(400).json({ error: 'title is required' })
+  // Clean inputs to avoid mojibake and strip control chars, and normalize UTF-8
+  const cleanedTitle = cleanText(title)
+  const cleanedDescription = cleanText(description)
+
+  // Validate required fields before sending to the DB to provide clearer errors and avoid DB NOT NULL failures
+  if (!cleanedTitle) return res.status(400).json({ error: 'title is required' })
     // price must be provided and a finite number
     if (!Number.isFinite(Number(price))) return res.status(400).json({ error: 'price is required and must be a number' })
     const parsedPrice = Number(price)
@@ -71,7 +76,7 @@ router.post('/', authenticate, requireRole('seller'), async (req, res) => {
 
     // Log incoming payload and final params for easier debugging when something goes wrong
     console.debug('Creating product, payload:', { title, description, price, image_url, category_id, quantity, userId: req.user.id })
-    const params = [title, description || null, parsedPrice, image_url || null, category_id, req.user.id, qty]
+  const params = [cleanedTitle, cleanedDescription || null, parsedPrice, image_url || null, category_id, req.user.id, qty]
     console.debug('INSERT params:', params)
 
     const r = await query(
@@ -109,16 +114,20 @@ router.put('/:id', authenticate, async (req, res) => {
     const p = product.rows[0]
     if (req.user.role !== 'admin' && p.seller_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' })
     // Use nullish coalescing so falsy values like 0 are preserved correctly
-    const qty = typeof quantity !== 'undefined' ? (Number.isFinite(Number(quantity)) ? Math.max(0, parseInt(Number(quantity), 10)) : p.quantity ?? 0) : p.quantity
+  const qty = typeof quantity !== 'undefined' ? (Number.isFinite(Number(quantity)) ? Math.max(0, parseInt(Number(quantity), 10)) : p.quantity ?? 0) : p.quantity
 
-    // If the client provided a price, validate it (don't allow explicit null/invalid values to reach the DB)
+  // Clean any provided title/description before saving
+  const cleanedTitle = typeof title !== 'undefined' ? cleanText(title) : undefined
+  const cleanedDescription = typeof description !== 'undefined' ? cleanText(description) : undefined
+
+  // If the client provided a price, validate it (don't allow explicit null/invalid values to reach the DB)
     let finalPrice = p.price
     if (typeof price !== 'undefined') {
       if (!Number.isFinite(Number(price))) return res.status(400).json({ error: 'price must be a number' })
       finalPrice = Number(price)
     }
 
-    const params = [title ?? p.title, description ?? p.description, finalPrice, image_url ?? p.image_url, category_id ?? p.category_id, qty, id]
+  const params = [cleanedTitle ?? p.title, cleanedDescription ?? p.description, finalPrice, image_url ?? p.image_url, category_id ?? p.category_id, qty, id]
     console.debug('UPDATE params:', params)
     const updated = await query(
       'UPDATE products SET title=$1, description=$2, price=$3, image_url=$4, category_id=$5, quantity=$6 WHERE id=$7 RETURNING *',

@@ -15,6 +15,7 @@ INSERT INTO categories (name) VALUES
 ('Maison'),
 ('Cosmétiques'),
 ('Alimentation'),
+('Livre'),
 ('Autres');
 
 -- Add category_id to products
