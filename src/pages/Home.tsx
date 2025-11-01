@@ -143,7 +143,7 @@ export default function Home() {
         setShopsMap({ byId, byOwner })
         setCategories(categoriesData)
         setProducts(productsData)
-  setPopularShops(popularData || [])
+        setPopularShops(popularData || [])
         
         const productsByCategory: Record<number, Product[]> = {}
         if (productsData) {
@@ -314,10 +314,13 @@ export default function Home() {
       return <NoResults message="Aucun produit trouvé" onClear={() => handleSearch('')} />
     }
 
+    // ✅ Condition pour afficher le carrousel : pas de catégorie sélectionnée
+    const showCarousel = selectedCategory === null
+
     return (
       <VStack spacing={8} align="stretch">
-        {/* Nouveautés carousel horizontal optimisé */}
-        {(() => {
+        {/* Nouveautés carousel horizontal optimisé - seulement si aucun filtre actif */}
+        {showCarousel && (() => {
           const newProducts = [...(products || [])]
             .sort((a, b) => {
               const ta = a.created_at ? new Date(String(a.created_at)).getTime() : 0
@@ -475,9 +478,9 @@ export default function Home() {
                     price={product.price ?? product.amount}
                     image_url={product.image_url ?? product.product_image}
                     height={cardHeight}
-                            shopId={shop?.id || product.shop_id || product.seller_id}
-                            shopName={shop?.name}
-                            shopDomain={shop?.domain}
+                    shopId={shop?.id || product.shop_id || product.seller_id}
+                    shopName={shop?.name}
+                    shopDomain={shop?.domain}
                   />
                 </Box>
               )
@@ -502,22 +505,21 @@ export default function Home() {
 
     return (
       <Box
-  key={category.id}
-  bg={sectionBg}
-  p={{ base: 4, md: 6 }}
-  borderRadius="xl"
-  mb={6}
-  border="1px solid"
-  borderColor={borderColor}
-  boxShadow="sm"
-  transition="all 0.3s ease"
-  width="100%"
-  _hover={{
-    boxShadow: 'md',
-    borderColor: 'brand.300',
-  }}
->
-
+        key={category.id}
+        bg={sectionBg}
+        p={{ base: 4, md: 6 }}
+        borderRadius="xl"
+        mb={6}
+        border="1px solid"
+        borderColor={borderColor}
+        boxShadow="sm"
+        transition="all 0.3s ease"
+        width="100%"
+        _hover={{
+          boxShadow: 'md',
+          borderColor: 'brand.300',
+        }}
+      >
         <VStack spacing={4} align="stretch">
           <HStack justify="space-between" align="center">
             <Heading size="lg" color={textColor}>{category.name}</Heading>
@@ -544,17 +546,16 @@ export default function Home() {
                     price={product.price ?? product.amount}
                     image_url={product.image_url ?? product.product_image}
                     quantity={Number(
-                          product.quantity ??
-                          product.quantite ??
-                          product.stock ??
-                          product.amount_available ??
-                          0
-                        )}
-
+                      product.quantity ??
+                      product.quantite ??
+                      product.stock ??
+                      product.amount_available ??
+                      0
+                    )}
                     height={cardHeight}
-                          shopId={shop?.id || product.shop_id || product.seller_id}
-                          shopName={shop?.name}
-                          shopDomain={shop?.domain}
+                    shopId={shop?.id || product.shop_id || product.seller_id}
+                    shopName={shop?.name}
+                    shopDomain={shop?.domain}
                   />
                 </Box>
               )
