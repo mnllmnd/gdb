@@ -37,7 +37,8 @@ interface Product {
   category_id?: number | null
   image_url?: string
   product_image?: string
-  [key: string]: string | number | null | undefined
+  images?: string[] | any
+  [key: string]: string | number | null | undefined | string[] | any
 }
 
 interface Category {
@@ -49,6 +50,22 @@ interface Shop {
   id: number
   name: string
   followers?: number
+}
+
+// ✅ Fonction utilitaire pour normaliser les images
+const normalizeImages = (product: Product): string[] => {
+  // Si product.images est déjà un tableau, le retourner
+  if (Array.isArray(product.images)) {
+    return product.images.filter((img): img is string => typeof img === 'string' && img.trim() !== '')
+  }
+  
+  // Sinon, construire un tableau à partir de image_url ou product_image
+  const mainImage = product.image_url ?? product.product_image
+  if (mainImage && typeof mainImage === 'string' && mainImage.trim() !== '') {
+    return [mainImage]
+  }
+  
+  return []
 }
 
 // Thin wrapper: use the extracted InfiniteCarousel component
@@ -350,8 +367,7 @@ export default function Home() {
                       title={product.title || product.name || ''}
                       description={product.description || ''}
                       price={product.price ?? product.amount}
-                      image_url={product.image_url ?? product.product_image}
-                      images={product.images}
+                      images={normalizeImages(product)}
                       quantity={Number( 
                         product.quantity ??
                         product.quantite ??
@@ -402,8 +418,7 @@ export default function Home() {
                     title={product.title || product.name || ''}
                     description={product.description || ''}
                     price={product.price ?? product.amount}
-                    image_url={product.image_url ?? product.product_image}
-                    images={product.images}
+                    images={normalizeImages(product)}
                     quantity={Number(
                       product.quantity ??
                       product.quantite ??
@@ -478,8 +493,7 @@ export default function Home() {
                     title={product.title || product.name || ''}
                     description={product.description || ''}
                     price={product.price ?? product.amount}
-                    image_url={product.image_url ?? product.product_image}
-                    images={product.images}
+                    images={normalizeImages(product)}
                     height={cardHeight}
                     shopId={shop?.id || product.shop_id || product.seller_id}
                     shopName={shop?.name}
@@ -547,7 +561,7 @@ export default function Home() {
                     title={product.title || product.name || ''}
                     description={product.description || ''}
                     price={product.price ?? product.amount}
-                    image_url={product.image_url ?? product.product_image}
+                    images={normalizeImages(product)}
                     quantity={Number(
                       product.quantity ??
                       product.quantite ??
