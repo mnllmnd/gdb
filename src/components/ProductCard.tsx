@@ -84,9 +84,22 @@ export default function ProductCard({
   const { isOpen: isImageOpen, onOpen: onImageOpen, onClose: onImageClose } = useDisclosure()
   const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure()
 
-  // Gallery support: canonical images array and index
-  const finalImages: string[] = (Array.isArray(images) && images.length > 0)
-    ? images
+  // Gallery support: sanitize incoming images array, remove falsy entries and duplicates
+  const rawImages = Array.isArray(images) ? images : []
+  const cleanedOrdered = rawImages
+    .map((u) => (typeof u === 'string' ? u.trim() : String(u)))
+    .filter((u) => !!u)
+  // preserve order but remove exact-duplicate URLs
+  const seen = new Set()
+  const uniqueImages: string[] = []
+  for (const u of cleanedOrdered) {
+    if (!seen.has(u)) {
+      seen.add(u)
+      uniqueImages.push(u)
+    }
+  }
+  const finalImages: string[] = uniqueImages.length > 0
+    ? uniqueImages
     : (image_url ? [image_url] : (image ? [image] : []))
   const [imageIndex, setImageIndex] = useState<number>(0)
   const [imageLoaded, setImageLoaded] = useState<boolean>(true)
