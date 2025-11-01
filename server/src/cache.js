@@ -31,14 +31,31 @@ const init = async (dbQuery) => {
 
 const refresh = async (dbQuery) => {
   try {
-    const [pRes, sRes, cRes] = await Promise.all([
+    const [pRes, sRes, cRes, imgsRes] = await Promise.all([
       dbQuery('SELECT * FROM products ORDER BY created_at DESC'),
       dbQuery('SELECT id, owner_id, name, domain, logo_url, description FROM shops ORDER BY created_at DESC'),
-      dbQuery('SELECT * FROM categories ORDER BY name')
+      dbQuery('SELECT * FROM categories ORDER BY name'),
+      // fetch product images to attach them to products
+      dbQuery('SELECT product_id, url, position FROM product_images ORDER BY position ASC')
     ])
-    PRODUCTS = pRes.rows || []
+    const rawProducts = pRes.rows || []
     SHOPS = sRes.rows || []
     CATEGORIES = cRes.rows || []
+
+    // map images by product_id
+    const imgRows = imgsRes && imgsRes.rows ? imgsRes.rows : []
+    const imagesMap = {}
+    for (const r of imgRows) {
+      if (!r || !r.product_id) continue
+      if (!imagesMap[r.product_id]) imagesMap[r.product_id] = []
+      imagesMap[r.product_id].push(r.url)
+    }
+
+    // attach images array to each product (fallback to image_url legacy column)
+    PRODUCTS = rawProducts.map(p => ({
+      ...p,
+      images: imagesMap[p.id] && imagesMap[p.id].length ? imagesMap[p.id] : (p.image_url ? [p.image_url] : [])
+    }))
 
     // persist snapshot to disk (best-effort)
     try {

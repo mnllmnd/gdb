@@ -3,11 +3,11 @@ import {
   Box, Image, Heading, Text, Stack, Button, useToast, Modal, ModalOverlay, 
   ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, 
   FormControl, FormLabel, Input, Textarea, useDisclosure, useBreakpointValue, 
-  Link as ChakraLink, Badge, HStack, VStack, Icon, Flex, ScaleFade, Fade,
+  Link as ChakraLink, Badge, HStack, VStack, Icon, Flex, ScaleFade, Fade, SimpleGrid,
   useColorModeValue
 } from '@chakra-ui/react'
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'
-import { FaStore, FaShoppingCart, FaEye, FaHeart, FaRegHeart } from 'react-icons/fa'
+import { FaStore, FaShoppingCart, FaEye, FaHeart, FaRegHeart, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
 import cart from '../utils/cart'
 import { getItem } from '../utils/localAuth'
 import { highRes, PRODUCT_PLACEHOLDER } from '../utils/image'
@@ -22,6 +22,7 @@ export default function ProductCard({
   price,
   image,
   image_url,
+  images,
   quantity = null,
   shopName = null,
   shopDomain = null,
@@ -34,6 +35,7 @@ export default function ProductCard({
   price: number | string | null | undefined
   image?: string
   image_url?: string
+  images?: string[]
   quantity?: number | null
   shopName?: string | null
   shopDomain?: string | null
@@ -81,6 +83,37 @@ export default function ProductCard({
   const [stock, setStock] = useState<number | null>(quantity ?? null)
   const { isOpen: isImageOpen, onOpen: onImageOpen, onClose: onImageClose } = useDisclosure()
   const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure()
+
+  // Gallery support: canonical images array and index
+  const finalImages: string[] = (Array.isArray(images) && images.length > 0)
+    ? images
+    : (image_url ? [image_url] : (image ? [image] : []))
+  const [imageIndex, setImageIndex] = useState<number>(0)
+  const [imageLoaded, setImageLoaded] = useState<boolean>(true)
+
+  const nextImage = () => {
+    if (!finalImages || finalImages.length <= 1) return
+    setImageLoaded(false)
+    setImageIndex((i) => (i + 1) % finalImages.length)
+  }
+  const prevImage = () => {
+    if (!finalImages || finalImages.length <= 1) return
+    setImageLoaded(false)
+    setImageIndex((i) => (i - 1 + finalImages.length) % finalImages.length)
+  }
+  const touchStartXRef = React.useRef<number | null>(null)
+  const onTouchStart = (e: React.TouchEvent) => { touchStartXRef.current = e.touches?.[0]?.clientX ?? null }
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const start = touchStartXRef.current
+    const end = e.changedTouches?.[0]?.clientX ?? null
+    if (start == null || end == null) return
+    const delta = end - start
+    if (Math.abs(delta) < 30) return
+    if (delta < 0) nextImage()
+    else prevImage()
+  }
+  // Reset index when image set changes (safe fallback) and prepare for fade-in
+  React.useEffect(() => { setImageIndex(0); setImageLoaded(false) }, [finalImages.length])
   
   // ✅ Taille modale adaptative pour mobile
   // Use a smaller modal on mobile so it doesn't take the whole screen.
@@ -99,8 +132,8 @@ export default function ProductCard({
 
   const location = useLocation()
 
-  // Resolve the final src we will use
-  const chosen = image_url ?? image
+  // Resolve the final src we will use (respect gallery index)
+  const chosen = finalImages[imageIndex] ?? image_url ?? image
   const resolvedSrc = (highRes(chosen, { width: 1000, quality: 80 }) ?? chosen) as string | undefined
   
   React.useEffect(() => {
@@ -277,6 +310,22 @@ export default function ProductCard({
               </Badge>
             </Box>
           </Fade>
+
+          {/* Photos count badge when multiple images are available */}
+          {finalImages && finalImages.length > 1 && (
+            <Badge
+              position="absolute"
+              top="12px"
+              right="12px"
+              colorScheme="purple"
+              px={2}
+              py={1}
+              borderRadius="md"
+              fontSize="xs"
+            >
+              +{finalImages.length} photos
+            </Badge>
+          )}
 
           {hasImage === false && (
             <Badge 
@@ -456,7 +505,7 @@ export default function ProductCard({
             />
             <ModalBody pb={6}>
               <VStack spacing={4} align="stretch">
-                {/* Image */}
+                {/* Image (swipeable gallery) */}
                 <Box 
                   width="100%" 
                   height={{ base: '250px', md: '300px' }}
@@ -465,16 +514,58 @@ export default function ProductCard({
                   bg="gray.50"
                   cursor="pointer"
                   onClick={onImageOpen}
+                  onTouchStart={onTouchStart}
+                  onTouchEnd={onTouchEnd}
+                  position="relative"
                 >
+                  {/* Prev */}
+                  {finalImages && finalImages.length > 1 && (
+                    <Box position="absolute" left={3} top="50%" transform="translateY(-50%)" zIndex={2}>
+                      <Box bg="blackAlpha.500" p={1} borderRadius="full" onClick={(e) => { e.stopPropagation(); prevImage() }} cursor="pointer">
+                        <Icon as={FaChevronLeft} color="white" boxSize={5} />
+                      </Box>
+                    </Box>
+                  )}
+
                   <Image 
                     src={resolvedSrc ?? PRODUCT_PLACEHOLDER} 
                     alt={title} 
                     objectFit="cover"
                     width="100%"
                     height="100%"
+                    opacity={imageLoaded ? 1 : 0}
+                    transition="opacity 300ms ease"
+                    onLoad={() => setImageLoaded(true)}
                     onError={(e:any) => { e.currentTarget.src = PRODUCT_PLACEHOLDER }}
                   />
+
+                  {/* Next */}
+                  {finalImages && finalImages.length > 1 && (
+                    <Box position="absolute" right={3} top="50%" transform="translateY(-50%)" zIndex={2}>
+                      <Box bg="blackAlpha.500" p={1} borderRadius="full" onClick={(e) => { e.stopPropagation(); nextImage() }} cursor="pointer">
+                        <Icon as={FaChevronRight} color="white" boxSize={5} />
+                      </Box>
+                    </Box>
+                  )}
+
+                  {/* Counter */}
+                  {finalImages && finalImages.length > 1 && (
+                    <Badge position="absolute" bottom={3} right={3} colorScheme="blackAlpha" bg="blackAlpha.600" color="white" px={2} py={1} borderRadius="md" fontSize="xs">
+                      {imageIndex + 1} / {finalImages.length}
+                    </Badge>
+                  )}
                 </Box>
+
+                {/* Thumbnails (clickable) */}
+                {finalImages && finalImages.length > 1 && (
+                  <SimpleGrid columns={{ base: 4, md: 6 }} spacing={2} mt={3}>
+                    {finalImages.map((src, idx) => (
+                      <Box key={idx} border={idx === imageIndex ? '2px solid' : '1px solid'} borderColor={idx === imageIndex ? 'brand.500' : 'gray.200'} borderRadius="md" overflow="hidden" cursor="pointer" onClick={(e) => { e.stopPropagation(); setImageLoaded(false); setImageIndex(idx) }}>
+                        <Image src={highRes(src, { width: 400 }) ?? src} alt={`Vignette ${idx+1}`} objectFit="cover" width="100%" height="60px" />
+                      </Box>
+                    ))}
+                  </SimpleGrid>
+                )}
 
                 {/* Price and Stock */}
                 <VStack spacing={2} align="start">
@@ -601,14 +692,62 @@ export default function ProductCard({
               right={4}
             />
             <ModalBody display="flex" alignItems="center" justifyContent="center" p={0}>
-              <Image 
-                src={resolvedSrc ?? PRODUCT_PLACEHOLDER} 
-                alt={title} 
-                objectFit="contain" 
-                maxH="95vh" 
-                onError={(e:any) => { e.currentTarget.src = PRODUCT_PLACEHOLDER }} 
-              />
-            </ModalBody>
+                <Box
+                  width="100%"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  onTouchStart={onTouchStart}
+                  onTouchEnd={onTouchEnd}
+                  position="relative"
+                  px={4}
+                >
+                  {/* Prev button */}
+                  {finalImages && finalImages.length > 1 && (
+                    <Box
+                      position="absolute"
+                      left={4}
+                      zIndex={2}
+                      onClick={(e) => { e.stopPropagation(); prevImage() }}
+                      cursor="pointer"
+                      aria-hidden
+                      color="white"
+                    >
+                      <Box bg="blackAlpha.500" p={2} borderRadius="full">
+                        <Icon as={FaChevronLeft} boxSize={6} color="white" />
+                      </Box>
+                    </Box>
+                  )}
+
+                  <Image 
+                    src={resolvedSrc ?? PRODUCT_PLACEHOLDER} 
+                    alt={title} 
+                    objectFit="contain" 
+                    maxH="95vh" 
+                    opacity={imageLoaded ? 1 : 0}
+                    transition="opacity 300ms ease"
+                    onLoad={() => setImageLoaded(true)}
+                    onError={(e:any) => { e.currentTarget.src = PRODUCT_PLACEHOLDER }} 
+                  />
+
+                  {/* Next button */}
+                  {finalImages && finalImages.length > 1 && (
+                    <Box
+                      position="absolute"
+                      right={4}
+                      zIndex={2}
+                      onClick={(e) => { e.stopPropagation(); nextImage() }}
+                      cursor="pointer"
+                      aria-hidden
+                      color="white"
+                    >
+                      <Box bg="blackAlpha.500" p={2} borderRadius="full">
+                        <Icon as={FaChevronRight} boxSize={6} color="white" />
+                      </Box>
+                    </Box>
+                  )}
+                </Box>
+              </ModalBody>
           </ModalContent>
         </Modal>
       </Box>

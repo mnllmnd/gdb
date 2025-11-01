@@ -23,7 +23,7 @@ import {
   AspectRatio,
   useToast,
 } from '@chakra-ui/react'
-import { FiUpload, FiImage, FiX, FiCheck } from 'react-icons/fi'
+import { FiUpload, FiImage, FiX, FiCheck, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import BackButton from '../components/BackButton'
 import { useParams, useNavigate } from 'react-router-dom'
 import api from '../services/api'
@@ -37,8 +37,7 @@ export default function ProductEditor() {
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState<number | undefined>(undefined)
   const [quantity, setQuantity] = useState<number | undefined>(0)
-  const [file, setFile] = useState<File | null>(null)
-  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [images, setImages] = useState<Array<{ file?: File; url: string }>>([])
   const [loading, setLoading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
@@ -61,7 +60,7 @@ export default function ProductEditor() {
           setTitle(p.title)
           setDescription(p.description || '')
           setPrice(p.price)
-          setImageUrl(p.image_url || p.image || null)
+      setImages(p.images?.length ? p.images.map((u: string) => ({ url: u })) : (p.image_url ? [{ url: p.image_url }] : (p.image ? [{ url: p.image }] : [])))
           setSelectedCategory(p.category_id)
           setQuantity(typeof p.quantity !== 'undefined' && p.quantity !== null ? Number(p.quantity) : 0)
         }
@@ -83,27 +82,25 @@ export default function ProductEditor() {
     })()
   }, [id])
 
-  const handleFileSelect = (selectedFile: File | null) => {
-    setFile(selectedFile)
-    if (selectedFile) {
-      const url = URL.createObjectURL(selectedFile)
-      setImageUrl(url)
-      setUploadProgress(0)
-      
-      // Simulation de progression d'upload
-      const interval = setInterval(() => {
-        setUploadProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(interval)
-            return 90
-          }
-          return prev + 10
-        })
-      }, 100)
-    } else {
-      setImageUrl(null)
-      setUploadProgress(0)
-    }
+  const handleFileSelect = (selectedFiles: File[] | null) => {
+    if (!selectedFiles || selectedFiles.length === 0) return
+    // append to existing images, cap at 12 images to avoid abuse
+    const allowed = selectedFiles.filter(f => f.type && f.type.startsWith('image/')).slice(0, 12 - images.length)
+    if (allowed.length === 0) return
+    const items = allowed.map(f => ({ file: f as File, url: URL.createObjectURL(f as File) }))
+    setImages(prev => [...prev, ...items])
+    setUploadProgress(0)
+
+    // lightweight fake progress while uploads occur later
+    const interval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(interval)
+          return 90
+        }
+        return prev + 10
+      })
+    }, 100)
   }
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -120,9 +117,10 @@ export default function ProductEditor() {
     e.preventDefault()
     setIsDragging(false)
     
-    const droppedFile = e.dataTransfer.files[0]
-    if (droppedFile && droppedFile.type.startsWith('image/')) {
-      handleFileSelect(droppedFile)
+    const droppedFiles = Array.from(e.dataTransfer.files)
+    const imgs = droppedFiles.filter(f => f.type && f.type.startsWith('image/'))
+    if (imgs.length > 0) {
+      handleFileSelect(imgs)
     } else {
       toast({
         title: 'Format non supporté',
@@ -138,19 +136,30 @@ export default function ProductEditor() {
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = 'image/*'
+    input.multiple = true
     input.onchange = (e: Event) => {
       const target = e.target as HTMLInputElement
-      if (target.files && target.files[0]) {
-        handleFileSelect(target.files[0])
+      if (target.files && target.files.length) {
+        handleFileSelect(Array.from(target.files))
       }
     }
     input.click()
   }
 
-  const removeImage = () => {
-    setFile(null)
-    setImageUrl(null)
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index))
     setUploadProgress(0)
+  }
+
+  const moveImage = (from: number, to: number) => {
+    if (from === to) return
+    setImages(prev => {
+      const arr = [...prev]
+      if (from < 0 || from >= arr.length || to < 0 || to > arr.length) return arr
+      const [item] = arr.splice(from, 1)
+      arr.splice(to, 0, item)
+      return arr
+    })
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -163,10 +172,19 @@ export default function ProductEditor() {
     try {
       const token = getItem('token')
       let image_url: string | undefined
-      
-      if (file) {
-        const upl = await api.uploads.uploadFile(file, token ?? undefined)
-        image_url = upl.url
+      let imagesPayload: string[] | undefined
+
+      // Build the final ordered images list by uploading local files and keeping remote URLs
+      if (images && images.length > 0) {
+        const results = await Promise.all(images.map(async (it) => {
+          if (it.file) {
+            const upl = await api.uploads.uploadFile(it.file, token ?? undefined)
+            return upl?.url
+          }
+          return it.url
+        }))
+        imagesPayload = results.filter(Boolean) as string[]
+        if (imagesPayload.length > 0) image_url = imagesPayload[0]
       }
 
       if (!selectedCategory) {
@@ -189,7 +207,8 @@ export default function ProductEditor() {
       }
       // include quantity if provided
       if (typeof quantity !== 'undefined' && quantity !== null) payload.quantity = Number(quantity)
-      if (image_url) payload.image_url = image_url
+  if (image_url) payload.image_url = image_url
+  if (imagesPayload && imagesPayload.length) payload.images = imagesPayload
 
       if (id) {
         await api.products.update(id, payload, token ?? undefined)
@@ -371,92 +390,78 @@ export default function ProductEditor() {
           </FormControl>
 
           <FormControl>
-  <FormLabel color={labelColor} fontWeight="600" fontSize="sm" mb={3}>
-    Image du produit
-  </FormLabel>
+            <FormLabel color={labelColor} fontWeight="600" fontSize="sm" mb={3}>
+              Images du produit
+            </FormLabel>
 
-  {!imageUrl ? (
-    <Box
-      border="2px dashed"
-      borderColor={isDragging ? 'blue.400' : borderColor}
-      borderRadius="xl"
-      p={8}
-      textAlign="center"
-      cursor="pointer"
-      transition="all 0.3s ease"
-      bg={isDragging ? 'blue.50' : 'gray.50'}
-      _hover={{
-        bg: 'blue.50',
-        borderColor: hoverBorderColor,
-        transform: 'translateY(-2px)',
-      }}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-      onClick={handleClickUpload}
-    >
-      <VStack spacing={4}>
-        <Icon as={FiUpload} boxSize={8} color="gray.400" />
-        <Box>
-          <Text fontWeight="600" color="gray.700" mb={1}>
-            Cliquez pour uploader ou glissez-déposez
-          </Text>
-          <Text fontSize="sm" color="gray.500">
-            PNG, JPG, WEBP jusqu’à 10 MB
-          </Text>
-        </Box>
-        <Button
-          colorScheme="blue"
-          variant="outline"
-          size="sm"
-          leftIcon={<FiImage />}
-        >
-          Choisir une image
-        </Button>
-      </VStack>
-    </Box>
-  ) : (
-    <Box
-      border="2px solid"
-      borderColor={borderColor}
-      borderRadius="xl"
-      overflow="hidden"
-      position="relative"
-      boxShadow="sm"
-      _hover={{ boxShadow: 'md', transform: 'translateY(-2px)' }}
-      transition="all 0.3s ease"
-      maxW="320px"
-      mx="auto"
-    >
-      <AspectRatio ratio={4 / 3}>
-        <Image
-          src={imageUrl}
-          alt="Aperçu du produit"
-          objectFit="cover"
-          w="100%"
-          h="100%"
-        />
-      </AspectRatio>
+            {images.length === 0 ? (
+              <Box
+                border="2px dashed"
+                borderColor={isDragging ? 'blue.400' : borderColor}
+                borderRadius="xl"
+                p={8}
+                textAlign="center"
+                cursor="pointer"
+                transition="all 0.3s ease"
+                bg={isDragging ? 'blue.50' : 'gray.50'}
+                _hover={{
+                  bg: 'blue.50',
+                  borderColor: hoverBorderColor,
+                  transform: 'translateY(-2px)',
+                }}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={handleClickUpload}
+              >
+                <VStack spacing={4}>
+                  <Icon as={FiUpload} boxSize={8} color="gray.400" />
+                  <Box>
+                    <Text fontWeight="600" color="gray.700" mb={1}>
+                      Cliquez pour uploader ou glissez-déposez
+                    </Text>
+                    <Text fontSize="sm" color="gray.500">
+                      PNG, JPG, WEBP jusqu’à 10 MB (jusqu'à 12 images)
+                    </Text>
+                  </Box>
+                  <Button
+                    colorScheme="blue"
+                    variant="outline"
+                    size="sm"
+                    leftIcon={<FiImage />}
+                    onClick={(e) => { e.stopPropagation(); handleClickUpload() }}
+                  >
+                    Choisir des images
+                  </Button>
+                </VStack>
+              </Box>
+            ) : (
+              <Box>
+                <Text fontSize="sm" color="gray.500" mb={2}>{images.length} image(s)</Text>
+                <Flex wrap="wrap" gap={3}>
+                  {images.map((it, idx) => (
+                    <Box key={idx} position="relative" width="120px" borderRadius="md" overflow="hidden" border="1px solid" borderColor={borderColor}>
+                      <AspectRatio ratio={4/3}>
+                        <Image src={it.url} alt={`Image ${idx+1}`} objectFit="cover" />
+                      </AspectRatio>
+                      <Box position="absolute" top={2} right={2} display="flex" gap={2}>
+                        <Icon as={FiX} boxSize={4} color="white" bg="red.500" borderRadius="full" p={1} cursor="pointer" onClick={() => removeImage(idx)} />
+                      </Box>
+                      <Box position="absolute" left={2} bottom={2} display="flex" gap={2}>
+                        <Icon as={FiChevronLeft} boxSize={4} color="white" bg="blackAlpha.600" borderRadius="full" p={1} cursor="pointer" onClick={() => moveImage(idx, Math.max(0, idx - 1))} />
+                        <Icon as={FiChevronRight} boxSize={4} color="white" bg="blackAlpha.600" borderRadius="full" p={1} cursor="pointer" onClick={() => moveImage(idx, Math.min(images.length - 1, idx + 1))} />
+                      </Box>
+                    </Box>
+                  ))}
+                </Flex>
 
-      {/* Bouton supprimer simple */}
-      <Icon
-        as={FiX}
-        boxSize={6}
-        color="white"
-        bg="red.500"
-        borderRadius="full"
-        p={1}
-        position="absolute"
-        top={3}
-        right={3}
-        cursor="pointer"
-        _hover={{ bg: 'red.600' }}
-        onClick={removeImage}
-        transition="all 0.2s ease"
-      />
-    </Box>
-  )}
-</FormControl>
+                <HStack spacing={3} mt={4}>
+                  <Button size="sm" variant="outline" leftIcon={<FiImage />} onClick={handleClickUpload}>Ajouter d'autres images</Button>
+                  <Button size="sm" colorScheme="red" variant="ghost" onClick={() => { setImages([]) }}>Supprimer toutes</Button>
+                </HStack>
+              </Box>
+            )}
+          </FormControl>
 
 
           <Button

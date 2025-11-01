@@ -19,6 +19,23 @@ router.get('/', async (req, res) => {
       try {
         const r = await query('SELECT * FROM products ORDER BY created_at DESC LIMIT $1 OFFSET $2', [limit, offset])
         const rows = r.rows || []
+        // attach images for those products
+        try {
+          const ids = rows.map(r => r.id)
+          if (ids.length) {
+            const imgs = await query('SELECT product_id, url, position FROM product_images WHERE product_id = ANY($1)', [ids])
+            const map = {}
+            ;(imgs.rows || []).forEach(ir => {
+              if (!map[ir.product_id]) map[ir.product_id] = []
+              map[ir.product_id].push(ir.url)
+            })
+            for (const p of rows) {
+              p.images = map[p.id] && map[p.id].length ? map[p.id] : (p.image_url ? [p.image_url] : [])
+            }
+          }
+        } catch (e) {
+          // non-fatal
+        }
         // attempt to refresh cache in background for future requests
         try {
           const { query: dbQuery } = await import('../db.js')
@@ -49,7 +66,13 @@ router.get('/:id', async (req, res) => {
 
     const product = await query('SELECT * FROM products WHERE id = $1', [id])
     if (product.rowCount === 0) return res.status(404).json({ error: 'Not found' })
-    return res.json(product.rows[0])
+    const p = product.rows[0]
+    try {
+      const imgs = await query('SELECT url FROM product_images WHERE product_id = $1 ORDER BY position ASC', [id])
+      p.images = (imgs.rows || []).map(r => r.url)
+      if ((!p.images || p.images.length === 0) && p.image_url) p.images = [p.image_url]
+    } catch (e) { /* ignore */ }
+    return res.json(p)
   } catch (err) {
     console.error('Failed to get product', err)
     res.status(500).json({ error: 'Failed to get product' })
@@ -58,7 +81,7 @@ router.get('/:id', async (req, res) => {
 
 // Create product (seller)
 router.post('/', authenticate, requireRole('seller'), async (req, res) => {
-  const { title, description, price, image_url, category_id, quantity } = req.body
+  const { title, description, price, image_url, category_id, quantity, images } = req.body
   try {
     // ensure the seller has a shop before allowing product creation
     const shopCheck = await query('SELECT id FROM shops WHERE owner_id = $1', [req.user.id])
@@ -83,6 +106,22 @@ router.post('/', authenticate, requireRole('seller'), async (req, res) => {
       'INSERT INTO products (title, description, price, image_url, category_id, seller_id, quantity) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *',
       params
     )
+    const created = r.rows[0]
+    // if images array provided, persist into product_images
+    if (Array.isArray(images) && images.length) {
+      try {
+        // remove any existing (should be none for new product) and insert
+        for (let i = 0; i < images.length; i++) {
+          const url = images[i]
+          if (!url) continue
+          await query('INSERT INTO product_images (product_id, url, position) VALUES ($1, $2, $3)', [created.id, url, i])
+        }
+        // attach images to response object
+        created.images = images
+      } catch (e) { console.warn('Failed to persist product images', e && e.message) }
+    } else {
+      created.images = created.image_url ? [created.image_url] : []
+    }
     // Refresh cache before responding so the new product is immediately visible to other users
     try {
       const { query: dbQuery } = await import('../db.js')
@@ -106,7 +145,7 @@ router.post('/', authenticate, requireRole('seller'), async (req, res) => {
 router.put('/:id', authenticate, async (req, res) => {
   const { id } = req.params
   // include category_id and quantity
-  const { title, description, price, image_url, category_id, quantity } = req.body
+  const { title, description, price, image_url, category_id, quantity, images } = req.body
   try {
     // check owner
     const product = await query('SELECT * FROM products WHERE id = $1', [id])
@@ -133,7 +172,28 @@ router.put('/:id', authenticate, async (req, res) => {
       'UPDATE products SET title=$1, description=$2, price=$3, image_url=$4, category_id=$5, quantity=$6 WHERE id=$7 RETURNING *',
       params
     )
-    res.json(updated.rows[0])
+    const updatedProduct = updated.rows[0]
+    // if images provided, replace them
+    if (Array.isArray(images)) {
+      try {
+        await query('DELETE FROM product_images WHERE product_id = $1', [id])
+        for (let i = 0; i < images.length; i++) {
+          const url = images[i]
+          if (!url) continue
+          await query('INSERT INTO product_images (product_id, url, position) VALUES ($1, $2, $3)', [id, url, i])
+        }
+        updatedProduct.images = images
+      } catch (e) { console.warn('Failed to update product images', e && e.message) }
+    } else {
+      // attempt to attach existing images
+      try {
+        const imgs = await query('SELECT url FROM product_images WHERE product_id = $1 ORDER BY position ASC', [id])
+        updatedProduct.images = (imgs.rows || []).map(r => r.url)
+        if ((!updatedProduct.images || updatedProduct.images.length === 0) && updatedProduct.image_url) updatedProduct.images = [updatedProduct.image_url]
+      } catch (e) { /* ignore */ }
+    }
+
+    res.json(updatedProduct)
     try { const { query: dbQuery } = await import('../db.js'); cache.refresh(dbQuery) } catch (e) { console.warn('Cache refresh after update failed', e.message) }
   } catch (err) {
     console.error('Update product failed', err)
