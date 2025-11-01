@@ -1,9 +1,8 @@
 // src/index.js
 import express from 'express';
 import nlpManager, { init as initNlp } from '../nlp/index.js';
-/* import tfidfCache from './tfidf_cache.js';
-import cache from './cache.js';
-*/ 
+import tfidfCache from './tfidf_cache.js';
+import cache from './cache.js'; 
 import detectEmotion from '../nlp/emotions.js';
 import recommend from '../nlp/recommend.js';
 import dotenv from 'dotenv';
