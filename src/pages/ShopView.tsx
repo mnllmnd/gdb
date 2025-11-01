@@ -103,6 +103,7 @@ export default function ShopView() {
                             title={product.title || product.name || ''}
                             price={product.price ?? product.amount}
                             image_url={product.image_url ?? product.product_image}
+                            images={product.images}
                             quantity={product.quantity ?? product.quantite ?? product.stock ?? product.amount_available}
                             height={cardHeight}
                           />
@@ -127,6 +128,7 @@ export default function ShopView() {
                             title={product.title || product.name || ''}
                             price={product.price ?? product.amount}
                             image_url={product.image_url ?? product.product_image}
+                            images={product.images}
                             quantity={product.quantity ?? product.quantite ?? product.stock ?? product.amount_available}
                             height={cardHeight}
                           />

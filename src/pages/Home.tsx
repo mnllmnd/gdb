@@ -351,6 +351,7 @@ export default function Home() {
                       description={product.description || ''}
                       price={product.price ?? product.amount}
                       image_url={product.image_url ?? product.product_image}
+                      images={product.images}
                       quantity={Number( 
                         product.quantity ??
                         product.quantite ??
@@ -402,6 +403,7 @@ export default function Home() {
                     description={product.description || ''}
                     price={product.price ?? product.amount}
                     image_url={product.image_url ?? product.product_image}
+                    images={product.images}
                     quantity={Number(
                       product.quantity ??
                       product.quantite ??
@@ -477,6 +479,7 @@ export default function Home() {
                     description={product.description || ''}
                     price={product.price ?? product.amount}
                     image_url={product.image_url ?? product.product_image}
+                    images={product.images}
                     height={cardHeight}
                     shopId={shop?.id || product.shop_id || product.seller_id}
                     shopName={shop?.name}
