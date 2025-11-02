@@ -29,6 +29,7 @@ import AppTutorial from '../components/AppTutorial'
 import ShopCard from '../components/ShopCard'
 import ProductCard from '../components/ProductCard'
 import api from '../services/api'
+import InfiniteCarousel from '../components/InfiniteCarousel'
 
 interface Product {
   id: number
@@ -69,105 +70,11 @@ const normalizeImages = (product: Product): string[] => {
   return []
 }
 
-const SmoothCarousel: React.FC<{ 
-  children: React.ReactNode; 
-  speed?: number;
-}> = ({ 
-  children, 
-  speed = 30
-}) => {
-  const scrollRef = React.useRef<HTMLDivElement>(null)
-  const [isHovered, setIsHovered] = React.useState(false)
-  const [isDragging, setIsDragging] = React.useState(false)
-  const [startX, setStartX] = React.useState(0)
-  const [scrollLeft, setScrollLeft] = React.useState(0)
-
-  // Animation automatique - CORRIGÉE
-  React.useEffect(() => {
-    if (isHovered || isDragging) return
-    
-    const scroll = scrollRef.current
-    if (!scroll) return
-
-    let animationId: number
-    let lastTimestamp: number | null = null
-
-    const animate = (timestamp: number) => {
-      if (!lastTimestamp) lastTimestamp = timestamp
-      const delta = timestamp - lastTimestamp
-      
-      if (scroll && !isHovered && !isDragging && delta > 16) { // ~60fps
-        scroll.scrollLeft += (speed * delta) / 1000
-        
-        // Réinitialiser quand on arrive à la fin du contenu dupliqué
-        if (scroll.scrollLeft >= scroll.scrollWidth / 2) {
-          scroll.scrollLeft = 0
-        }
-        
-        lastTimestamp = timestamp
-      }
-      animationId = requestAnimationFrame(animate)
-    }
-
-    animationId = requestAnimationFrame(animate)
-    return () => cancelAnimationFrame(animationId)
-  }, [speed, isHovered, isDragging])
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true)
-    setStartX(e.pageX - (scrollRef.current?.offsetLeft || 0))
-    setScrollLeft(scrollRef.current?.scrollLeft || 0)
-  }
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return
-    e.preventDefault()
-    const x = e.pageX - (scrollRef.current?.offsetLeft || 0)
-    const walk = (x - startX) * 2
-    if (scrollRef.current) {
-      scrollRef.current.scrollLeft = scrollLeft - walk
-    }
-  }
-
-  const handleMouseUp = () => {
-    setIsDragging(false)
-  }
-
-  const handleMouseLeave = () => {
-    setIsDragging(false)
-    setIsHovered(false)
-  }
-
+const SmoothCarousel: React.FC<{ children: React.ReactNode; speed?: number }> = ({ children, speed = 40 }) => {
   return (
-    <Box
-      ref={scrollRef}
-      overflowX="auto"
-      overflowY="hidden"
-      css={{
-        '&::-webkit-scrollbar': {
-          display: 'none', // Cache la scrollbar
-        },
-        scrollbarWidth: 'none', // Firefox
-        msOverflowStyle: 'none', // IE/Edge
-      }}
-      cursor={isDragging ? 'grabbing' : 'grab'}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseLeave}
-      onMouseEnter={() => setIsHovered(true)}
-      userSelect="none"
-    >
-      <HStack 
-        spacing={{ base: 3, md: 4 }}
-        flexWrap="nowrap"
-        align="stretch"
-      >
-        {/* Dupliquer le contenu pour l'effet de boucle infinie */}
-        {children}
-        {children}
-      </HStack>
-    </Box>
+    <InfiniteCarousel speed={speed} mobileSpeed={Math.round(speed * 0.7)} resumeDelay={1200}>
+      {children}
+    </InfiniteCarousel>
   )
 }
 
@@ -207,9 +114,8 @@ export default function Home() {
     }
   }, [])
 
-  // Tailles responsives CORRIGÉES pour mobile
-  const cardHeight = useBreakpointValue({ base: '140px', sm: '160px', md: '200px' })
-  const carouselCardWidth = useBreakpointValue({ base: '160px', sm: '180px', md: '200px', lg: '220px' })
+  const cardHeight = useBreakpointValue({ base: '120px', md: '200px' })
+  const cardWidth = useBreakpointValue({ base: '45%', sm: '45%', md: '180px' })
   const initialCount = useBreakpointValue({ base: 4, md: 6 }) || 6
   
   const bgGradient = useColorModeValue(
@@ -528,13 +434,13 @@ export default function Home() {
                   </Badge>
                 </HStack>
 
-                <SmoothCarousel speed={25}>
+                <SmoothCarousel speed={70}>
                   {newProducts.map((product) => (
                     <Box
                       key={product.id}
                       flex="0 0 auto"
-                      w={carouselCardWidth}
-                      px={2}
+                      w={cardWidth}
+                      px={1.5}
                     >
                       <ProductCard
                         id={String(product.id)}
