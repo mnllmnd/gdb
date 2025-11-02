@@ -72,11 +72,9 @@ const normalizeImages = (product: Product): string[] => {
 const SmoothCarousel: React.FC<{ 
   children: React.ReactNode; 
   speed?: number;
-  cardWidth?: string | number;
 }> = ({ 
   children, 
-  speed = 20,
-  cardWidth = "280px"
+  speed = 30
 }) => {
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const [isHovered, setIsHovered] = React.useState(false)
@@ -84,24 +82,29 @@ const SmoothCarousel: React.FC<{
   const [startX, setStartX] = React.useState(0)
   const [scrollLeft, setScrollLeft] = React.useState(0)
 
-  // Animation automatique
+  // Animation automatique - CORRIGÉE
   React.useEffect(() => {
     if (isHovered || isDragging) return
     
     const scroll = scrollRef.current
     if (!scroll) return
 
-    const scrollSpeed = speed / 20 // Ralenti
     let animationId: number
+    let lastTimestamp: number | null = null
 
-    const animate = () => {
-      if (scroll && !isHovered && !isDragging) {
-        scroll.scrollLeft += scrollSpeed
+    const animate = (timestamp: number) => {
+      if (!lastTimestamp) lastTimestamp = timestamp
+      const delta = timestamp - lastTimestamp
+      
+      if (scroll && !isHovered && !isDragging && delta > 16) { // ~60fps
+        scroll.scrollLeft += (speed * delta) / 1000
         
-        // Boucle infinie
+        // Réinitialiser quand on arrive à la fin du contenu dupliqué
         if (scroll.scrollLeft >= scroll.scrollWidth / 2) {
           scroll.scrollLeft = 0
         }
+        
+        lastTimestamp = timestamp
       }
       animationId = requestAnimationFrame(animate)
     }
@@ -142,20 +145,10 @@ const SmoothCarousel: React.FC<{
       overflowY="hidden"
       css={{
         '&::-webkit-scrollbar': {
-          height: '8px',
+          display: 'none', // Cache la scrollbar
         },
-        '&::-webkit-scrollbar-track': {
-          background: 'rgba(0,0,0,0.05)',
-          borderRadius: '10px',
-        },
-        '&::-webkit-scrollbar-thumb': {
-          background: 'rgba(0,0,0,0.2)',
-          borderRadius: '10px',
-          '&:hover': {
-            background: 'rgba(0,0,0,0.3)',
-          },
-        },
-        scrollBehavior: 'smooth',
+        scrollbarWidth: 'none', // Firefox
+        msOverflowStyle: 'none', // IE/Edge
       }}
       cursor={isDragging ? 'grabbing' : 'grab'}
       onMouseDown={handleMouseDown}
@@ -166,28 +159,13 @@ const SmoothCarousel: React.FC<{
       userSelect="none"
     >
       <HStack 
-        spacing={4}
+        spacing={{ base: 3, md: 4 }}
         flexWrap="nowrap"
-        minH="320px"
         align="stretch"
       >
         {/* Dupliquer le contenu pour l'effet de boucle infinie */}
-        {React.Children.map(children, (child) =>
-          React.isValidElement(child) 
-            ? React.cloneElement(child, { 
-                width: cardWidth,
-                flex: '0 0 auto'
-              } as any)
-            : child
-        )}
-        {React.Children.map(children, (child) =>
-          React.isValidElement(child) 
-            ? React.cloneElement(child, { 
-                width: cardWidth,
-                flex: '0 0 auto'
-              } as any)
-            : child
-        )}
+        {children}
+        {children}
       </HStack>
     </Box>
   )
@@ -229,8 +207,9 @@ export default function Home() {
     }
   }, [])
 
-  const cardHeight = useBreakpointValue({ base: '120px', md: '200px' })
-  const cardWidth = useBreakpointValue({ base: '45%', sm: '45%', md: '180px' })
+  // Tailles responsives CORRIGÉES pour mobile
+  const cardHeight = useBreakpointValue({ base: '140px', sm: '160px', md: '200px' })
+  const carouselCardWidth = useBreakpointValue({ base: '160px', sm: '180px', md: '200px', lg: '220px' })
   const initialCount = useBreakpointValue({ base: 4, md: 6 }) || 6
   
   const bgGradient = useColorModeValue(
@@ -549,12 +528,12 @@ export default function Home() {
                   </Badge>
                 </HStack>
 
-                <SmoothCarousel speed={30} cardWidth="280px">
+                <SmoothCarousel speed={25}>
                   {newProducts.map((product) => (
                     <Box
                       key={product.id}
                       flex="0 0 auto"
-                      w="280px"
+                      w={carouselCardWidth}
                       px={2}
                     >
                       <ProductCard
@@ -570,7 +549,7 @@ export default function Home() {
                           product.amount_available ??
                           0
                         )}
-                        height="300px"
+                        height={cardHeight}
                         shopId={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]) )?.id || product.shop_id || product.seller_id}
                         shopName={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.name}
                         shopDomain={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.domain}
