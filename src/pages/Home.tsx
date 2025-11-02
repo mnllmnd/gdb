@@ -287,7 +287,7 @@ export default function Home() {
                     </Box>
                     <VStack align="start" spacing={0}>
                       <Heading size="md" color={textColor}>
-                        🔥 Boutiques populaires
+                         Boutiques populaires
                       </Heading>
                       <Text fontSize="sm" color={secondaryTextColor}>
                         Les plus suivies par la communauté
