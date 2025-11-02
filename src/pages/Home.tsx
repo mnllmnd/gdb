@@ -18,8 +18,12 @@ import {
   Fade,
   ScaleFade,
   SimpleGrid,
+  Icon,
+  Card,
+  CardBody,
 } from '@chakra-ui/react'
 import { CloseIcon, StarIcon, ArrowUpIcon } from '@chakra-ui/icons'
+import { FiPackage, FiTrendingUp, FiGrid, FiShoppingBag } from 'react-icons/fi'
 import FilterNav from '../components/FilterNav'
 import AppTutorial from '../components/AppTutorial'
 import ShopCard from '../components/ShopCard'
@@ -54,12 +58,10 @@ interface Shop {
 
 // ✅ Fonction utilitaire pour normaliser les images
 const normalizeImages = (product: Product): string[] => {
-  // Si product.images est déjà un tableau, le retourner
   if (Array.isArray(product.images)) {
     return product.images.filter((img): img is string => typeof img === 'string' && img.trim() !== '')
   }
   
-  // Sinon, construire un tableau à partir de image_url ou product_image
   const mainImage = product.image_url ?? product.product_image
   if (mainImage && typeof mainImage === 'string' && mainImage.trim() !== '') {
     return [mainImage]
@@ -68,7 +70,6 @@ const normalizeImages = (product: Product): string[] => {
   return []
 }
 
-// Thin wrapper: use the extracted InfiniteCarousel component
 const SmoothCarousel: React.FC<{ children: React.ReactNode; speed?: number }> = ({ children, speed = 40 }) => {
   return (
     <InfiniteCarousel speed={speed} mobileSpeed={Math.round(speed * 0.7)} resumeDelay={1200}>
@@ -85,13 +86,11 @@ export default function Home() {
   const [categories, setCategories] = React.useState<Category[]>([])
   const [categorizedProducts, setCategorizedProducts] = React.useState<Record<number, Product[]>>({})
   
-  // ✅ SOLUTION : Persister la vue dans le localStorage
   const [currentView, setCurrentView] = React.useState<'shops' | 'products'>(() => {
     const savedView = localStorage.getItem('homeView')
     return savedView === 'shops' ? 'shops' : 'products'
   })
 
-  // ✅ Sauvegarder automatiquement la vue actuelle
   React.useEffect(() => {
     localStorage.setItem('homeView', currentView)
   }, [currentView])
@@ -100,7 +99,6 @@ export default function Home() {
   const [isLoading, setIsLoading] = React.useState(true)
   const [showScrollTop, setShowScrollTop] = React.useState(false)
 
-  // ✅ Option bonus : Persister la position du scroll
   React.useEffect(() => {
     const handleBeforeUnload = () => {
       localStorage.setItem('homeScroll', String(window.scrollY))
@@ -109,7 +107,6 @@ export default function Home() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [])
 
-  // ✅ Restaurer la position du scroll au chargement
   React.useEffect(() => {
     const savedScroll = localStorage.getItem('homeScroll')
     if (savedScroll) {
@@ -117,24 +114,21 @@ export default function Home() {
     }
   }, [])
 
-  // Déplacer tous les hooks conditionnels en haut
   const cardHeight = useBreakpointValue({ base: '120px', md: '200px' })
   const cardWidth = useBreakpointValue({ base: '45%', sm: '45%', md: '180px' })
   const initialCount = useBreakpointValue({ base: 4, md: 6 }) || 6
   
-  // Tous les useColorModeValue doivent être déclarés au même niveau
   const bgGradient = useColorModeValue(
     'linear(to-br, brand.500, brand.600)',
     'linear(to-br, brand.600, brand.700)'
   )
-  const sectionBg = useColorModeValue('brand.200', 'gray.800')
-  const categoryBg = useColorModeValue('brand.50', 'brand.900')
+  const sectionBg = useColorModeValue('white', 'gray.800')
+  const categoryBg = useColorModeValue('white', 'brand.900')
   const textColor = useColorModeValue('gray.800', 'white')
   const pageBg = useColorModeValue('gray.50', 'gray.900')
   const borderColor = useColorModeValue('gray.200', 'gray.600')
-  const secondaryTextColor = useColorModeValue('black', 'brand.500')
+  const secondaryTextColor = useColorModeValue('gray.600', 'gray.400')
 
-  // Pagination / lazy loading UX
   const loadMoreCount = 6
   const [visibleByCategory, setVisibleByCategory] = React.useState<Record<number, number>>({})
   const [visibleUncategorized, setVisibleUncategorized] = React.useState<number>(initialCount)
@@ -150,7 +144,6 @@ export default function Home() {
         ])
         
         setShops(shopsData)
-        // build shops lookup maps for quick access by id or owner
         const byId: Record<string, any> = {}
         const byOwner: Record<string, any> = {}
         ;(shopsData || []).forEach((s: any) => {
@@ -186,7 +179,6 @@ export default function Home() {
     loadData()
   }, [])
 
-  // show scroll-to-top button when scrolled down
   React.useEffect(() => {
     const onScroll = () => {
       setShowScrollTop(window.scrollY > 300)
@@ -198,7 +190,6 @@ export default function Home() {
 
   const handleSearch = React.useCallback(async (searchQuery: string) => {
     if (!searchQuery.trim()) {
-      // Reset to initial data
       const productsData = await api.products.list()
       setProducts(productsData?.slice(0, 12) || [])
       return
@@ -207,7 +198,6 @@ export default function Home() {
     setIsLoading(true)
     try {
       if (currentView === 'products') {
-        // search products
         const allProducts = await api.products.list()
         const searchTerms = searchQuery.trim().toLowerCase().split(/\s+/).filter(Boolean)
 
@@ -217,7 +207,6 @@ export default function Home() {
         }) || []
         setProducts(filteredProducts)
       } else {
-        // search shops
         const results = await api.shops.search(searchQuery.trim())
         setShops(results)
       }
@@ -228,9 +217,8 @@ export default function Home() {
     }
   }, [currentView])
 
-  // Export search function to make it available to NavBar
   React.useEffect(() => {
-    // @ts-ignore - Global type declared in src/types/global.d.ts
+    // @ts-ignore
     globalThis.handleGlobalSearch = handleSearch
   }, [handleSearch])
 
@@ -242,12 +230,10 @@ export default function Home() {
       map[cid].push(p)
     }
     setCategorizedProducts(map)
-    // Reset visible counts when product list changes (fresh search/filter)
     setVisibleByCategory({})
     setVisibleUncategorized(initialCount)
   }, [products, initialCount])
 
-  // Reload data when the view changes (shops <-> products)
   React.useEffect(() => {
     let isMounted = true
 
@@ -279,48 +265,118 @@ export default function Home() {
 
     return (
       <ScaleFade in={!isLoading} initialScale={0.95}>
-        <VStack spacing={6} align="stretch">
+        <VStack spacing={8} align="stretch">
           {popularShops && popularShops.length > 0 && (
             <Box>
-              <HStack justify="space-between" align="center" mb={3}>
-                <Text fontSize="sm" color={secondaryTextColor}>Les plus suivies</Text>
-              </HStack>
-              <SimpleGrid columns={{ base: 2, sm: 3, md: 4 }} spacing={3} mb={4}>
-                {popularShops.map((s) => (
-                  <Box key={s.id} height="100%">
-                    <ShopCard {...s} id={String(s.id)} height={cardHeight} />
-                  </Box>
-                ))}
-              </SimpleGrid>
+              <Card
+                bg={sectionBg}
+                borderRadius="xl"
+                boxShadow="md"
+                border="1px solid"
+                borderColor={borderColor}
+                overflow="hidden"
+              >
+                <CardBody p={6}>
+                  <HStack spacing={3} mb={4}>
+                    <Box
+                      p={2}
+                      bg="orange.50"
+                      borderRadius="lg"
+                    >
+                      <Icon as={FiTrendingUp} boxSize={6} color="orange.500" />
+                    </Box>
+                    <VStack align="start" spacing={0}>
+                      <Heading size="md" color={textColor}>
+                        🔥 Boutiques populaires
+                      </Heading>
+                      <Text fontSize="sm" color={secondaryTextColor}>
+                        Les plus suivies par la communauté
+                      </Text>
+                    </VStack>
+                    <Badge
+                      ml="auto"
+                      colorScheme="orange"
+                      fontSize="md"
+                      px={3}
+                      py={1}
+                      borderRadius="full"
+                    >
+                      {popularShops.length}
+                    </Badge>
+                  </HStack>
+                  <SimpleGrid columns={{ base: 2, sm: 3, md: 4 }} spacing={4}>
+                    {popularShops.map((s) => (
+                      <Box key={s.id} height="100%">
+                        <ShopCard {...s} id={String(s.id)} height={cardHeight} />
+                      </Box>
+                    ))}
+                  </SimpleGrid>
+                </CardBody>
+              </Card>
             </Box>
           )}
 
-          <SimpleGrid 
-            columns={{ base: 2, sm: 2, md: 3, lg: 4 }} 
-            spacing={{ base: 3, md: 4 }}
-            px={{ base: 2, md: 0 }}
+          <Card
+            bg={sectionBg}
+            borderRadius="xl"
+            boxShadow="md"
+            border="1px solid"
+            borderColor={borderColor}
           >
-            {(() => {
-              // Exclude shops already shown in popularShops to avoid duplicates
-              const popularIds = new Set((popularShops || []).map(p => String(p.id)))
-              const filtered = (shops || []).filter(s => !popularIds.has(String(s.id)))
-              return filtered.map((shop) => (
-                <Box 
-                  key={shop.id} 
-                  transition="all 0.3s ease"
-                  _hover={{ transform: 'translateY(-4px)' }}
-                  height="100%"
+            <CardBody p={6}>
+              <HStack spacing={3} mb={4}>
+                <Box
+                  p={2}
+                  bg="brand.50"
+                  borderRadius="lg"
                 >
-                  <ShopCard 
-                    {...shop} 
-                    id={String(shop.id)} 
-                    compact 
-                    height={cardHeight}
-                  />
+                  <Icon as={FiShoppingBag} boxSize={6} color="brand.500" />
                 </Box>
-              ))
-            })()}
-          </SimpleGrid>
+                <VStack align="start" spacing={0}>
+                  <Heading size="md" color={textColor}>
+                    Toutes les boutiques
+                  </Heading>
+                  <Text fontSize="sm" color={secondaryTextColor}>
+                    Explorez notre sélection complète
+                  </Text>
+                </VStack>
+                <Badge
+                  ml="auto"
+                  colorScheme="brand"
+                  fontSize="md"
+                  px={3}
+                  py={1}
+                  borderRadius="full"
+                >
+                  {shops.length - (popularShops?.length || 0)}
+                </Badge>
+              </HStack>
+              <SimpleGrid 
+                columns={{ base: 2, sm: 2, md: 3, lg: 4 }} 
+                spacing={4}
+              >
+                {(() => {
+                  const popularIds = new Set((popularShops || []).map(p => String(p.id)))
+                  const filtered = (shops || []).filter(s => !popularIds.has(String(s.id)))
+                  return filtered.map((shop) => (
+                    <Box 
+                      key={shop.id} 
+                      transition="all 0.3s ease"
+                      _hover={{ transform: 'translateY(-4px)' }}
+                      height="100%"
+                    >
+                      <ShopCard 
+                        {...shop} 
+                        id={String(shop.id)} 
+                        compact 
+                        height={cardHeight}
+                      />
+                    </Box>
+                  ))
+                })()}
+              </SimpleGrid>
+            </CardBody>
+          </Card>
         </VStack>
       </ScaleFade>
     )
@@ -331,12 +387,11 @@ export default function Home() {
       return <NoResults message="Aucun produit trouvé" onClear={() => handleSearch('')} />
     }
 
-    // ✅ Condition pour afficher le carrousel : pas de catégorie sélectionnée
     const showCarousel = selectedCategory === null
 
     return (
       <VStack spacing={8} align="stretch">
-        {/* Nouveautés carousel horizontal optimisé - seulement si aucun filtre actif */}
+        {/* Carrousel des nouveautés */}
         {showCarousel && (() => {
           const newProducts = [...(products || [])]
             .sort((a, b) => {
@@ -348,42 +403,74 @@ export default function Home() {
           if (!newProducts.length) return null
 
           return (
-            <Box mb={6}>
-              <Heading size="md" color="black">Nouveautés</Heading>
-              <Text fontSize="sm" color={secondaryTextColor} mb={2}>
-                
-              </Text>
-
-              <SmoothCarousel speed={70}>
-                {newProducts.map((product) => (
+            <Card
+              bg={sectionBg}
+              borderRadius="xl"
+              boxShadow="lg"
+              border="1px solid"
+              borderColor={borderColor}
+              overflow="hidden"
+            >
+              <CardBody p={6}>
+                <HStack spacing={3} mb={4}>
                   <Box
-                    key={product.id}
-                    flex="0 0 auto"
-                    w={cardWidth}
-                    px={1.5}
+                    p={2}
+                    bg="purple.50"
+                    borderRadius="lg"
                   >
-                    <ProductCard
-                      id={String(product.id)}
-                      title={product.title || product.name || ''}
-                      description={product.description || ''}
-                      price={product.price ?? product.amount}
-                      images={normalizeImages(product)}
-                      quantity={Number( 
-                        product.quantity ??
-                        product.quantite ??
-                        product.stock ??
-                        product.amount_available ??
-                        0
-                      )}
-                      height={cardHeight}
-                      shopId={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]) )?.id || product.shop_id || product.seller_id}
-                      shopName={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.name}
-                      shopDomain={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.domain}
-                    />
+                    <Icon as={StarIcon} boxSize={6} color="purple.500" />
                   </Box>
-                ))}
-              </SmoothCarousel>
-            </Box>
+                  <VStack align="start" spacing={0}>
+                    <Heading size="md" color={textColor}>
+                       Nouveautés
+                    </Heading>
+                    <Text fontSize="sm" color={secondaryTextColor}>
+                      Découvrez nos derniers produits
+                    </Text>
+                  </VStack>
+                  <Badge
+                    ml="auto"
+                    colorScheme="purple"
+                    fontSize="md"
+                    px={3}
+                    py={1}
+                    borderRadius="full"
+                  >
+                    {newProducts.length}
+                  </Badge>
+                </HStack>
+
+                <SmoothCarousel speed={70}>
+                  {newProducts.map((product) => (
+                    <Box
+                      key={product.id}
+                      flex="0 0 auto"
+                      w={cardWidth}
+                      px={1.5}
+                    >
+                      <ProductCard
+                        id={String(product.id)}
+                        title={product.title || product.name || ''}
+                        description={product.description || ''}
+                        price={product.price ?? product.amount}
+                        images={normalizeImages(product)}
+                        quantity={Number( 
+                          product.quantity ??
+                          product.quantite ??
+                          product.stock ??
+                          product.amount_available ??
+                          0
+                        )}
+                        height={cardHeight}
+                        shopId={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]) )?.id || product.shop_id || product.seller_id}
+                        shopName={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.name}
+                        shopDomain={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.domain}
+                      />
+                    </Box>
+                  ))}
+                </SmoothCarousel>
+              </CardBody>
+            </Card>
           )
         })()}
         
@@ -394,8 +481,8 @@ export default function Home() {
               {categories
                 .filter(category => (categorizedProducts[category.id] || []).length > 0)
                 .map((category, index) => (
-                  <Box key={category.id} style={{ animationDelay: `${index * 100}ms` }}>
-                    {renderProductCategory(category)}
+                  <Box key={category.id} w="100%">
+                    {renderProductCategory(category, index)}
                   </Box>
                 ))}
             </VStack>
@@ -404,8 +491,7 @@ export default function Home() {
           <ScaleFade in={!isLoading}>
             <SimpleGrid 
               columns={{ base: 2, sm: 3, md: 4, lg: 5 }} 
-              spacing={3}
-              px={{ base: 2, md: 0 }}
+              spacing={4}
             >
               {(categorizedProducts[selectedCategory] || []).map((product) => (
                 <Box 
@@ -447,38 +533,46 @@ export default function Home() {
     const toShow = uncategorizedProducts.slice(0, visible)
 
     return (
-      <Box 
-        mb={8} 
+      <Card
         bg={categoryBg}
-        p={{ base: 4, md: 6 }} 
-        borderRadius="xl" 
+        borderRadius="xl"
+        boxShadow="md"
         border="1px solid"
-        borderColor="brand.100"
-        boxShadow="sm"
-        position="relative"
+        borderColor={borderColor}
         overflow="hidden"
       >
-        <Box
-          position="absolute"
-          top={-2}
-          right={-2}
-          bg="brand.500"
-          borderRadius="full"
-          p={2}
-          boxShadow="md"
-        >
-          <StarIcon color="white" boxSize={3} />
-        </Box>
-        <VStack spacing={4} align="stretch">
-          <HStack justify="space-between" align="center">
-            <Heading size="md" color={textColor}>Découvertes</Heading>
-            <Badge colorScheme="brand" variant="subtle" fontSize="sm">
-              {uncategorizedProducts.length} produit(s)
+        <CardBody p={6}>
+          <HStack spacing={3} mb={4}>
+            <Box
+              p={2}
+              bg="blue.50"
+              borderRadius="lg"
+            >
+              <Icon as={FiPackage} boxSize={6} color="blue.500" />
+            </Box>
+            <VStack align="start" spacing={0}>
+              <Heading size="md" color={textColor}>
+                🎁 Découvertes
+              </Heading>
+              <Text fontSize="sm" color={secondaryTextColor}>
+                Produits uniques et variés
+              </Text>
+            </VStack>
+            <Badge
+              ml="auto"
+              colorScheme="blue"
+              fontSize="md"
+              px={3}
+              py={1}
+              borderRadius="full"
+            >
+              {uncategorizedProducts.length}
             </Badge>
           </HStack>
+          
           <SimpleGrid 
             columns={{ base: 2, sm: 3, md: 4, lg: 5 }} 
-            spacing={3}
+            spacing={4}
           >
             {toShow.map((product) => {
               const shop = (shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)])
@@ -505,48 +599,82 @@ export default function Home() {
           </SimpleGrid>
 
           {uncategorizedProducts.length > toShow.length && (
-            <Center>
-              <Button size="sm" onClick={() => setVisibleUncategorized(v => v + loadMoreCount)}>Voir plus</Button>
+            <Center mt={4}>
+              <Button 
+                size="md" 
+                variant="outline"
+                colorScheme="blue"
+                borderRadius="full"
+                onClick={() => setVisibleUncategorized(v => v + loadMoreCount)}
+              >
+                Voir plus
+              </Button>
             </Center>
           )}
-        </VStack>
-      </Box>
+        </CardBody>
+      </Card>
     )
   }
 
-  const renderProductCategory = (category: Category) => {
+  const renderProductCategory = (category: Category, index: number) => {
     const categoryProducts = categorizedProducts[category.id] || []
     if (categoryProducts.length === 0) return null
     const visible = visibleByCategory[category.id] ?? initialCount
     const toShow = categoryProducts.slice(0, visible)
 
+    const colorSchemes = ['green', 'orange', 'pink', 'teal', 'cyan']
+    const colorScheme = colorSchemes[index % colorSchemes.length]
+
     return (
-      <Box
-        key={category.id}
+      <Card
         bg={sectionBg}
-        p={{ base: 4, md: 6 }}
         borderRadius="xl"
-        mb={6}
+        boxShadow="md"
         border="1px solid"
         borderColor={borderColor}
-        boxShadow="sm"
+        overflow="hidden"
         transition="all 0.3s ease"
-        width="100%"
         _hover={{
-          boxShadow: 'md',
-          borderColor: 'brand.300',
+          boxShadow: 'lg',
+          borderColor: `${colorScheme}.300`,
         }}
       >
-        <VStack spacing={4} align="stretch">
-          <HStack justify="space-between" align="center">
-            <Heading size="lg" color={textColor}>{category.name}</Heading>
-            <Badge colorScheme="brand" fontSize="sm" px={2} py={1} borderRadius="full">
-              {categoryProducts.length} article(s)
+        <Box
+          h="4px"
+          bg={`${colorScheme}.400`}
+        />
+        <CardBody p={6}>
+          <HStack spacing={3} mb={4}>
+            <Box
+              p={2}
+              bg={`${colorScheme}.50`}
+              borderRadius="lg"
+            >
+              <Icon as={FiGrid} boxSize={6} color={`${colorScheme}.500`} />
+            </Box>
+            <VStack align="start" spacing={0}>
+              <Heading size="md" color={textColor}>
+                {category.name}
+              </Heading>
+              <Text fontSize="sm" color={secondaryTextColor}>
+                Découvrez notre collection
+              </Text>
+            </VStack>
+            <Badge
+              ml="auto"
+              colorScheme={colorScheme}
+              fontSize="md"
+              px={3}
+              py={1}
+              borderRadius="full"
+            >
+              {categoryProducts.length}
             </Badge>
           </HStack>
+          
           <SimpleGrid 
             columns={{ base: 2, sm: 3, md: 4, lg: 5 }} 
-            spacing={3}
+            spacing={4}
           >
             {toShow.map((product) => {
               const shop = (shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)])
@@ -580,12 +708,20 @@ export default function Home() {
           </SimpleGrid>
 
           {categoryProducts.length > toShow.length && (
-            <Center>
-              <Button size="sm" onClick={() => setVisibleByCategory(prev => ({ ...prev, [category.id]: (prev[category.id] || initialCount) + loadMoreCount }))}>Voir plus</Button>
+            <Center mt={4}>
+              <Button 
+                size="md"
+                variant="outline"
+                colorScheme={colorScheme}
+                borderRadius="full"
+                onClick={() => setVisibleByCategory(prev => ({ ...prev, [category.id]: (prev[category.id] || initialCount) + loadMoreCount }))}
+              >
+                Voir plus
+              </Button>
             </Center>
           )}
-        </VStack>
-      </Box>
+        </CardBody>
+      </Card>
     )
   }
 
@@ -604,8 +740,26 @@ export default function Home() {
         {isLoading ? (
           <Center py={12}>
             <VStack spacing={4}>
-              <Spinner size="xl" color="brand.500" thickness="3px" />
-              <Text color={textColor} fontSize="lg">Chargement...</Text>
+              <Box position="relative">
+                <Spinner 
+                  size="xl" 
+                  color="brand.500" 
+                  thickness="4px"
+                  speed="0.8s"
+                />
+                <Icon 
+                  as={FiPackage} 
+                  position="absolute" 
+                  top="50%" 
+                  left="50%" 
+                  transform="translate(-50%, -50%)"
+                  boxSize={6}
+                  color="brand.500"
+                />
+              </Box>
+              <Text color={textColor} fontSize="lg" fontWeight="500">
+                Chargement en cours...
+              </Text>
             </VStack>
           </Center>
         ) : (
@@ -613,7 +767,7 @@ export default function Home() {
         )}
       </Container>
 
-      {/* Scroll-to-top button */}
+      {/* Bouton scroll to top moderne */}
       <IconButton
         aria-label="Remonter en haut"
         icon={<ArrowUpIcon />}
@@ -622,42 +776,67 @@ export default function Home() {
         bottom={{ base: 80, md: 12 }}
         zIndex={2000}
         borderRadius="full"
-        boxShadow="lg"
+        boxShadow="xl"
+        size="lg"
         display={showScrollTop ? 'inline-flex' : 'none'}
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         colorScheme="brand"
+        transition="all 0.3s"
+        _hover={{
+          transform: 'translateY(-4px)',
+          boxShadow: '2xl'
+        }}
       />
     </Box>
   )
 }
 
-// Composant NoResults séparé pour éviter les hooks conditionnels
 function NoResults({ message, onClear }: { readonly message: string; readonly onClear: () => void }) {
-  const textColor = useColorModeValue('gray.600', 'gray.400')
+  const textColor = useColorModeValue('gray.700', 'gray.400')
+  const bgColor = useColorModeValue('white', 'gray.800')
   
   return (
-    <Center py={16} textAlign="center">
-      <VStack spacing={4}>
-        <Box
-          p={6}
-          borderRadius="full"
-          bg={useColorModeValue('gray.100', 'gray.700')}
-        >
-          <CloseIcon boxSize={8} color={textColor} />
-        </Box>
-        <Text fontSize="xl" color={textColor} fontWeight="medium">
-          {message}
-        </Text>
-        <IconButton
-          aria-label="Effacer la recherche"
-          icon={<CloseIcon />}
-          onClick={onClear}
-          size="md"
-          colorScheme="brand"
-          variant="ghost"
-          borderRadius="full"
-        />
-      </VStack>
+    <Center py={16}>
+      <Card
+        maxW="md"
+        bg={bgColor}
+        borderRadius="2xl"
+        boxShadow="xl"
+        border="1px solid"
+        borderColor={useColorModeValue('gray.200', 'gray.700')}
+      >
+        <CardBody p={10}>
+          <VStack spacing={5} textAlign="center">
+            <Box
+              p={5}
+              bg={useColorModeValue('gray.50', 'gray.700')}
+              borderRadius="full"
+              border="2px dashed"
+              borderColor={useColorModeValue('gray.300', 'gray.600')}
+            >
+              <Icon as={FiPackage} boxSize={12} color="gray.400" />
+            </Box>
+            <VStack spacing={2}>
+              <Heading size="md" color={textColor}>
+                {message}
+              </Heading>
+              <Text color={useColorModeValue('gray.600', 'gray.500')} fontSize="sm">
+                Essayez de modifier vos critères de recherche
+              </Text>
+            </VStack>
+            <Button
+              colorScheme="brand"
+              size="lg"
+              borderRadius="full"
+              onClick={onClear}
+              rightIcon={<CloseIcon />}
+              fontWeight="600"
+            >
+              Réinitialiser
+            </Button>
+          </VStack>
+        </CardBody>
+      </Card>
     </Center>
   )
 }
