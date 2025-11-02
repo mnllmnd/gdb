@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
-import { 
-  Container, 
-  Heading, 
-  Text, 
-  Spinner, 
-  Box, 
-  useBreakpointValue, 
-  Grid, 
-  GridItem, 
+import {
+  Container,
+  Heading,
+  Text,
+  Spinner,
+  Box,
+  useBreakpointValue,
+  Grid,
+  GridItem,
   VStack,
   Tabs,
   TabList,
@@ -19,7 +19,9 @@ import {
   HStack,
   Collapse,
   Button,
-  Icon
+  Icon,
+  Image,
+  Divider,
 } from '@chakra-ui/react'
 import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons'
 import api from '../services/api'
@@ -29,7 +31,10 @@ import BackButton from '../components/BackButton'
 import ReviewForm from '../components/ReviewForm'
 import ReviewsList from '../components/ReviewsList'
 
-interface Category { id: number; name: string }
+interface Category {
+  id: number
+  name: string
+}
 
 export default function ShopView() {
   const { domain } = useParams()
@@ -40,7 +45,7 @@ export default function ShopView() {
   const [categorizedProducts, setCategorizedProducts] = useState<Record<number, any[]>>({})
   const [reviewsOpen, setReviewsOpen] = useState(false)
   const [reviewCount, setReviewCount] = useState(0)
-  const cardHeight = useBreakpointValue({ base: '90px', md: '180px' })
+  const cardHeight = useBreakpointValue({ base: '140px', md: '200px' })
 
   useEffect(() => {
     async function load() {
@@ -49,13 +54,17 @@ export default function ShopView() {
         const s = await api.shops.byDomain(domain)
         setShop(s)
 
-        // Try a dedicated endpoint first, fall back to filtering products list
         let found: any[] = []
         try {
           const all = await api.products.list()
-          found = Array.isArray(all) ? all.filter((p: any) => String(p.seller_id) === String(s.owner_id) || String(p.shop_id) === String(s.id)) : []
+          found = Array.isArray(all)
+            ? all.filter(
+                (p: any) =>
+                  String(p.seller_id) === String(s.owner_id) || String(p.shop_id) === String(s.id)
+              )
+            : []
         } catch (error_) {
-          console.warn('Failed to load shop-specific products, falling back', error_)
+          console.warn('Failed to load shop-specific products', error_)
           found = []
         }
 
@@ -65,11 +74,9 @@ export default function ShopView() {
           const cats = await api.categories.list()
           setCategories(cats || [])
         } catch (err) {
-          console.warn('Failed to load categories for shop view', err)
-          setCategories([])
+          console.warn('Failed to load categories', err)
         }
 
-        // Load review count
         try {
           const reviews = await api.reviews.list({ shop_id: s.id, limit: 1 })
           setReviewCount(reviews?.aggregate?.count || 0)
@@ -99,195 +106,288 @@ export default function ShopView() {
   if (!domain) return <Container py={8}>Nom de boutique manquant</Container>
 
   return (
-    <Container maxW="container.lg" py={8} pb={{ base: '120px', md: 8 }} overflow="visible">
-      <BackButton to={location.state?.from} />
-      {shop === null ? (
-        <Spinner />
-      ) : (
-        <>
-          {/* Shop Header */}
-          <Box mb={6} display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={4}>
-            <div>
-              <Heading size="xl" mb={2}>{shop.name || shop.domain}</Heading>
-              <Text color="gray.300" fontSize="md">{shop.description}</Text>
-            </div>
-            <FollowButton id={String(shop.id)} />
-          </Box>
-
-          {/* Compact Reviews Section */}
-          <Box 
-            mb={6} 
-            borderRadius="xl" 
-            overflow="hidden"
-            bg="white"
-            boxShadow="md"
-            border="1px solid"
-            borderColor="gray.100"
+    <Box w="100vw" overflowX="hidden" bg="gray.50">
+      {/* 🏞️ Hero section */}
+      {shop?.banner_url ? (
+        <Box
+          position="relative"
+          w="100%"
+          h={{ base: '220px', md: '300px' }}
+          mb={-10}
+          borderBottom="1px solid"
+          borderColor="gray.200"
+          overflow="hidden"
+        >
+          <Image
+            src={shop.banner_url}
+            alt={shop.name}
+            w="100%"
+            h="100%"
+            objectFit="cover"
+            filter="brightness(0.6)"
+          />
+          <Box
+            position="absolute"
+            inset="0"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            flexDir="column"
+            textAlign="center"
+            px={4}
           >
-            <Button
-              width="100%"
-              justifyContent="space-between"
-              onClick={() => setReviewsOpen(!reviewsOpen)}
-              bg="gray.50"
-              _hover={{ bg: 'gray.100' }}
-              borderRadius="0"
-              py={6}
-              px={6}
-              rightIcon={<Icon as={reviewsOpen ? ChevronUpIcon : ChevronDownIcon} boxSize={6} />}
+            <Heading
+              color="white"
+              fontSize={{ base: '2xl', md: '4xl' }}
+              fontWeight="700"
+              textShadow="0px 3px 6px rgba(0,0,0,0.5)"
             >
-              <HStack spacing={3}>
-                <Text fontSize="lg" fontWeight={700} color="gray.800">
-                  📝 Avis clients
-                </Text>
-                {reviewCount > 0 && (
-                  <Badge colorScheme="brand" fontSize="md" px={3} py={1} borderRadius="full">
-                    {reviewCount}
-                  </Badge>
-                )}
-              </HStack>
-            </Button>
-
-            <Collapse in={reviewsOpen} animateOpacity>
-              <Box p={6} bg="gray.50">
-                <Tabs colorScheme="brand" variant="soft-rounded">
-                  <TabList mb={4}>
-                    <Tab fontWeight={600}>Voir les avis</Tab>
-                    <Tab fontWeight={600}>Laisser un avis</Tab>
-                  </TabList>
-
-                  <TabPanels>
-                    <TabPanel px={0}>
-                      <Box 
-                        maxH="500px" 
-                        overflowY="auto" 
-                        css={{
-                          '&::-webkit-scrollbar': { width: '8px' },
-                          '&::-webkit-scrollbar-track': { background: '#f1f1f1', borderRadius: '10px' },
-                          '&::-webkit-scrollbar-thumb': { background: '#888', borderRadius: '10px' },
-                          '&::-webkit-scrollbar-thumb:hover': { background: '#555' }
-                        }}
-                      >
-                        <ReviewsList shopId={String(shop.id)} />
-                      </Box>
-                    </TabPanel>
-
-                    <TabPanel px={0}>
-                      <ReviewForm 
-                        shopId={String(shop.id)} 
-                        onSuccess={() => {
-                          setReviewCount(prev => prev + 1)
-                          // Optionally switch to reviews tab after submission
-                        }} 
-                      />
-                    </TabPanel>
-                  </TabPanels>
-                </Tabs>
-              </Box>
-            </Collapse>
-          </Box>
-
-          {/* Products Section */}
-          <Box 
-            bg="white" 
-            p={6} 
-            borderRadius="xl" 
-            boxShadow="md"
-            border="1px solid"
-            borderColor="gray.100"
-          >
-            <Heading size="lg" mb={6} color="gray.800">
-              🛍️ Nos produits
+              {shop.name || shop.domain}
             </Heading>
-            
-            {products === null && <Spinner />}
-            {products !== null && products.length === 0 && (
-              <Text color="gray.600" textAlign="center" py={8}>
-                Aucun produit trouvé pour cette boutique.
-              </Text>
-            )}
-            {products !== null && products.length > 0 && (
-              <VStack spacing={8} align="stretch">
-                {/* Uncategorized */}
-                {(() => {
-                  const uncategorized = (products || []).filter(p => !p.category_id)
-                  if (uncategorized.length === 0) return null
-                  return (
-                    <Box bg="brand.700" p={{ base: 4, md: 6 }} borderRadius="xl" boxShadow="sm">
-                      <Heading size="md" mb={4} color="white" textAlign="center">
-                        Autres produits
-                      </Heading>
-                      <Grid 
-                        templateColumns={{ 
-                          base: 'repeat(2, 1fr)', 
-                          sm: 'repeat(3, 1fr)', 
-                          md: 'repeat(4, 1fr)', 
-                          lg: 'repeat(5, 1fr)' 
-                        }} 
-                        gap={3}
-                      >
-                        {uncategorized.map((product) => (
-                          <GridItem key={product.id}>
-                            <ProductCard
-                              id={String(product.id)}
-                              title={product.title || product.name || ''}
-                              price={product.price ?? product.amount}
-                              image_url={product.image_url ?? product.product_image}
-                              images={product.images}
-                              quantity={product.quantity ?? product.quantite ?? product.stock ?? product.amount_available}
-                              height={cardHeight}
-                            />
-                          </GridItem>
-                        ))}
-                      </Grid>
-                    </Box>
-                  )
-                })()}
-
-                {/* Per-category sections */}
-                {categories
-                  .filter(category => (categorizedProducts[category.id] || []).length > 0)
-                  .map(category => (
-                    <Box 
-                      key={category.id} 
-                      bg="#9d7b6a77" 
-                      color="white" 
-                      p={{ base: 4, md: 6 }} 
-                      borderRadius="xl" 
-                      boxShadow="sm"
-                    >
-                      <Heading size="md" mb={4} textAlign="center" color="white">
-                        {category.name}
-                      </Heading>
-                      <Grid 
-                        templateColumns={{ 
-                          base: 'repeat(2, 1fr)', 
-                          sm: 'repeat(3, 1fr)', 
-                          md: 'repeat(4, 1fr)', 
-                          lg: 'repeat(5, 1fr)' 
-                        }} 
-                        gap={3}
-                      >
-                        {(categorizedProducts[category.id] || []).map((product) => (
-                          <GridItem key={product.id}>
-                            <ProductCard
-                              id={String(product.id)}
-                              title={product.title || product.name || ''}
-                              price={product.price ?? product.amount}
-                              image_url={product.image_url ?? product.product_image}
-                              images={product.images}
-                              quantity={product.quantity ?? product.quantite ?? product.stock ?? product.amount_available}
-                              height={cardHeight}
-                            />
-                          </GridItem>
-                        ))}
-                      </Grid>
-                    </Box>
-                  ))}
-              </VStack>
-            )}
+            <Text color="whiteAlpha.900" mt={2} fontSize={{ base: 'sm', md: 'md' }}>
+              Découvrez nos produits et créations uniques
+            </Text>
           </Box>
-        </>
-      )}
-    </Container>
+        </Box>
+      ) : null}
+
+      <Container maxW="container.lg" py={{ base: 10, md: 16 }} px={{ base: 4, md: 6 }}>
+        <BackButton to={location.state?.from} />
+
+        {shop === null ? (
+          <Spinner />
+        ) : (
+          <>
+            {/* 🧾 Description Boutique */}
+            <Box
+              mb={10}
+              p={{ base: 5, md: 8 }}
+              borderRadius="2xl"
+              bg="white"
+              boxShadow="sm"
+              border="1px solid"
+              borderColor="gray.100"
+              _hover={{ boxShadow: 'md', transition: '0.3s ease' }}
+            >
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Heading size="lg" color="gray.800" fontWeight="700">
+                  À propos de la boutique
+                </Heading>
+                <FollowButton id={String(shop.id)} />
+              </Box>
+
+              <Divider my={4} />
+
+              <Text
+                color="gray.700"
+                fontSize={{ base: 'sm', md: 'md' }}
+                lineHeight="tall"
+                whiteSpace="pre-line"
+                borderLeft="4px solid #C19A6B"
+                pl={4}
+              >
+                {shop.description || "Cette boutique n'a pas encore ajouté de description."}
+              </Text>
+            </Box>
+
+            {/* ⭐ Avis Clients */}
+            <Box
+              mb={10}
+              borderRadius="2xl"
+              overflow="hidden"
+              bg="white"
+              boxShadow="sm"
+              border="1px solid"
+              borderColor="gray.100"
+            >
+              <Button
+                w="100%"
+                justifyContent="space-between"
+                onClick={() => setReviewsOpen(!reviewsOpen)}
+                bg="gray.50"
+                _hover={{ bg: 'gray.100' }}
+                borderRadius="0"
+                py={5}
+                px={4}
+                rightIcon={<Icon as={reviewsOpen ? ChevronUpIcon : ChevronDownIcon} boxSize={6} />}
+              >
+                <HStack spacing={3}>
+                  <Text fontSize="lg" fontWeight="semibold" color="gray.800">
+                    Avis clients
+                  </Text>
+                  {reviewCount > 0 && (
+                    <Badge colorScheme="yellow" fontSize="md" px={3} py={1} borderRadius="full">
+                      {reviewCount}
+                    </Badge>
+                  )}
+                </HStack>
+              </Button>
+
+              <Collapse in={reviewsOpen} animateOpacity>
+                <Box p={6} bg="gray.50">
+                  <Tabs colorScheme="yellow" variant="soft-rounded">
+                    <TabList mb={4}>
+                      <Tab fontWeight={600}>Voir les avis</Tab>
+                      <Tab fontWeight={600}>Laisser un avis</Tab>
+                    </TabList>
+                    <TabPanels>
+                      <TabPanel px={0}>
+                        <Box
+                          maxH="400px"
+                          overflowY="auto"
+                          css={{
+                            '&::-webkit-scrollbar': { width: '6px' },
+                            '&::-webkit-scrollbar-thumb': {
+                              background: '#bbb',
+                              borderRadius: '10px',
+                            },
+                          }}
+                        >
+                          <ReviewsList shopId={String(shop.id)} />
+                        </Box>
+                      </TabPanel>
+                      <TabPanel px={0}>
+                        <ReviewForm
+                          shopId={String(shop.id)}
+                          onSuccess={() => setReviewCount((prev) => prev + 1)}
+                        />
+                      </TabPanel>
+                    </TabPanels>
+                  </Tabs>
+                </Box>
+              </Collapse>
+            </Box>
+
+            {/* 🛒 Produits */}
+            <Box
+              bg="white"
+              p={{ base: 5, md: 8 }}
+              borderRadius="2xl"
+              boxShadow="md"
+              border="1px solid"
+              borderColor="gray.100"
+            >
+              <Heading
+                size="lg"
+                mb={8}
+                color="gray.800"
+                textAlign="center"
+                fontWeight="700"
+                letterSpacing="wide"
+              >
+                Nos produits
+              </Heading>
+
+              {products === null && <Spinner />}
+              {products !== null && products.length === 0 && (
+                <Text color="gray.500" textAlign="center" py={8}>
+                  Aucun produit disponible pour le moment.
+                </Text>
+              )}
+
+              {products && products.length > 0 && (
+                <VStack spacing={10} align="stretch">
+                  {/* Produits sans catégorie */}
+                  {(() => {
+                    const uncategorized = (products || []).filter((p) => !p.category_id)
+                    if (uncategorized.length === 0) return null
+                    return (
+                      <Box>
+                        <Heading
+                          size="md"
+                          mb={5}
+                          color="gray.800"
+                          textAlign="left"
+                          borderLeft="4px solid #C19A6B"
+                          pl={3}
+                        >
+                          Autres produits
+                        </Heading>
+                        <Grid
+                          templateColumns={{
+                            base: 'repeat(2, 1fr)',
+                            sm: 'repeat(3, 1fr)',
+                            md: 'repeat(4, 1fr)',
+                          }}
+                          gap={5}
+                          w="100%"
+                        >
+                          {uncategorized.map((product) => (
+                            <GridItem key={product.id} minW="0">
+                              <ProductCard
+                                id={String(product.id)}
+                                title={product.title || product.name || ''}
+                                description={product.description || product.details || ''}
+                                price={product.price ?? product.amount}
+                                image_url={product.image_url ?? product.product_image}
+                                images={product.images}
+                                quantity={
+                                  product.quantity ??
+                                  product.quantite ??
+                                  product.stock ??
+                                  product.amount_available
+                                }
+                                height={cardHeight}
+                              />
+                            </GridItem>
+                          ))}
+                        </Grid>
+                      </Box>
+                    )
+                  })()}
+
+                  {/* Produits par catégorie */}
+                  {categories
+                    .filter((category) => (categorizedProducts[category.id] || []).length > 0)
+                    .map((category) => (
+                      <Box key={category.id}>
+                        <Heading
+                          size="md"
+                          mb={5}
+                          color="gray.800"
+                          textAlign="left"
+                          borderLeft="4px solid #C19A6B"
+                          pl={3}
+                        >
+                          {category.name}
+                        </Heading>
+                        <Grid
+                          templateColumns={{
+                            base: 'repeat(2, 1fr)',
+                            sm: 'repeat(3, 1fr)',
+                            md: 'repeat(4, 1fr)',
+                          }}
+                          gap={5}
+                          w="100%"
+                        >
+                          {(categorizedProducts[category.id] || []).map((product) => (
+                            <GridItem key={product.id} minW="0">
+                              <ProductCard
+                                id={String(product.id)}
+                                title={product.title || product.name || ''}
+                                description={product.description || product.details || ''}
+                                price={product.price ?? product.amount}
+                                image_url={product.image_url ?? product.product_image}
+                                images={product.images}
+                                quantity={
+                                  product.quantity ??
+                                  product.quantite ??
+                                  product.stock ??
+                                  product.amount_available
+                                }
+                                height={cardHeight}
+                              />
+                            </GridItem>
+                          ))}
+                        </Grid>
+                      </Box>
+                    ))}
+                </VStack>
+              )}
+            </Box>
+          </>
+        )}
+      </Container>
+    </Box>
   )
 }

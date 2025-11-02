@@ -413,13 +413,7 @@ export default function Home() {
             >
               <CardBody p={6}>
                 <HStack spacing={3} mb={4}>
-                  <Box
-                    p={2}
-                    bg="purple.50"
-                    borderRadius="lg"
-                  >
-                    <Icon as={StarIcon} boxSize={6} color="purple.500" />
-                  </Box>
+                  
                   <VStack align="start" spacing={0}>
                     <Heading size="md" color={textColor}>
                        Nouveautés
