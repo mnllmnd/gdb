@@ -29,7 +29,6 @@ import AppTutorial from '../components/AppTutorial'
 import ShopCard from '../components/ShopCard'
 import ProductCard from '../components/ProductCard'
 import api from '../services/api'
-import InfiniteCarousel from '../components/InfiniteCarousel'
 
 interface Product {
   id: number
@@ -70,11 +69,127 @@ const normalizeImages = (product: Product): string[] => {
   return []
 }
 
-const SmoothCarousel: React.FC<{ children: React.ReactNode; speed?: number }> = ({ children, speed = 40 }) => {
+const SmoothCarousel: React.FC<{ 
+  children: React.ReactNode; 
+  speed?: number;
+  cardWidth?: string | number;
+}> = ({ 
+  children, 
+  speed = 20,
+  cardWidth = "280px"
+}) => {
+  const scrollRef = React.useRef<HTMLDivElement>(null)
+  const [isHovered, setIsHovered] = React.useState(false)
+  const [isDragging, setIsDragging] = React.useState(false)
+  const [startX, setStartX] = React.useState(0)
+  const [scrollLeft, setScrollLeft] = React.useState(0)
+
+  // Animation automatique
+  React.useEffect(() => {
+    if (isHovered || isDragging) return
+    
+    const scroll = scrollRef.current
+    if (!scroll) return
+
+    const scrollSpeed = speed / 20 // Ralenti
+    let animationId: number
+
+    const animate = () => {
+      if (scroll && !isHovered && !isDragging) {
+        scroll.scrollLeft += scrollSpeed
+        
+        // Boucle infinie
+        if (scroll.scrollLeft >= scroll.scrollWidth / 2) {
+          scroll.scrollLeft = 0
+        }
+      }
+      animationId = requestAnimationFrame(animate)
+    }
+
+    animationId = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(animationId)
+  }, [speed, isHovered, isDragging])
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true)
+    setStartX(e.pageX - (scrollRef.current?.offsetLeft || 0))
+    setScrollLeft(scrollRef.current?.scrollLeft || 0)
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return
+    e.preventDefault()
+    const x = e.pageX - (scrollRef.current?.offsetLeft || 0)
+    const walk = (x - startX) * 2
+    if (scrollRef.current) {
+      scrollRef.current.scrollLeft = scrollLeft - walk
+    }
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
+
+  const handleMouseLeave = () => {
+    setIsDragging(false)
+    setIsHovered(false)
+  }
+
   return (
-    <InfiniteCarousel speed={speed} mobileSpeed={Math.round(speed * 0.7)} resumeDelay={1200}>
-      {children}
-    </InfiniteCarousel>
+    <Box
+      ref={scrollRef}
+      overflowX="auto"
+      overflowY="hidden"
+      css={{
+        '&::-webkit-scrollbar': {
+          height: '8px',
+        },
+        '&::-webkit-scrollbar-track': {
+          background: 'rgba(0,0,0,0.05)',
+          borderRadius: '10px',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          background: 'rgba(0,0,0,0.2)',
+          borderRadius: '10px',
+          '&:hover': {
+            background: 'rgba(0,0,0,0.3)',
+          },
+        },
+        scrollBehavior: 'smooth',
+      }}
+      cursor={isDragging ? 'grabbing' : 'grab'}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
+      onMouseEnter={() => setIsHovered(true)}
+      userSelect="none"
+    >
+      <HStack 
+        spacing={4}
+        flexWrap="nowrap"
+        minH="320px"
+        align="stretch"
+      >
+        {/* Dupliquer le contenu pour l'effet de boucle infinie */}
+        {React.Children.map(children, (child) =>
+          React.isValidElement(child) 
+            ? React.cloneElement(child, { 
+                width: cardWidth,
+                flex: '0 0 auto'
+              } as any)
+            : child
+        )}
+        {React.Children.map(children, (child) =>
+          React.isValidElement(child) 
+            ? React.cloneElement(child, { 
+                width: cardWidth,
+                flex: '0 0 auto'
+              } as any)
+            : child
+        )}
+      </HStack>
+    </Box>
   )
 }
 
@@ -434,13 +549,13 @@ export default function Home() {
                   </Badge>
                 </HStack>
 
-                <SmoothCarousel speed={70}>
+                <SmoothCarousel speed={30} cardWidth="280px">
                   {newProducts.map((product) => (
                     <Box
                       key={product.id}
                       flex="0 0 auto"
-                      w={cardWidth}
-                      px={1.5}
+                      w="280px"
+                      px={2}
                     >
                       <ProductCard
                         id={String(product.id)}
@@ -455,7 +570,7 @@ export default function Home() {
                           product.amount_available ??
                           0
                         )}
-                        height={cardHeight}
+                        height="300px"
                         shopId={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]) )?.id || product.shop_id || product.seller_id}
                         shopName={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.name}
                         shopDomain={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.domain}
