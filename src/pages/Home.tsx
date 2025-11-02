@@ -351,7 +351,7 @@ export default function Home() {
             <Box mb={6}>
               <Heading size="md" color="black">Nouveautés</Heading>
               <Text fontSize="sm" color={secondaryTextColor} mb={2}>
-                😻
+                
               </Text>
 
               <SmoothCarousel speed={70}>

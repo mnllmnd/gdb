@@ -235,6 +235,19 @@ export const api = {
       return res.data
     }
   },
+  reviews: {
+    // list reviews by product_id or shop_id
+    list: (opts: { product_id?: string; shop_id?: string; limit?: number } = {}) => {
+      const qs: string[] = []
+      if (opts.product_id) qs.push(`product_id=${encodeURIComponent(String(opts.product_id))}`)
+      if (opts.shop_id) qs.push(`shop_id=${encodeURIComponent(String(opts.shop_id))}`)
+      if (opts.limit) qs.push(`limit=${encodeURIComponent(String(opts.limit))}`)
+      const q = qs.length ? `?${qs.join('&')}` : ''
+      return request(`/reviews${q}`)
+    },
+    create: (body: { product_id?: string; shop_id?: string; rating: number; comment?: string }, token?: string) => request('/reviews', { method: 'POST', body: JSON.stringify(body), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+    delete: (id: string, token?: string) => request(`/reviews/${encodeURIComponent(id)}`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+  },
   user: {
     myLikes: (token?: string) => request('/auth/me/likes', { headers: token ? { Authorization: `Bearer ${token}` } : {} })
   },

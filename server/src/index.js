@@ -22,6 +22,7 @@ import categoryRoutes from './routes/categories.js';
 import recommendRoutes from './routes/recommend.js';
 import feedRoutes from './routes/feed.js';
 import reelsRoutes from './routes/reels.js';
+import reviewRoutes from './routes/reviews.js';
 
 dotenv.config();
 
@@ -70,6 +71,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/recommend', recommendRoutes);
 app.use('/api/feed', feedRoutes);
 app.use('/api/reels', reelsRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // Route NLP améliorée
 app.post('/api/message', async (req, res) => {
