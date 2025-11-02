@@ -55,7 +55,7 @@ export default function BottomNav() {
         as={Link}
         to="/feed"
         aria-label="Fil"
-        icon={<span style={{ fontSize: 22 }}>🔥</span>}
+        icon={<span style={{ fontSize: 22 }}>Feed</span>}
         bg="whiteAlpha.900"
         _hover={{ bg: 'whiteAlpha.800', transform: 'scale(1.05)' }}
         color="black"

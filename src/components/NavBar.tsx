@@ -266,7 +266,6 @@ export default function NavBar() {
                 to="/feed"
                 variant="ghost"
                 size="md"
-                leftIcon={<span>🔥</span>}
                 color={textColor}
                 _hover={{ 
                   bg: hoverBg, 
@@ -275,7 +274,7 @@ export default function NavBar() {
                 }}
                 transition="all 0.2s ease"
               >
-                Fil
+                Feed
               </Button>
               <Center height="40px">
                 <SearchBar
@@ -373,7 +372,7 @@ export default function NavBar() {
                 as={RouterLink}
                 to="/reels?upload=1"
                 aria-label="Poster un Reel"
-                icon={<span style={{ fontSize: 18 }}>🎬</span>}
+                icon={<span style={{ fontSize: 18 }}>Reels</span>}
                 variant="ghost"
                 color={textColor}
                 size="md"
@@ -737,7 +736,6 @@ export default function NavBar() {
                   onClick={() => { onClose(); navigate('/login') }}
                   size="md"
                   variant="ghost"
-                  leftIcon={<span>🎬</span>}
                   color={textColor}
                   _hover={{ bg: hoverBg }}
                   justifyContent="flex-start"

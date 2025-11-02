@@ -11,10 +11,11 @@ import {
   ModalHeader,
   ModalBody,
   ModalCloseButton,
+  SimpleGrid,
+  Text,
 } from '@chakra-ui/react'
 import { getCurrentUser } from '../services/auth'
 import api from '../services/api'
-import { SimpleGrid, Text } from '@chakra-ui/react'
 import ReelUploadForm from '../components/ReelUploadForm'
 import { ReelCard, ReelPlayer } from '../components'
 import ReelGrid from '../components/ReelGrid'
@@ -25,20 +26,20 @@ export default function ReelsPage() {
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [reloadKey, setReloadKey] = useState(0)
   const location = useLocation()
+  const [myReels, setMyReels] = useState<any[]>([])
+  const [activeMyReel, setActiveMyReel] = useState<any | null>(null)
+  const me = getCurrentUser()
 
   useEffect(() => {
-    // Auto-open modal when URL has ?upload=1
     const qp = new URLSearchParams(location.search)
     if (qp.get('upload') === '1') {
       const me = getCurrentUser()
       if (!me) {
-        // not logged in -> redirect to login preserving next
         const next = window.location.pathname + window.location.search
         window.location.href = `/login?next=${encodeURIComponent(next)}`
         return
       }
       if (me.role !== 'seller') {
-        // logged in but not a seller -> send to seller setup
         window.location.href = '/seller/setup'
         return
       }
@@ -46,8 +47,6 @@ export default function ReelsPage() {
     }
   }, [location.search])
 
-  // load reels posted by current user (seller)
-  const [myReels, setMyReels] = useState<any[]>([])
   useEffect(() => {
     let mounted = true
     ;(async () => {
@@ -68,66 +67,123 @@ export default function ReelsPage() {
         console.error('Failed to load my reels', err)
       }
     })()
-    return () => { mounted = false }
+    return () => {
+      mounted = false
+    }
   }, [reloadKey])
 
-  const [activeMyReel, setActiveMyReel] = useState<any | null>(null)
-
-  const handleSuccess = () => {
-    // increment reloadKey to force ReelGrid to remount and reload
-    setReloadKey(k => k + 1)
-  }
-
-  const me = getCurrentUser()
+  const handleSuccess = () => setReloadKey(k => k + 1)
 
   return (
-    <Container maxW="container.lg" py={6}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Heading size="lg">Reels</Heading>
-        {me && me.role === 'seller' ? (
-          <Button onClick={onOpen} colorScheme="teal">Publier un reel</Button>
-        ) : (
-          <Button onClick={() => {
-            if (!me) {
-              const next = window.location.pathname + window.location.search
-              window.location.href = `/login?next=${encodeURIComponent(next)}`
-              return
-            }
-            // logged in but not seller
-            window.location.href = '/seller/setup'
-          }} colorScheme="gray">Publier un reel</Button>
-        )}
-      </Box>
-      {myReels.length > 0 && (
-        <>
-          <Box mb={4} display="flex" justifyContent="space-between" alignItems="center">
-            <Heading size="md">Mes reels</Heading>
-          </Box>
-          <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={4} mb={6}>
-            {myReels.map((r: any) => (
-              <ReelCard key={r.id} reel={r} onOpen={(reel: any) => setActiveMyReel(reel)} />
-            ))}
-          </SimpleGrid>
-          {activeMyReel && (
-            <ReelPlayer reel={activeMyReel} isOpen={Boolean(activeMyReel)} onClose={() => setActiveMyReel(null)} onLiked={() => setReloadKey(k => k + 1)} />
+    <Box
+      bg="#000"
+      color="gray.100"
+      minH="100vh"
+      py={6}
+      px={{ base: 4, md: 8 }}
+      transition="background-color 0.3s ease"
+    >
+      <Container maxW="container.lg" px={0}>
+        {/* Header */}
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={6}
+          borderBottom="1px solid"
+          borderColor="gray.700"
+          pb={3}
+        >
+          <Heading size="lg" color="white" fontWeight="700" letterSpacing="wide">
+            Reels
+          </Heading>
+
+          {me && me.role === 'seller' ? (
+            <Button
+              onClick={onOpen}
+              bg="white"
+              color="black"
+              _hover={{ bg: 'gray.300' }}
+              fontWeight="600"
+              borderRadius="full"
+            >
+              Publier un reel
+            </Button>
+          ) : (
+            <Button
+              onClick={() => {
+                if (!me) {
+                  const next = window.location.pathname + window.location.search
+                  window.location.href = `/login?next=${encodeURIComponent(next)}`
+                  return
+                }
+                window.location.href = '/seller/setup'
+              }}
+              bg="gray.800"
+              color="gray.100"
+              _hover={{ bg: 'gray.700' }}
+              fontWeight="500"
+              borderRadius="full"
+            >
+              Publier un reel
+            </Button>
           )}
-        </>
-      )}
-      <Box mt={6}>
-        <Heading size="md" mb={4}>Découvrir</Heading>
-        <ReelGrid key={reloadKey} />
-      </Box>
-      <Modal isOpen={isOpen} onClose={onClose} size="lg">
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Publier un reel</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <ReelUploadForm onSuccess={() => { handleSuccess(); onClose() }} onClose={onClose} />
-          </ModalBody>
-        </ModalContent>
+        </Box>
+
+        {/* Mes Reels */}
+        {myReels.length > 0 && (
+          <Box mb={10}>
+            <Heading size="md" mb={4} color="gray.200">
+              Mes reels
+            </Heading>
+            <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={4}>
+              {myReels.map((r: any) => (
+                <ReelCard
+                  key={r.id}
+                  reel={r}
+                  onOpen={(reel: any) => setActiveMyReel(reel)}
+                />
+              ))}
+            </SimpleGrid>
+            {activeMyReel && (
+              <ReelPlayer
+                reel={activeMyReel}
+                isOpen={Boolean(activeMyReel)}
+                onClose={() => setActiveMyReel(null)}
+                onLiked={() => setReloadKey(k => k + 1)}
+              />
+            )}
+          </Box>
+        )}
+
+        {/* Découverte */}
+        <Box>
+          <Heading size="md" mb={4} color="gray.200">
+            Découvrir
+          </Heading>
+          <ReelGrid key={reloadKey} darkMode />
+        </Box>
+
+        {/* Modal Upload */}
+        <Modal isOpen={isOpen} onClose={onClose} size="lg" isCentered>
+          <ModalOverlay bg="rgba(0,0,0,0.7)" />
+          <ModalContent bg="#111" color="white" border="1px solid #222">
+            <ModalHeader borderBottom="1px solid #222">Publier un reel</ModalHeader>
+            <ModalCloseButton color="gray.400" _hover={{ color: 'white' }} />
+            <ModalBody pb={6}>
+              <ReelUploadForm
+                onSuccess={() => {
+                  handleSuccess()
+                  onClose()
+                }}
+                onClose={onClose}
+              />
+            </ModalBody>
+          </ModalContent>
         </Modal>
+
         <ScrollTopButton />
-    </Container>
+      </Container>
+    </Box>
   )
 }
