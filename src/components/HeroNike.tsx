@@ -69,7 +69,7 @@ const HeroNike: React.FC = () => {
         </Heading>
 
         <Text
-          color="whiteAlpha.850"
+          color="white"
           maxW="container.md"
           textAlign="center"
           fontSize={{ base: 'md', md: 'lg' }}
