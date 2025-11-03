@@ -4,16 +4,12 @@ import {
   Heading,
   Text,
   Button,
-  Stack,
   Box,
   Image,
   Flex,
-  Spacer,
   IconButton,
   Spinner,
-  useBreakpointValue,
   useColorModeValue,
-  Divider,
   VStack,
   HStack,
   Badge,
@@ -22,14 +18,40 @@ import {
   CardBody,
   SimpleGrid,
   useToast,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
+  Grid,
+  GridItem,
+  Stat,
+  StatLabel,
+  StatNumber,
+  StatHelpText,
+  Progress,
+  Avatar,
 } from '@chakra-ui/react'
 import BackButton from '../components/BackButton'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import { highRes, PRODUCT_PLACEHOLDER, SHOP_PLACEHOLDER } from '../utils/image'
 import { getItem } from '../utils/localAuth'
-import { DeleteIcon, EditIcon } from '@chakra-ui/icons'
-import { FiPackage, FiShoppingBag, FiSettings, FiTrash2, FiEdit2, FiPlus, FiEye } from 'react-icons/fi'
+import { 
+  FiPackage, 
+  FiShoppingBag, 
+  FiSettings, 
+  FiTrash2, 
+  FiEdit2, 
+  FiPlus, 
+  FiEye, 
+  FiBarChart2,
+  FiActivity,
+  FiTrendingUp,
+  FiLayers,
+  FiHome,
+  FiUsers
+} from 'react-icons/fi'
 
 export default function SellerDashboard() {
   const nav = useNavigate()
@@ -121,87 +143,58 @@ export default function SellerDashboard() {
     }
   }
 
+  // Statistiques simulées
+  const stats = {
+    totalProducts: products.length,
+    totalViews: 0,
+    totalSales: 0,
+  }
+
   return (
     <Box minH="100vh" bg={bgColor}>
-      <Container maxW="container.lg" py={8} pb={{ base: '120px', md: 8 }}>
+      <Container maxW="container.lg" py={4} pb={{ base: '100px', md: 8 }}>
         <BackButton />
 
-        {/* Hero Header */}
-        <Card
-          mb={8}
-          bg={cardBg}
-          borderRadius="2xl"
-          boxShadow="xl"
-          border="1px solid"
-          borderColor="gray.200"
-          overflow="hidden"
-        >
-          <Box
-            h="6px"
-            bgGradient="linear(to-r, blue.400, purple.500)"
-          />
-          <CardBody p={{ base: 6, md: 8 }}>
-            <VStack spacing={4}>
+        {/* Header simplifié */}
+        <Card mb={4} bg={cardBg} borderRadius="xl" shadow="sm">
+          <CardBody p={4}>
+            <VStack spacing={3} align="stretch">
               <HStack spacing={3}>
-                <Box p={2} bg="blue.50" borderRadius="lg">
-                  <Icon as={FiShoppingBag} boxSize={8} color="blue.500" />
-                </Box>
+                <Icon as={FiShoppingBag} boxSize={6} color="blue.500" />
                 <VStack align="start" spacing={0}>
-                  <Heading size={{ base: 'lg', md: 'xl' }} color={headingColor} fontWeight="800">
-                    Tableau de bord vendeur
+                  <Heading size="md" color={headingColor}>
+                    Tableau de bord
                   </Heading>
-                  <Text color={textMuted} fontSize={{ base: 'sm', md: 'md' }}>
-                    Gérez votre activité commerciale
+                  <Text color={textMuted} fontSize="sm">
+                    {shop ? shop.name : 'Votre activité'}
                   </Text>
                 </VStack>
               </HStack>
 
-              {/* Quick Stats */}
-              <SimpleGrid columns={{ base: 2, md: 3 }} spacing={3} w="100%" pt={4}>
-                <Box
-                  p={4}
-                  bg="blue.50"
-                  borderRadius="xl"
-                  textAlign="center"
-                  border="1px solid"
-                  borderColor="blue.100"
-                >
-                  <Text fontSize="2xl" fontWeight="800" color="blue.700">
-                    {products.length}
+              {/* Stats rapides */}
+              <SimpleGrid columns={4} spacing={2}>
+                <Box textAlign="center">
+                  <Text fontSize="lg" fontWeight="800" color="blue.700">
+                    {stats.totalProducts}
                   </Text>
-                  <Text fontSize="xs" color="blue.600" fontWeight="600">
+                  <Text fontSize="2xs" color="blue.600">
                     Produits
                   </Text>
                 </Box>
-                <Box
-                  p={4}
-                  bg="green.50"
-                  borderRadius="xl"
-                  textAlign="center"
-                  border="1px solid"
-                  borderColor="green.100"
-                >
-                  <Text fontSize="2xl" fontWeight="800" color="green.700">
-                    {shop ? '1' : '0'}
+                <Box textAlign="center">
+                  <Text fontSize="lg" fontWeight="800" color="green.700">
+                    {stats.totalSales}
                   </Text>
-                  <Text fontSize="xs" color="green.600" fontWeight="600">
-                    Boutique
+                  <Text fontSize="2xs" color="green.600">
+                    Ventes
                   </Text>
                 </Box>
-                <Box
-                  p={4}
-                  bg="purple.50"
-                  borderRadius="xl"
-                  textAlign="center"
-                  border="1px solid"
-                  borderColor="purple.100"
-                  gridColumn={{ base: 'span 2', md: 'auto' }}
-                >
-                  <Text fontSize="2xl" fontWeight="800" color="purple.700">
-                    Actif
+                <Box textAlign="center">
+                  <Text fontSize="lg" fontWeight="800" color="purple.700">
+                    {stats.totalViews}
                   </Text>
-                  <Text fontSize="xs" color="purple.600" fontWeight="600">
-                    Statut
+                  <Text fontSize="2xs" color="purple.600">
+                    Vues
                   </Text>
                 </Box>
               </SimpleGrid>
@@ -209,295 +202,456 @@ export default function SellerDashboard() {
           </CardBody>
         </Card>
 
-        {/* Action Buttons */}
-        <SimpleGrid columns={{ base: 2, md: 4 }} spacing={3} mb={8}>
-          <Button
-            leftIcon={<Icon as={shop ? FiSettings : FiPlus} />}
-            colorScheme="blue"
-            onClick={() => nav('/seller/setup')}
-            size="lg"
-            borderRadius="xl"
-            fontWeight="600"
-            _hover={{ transform: 'translateY(-2px)', boxShadow: 'lg' }}
-            transition="all 0.2s"
-          >
-            {shop ? 'Modifier' : 'Créer'}
-          </Button>
-
-          <Button
-            leftIcon={<Icon as={FiPlus} />}
-            colorScheme="green"
-            onClick={() => nav('/seller/product')}
-            size="lg"
-            borderRadius="xl"
-            fontWeight="600"
-            _hover={{ transform: 'translateY(-2px)', boxShadow: 'lg' }}
-            transition="all 0.2s"
-          >
-            Produit
-          </Button>
-
-          {shop && (
-            <Button
-              leftIcon={<Icon as={FiEye} />}
-              variant="outline"
-              colorScheme="purple"
-              onClick={() => nav('/seller/shop')}
-              size="lg"
-              borderRadius="xl"
-              fontWeight="600"
-              _hover={{ transform: 'translateY(-2px)', bg: 'purple.50' }}
-              transition="all 0.2s"
+        {/* Navigation tabs mobile optimisée */}
+        <Tabs variant="soft-rounded" colorScheme="blue" isFitted>
+          <TabList mb={4} bg="white" p={1} borderRadius="xl" shadow="sm">
+            <Tab 
+              py={3}
+              _selected={{ bg: 'blue.500', color: 'white' }}
+              fontSize="sm"
             >
-              Boutique
-            </Button>
-          )}
-
-          {shop && (
-            <Button
-              leftIcon={<Icon as={FiTrash2} />}
-              colorScheme="red"
-              variant="outline"
-              onClick={handleDeleteShop}
-              size="lg"
-              borderRadius="xl"
-              fontWeight="600"
-              _hover={{ transform: 'translateY(-2px)', bg: 'red.50' }}
-              transition="all 0.2s"
-            >
-              Supprimer
-            </Button>
-          )}
-        </SimpleGrid>
-
-        {/* Main Content */}
-        {loading ? (
-          <Card bg={cardBg} borderRadius="2xl" boxShadow="lg">
-            <CardBody p={12}>
-              <VStack spacing={4}>
-                <Spinner size="xl" color="blue.500" thickness="4px" />
-                <Text color={textMuted}>Chargement en cours...</Text>
+              <VStack spacing={0}>
+                <Icon as={FiBarChart2} boxSize={4} />
+                <Text fontSize="2xs">Vue</Text>
               </VStack>
-            </CardBody>
-          </Card>
-        ) : (
-          <VStack spacing={6} align="stretch">
-            {/* Shop Info Card */}
-            {shop && (
-              <Card
-                bg={cardBg}
-                borderRadius="2xl"
-                boxShadow="lg"
-                border="1px solid"
-                borderColor="gray.200"
-                overflow="hidden"
-              >
-                <Box h="4px" bg="purple.400" />
-                <CardBody p={6}>
-                  <HStack spacing={3} mb={3}>
-                    <Box p={1.5} bg="purple.50" borderRadius="md">
-                      <Icon as={FiShoppingBag} boxSize={5} color="purple.500" />
-                    </Box>
-                    <Heading size="md" color={headingColor}>
-                      Ma boutique
-                    </Heading>
-                  </HStack>
+            </Tab>
+            <Tab 
+              py={3}
+              _selected={{ bg: 'blue.500', color: 'white' }}
+              fontSize="sm"
+            >
+              <VStack spacing={0}>
+                <Icon as={FiHome} boxSize={4} />
+                <Text fontSize="2xs">Boutique</Text>
+              </VStack>
+            </Tab>
+            <Tab 
+              py={3}
+              _selected={{ bg: 'blue.500', color: 'white' }}
+              fontSize="sm"
+            >
+              <VStack spacing={0}>
+                <Icon as={FiPackage} boxSize={4} />
+                <Text fontSize="2xs">Produits</Text>
+              </VStack>
+            </Tab>
+            <Tab 
+              py={3}
+              _selected={{ bg: 'blue.500', color: 'white' }}
+              fontSize="sm"
+            >
+              <VStack spacing={0}>
+                <Icon as={FiSettings} boxSize={4} />
+                <Text fontSize="2xs">Actions</Text>
+              </VStack>
+            </Tab>
+          </TabList>
 
-                  <Flex 
-                    align="center" 
-                    gap={4}
-                    direction={{ base: 'column', sm: 'row' }}
-                  >
-                    <Image
-                      src={highRes(shop.logo_url) ?? SHOP_PLACEHOLDER}
-                      boxSize={{ base: '80px', md: '100px' }}
-                      objectFit="cover"
-                      borderRadius="xl"
-                      border="2px solid"
-                      borderColor="gray.200"
-                      onError={(e: any) => {
-                        e.currentTarget.src = SHOP_PLACEHOLDER
-                      }}
-                    />
-                    <VStack align={{ base: 'center', sm: 'start' }} spacing={1} flex={1}>
-                      <Heading size="sm" color={headingColor}>
-                        {shop.name ?? 'Ma boutique'}
-                      </Heading>
-                      <Text color={textMuted} fontSize="sm" textAlign={{ base: 'center', sm: 'left' }}>
-                        {shop.description || 'Aucune description'}
-                      </Text>
-                      <HStack spacing={2}>
-                        <Badge colorScheme="purple" fontSize="xs" borderRadius="full">
-                          🌐 {shop.domain ?? '—'}
+          <TabPanels>
+            {/* Tab 1: Vue d'ensemble mobile */}
+            <TabPanel p={0}>
+              <VStack spacing={4} align="stretch">
+                {/* Aperçu rapide */}
+                <Card bg={cardBg} borderRadius="xl" shadow="sm">
+                  <CardBody p={4}>
+                    <VStack spacing={3} align="stretch">
+                      <HStack>
+                        <Icon as={FiActivity} color="blue.500" />
+                        <Text fontWeight="600">Aperçu</Text>
+                      </HStack>
+                      
+                      <SimpleGrid columns={2} spacing={3}>
+                        <Box p={3} bg="blue.50" borderRadius="lg">
+                          <Text fontSize="sm" fontWeight="600" color="blue.700">
+                            {products.length} produit{products.length > 1 ? 's' : ''}
+                          </Text>
+                          <Text fontSize="xs" color="blue.600">
+                            {products.length > 0 ? '🟢 En ligne' : '🔴 Aucun'}
+                          </Text>
+                        </Box>
+                        <Box p={3} bg="green.50" borderRadius="lg">
+                          <Text fontSize="sm" fontWeight="600" color="green.700">
+                            {shop ? 'Active' : 'Inactive'}
+                          </Text>
+                          <Text fontSize="xs" color="green.600">
+                            {shop ? '🟢 Boutique' : '🔴 À créer'}
+                          </Text>
+                        </Box>
+                      </SimpleGrid>
+                    </VStack>
+                  </CardBody>
+                </Card>
+
+                {/* Accès rapide */}
+                <Card bg={cardBg} borderRadius="xl" shadow="sm">
+                  <CardBody p={4}>
+                    <VStack spacing={3} align="stretch">
+                      <HStack>
+                        <Icon as={FiLayers} color="purple.500" />
+                        <Text fontWeight="600">Actions rapides</Text>
+                      </HStack>
+                      
+                      <VStack spacing={2}>
+                        <Button
+                          leftIcon={<Icon as={FiPlus} />}
+                          colorScheme="blue"
+                          onClick={() => nav('/seller/product')}
+                          w="100%"
+                          size="sm"
+                        >
+                          Ajouter produit
+                        </Button>
+                        <Button
+                          leftIcon={<Icon as={FiSettings} />}
+                          variant="outline"
+                          onClick={() => nav('/seller/setup')}
+                          w="100%"
+                          size="sm"
+                        >
+                          {shop ? 'Modifier boutique' : 'Créer boutique'}
+                        </Button>
+                      </VStack>
+                    </VStack>
+                  </CardBody>
+                </Card>
+
+                {/* Activité récente */}
+                <Card bg={cardBg} borderRadius="xl" shadow="sm">
+                  <CardBody p={4}>
+                    <VStack spacing={3} align="stretch">
+                      <HStack>
+                        <Icon as={FiTrendingUp} color="green.500" />
+                        <Text fontWeight="600">Activité récente</Text>
+                      </HStack>
+                      
+                      <VStack spacing={2} align="stretch">
+                        {products.slice(0, 2).map((product, index) => (
+                          <HStack key={product.id} p={2} bg="gray.50" borderRadius="md">
+                            <Avatar 
+                              size="sm" 
+                              src={highRes(product.image_url) ?? PRODUCT_PLACEHOLDER}
+                              name={product.title}
+                            />
+                            <Box flex={1}>
+                              <Text fontWeight="600" fontSize="xs" noOfLines={1}>
+                                {product.title}
+                              </Text>
+                              <Text fontSize="2xs" color={textMuted}>
+                                {Math.floor(product.price)} FCFA
+                              </Text>
+                            </Box>
+                          </HStack>
+                        ))}
+                        {products.length === 0 && (
+                          <Text color={textMuted} fontSize="sm" textAlign="center" py={2}>
+                            Aucune activité
+                          </Text>
+                        )}
+                      </VStack>
+                    </VStack>
+                  </CardBody>
+                </Card>
+              </VStack>
+            </TabPanel>
+
+            {/* Tab 2: Ma boutique mobile */}
+            <TabPanel p={0}>
+              {shop ? (
+                <Card bg={cardBg} borderRadius="xl" shadow="sm">
+                  <CardBody p={4}>
+                    <VStack spacing={4} align="stretch">
+                      <HStack justify="space-between">
+                        <HStack>
+                          <Icon as={FiHome} color="purple.500" />
+                          <Text fontWeight="600">Ma boutique</Text>
+                        </HStack>
+                        <Badge colorScheme="green" fontSize="xs">
+                          Active
                         </Badge>
                       </HStack>
+
+                      <VStack spacing={3}>
+                        <Image
+                          src={highRes(shop.logo_url) ?? SHOP_PLACEHOLDER}
+                          boxSize="100px"
+                          objectFit="cover"
+                          borderRadius="xl"
+                          border="2px solid"
+                          borderColor="gray.200"
+                        />
+                        
+                        <VStack spacing={1}>
+                          <Text fontWeight="700" fontSize="lg" textAlign="center">
+                            {shop.name}
+                          </Text>
+                          <Text color={textMuted} fontSize="sm" textAlign="center" noOfLines={2}>
+                            {shop.description || 'Aucune description'}
+                          </Text>
+                          <Badge colorScheme="purple" fontSize="xs">
+                            {shop.domain || 'Aucun domaine'}
+                          </Badge>
+                        </VStack>
+                      </VStack>
+
+                      <SimpleGrid columns={2} spacing={2} pt={2}>
+                        <Button
+                          leftIcon={<Icon as={FiEdit2} />}
+                          colorScheme="blue"
+                          onClick={() => nav('/seller/setup')}
+                          size="sm"
+                        >
+                          Modifier
+                        </Button>
+                        <Button
+                          leftIcon={<Icon as={FiEye} />}
+                          variant="outline"
+                          onClick={() => nav('/seller/shop')}
+                          size="sm"
+                        >
+                          Voir
+                        </Button>
+                      </SimpleGrid>
                     </VStack>
-                  </Flex>
-                </CardBody>
-              </Card>
-            )}
-
-            {/* Products Section */}
-            <Card
-              bg={cardBg}
-              borderRadius="2xl"
-              boxShadow="lg"
-              border="1px solid"
-              borderColor="gray.200"
-            >
-              <Box h="4px" bg="blue.400" />
-              <CardBody p={6}>
-                <HStack justify="space-between" mb={4}>
-                  <HStack spacing={3}>
-                    <Box p={1.5} bg="blue.50" borderRadius="md">
-                      <Icon as={FiPackage} boxSize={5} color="blue.500" />
-                    </Box>
-                    <Heading size="md" color={headingColor}>
-                      Mes produits
-                    </Heading>
-                  </HStack>
-                  <Badge colorScheme="blue" fontSize="md" px={3} py={1} borderRadius="full">
-                    {products.length}
-                  </Badge>
-                </HStack>
-
-                {products.length === 0 ? (
-                  <Box
-                    p={12}
-                    textAlign="center"
-                    bg="gray.50"
-                    borderRadius="xl"
-                    border="2px dashed"
-                    borderColor="gray.300"
-                  >
-                    <Icon as={FiPackage} boxSize={12} color="gray.400" mb={4} />
-                    <Text color={textMuted} fontWeight="500">
-                      Aucun produit ajouté pour le moment
+                  </CardBody>
+                </Card>
+              ) : (
+                <Card bg={cardBg} borderRadius="xl" shadow="sm">
+                  <CardBody p={8} textAlign="center">
+                    <Icon as={FiHome} boxSize={8} color="gray.400" mb={3} />
+                    <Text fontWeight="600" color={textMuted} mb={2}>
+                      Aucune boutique
+                    </Text>
+                    <Text color={textMuted} fontSize="sm" mb={4}>
+                      Créez votre boutique pour commencer
                     </Text>
                     <Button
-                      mt={4}
+                      colorScheme="blue"
+                      leftIcon={<Icon as={FiPlus} />}
+                      onClick={() => nav('/seller/setup')}
+                      size="sm"
+                    >
+                      Créer boutique
+                    </Button>
+                  </CardBody>
+                </Card>
+              )}
+            </TabPanel>
+
+            {/* Tab 3: Mes produits mobile */}
+            <TabPanel p={0}>
+              {products.length === 0 ? (
+                <Card bg={cardBg} borderRadius="xl" shadow="sm">
+                  <CardBody p={8} textAlign="center">
+                    <Icon as={FiPackage} boxSize={8} color="gray.400" mb={3} />
+                    <Text fontWeight="600" color={textMuted} mb={2}>
+                      Aucun produit
+                    </Text>
+                    <Text color={textMuted} fontSize="sm" mb={4}>
+                      Ajoutez votre premier produit
+                    </Text>
+                    <Button
                       colorScheme="blue"
                       leftIcon={<Icon as={FiPlus} />}
                       onClick={() => nav('/seller/product')}
-                      borderRadius="xl"
+                      size="sm"
                     >
-                      Ajouter mon premier produit
+                      Ajouter produit
                     </Button>
-                  </Box>
-                ) : (
-                  <VStack spacing={4} align="stretch">
-                    {products.map((p) => (
-                      <Card
-                        key={p.id}
-                        bg="gray.50"
-                        borderRadius="xl"
-                        border="1px solid"
-                        borderColor="gray.200"
-                        transition="all 0.2s ease"
-                        _hover={{ 
-                          boxShadow: 'md', 
-                          transform: 'translateY(-2px)',
-                          borderColor: 'blue.300'
-                        }}
-                      >
-                        <CardBody p={4}>
-                          <Flex 
-                            align="center" 
-                            gap={4}
-                            direction={{ base: 'column', sm: 'row' }}
+                  </CardBody>
+                </Card>
+              ) : (
+                <VStack spacing={3} align="stretch">
+                  {products.map((p) => (
+                    <Card
+                      key={p.id}
+                      bg={cardBg}
+                      borderRadius="xl"
+                      shadow="sm"
+                      transition="all 0.2s"
+                      _active={{ transform: 'scale(0.98)' }}
+                    >
+                      <CardBody p={3}>
+                        <HStack spacing={3} align="start">
+                          {/* Image produit */}
+                          <Box
+                            boxSize="60px"
+                            bg="white"
+                            borderRadius="lg"
+                            overflow="hidden"
+                            border="1px solid"
+                            borderColor="gray.200"
+                            flexShrink={0}
                           >
-                            <Box
-                              boxSize={{ base: '100px', md: '120px' }}
-                              flexShrink={0}
-                              bg="white"
-                              borderRadius="lg"
-                              overflow="hidden"
-                              border="1px solid"
-                              borderColor="gray.200"
-                              display="flex"
-                              alignItems="center"
-                              justifyContent="center"
-                            >
-                              <Image
-                                src={highRes(p.image_url, { width: 400, quality: 80 }) ?? PRODUCT_PLACEHOLDER}
-                                alt={p.title}
-                                objectFit="cover"
-                                maxW="100%"
-                                maxH="100%"
-                              />
-                            </Box>
+                            <Image
+                              src={highRes(p.image_url) ?? PRODUCT_PLACEHOLDER}
+                              alt={p.title}
+                              objectFit="cover"
+                              w="100%"
+                              h="100%"
+                            />
+                          </Box>
 
-                            <VStack align={{ base: 'center', sm: 'start' }} spacing={2} flex={1}>
-                              <Heading 
-                                size="sm" 
-                                color={headingColor} 
-                                noOfLines={1}
-                                textAlign={{ base: 'center', sm: 'left' }}
-                              >
-                                {p.title}
-                              </Heading>
-                              <Text 
-                                noOfLines={2} 
-                                color={textMuted} 
-                                fontSize="sm"
-                                textAlign={{ base: 'center', sm: 'left' }}
-                              >
-                                {p.description || 'Aucune description'}
-                              </Text>
-
-                              <HStack spacing={2}>
-                                <Badge
-                                  colorScheme="green"
-                                  fontSize="md"
-                                  px={3}
-                                  py={1}
-                                  borderRadius="full"
-                                  fontWeight="700"
-                                >
-                                  {Math.floor(p.price)} FCFA
+                          {/* Infos produit */}
+                          <VStack spacing={1} align="start" flex={1}>
+                            <Text fontWeight="600" fontSize="sm" noOfLines={1}>
+                              {p.title}
+                            </Text>
+                            <Text color={textMuted} fontSize="xs" noOfLines={1}>
+                              {p.description || 'Aucune description'}
+                            </Text>
+                            
+                            <HStack spacing={2}>
+                              <Badge colorScheme="green" fontSize="xs">
+                                {Math.floor(p.price)} FCFA
+                              </Badge>
+                              {p.quantity > 0 ? (
+                                <Badge colorScheme="blue" fontSize="xs">
+                                  {p.quantity} en stock
                                 </Badge>
-                                {p.quantity > 0 ? (
-                                  <Badge colorScheme="blue" borderRadius="full">
-                                    Stock: {p.quantity}
-                                  </Badge>
-                                ) : (
-                                  <Badge colorScheme="red" borderRadius="full">
-                                    Rupture
-                                  </Badge>
-                                )}
-                              </HStack>
-                            </VStack>
-
-                            <HStack spacing={2} flexShrink={0}>
-                              <IconButton
-                                aria-label="Modifier"
-                                icon={<Icon as={FiEdit2} />}
-                                onClick={() => nav(`/seller/product/${p.id}`)}
-                                variant="outline"
-                                colorScheme="blue"
-                                borderRadius="lg"
-                                size={{ base: 'sm', md: 'md' }}
-                              />
-                              <IconButton
-                                aria-label="Supprimer"
-                                icon={<Icon as={FiTrash2} />}
-                                colorScheme="red"
-                                variant="outline"
-                                onClick={() => handleDelete(String(p.id))}
-                                borderRadius="lg"
-                                size={{ base: 'sm', md: 'md' }}
-                              />
+                              ) : (
+                                <Badge colorScheme="red" fontSize="xs">
+                                  Rupture
+                                </Badge>
+                              )}
                             </HStack>
-                          </Flex>
-                        </CardBody>
-                      </Card>
-                    ))}
-                  </VStack>
+                          </VStack>
+
+                          {/* Actions */}
+                          <VStack spacing={1}>
+                            <IconButton
+                              aria-label="Modifier"
+                              icon={<Icon as={FiEdit2} />}
+                              onClick={() => nav(`/seller/product/${p.id}`)}
+                              variant="ghost"
+                              colorScheme="blue"
+                              size="sm"
+                              boxSize={8}
+                            />
+                            <IconButton
+                              aria-label="Supprimer"
+                              icon={<Icon as={FiTrash2} />}
+                              colorScheme="red"
+                              variant="ghost"
+                              onClick={() => handleDelete(String(p.id))}
+                              size="sm"
+                              boxSize={8}
+                            />
+                          </VStack>
+                        </HStack>
+                      </CardBody>
+                    </Card>
+                  ))}
+                </VStack>
+              )}
+            </TabPanel>
+
+            {/* Tab 4: Actions mobile */}
+            <TabPanel p={0}>
+              <VStack spacing={3} align="stretch">
+                {/* Créer/Modifier boutique */}
+                <Card
+                  bg={cardBg}
+                  borderRadius="xl"
+                  shadow="sm"
+                  onClick={() => nav('/seller/setup')}
+                  cursor="pointer"
+                  transition="all 0.2s"
+                  _active={{ transform: 'scale(0.98)' }}
+                >
+                  <CardBody p={4}>
+                    <HStack spacing={3}>
+                      <Icon as={shop ? FiSettings : FiPlus} boxSize={5} color="blue.500" />
+                      <VStack spacing={0} align="start" flex={1}>
+                        <Text fontWeight="600">
+                          {shop ? 'Modifier boutique' : 'Créer boutique'}
+                        </Text>
+                        <Text color={textMuted} fontSize="sm">
+                          {shop ? 'Modifiez vos informations' : 'Commencez à vendre'}
+                        </Text>
+                      </VStack>
+                    </HStack>
+                  </CardBody>
+                </Card>
+
+                {/* Ajouter produit */}
+                <Card
+                  bg={cardBg}
+                  borderRadius="xl"
+                  shadow="sm"
+                  onClick={() => nav('/seller/product')}
+                  cursor="pointer"
+                  transition="all 0.2s"
+                  _active={{ transform: 'scale(0.98)' }}
+                >
+                  <CardBody p={4}>
+                    <HStack spacing={3}>
+                      <Icon as={FiPlus} boxSize={5} color="green.500" />
+                      <VStack spacing={0} align="start" flex={1}>
+                        <Text fontWeight="600">Ajouter produit</Text>
+                        <Text color={textMuted} fontSize="sm">
+                          Nouveau produit au catalogue
+                        </Text>
+                      </VStack>
+                    </HStack>
+                  </CardBody>
+                </Card>
+
+                {/* Voir boutique */}
+                {shop && (
+                  <Card
+                    bg={cardBg}
+                    borderRadius="xl"
+                    shadow="sm"
+                    onClick={() => nav('/seller/shop')}
+                    cursor="pointer"
+                    transition="all 0.2s"
+                    _active={{ transform: 'scale(0.98)' }}
+                  >
+                    <CardBody p={4}>
+                      <HStack spacing={3}>
+                        <Icon as={FiEye} boxSize={5} color="purple.500" />
+                        <VStack spacing={0} align="start" flex={1}>
+                          <Text fontWeight="600">Voir boutique</Text>
+                          <Text color={textMuted} fontSize="sm">
+                            Comme vos clients la voient
+                          </Text>
+                        </VStack>
+                      </HStack>
+                    </CardBody>
+                  </Card>
                 )}
-              </CardBody>
-            </Card>
-          </VStack>
-        )}
+
+                {/* Supprimer boutique */}
+                {shop && (
+                  <Card
+                    bg={cardBg}
+                    borderRadius="xl"
+                    shadow="sm"
+                    onClick={handleDeleteShop}
+                    cursor="pointer"
+                    transition="all 0.2s"
+                    _active={{ transform: 'scale(0.98)' }}
+                    borderColor="red.200"
+                  >
+                    <CardBody p={4}>
+                      <HStack spacing={3}>
+                        <Icon as={FiTrash2} boxSize={5} color="red.500" />
+                        <VStack spacing={0} align="start" flex={1}>
+                          <Text fontWeight="600" color="red.600">
+                            Supprimer boutique
+                          </Text>
+                          <Text color="red.400" fontSize="sm">
+                            Action irréversible
+                          </Text>
+                        </VStack>
+                      </HStack>
+                    </CardBody>
+                  </Card>
+                )}
+              </VStack>
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
       </Container>
     </Box>
   )
