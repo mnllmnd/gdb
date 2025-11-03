@@ -31,7 +31,13 @@ function firstImage(p: MinimalProduct) {
   return '/img/b.jfif'
 }
 
-export default function HeroProductStrip({ products = [] }: { products?: MinimalProduct[] }) {
+function resolveShopName(p: any) {
+  return (
+    p?.shopName || p?.shop_name || p?.seller_name || p?.store_name || p?.shop?.name || p?.vendor_name || 'Boutique'
+  )
+}
+
+export default function HeroProductStrip({ products = [], shopsMap = {} }: { products?: MinimalProduct[]; shopsMap?: Record<string, any> }) {
   const bg = useColorModeValue('white', 'gray.800')
   const borderColor = useColorModeValue('gray.100', 'gray.700')
   const shadowColor = useColorModeValue('rgba(0, 0, 0, 0.08)', 'rgba(0, 0, 0, 0.3)')
@@ -87,6 +93,12 @@ export default function HeroProductStrip({ products = [] }: { products?: Minimal
           const productHref = shopId ? `/shop/${shopId}?product=${p.id}` : `/products/${p.id}`
           const shopHref = shopId ? `/shop/${shopId}` : '#'
 
+          // try to resolve shop name from product fields first, then from shopsMap (by id or nested maps)
+          const shopFromMap = shopId
+            ? (shopsMap?.[String(shopId)] || shopsMap?.byId?.[String(shopId)] || shopsMap?.byOwner?.[String(shopId)])
+            : null
+          const shopNameResolved = resolveShopName(p) || (shopFromMap && (shopFromMap.name || shopFromMap.shopName || shopFromMap.domain)) || 'Boutique'
+
           return (
             <Box
               key={String(p.id)}
@@ -113,7 +125,7 @@ export default function HeroProductStrip({ products = [] }: { products?: Minimal
                 as={RouterLink} 
                 to={productHref} 
                 style={{ display: 'block' }} 
-                aria-label={`Voir ${p.title || p.name}`}
+                      aria-label={`Voir ${p.title || p.name}`}
                 _hover={{ textDecoration: 'none' }}
               >
                 {/* Image avec overlay gradient subtil */}
@@ -181,7 +193,7 @@ export default function HeroProductStrip({ products = [] }: { products?: Minimal
                     color={useColorModeValue('gray.800', 'white')}
                     minH={{ base: '40px', md: '48px' }}
                   >
-                    {p.title || p.name}
+                      {p.title || p.name}
                   </Heading>
 
                   {/* Boutique avec icône */}
@@ -200,15 +212,15 @@ export default function HeroProductStrip({ products = [] }: { products?: Minimal
                     >
                       
                     </Box>
-                    <Text 
-                      fontSize="sm" 
-                      color={useColorModeValue('gray.600', 'gray.400')}
-                      fontWeight={500}
-                      noOfLines={1}
-                      transition="color 0.2s"
-                      _hover={{ color: 'blue.500' }}
-                    >
-                      {p.shopName || 'Boutique'}
+                      <Text 
+                        fontSize="sm" 
+                        color={useColorModeValue('gray.600', 'gray.400')}
+                        fontWeight={500}
+                        noOfLines={1}
+                        transition="color 0.2s"
+                        _hover={{ color: 'blue.500' }}
+                      >
+                        {shopNameResolved}
                     </Text>
                   </Box>
                 </Box>

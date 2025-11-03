@@ -388,7 +388,7 @@ export default function Home() {
       <HeroNike />
 
   {/* Bande immersive de vrais produits (grands visuels, clic -> produit/boutique) */}
-  <HeroProductStrip products={products.slice(0, 6)} />
+  <HeroProductStrip products={products.slice(0, 6)} shopsMap={shopsMap} />
 
       {/* Two-column promo tiles using real products (first two available) */}
       <Box as="section" px={{ base: 4, md: 6 }} py={8}>
@@ -446,7 +446,7 @@ export default function Home() {
             <Fade in={!isLoading}>
               {/* Remplacement: afficher la bande immersive de produits au lieu des sections catégories */}
               <VStack spacing={8} align="stretch">
-                <HeroProductStrip products={products} />
+                <HeroProductStrip products={products} shopsMap={shopsMap} />
               </VStack>
             </Fade>
           ) : renderShopsView()

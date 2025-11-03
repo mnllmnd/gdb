@@ -65,7 +65,7 @@ const HeroNike: React.FC = () => {
           lineHeight={0.9}
           fontFamily="Inter, system-ui"
         >
-          Exprime ton style
+          Style
         </Heading>
 
         <Text
