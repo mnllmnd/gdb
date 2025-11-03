@@ -6,7 +6,7 @@ const HeroNike: React.FC = () => {
 
   const images: string[] = [
     'https://i.pinimg.com/1200x/9e/6d/ca/9e6dcaaee3f8d5e80e9a32ebf14f1a5a.jpg',
-    'https://i.pinimg.com/1200x/9f/6a/c0/9f6ac035d649d809aafa335d026b39c9.jpg',
+    'https://i.pinimg.com/1200x/4e/77/cf/4e77cf4ccc3d63be56309913fb633584.jpg',
   ]
 
   const [swap, setSwap] = useState(false)
