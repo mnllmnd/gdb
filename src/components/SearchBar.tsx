@@ -15,9 +15,15 @@ interface SearchBarProps {
   value: string
   onChange: (value: string) => void
   placeholder?: string
+  size?: 'sm' | 'md' | 'lg' // Taille optionnelle
 }
 
-export default function SearchBar({ value, onChange, placeholder = 'Rechercher...' }: SearchBarProps) {
+export default function SearchBar({
+  value,
+  onChange,
+  placeholder = 'Rechercher...',
+  size = 'md', // Valeur par défaut
+}: SearchBarProps) {
   const { isOpen, onToggle } = useDisclosure()
   const [isFocused, setIsFocused] = useState(false)
 
@@ -29,11 +35,11 @@ export default function SearchBar({ value, onChange, placeholder = 'Rechercher..
             position="absolute"
             right="0"
             top="-8px"
-            width={{ base: '250px', md: '300px' }}
+            width={{ base: '200px', sm: '250px', md: '300px' }}
             transform="translateY(-50%)"
             zIndex={2}
           >
-            <InputGroup size="md">
+            <InputGroup size={size}>
               <InputLeftElement pointerEvents="none">
                 <SearchIcon color={isFocused ? 'brand.500' : 'gray.400'} />
               </InputLeftElement>

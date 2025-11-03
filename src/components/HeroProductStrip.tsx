@@ -198,7 +198,7 @@ export default function HeroProductStrip({ products = [] }: { products?: Minimal
                       fontSize="xs"
                       color={useColorModeValue('gray.400', 'gray.500')}
                     >
-                      🏪
+                      
                     </Box>
                     <Text 
                       fontSize="sm" 

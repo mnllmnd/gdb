@@ -29,7 +29,7 @@ import {
   useColorModeValue,
   Portal,
 } from '@chakra-ui/react'
-import { ChevronDownIcon } from '@chakra-ui/icons'
+import { ChevronDownIcon, HamburgerIcon } from '@chakra-ui/icons'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { signOut, getCurrentUser } from '../services/auth'
 import api from '../services/api'
@@ -47,17 +47,16 @@ export default function NavBar() {
   const [cartCount, setCartCount] = useState<number>(0)
   const [searchQuery, setSearchQuery] = useState('')
   
-  // Neutral / cinematic palette for header (white background, dark icons)
+  // Palette neutre et sophistiquée
   const navBg = useColorModeValue('white', 'gray.900')
   const navBorder = useColorModeValue('gray.100', 'gray.800')
   const textColor = useColorModeValue('gray.800', 'white')
   const subtleTextColor = useColorModeValue('gray.600', 'gray.400')
-  const brandColor = useColorModeValue('brand.900', 'brand.100')
+  const brandColor = useColorModeValue('gray.900', 'brand.100')
   const hoverBg = useColorModeValue('gray.50', 'gray.700')
   const menuBg = useColorModeValue('white', 'gray.900')
   const menuBorder = useColorModeValue('gray.200', 'gray.700')
   
-  // Utilise la fonction de recherche globale
   const handleSearch = (query: string) => {
     setSearchQuery(query)
     ;(globalThis as any).handleGlobalSearch?.(query)
@@ -128,12 +127,65 @@ export default function NavBar() {
     setUser(null)
     navigate('/login')
     toast({
-      title: "À bientôt !",
+      title: "À bientôt",
       description: "Vous avez été déconnecté avec succès",
       status: "info",
       duration: 3000,
     })
   }
+
+  // Icônes SVG pour un look plus épuré
+  const HomeIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  )
+
+  const ProductsIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="3" width="7" height="7"/>
+      <rect x="14" y="3" width="7" height="7"/>
+      <rect x="14" y="14" width="7" height="7"/>
+      <rect x="3" y="14" width="7" height="7"/>
+    </svg>
+  )
+
+  const CartIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="9" cy="21" r="1"/>
+      <circle cx="20" cy="21" r="1"/>
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+    </svg>
+  )
+
+  const ShopIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+    </svg>
+  )
+
+  const UserIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+  )
+
+  const OrdersIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+      <path d="M1 10h22"/>
+    </svg>
+  )
+
+  const LogoutIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+      <polyline points="16,17 21,12 16,7"/>
+      <line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+  )
 
   return (
     <Box
@@ -142,8 +194,8 @@ export default function NavBar() {
       borderBottom={isScrolled ? '1px solid' : 'none'}
       borderColor={navBorder}
       boxShadow={isScrolled ? 'sm' : 'none'}
-      px={6}
-      py={3}
+      px={4}
+      py={2}
       position="sticky"
       top={0}
       zIndex={1400}
@@ -156,52 +208,47 @@ export default function NavBar() {
           <HStack spacing={3} width="100%">
             <IconButton
               aria-label="Menu"
-              icon={
-                <svg width="18" height="18" viewBox="0 0 24 24">
-                  <path fill="currentColor" d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/>
-                </svg>
-              }
+              icon={<HamburgerIcon />}
               onClick={onOpen}
-              className="nav-hamburger"
               color={textColor}
               variant="ghost"
               _hover={{ bg: hoverBg }}
+              size="sm"
             />
             <Spacer />
             <SearchBar
               value={searchQuery}
               onChange={handleSearch}
               placeholder="Rechercher..."
+              size="sm"
             />
             <Box position="relative">
               <IconButton
                 as={RouterLink}
                 to="/cart"
                 aria-label="Panier"
-                icon={<span style={{ fontSize: 20 }}>🛒</span>}
-                bg="whiteAlpha.900"
-                _hover={{ 
-                  bg: 'whiteAlpha.800', 
-                  transform: 'scale(1.05)',
-                  boxShadow: 'md'
-                }}
+                icon={<CartIcon />}
+                variant="ghost"
                 color={textColor}
-                borderRadius="full"
-                boxShadow="sm"
-                transition="all 0.2s ease"
+                size="sm"
+                _hover={{ bg: hoverBg }}
               />
               {cartCount > 0 && (
                 <Box
                   position="absolute"
-                  top={-2}
-                  right={-2}
+                  top={-1}
+                  right={-1}
                   bg="red.500"
                   color="white"
-                  px={2}
-                  py={0}
+                  px={1}
+                  py={0.5}
                   borderRadius="full"
-                  fontSize="xs"
+                  fontSize="2xs"
                   fontWeight="bold"
+                  minW="16px"
+                  h="16px"
+                  textAlign="center"
+                  lineHeight="1"
                   boxShadow="sm"
                   zIndex={1500}
                 >
@@ -211,36 +258,36 @@ export default function NavBar() {
             </Box>
           </HStack>
         ) : (
-          // Desktop layout
+          // Desktop layout - Version compacte
           <>
-            <HStack spacing={4} align="center">
+            {/* Logo + Nom */}
+            <HStack spacing={3} align="center" flexShrink={0}>
               <Avatar 
                 size="sm" 
                 name="Sama Bitik" 
                 bg={brandColor} 
                 color="white" 
-                _hover={{ transform: 'scale(1.1)' }}
+                _hover={{ transform: 'scale(1.05)' }}
                 transition="transform 0.2s ease"
               />
-              <Heading size="md" color={textColor} fontWeight="800">Sama Bitik</Heading>
+              <Heading size="md" color={textColor} fontWeight="700" letterSpacing="-0.5px" whiteSpace="nowrap">
+                Sama Bitik
+              </Heading>
             </HStack>
 
             <Spacer />
 
-            {/* Desktop actions */}
-            <HStack spacing={6} align="center">
+            {/* Navigation centrale - Version compacte */}
+            <HStack spacing={6} align="center" mx={4} flexShrink={0}>
               <Button 
                 as={RouterLink} 
                 to="/" 
                 variant="ghost" 
-                size="md" 
-                leftIcon={<span>🏠</span>} 
+                size="sm" 
+                leftIcon={<HomeIcon />}
                 color={textColor}
-                _hover={{ 
-                  bg: hoverBg, 
-                  color: brandColor,
-                  transform: 'translateY(-1px)'
-                }}
+                fontWeight="500"
+                _hover={{ bg: hoverBg }}
                 transition="all 0.2s ease"
               >
                 Accueil
@@ -249,14 +296,11 @@ export default function NavBar() {
                 as={RouterLink} 
                 to="/products" 
                 variant="ghost" 
-                size="md" 
-                leftIcon={<span>🛍️</span>} 
+                size="sm" 
+                leftIcon={<ProductsIcon />}
                 color={textColor}
-                _hover={{ 
-                  bg: hoverBg, 
-                  color: brandColor,
-                  transform: 'translateY(-1px)'
-                }}
+                fontWeight="500"
+                _hover={{ bg: hoverBg }}
                 transition="all 0.2s ease"
               >
                 Produits
@@ -265,85 +309,68 @@ export default function NavBar() {
                 as={RouterLink}
                 to="/feed"
                 variant="ghost"
-                size="md"
+                size="sm"
                 color={textColor}
-                _hover={{ 
-                  bg: hoverBg, 
-                  color: brandColor,
-                  transform: 'translateY(-1px)'
-                }}
+                fontWeight="500"
+                _hover={{ bg: hoverBg }}
                 transition="all 0.2s ease"
               >
                 Feed
               </Button>
-              <Center height="40px">
+            </HStack>
+
+            <Spacer />
+
+            {/* Actions droite - Version compacte */}
+            <HStack spacing={4} align="center" flexShrink={0}>
+              {/* Barre de recherche compacte */}
+              <Box minW="200px" flexShrink={1}>
                 <SearchBar
                   value={searchQuery}
                   onChange={handleSearch}
-                  placeholder="Rechercher un produit..."
+                  placeholder="Rechercher..."
+                  size="sm"
                 />
-              </Center>
+              </Box>
+
+              {/* Bouton Vendre */}
               <Button
-                colorScheme="brand"
-                size="md"
-                bg={brandColor}
-                color="white"
+                variant="outline"
+                size="sm"
+                borderColor={brandColor}
+                color={brandColor}
                 onClick={() => {
                   if (user) navigate('/seller')
                   else toast({ 
-                    title: '✨ Créez votre boutique', 
-                    description: 'Rejoignez notre communauté de vendeurs !', 
+                    title: 'Créez votre boutique', 
+                    description: 'Rejoignez notre communauté de vendeurs', 
                     status: 'info',
                     duration: 5000,
                   })
                 }}
-                className="nav-my-shop"
-                leftIcon={<span>🏪</span>}
+                leftIcon={<ShopIcon />}
                 _hover={{ 
-                  bg: 'brand.500',
-                  transform: 'translateY(-2px)',
-                  boxShadow: 'lg'
-                }}
-                _active={{
-                  transform: 'translateY(0)'
+                  bg: brandColor,
+                  color: 'white',
                 }}
                 transition="all 0.2s ease"
+                fontWeight="500"
+                whiteSpace="nowrap"
               >
                 Vendre
               </Button>
-              
-              {user?.role === 'admin' && (
-                <Button 
-                  as={RouterLink} 
-                  to="/admin" 
-                  variant="ghost" 
-                  ml={2} 
-                  size="md" 
-                  color={textColor}
-                  _hover={{ 
-                    bg: hoverBg, 
-                    color: brandColor,
-                    transform: 'translateY(-1px)'
-                  }}
-                  transition="all 0.2s ease"
-                >
-                  Admin
-                </Button>
-              )}
+
+              {/* Panier */}
               <Box position="relative">
                 <IconButton
                   as={RouterLink}
                   to="/cart"
                   aria-label="Panier"
-                  icon={<span style={{ fontSize: 24 }}>🛒</span>}
+                  icon={<CartIcon />}
                   variant="ghost"
                   color={textColor}
-                  size="lg"
-                  _hover={{ 
-                    bg: hoverBg, 
-                    color: brandColor,
-                    transform: 'scale(1.1)' 
-                  }}
+                  size="sm"
+                  _hover={{ bg: hoverBg }}
                   transition="all 0.2s ease"
                 />
                 {cartCount > 0 && (
@@ -353,38 +380,24 @@ export default function NavBar() {
                     right={-1}
                     bg="red.500"
                     color="white"
-                    px={2}
-                    py={0}
+                    px={1}
+                    py={0.5}
                     borderRadius="full"
-                    fontSize="sm"
+                    fontSize="2xs"
                     fontWeight="bold"
+                    minW="16px"
+                    h="16px"
+                    textAlign="center"
+                    lineHeight="1"
                     boxShadow="sm"
-                    animation="pulse 2s infinite"
                     zIndex={1500}
                   >
                     {cartCount}
                   </Box>
                 )}
               </Box>
-              
-              {/* Bouton Reel pour desktop */}
-              <IconButton
-                as={RouterLink}
-                to="/reels?upload=1"
-                aria-label="Poster un Reel"
-                icon={<span style={{ fontSize: 18 }}>Reels</span>}
-                variant="ghost"
-                color={textColor}
-                size="md"
-                _hover={{ 
-                  bg: hoverBg, 
-                  color: brandColor,
-                  transform: 'scale(1.1)'
-                }}
-                transition="all 0.2s ease"
-              />
 
-              {/* Affichage conditionnel : soit menu utilisateur, soit bouton connexion */}
+              {/* Menu utilisateur ou boutons connexion */}
               {user ? (
                 <Menu placement="bottom-end">
                   <MenuButton
@@ -392,65 +405,51 @@ export default function NavBar() {
                     rightIcon={<ChevronDownIcon />}
                     variant="ghost"
                     color={textColor}
-                    _hover={{ 
-                      bg: hoverBg,
-                      transform: 'translateY(-1px)'
-                    }}
+                    _hover={{ bg: hoverBg }}
                     _expanded={{ bg: hoverBg }}
-                    px={3}
-                    py={2}
-                    borderRadius="lg"
+                    px={2}
+                    py={1}
+                    borderRadius="md"
                     transition="all 0.2s ease"
+                    size="sm"
                   >
-                    <HStack spacing={2}>
-                      <Avatar 
-                        size="sm" 
-                        name={user.display_name ?? user.phone} 
-                        bg={brandColor}
-                        color="white"
-                        fontSize="xs"
-                        _hover={{ transform: 'scale(1.1)' }}
-                        transition="transform 0.2s ease"
-                      />
-                      <VStack spacing={0} align="start">
-                        <Text fontSize="sm" fontWeight="600">
-                          {user.display_name || 'Mon compte'}
-                        </Text>
-                        {shop && (
-                          <Text fontSize="xs" color={subtleTextColor}>
-                            Vendeur
-                          </Text>
-                        )}
-                      </VStack>
-                    </HStack>
+                    <Avatar 
+                      size="xs" 
+                      name={user.display_name ?? user.phone} 
+                      bg={brandColor}
+                      color="white"
+                      fontSize="2xs"
+                    />
                   </MenuButton>
                   <Portal>
                     <MenuList 
                       bg={menuBg} 
                       borderColor={menuBorder}
-                      boxShadow="2xl"
-                      borderRadius="xl"
+                      boxShadow="xl"
+                      borderRadius="lg"
                       py={2}
-                      minW="240px"
+                      minW="180px"
                       zIndex={1600}
                     >
                       <MenuItem 
                         as={RouterLink} 
                         to="/profile" 
-                        icon={<span style={{ fontSize: '16px' }}>👤</span>}
+                        icon={<UserIcon />}
                         color={textColor}
                         _hover={{ bg: hoverBg }}
-                        py={3}
+                        py={2}
+                        fontSize="sm"
                       >
                         Mon profil
                       </MenuItem>
                       <MenuItem 
                         as={RouterLink} 
                         to="/orders" 
-                        icon={<span style={{ fontSize: '16px' }}>📦</span>}
+                        icon={<OrdersIcon />}
                         color={textColor}
                         _hover={{ bg: hoverBg }}
-                        py={3}
+                        py={2}
+                        fontSize="sm"
                       >
                         Mes commandes
                       </MenuItem>
@@ -458,10 +457,11 @@ export default function NavBar() {
                         <MenuItem 
                           as={RouterLink} 
                           to="/seller/shop" 
-                          icon={<span style={{ fontSize: '16px' }}>🏪</span>}
+                          icon={<ShopIcon />}
                           color={textColor}
                           _hover={{ bg: hoverBg }}
-                          py={3}
+                          py={2}
+                          fontSize="sm"
                         >
                           Ma boutique
                         </MenuItem>
@@ -469,10 +469,11 @@ export default function NavBar() {
                       <MenuDivider borderColor={menuBorder} />
                       <MenuItem 
                         onClick={handleLogout}
-                        icon={<span style={{ fontSize: '16px' }}>👋</span>}
+                        icon={<LogoutIcon />}
                         color={textColor}
                         _hover={{ bg: hoverBg }}
-                        py={3}
+                        py={2}
+                        fontSize="sm"
                       >
                         Se déconnecter
                       </MenuItem>
@@ -480,26 +481,35 @@ export default function NavBar() {
                   </Portal>
                 </Menu>
               ) : (
-                <Button
-                  as={RouterLink}
-                  to="/login"
-                  colorScheme="brand"
-                  size="md"
-                  bg={brandColor}
-                  color="white"
-                  leftIcon={<span>✨</span>}
-                  _hover={{ 
-                    bg: 'brand.600',
-                    transform: 'translateY(-2px)',
-                    boxShadow: 'lg'
-                  }}
-                  _active={{
-                    transform: 'translateY(0)'
-                  }}
-                  transition="all 0.2s ease"
-                >
-                  Connexion
-                </Button>
+                <HStack spacing={2}>
+                  <Button
+                    as={RouterLink}
+                    to="/login"
+                    variant="ghost"
+                    size="sm"
+                    color={textColor}
+                    _hover={{ bg: hoverBg }}
+                    transition="all 0.2s ease"
+                    fontWeight="500"
+                    whiteSpace="nowrap"
+                  >
+                    Connexion
+                  </Button>
+                  <Button
+                    as={RouterLink}
+                    to="/signup"
+                    variant="solid"
+                    size="sm"
+                    bg={brandColor}
+                    color="white"
+                    _hover={{ bg: 'gray.700' }}
+                    transition="all 0.2s ease"
+                    fontWeight="500"
+                    whiteSpace="nowrap"
+                  >
+                    S'inscrire
+                  </Button>
+                </HStack>
               )}
             </HStack>
           </>
@@ -510,29 +520,26 @@ export default function NavBar() {
       <Drawer placement="left" onClose={onClose} isOpen={isOpen} size="xs">
         <DrawerOverlay />
         <DrawerContent bg={menuBg} zIndex={1700}>
-          <DrawerHeader borderBottomWidth="1px" borderColor={menuBorder}>
-            <HStack spacing={2}>
+          <DrawerHeader borderBottomWidth="1px" borderColor={menuBorder} py={4}>
+            <HStack spacing={3}>
               <Avatar size="sm" name="Sama Bitik" bg={brandColor} color="white" />
-              <Heading size="md" color={textColor} fontWeight="800">Sama Bitik</Heading>
+              <Heading size="md" color={textColor} fontWeight="700">Sama Bitik</Heading>
             </HStack>
           </DrawerHeader>
-          <DrawerBody>
-            <VStack align="stretch" spacing={2} mt={2}>
-              {/* Client section */}
-              <Box px={3} py={2}>
-                <Text fontSize="sm" color={subtleTextColor} fontWeight="600">Client</Text>
-              </Box>
+          <DrawerBody py={4}>
+            <VStack align="stretch" spacing={1}>
+              {/* Navigation principale */}
               <Button 
                 as={RouterLink} 
                 to="/" 
                 onClick={onClose} 
                 variant="ghost" 
                 size="md" 
-                leftIcon={<span>🏠</span>} 
+                leftIcon={<HomeIcon />}
                 color={textColor}
                 _hover={{ bg: hoverBg }}
                 justifyContent="flex-start"
-                transition="all 0.2s ease"
+                py={3}
               >
                 Accueil
               </Button>
@@ -542,62 +549,66 @@ export default function NavBar() {
                 onClick={onClose} 
                 variant="ghost" 
                 size="md" 
-                leftIcon={<span>🛍️</span>} 
+                leftIcon={<ProductsIcon />}
                 color={textColor}
                 _hover={{ bg: hoverBg }}
                 justifyContent="flex-start"
-                transition="all 0.2s ease"
+                py={3}
               >
-                Découvrir
+                Produits
+              </Button>
+              <Button 
+                as={RouterLink}
+                to="/feed"
+                onClick={onClose}
+                variant="ghost"
+                size="md"
+                color={textColor}
+                _hover={{ bg: hoverBg }}
+                justifyContent="flex-start"
+                py={3}
+              >
+                Feed
               </Button>
 
-              {user && (
-                <Button 
-                  as={RouterLink} 
-                  to="/orders" 
-                  onClick={onClose} 
-                  variant="ghost" 
-                  size="md" 
-                  leftIcon={<span>📦</span>} 
-                  color={textColor}
-                  _hover={{ bg: hoverBg }}
-                  justifyContent="flex-start"
-                  transition="all 0.2s ease"
-                >
-                  Mes commandes
-                </Button>
-              )}
-              {user && (
-                <Button
-                  as={RouterLink}
-                  to="/profile"
-                  onClick={onClose}
-                  variant="ghost"
-                  size="md"
-                  leftIcon={<span>👤</span>}
-                  color={textColor}
-                  _hover={{ bg: hoverBg }}
-                  justifyContent="flex-start"
-                  transition="all 0.2s ease"
-                >
-                  Mon profil
-                </Button>
-              )}
-
-              {/* Section authentification mobile */}
               <Divider borderColor={menuBorder} my={3} />
 
-              {/* Affichage conditionnel mobile : soit déconnexion, soit connexion/inscription */}
+              {/* Section utilisateur */}
               {user ? (
                 <>
-                  <Box px={3} py={2}>
-                    <Text fontSize="sm" color={subtleTextColor}>Connecté en tant que</Text>
-                    <Text fontSize="md" fontWeight="600" color={textColor}>
-                      {user.display_name ?? user.phone}
-                    </Text>
-                  </Box>
+                  <Text fontSize="sm" color={subtleTextColor} px={3} py={2}>
+                    Connecté en tant que <Text as="span" fontWeight="600">{user.display_name ?? user.phone}</Text>
+                  </Text>
                   
-                  {/* Bouton déconnexion seulement */}
+                  <Button 
+                    as={RouterLink} 
+                    to="/profile" 
+                    onClick={onClose} 
+                    variant="ghost" 
+                    size="md" 
+                    leftIcon={<UserIcon />}
+                    color={textColor}
+                    _hover={{ bg: hoverBg }}
+                    justifyContent="flex-start"
+                    py={3}
+                  >
+                    Mon profil
+                  </Button>
+                  <Button 
+                    as={RouterLink} 
+                    to="/orders" 
+                    onClick={onClose} 
+                    variant="ghost" 
+                    size="md" 
+                    leftIcon={<OrdersIcon />}
+                    color={textColor}
+                    _hover={{ bg: hoverBg }}
+                    justifyContent="flex-start"
+                    py={3}
+                  >
+                    Mes commandes
+                  </Button>
+                  
                   <Button 
                     size="md" 
                     variant="ghost"
@@ -608,15 +619,14 @@ export default function NavBar() {
                       handleLogout()
                     }}
                     justifyContent="flex-start"
-                    leftIcon={<span>👋</span>}
-                    transition="all 0.2s ease"
+                    leftIcon={<LogoutIcon />}
+                    py={3}
                   >
                     Se déconnecter
                   </Button>
                 </>
               ) : (
                 <>
-                  {/* Boutons connexion/inscription seulement */}
                   <Button 
                     as={RouterLink} 
                     to="/login" 
@@ -626,8 +636,7 @@ export default function NavBar() {
                     color={textColor}
                     _hover={{ bg: hoverBg }}
                     justifyContent="flex-start"
-                    leftIcon={<span>✨</span>}
-                    transition="all 0.2s ease"
+                    py={3}
                   >
                     Connexion
                   </Button>
@@ -636,12 +645,12 @@ export default function NavBar() {
                     to="/signup" 
                     onClick={onClose} 
                     size="md" 
-                    variant="ghost"
-                    color={textColor}
-                    _hover={{ bg: hoverBg }}
+                    variant="solid"
+                    bg={brandColor}
+                    color="white"
+                    _hover={{ bg: 'gray.700' }}
                     justifyContent="flex-start"
-                    leftIcon={<span>🚀</span>}
-                    transition="all 0.2s ease"
+                    py={3}
                   >
                     S'inscrire
                   </Button>
@@ -650,29 +659,29 @@ export default function NavBar() {
 
               <Divider borderColor={menuBorder} my={3} />
 
-              {/* Boutiquier / Vendeur section */}
-              <Box px={3} py={2}>
-                <Text fontSize="sm" color={subtleTextColor} fontWeight="600">Boutiquier</Text>
-              </Box>
+              {/* Section vendeur */}
+              <Text fontSize="sm" color={subtleTextColor} fontWeight="600" px={3} py={2}>
+                Devenir vendeur
+              </Text>
               <Button
                 onClick={() => {
                   onClose()
                   if (user) navigate('/seller')
                   else toast({ 
-                    title: '✨ Créez votre boutique', 
-                    description: 'Rejoignez notre communauté de vendeurs !',
+                    title: 'Créez votre boutique', 
+                    description: 'Rejoignez notre communauté de vendeurs',
                     status: 'info',
                     duration: 5000
                   })
                 }}
-                colorScheme="brand" 
-                bg={brandColor}
-                color="white"
+                variant="outline"
+                borderColor={brandColor}
+                color={brandColor}
                 size="md"
-                leftIcon={<span>🏪</span>}
-                _hover={{ bg: 'brand.600' }}
+                leftIcon={<ShopIcon />}
+                _hover={{ bg: brandColor, color: 'white' }}
                 justifyContent="flex-start"
-                transition="all 0.2s ease"
+                py={3}
               >
                 Vendre
               </Button>
@@ -681,73 +690,20 @@ export default function NavBar() {
                   as={RouterLink} 
                   to="/seller/shop" 
                   onClick={onClose} 
-                  size="sm" 
-                  bg="brand.500"
+                  size="md" 
                   variant="ghost"
-                  color="white"
+                  color={textColor}
                   _hover={{ bg: hoverBg }}
                   justifyContent="flex-start"
-                  transition="all 0.2s ease"
+                  py={3}
                 >
                   Ma boutique
-                </Button>
-              )}
-              {user?.role === 'admin' && (
-                <Button 
-                  as={RouterLink} 
-                  to="/admin" 
-                  onClick={onClose} 
-                  size="sm" 
-                  variant="ghost"
-                  color={textColor}
-                  _hover={{ bg: hoverBg }}
-                  justifyContent="flex-start"
-                  transition="all 0.2s ease"
-                >
-                  Admin
-                </Button>
-              )}
-
-              <Divider borderColor={menuBorder} my={3} />
-
-              {/* Pour tous */}
-              <Box px={3} py={2}>
-                <Text fontSize="sm" color={subtleTextColor} fontWeight="600">Pour tous</Text>
-              </Box>
-
-              {/* Bouton Reel mobile */}
-              {user ? (
-                <Button
-                  as={RouterLink}
-                  to="/reels?upload=1"
-                  onClick={onClose}
-                  size="md"
-                  variant="ghost"
-                  leftIcon={<span>🎬</span>}
-                  color={textColor}
-                  _hover={{ bg: hoverBg }}
-                  justifyContent="flex-start"
-                  transition="all 0.2s ease"
-                >
-                  Reels
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => { onClose(); navigate('/login') }}
-                  size="md"
-                  variant="ghost"
-                  color={textColor}
-                  _hover={{ bg: hoverBg }}
-                  justifyContent="flex-start"
-                  transition="all 0.2s ease"
-                >
-                  Poster un Reel
                 </Button>
               )}
             </VStack>
           </DrawerBody>
           <Recommendations ref={recRef} hideTrigger />
-          <DrawerFooter borderTopWidth="1px" borderColor={menuBorder}>
+          <DrawerFooter borderTopWidth="1px" borderColor={menuBorder} py={4}>
             <Text fontSize="sm" color={subtleTextColor}>Dalal ak jamm</Text>
           </DrawerFooter>
         </DrawerContent>
