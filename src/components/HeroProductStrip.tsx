@@ -32,8 +32,9 @@ function firstImage(p: MinimalProduct) {
 }
 
 export default function HeroProductStrip({ products = [] }: { products?: MinimalProduct[] }) {
-  const cardHeight = useBreakpointValue({ base: '260px', md: '420px' })
   const bg = useColorModeValue('white', 'gray.800')
+  const borderColor = useColorModeValue('gray.100', 'gray.700')
+  const shadowColor = useColorModeValue('rgba(0, 0, 0, 0.08)', 'rgba(0, 0, 0, 0.3)')
   const isMobile = useBreakpointValue({ base: true, md: false })
 
   const [visible, setVisible] = React.useState(false)
@@ -52,12 +53,31 @@ export default function HeroProductStrip({ products = [] }: { products?: Minimal
   if (!products || products.length === 0) return null
 
   return (
-    <Box id="hero-product-strip" as="section" my={6} px={{ base: 2, md: 6 }}>
+    <Box id="hero-product-strip" as="section" my={10} px={{ base: 4, md: 8 }}>
       <HStack
-        spacing={4}
+        spacing={{ base: 4, md: 6 }}
         overflowX="auto"
-        css={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' } as any}
-        py={2}
+        css={{ 
+          scrollSnapType: 'x mandatory', 
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#CBD5E0 transparent',
+          '&::-webkit-scrollbar': {
+            height: '6px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'transparent',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: '#CBD5E0',
+            borderRadius: '10px',
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            background: '#A0AEC0',
+          },
+        } as any}
+        py={4}
+        pb={6}
         role="list"
         aria-label="Produits vedettes"
       >
@@ -72,18 +92,37 @@ export default function HeroProductStrip({ products = [] }: { products?: Minimal
               key={String(p.id)}
               as="article"
               role="listitem"
-              minW={{ base: '86%', md: '45%', lg: '33%' }}
+              minW={{ base: '82%', sm: '70%', md: '45%', lg: '32%', xl: '28%' }}
+              maxW={{ base: '82%', sm: '70%', md: '45%', lg: '32%', xl: '28%' }}
               flex="0 0 auto"
-              borderRadius="xl"
+              borderRadius="20px"
               overflow="hidden"
               bg={bg}
-              boxShadow="md"
-              transition="transform 0.25s, box-shadow 0.25s"
-              _hover={{ transform: !isMobile ? 'translateY(-6px)' : undefined, boxShadow: 'xl' }}
-              style={{ scrollSnapAlign: 'start', touchAction: 'pan-x' }}
+              border="1px solid"
+              borderColor={borderColor}
+              boxShadow={`0 4px 20px ${shadowColor}`}
+              transition="all 0.35s cubic-bezier(0.4, 0, 0.2, 1)"
+              _hover={{ 
+                transform: !isMobile ? 'translateY(-10px)' : undefined, 
+                boxShadow: `0 12px 40px ${shadowColor}`,
+                borderColor: 'blue.300'
+              }}
+              style={{ scrollSnapAlign: 'center', touchAction: 'pan-x' }}
             >
-              <ChakraLink as={RouterLink} to={productHref} style={{ display: 'block' }} aria-label={`Voir ${p.title || p.name}`}>
-                <Box position="relative" h={cardHeight} w="100%">
+              <ChakraLink 
+                as={RouterLink} 
+                to={productHref} 
+                style={{ display: 'block' }} 
+                aria-label={`Voir ${p.title || p.name}`}
+                _hover={{ textDecoration: 'none' }}
+              >
+                {/* Image avec overlay gradient subtil */}
+                <Box 
+                  position="relative" 
+                  w="100%"
+                  aspectRatio="4/3"
+                  overflow="hidden"
+                >
                   <Image
                     src={img}
                     alt={String(p.title || p.name || 'product')}
@@ -92,24 +131,88 @@ export default function HeroProductStrip({ products = [] }: { products?: Minimal
                     h="100%"
                     loading={isMobile ? 'eager' : 'lazy'}
                     fallbackSrc="/img/b.jfif"
-                    transition="opacity 0.4s"
+                    transition="all 0.5s ease-out"
                     opacity={visible ? 1 : 0}
-                    transform={visible ? 'none' : 'translateY(10px)'}
+                    transform={visible ? 'scale(1)' : 'scale(1.1)'}
+                    _hover={{ transform: 'scale(1.08)' }}
                   />
-                  <Box position="absolute" inset={0} bgGradient="linear(to-b, rgba(0,0,0,0.04), rgba(0,0,0,0.55))" />
-                  <Box position="absolute" left={4} bottom={4} color="white" zIndex={2}>
-                    <Badge bg="white" color="black" borderRadius="full" px={{ base: 2, md: 3 }} py={1} fontWeight={700} fontSize={{ base: 'sm', md: 'md' }}>
-                      {p.title || p.name}
+                  {/* Gradient overlay très subtil */}
+                  <Box 
+                    position="absolute" 
+                    inset={0} 
+                    bgGradient="linear(to-b, rgba(0,0,0,0), rgba(0,0,0,0.15))"
+                    pointerEvents="none"
+                  />
+                  
+                  {/* Badge élégant */}
+                  <Box 
+                    position="absolute" 
+                    top={3} 
+                    right={3}
+                  >
+                    <Badge 
+                      bg="rgba(255, 255, 255, 0.95)" 
+                      color="gray.800" 
+                      borderRadius="full" 
+                      px={3} 
+                      py={1.5} 
+                      fontWeight={700} 
+                      fontSize="2xs"
+                      textTransform="uppercase"
+                      letterSpacing="wider"
+                      boxShadow="0 2px 8px rgba(0,0,0,0.1)"
+                      backdropFilter="blur(10px)"
+                    >
+                      ✨ Vedette
                     </Badge>
                   </Box>
                 </Box>
-              </ChakraLink>
 
-              <Box p={3} display="flex" alignItems="center" justifyContent="space-between">
-                <ChakraLink as={RouterLink} to={shopHref} aria-label={`Visiter la boutique ${p.shopName || ''}`} fontSize="sm" color="gray.600">
-                  <Text fontSize="sm" color="gray.600">{p.shopName || 'Boutique'}</Text>
-                </ChakraLink>
-              </Box>
+                {/* Contenu avec padding parfait */}
+                <Box p={{ base: 4, md: 5 }}>
+                  {/* Titre du produit */}
+                  <Heading 
+                    as="h3" 
+                    fontSize={{ base: 'md', md: 'lg' }}
+                    fontWeight={700}
+                    noOfLines={2}
+                    mb={3}
+                    lineHeight="1.4"
+                    color={useColorModeValue('gray.800', 'white')}
+                    minH={{ base: '40px', md: '48px' }}
+                  >
+                    {p.title || p.name}
+                  </Heading>
+
+                  {/* Boutique avec icône */}
+                  <Box 
+                    display="flex" 
+                    alignItems="center" 
+                    gap={2}
+                    pt={2}
+                    borderTop="1px solid"
+                    borderColor={useColorModeValue('gray.100', 'gray.700')}
+                  >
+                    <Box
+                      as="span"
+                      fontSize="xs"
+                      color={useColorModeValue('gray.400', 'gray.500')}
+                    >
+                      🏪
+                    </Box>
+                    <Text 
+                      fontSize="sm" 
+                      color={useColorModeValue('gray.600', 'gray.400')}
+                      fontWeight={500}
+                      noOfLines={1}
+                      transition="color 0.2s"
+                      _hover={{ color: 'blue.500' }}
+                    >
+                      {p.shopName || 'Boutique'}
+                    </Text>
+                  </Box>
+                </Box>
+              </ChakraLink>
             </Box>
           )
         })}
