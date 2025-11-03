@@ -11,8 +11,22 @@ import {
 
 const HeroNike: React.FC = () => {
   const overlay = useColorModeValue('rgba(255,255,255,0.02)', 'rgba(0,0,0,0.6)')
-  const poster =
-    'https://res.cloudinary.com/dcs9vkwe0/image/upload/v1761999319/gestion_de_boutique/p9lmfjsu5vjn8bxzqgwo.jpg'
+  
+  // Images du slideshow
+  const images = [
+    'https://res.cloudinary.com/dcs9vkwe0/image/upload/v1761999319/gestion_de_boutique/p9lmfjsu5vjn8bxzqgwo.jpg',
+    'https://res.cloudinary.com/dcs9vkwe0/image/upload/v1761999319/gestion_de_boutique/mghjkzerwo2spwmobzaf.jpg',
+  ]
+
+  const [currentIdx, setCurrentIdx] = React.useState(0)
+
+  // Changement d’image toutes les 2 secondes
+  React.useEffect(() => {
+    const id = setInterval(() => {
+      setCurrentIdx(i => (i + 1) % images.length)
+    }, 4000)
+    return () => clearInterval(id)
+  }, [])
 
   const scrollToProducts = () => {
     const el = document.getElementById('products-grid')
@@ -27,9 +41,10 @@ const HeroNike: React.FC = () => {
       w="100%"
       overflow="hidden"
     >
-      {/* Image de fond (même pour mobile et desktop) */}
+      {/* Image du slideshow */}
       <Image
-        src={poster}
+        key={images[currentIdx]} // force le refresh
+        src={images[currentIdx]}
         alt="Hero"
         objectFit="cover"
         position="absolute"
@@ -37,11 +52,11 @@ const HeroNike: React.FC = () => {
         left={0}
         width="100%"
         height="100%"
+        transition="opacity 1s ease-in-out"
         loading="eager"
-        fallbackSrc={poster}
       />
 
-      {/* Overlay pour le contraste du texte */}
+      {/* Overlay pour contraste */}
       <Box position="absolute" inset={0} bg={overlay} />
 
       {/* Contenu centré */}
