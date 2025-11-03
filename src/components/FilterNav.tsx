@@ -15,6 +15,8 @@ import {
   useColorModeValue,
   useBreakpointValue,
   Button,
+  Flex,
+  Center,
 } from '@chakra-ui/react'
 import { ChevronDownIcon } from '@chakra-ui/icons'
 import { FaStore, FaBox, FaFilter } from 'react-icons/fa'
@@ -53,98 +55,111 @@ export default function FilterNav({
       zIndex="sticky"
     >
       <Container maxW="container.xl" py={3}>
-        <HStack
-          justify="space-between"
+        <Flex
+          justify="center"
           align="center"
+          position="relative"
           flexWrap="wrap"
-          spacing={isMobile ? 2 : 8}
+          gap={4}
         >
-          {/* Onglets ultra simples */}
+          {/* Onglets centrés */}
           <Tabs
             index={view === 'shops' ? 0 : 1}
             onChange={(i) => onViewChange(i === 0 ? 'shops' : 'products')}
             variant="unstyled"
           >
-            <TabList gap={6}>
+            <TabList gap={isMobile ? 4 : 8}>
               <Tab
                 fontWeight="500"
-                fontSize="md"
+                fontSize={isMobile ? "sm" : "md"}
                 color={view === 'shops' ? activeColor : inactiveColor}
                 borderBottom={view === 'shops' ? '2px solid currentColor' : '2px solid transparent'}
                 _hover={{ color: activeColor }}
                 transition="all 0.2s ease"
+                px={isMobile ? 3 : 4}
+                py={2}
               >
                 <HStack spacing={2}>
-                  <Icon as={FaStore} boxSize={4} />
+                  <Icon as={FaStore} boxSize={isMobile ? 3 : 4} />
                   <Text>Boutiques</Text>
                 </HStack>
               </Tab>
 
               <Tab
                 fontWeight="500"
-                fontSize="md"
+                fontSize={isMobile ? "sm" : "md"}
                 color={view === 'products' ? activeColor : inactiveColor}
                 borderBottom={view === 'products' ? '2px solid currentColor' : '2px solid transparent'}
                 _hover={{ color: activeColor }}
                 transition="all 0.2s ease"
+                px={isMobile ? 3 : 4}
+                py={2}
               >
                 <HStack spacing={2}>
-                  <Icon as={FaBox} boxSize={4} />
+                  <Icon as={FaBox} boxSize={isMobile ? 3 : 4} />
                   <Text>Produits</Text>
                 </HStack>
               </Tab>
             </TabList>
           </Tabs>
 
-          {/* Sélecteur de catégories simplifié */}
+          {/* Sélecteur de catégories positionné à droite */}
           {view === 'products' && categories.length > 0 && (
-            <Menu>
-              <MenuButton
-                as={Button}
-                variant="ghost"
-                rightIcon={<ChevronDownIcon />}
-                fontWeight="500"
-                fontSize="sm"
-                color={textColor}
-                px={3}
-              >
-                <HStack spacing={2}>
-                  <Icon as={FaFilter} boxSize={3.5} />
-                  <Text>
-                    {selectedCategory == null
-                      ? 'Toutes les catégories'
-                      : categories.find((c) => c.id === selectedCategory)?.name}
-                  </Text>
-                </HStack>
-              </MenuButton>
-              <MenuList
-                bg={navBg}
-                borderColor={borderColor}
-                minW="200px"
-                py={2}
-              >
-                <MenuItem
-                  onClick={() => onCategoryChange?.(null)}
+            <Box
+              position={isMobile ? "static" : "absolute"}
+              right={isMobile ? 0 : 4}
+              top={isMobile ? "auto" : "50%"}
+              transform={isMobile ? "none" : "translateY(-50%)"}
+            >
+              <Menu>
+                <MenuButton
+                  as={Button}
+                  variant="ghost"
+                  rightIcon={<ChevronDownIcon />}
+                  fontWeight="500"
                   fontSize="sm"
-                  color={selectedCategory === null ? activeColor : textColor}
+                  color={textColor}
+                  px={3}
+                  size={isMobile ? "sm" : "md"}
                 >
-                  Toutes les catégories
-                </MenuItem>
-
-                {categories.map((c) => (
+                  <HStack spacing={2}>
+                    <Icon as={FaFilter} boxSize={3.5} />
+                    <Text>
+                      {selectedCategory == null
+                        ? 'Toutes les catégories'
+                        : categories.find((c) => c.id === selectedCategory)?.name}
+                    </Text>
+                  </HStack>
+                </MenuButton>
+                <MenuList
+                  bg={navBg}
+                  borderColor={borderColor}
+                  minW="200px"
+                  py={2}
+                >
                   <MenuItem
-                    key={c.id}
-                    onClick={() => onCategoryChange?.(c.id)}
+                    onClick={() => onCategoryChange?.(null)}
                     fontSize="sm"
-                    color={selectedCategory === c.id ? activeColor : textColor}
+                    color={selectedCategory === null ? activeColor : textColor}
                   >
-                    {c.name}
+                    Toutes les catégories
                   </MenuItem>
-                ))}
-              </MenuList>
-            </Menu>
+
+                  {categories.map((c) => (
+                    <MenuItem
+                      key={c.id}
+                      onClick={() => onCategoryChange?.(c.id)}
+                      fontSize="sm"
+                      color={selectedCategory === c.id ? activeColor : textColor}
+                    >
+                      {c.name}
+                    </MenuItem>
+                  ))}
+                </MenuList>
+              </Menu>
+            </Box>
           )}
-        </HStack>
+        </Flex>
       </Container>
     </Box>
   )
