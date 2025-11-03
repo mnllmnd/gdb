@@ -22,9 +22,22 @@ import {
   Button,
   Icon,
   SimpleGrid,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
+  useColorModeValue,
+  Drawer,
+  DrawerBody,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
+  useDisclosure,
 } from '@chakra-ui/react'
-import { SearchIcon, CloseIcon } from '@chakra-ui/icons'
-import { FiPackage, FiGrid } from 'react-icons/fi'
+import { SearchIcon, CloseIcon, StarIcon } from '@chakra-ui/icons'
+import { FiPackage, FiGrid, FiFilter, FiTrendingUp, FiMenu } from 'react-icons/fi'
 import ProductCard from '../components/ProductCard'
 import api from '../services/api'
 
@@ -36,15 +49,24 @@ export default function Products() {
   const [query, setQuery] = React.useState('')
   const [allProducts, setAllProducts] = React.useState<any[] | null>(null)
   const [loading, setLoading] = React.useState(true)
+  const [activeTab, setActiveTab] = React.useState(0)
+  const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null)
+  const { isOpen, onOpen, onClose } = useDisclosure()
 
-  // Tailles responsives
+  // Couleurs sobres
+  const borderColor = useColorModeValue('gray.200', 'gray.600')
+  const cardBg = useColorModeValue('white', 'gray.800')
+  const subtleBg = useColorModeValue('gray.50', 'gray.700')
+
   const gridColumns = useBreakpointValue({ 
     base: 'repeat(2, 1fr)', 
     sm: 'repeat(2, 1fr)', 
     md: 'repeat(3, 1fr)', 
     lg: 'repeat(4, 1fr)',
-    xl: 'repeat(5, 1fr)'
+    xl: 'repeat(4, 1fr)'
   })
+
+  const isMobile = useBreakpointValue({ base: true, md: false })
 
   React.useEffect(() => {
     let mounted = true
@@ -60,7 +82,6 @@ export default function Products() {
         setAllProducts(productsData || [])
         setCategories(categoriesData || [])
 
-        // Build quick lookup maps for shops by id and owner_id
         const byId: Record<string, any> = {}
         const byOwner: Record<string, any> = {}
         ;(shopsData || []).forEach((s: any) => {
@@ -69,7 +90,6 @@ export default function Products() {
         })
         setShopsMap({ byId, byOwner })
 
-        // build categorized map
         const map = {} as Record<number, any[]>
         ;(productsData || []).forEach((p: any) => {
           const cid = p.category_id ?? 0
@@ -88,11 +108,9 @@ export default function Products() {
     return () => { mounted = false }
   }, [])
 
-  // Filtrage des produits basé sur la recherche
   React.useEffect(() => {
     if (!query.trim()) {
       setProducts(allProducts)
-      // rebuild categorizedProducts from allProducts
       const map = {} as Record<number, any[]>
       ;(allProducts || []).forEach((p: any) => {
         const cid = p.category_id ?? 0
@@ -109,9 +127,8 @@ export default function Products() {
       return terms.every(term => searchText.includes(term))
     })
     setProducts(filtered)
-    // update categorizedProducts for filtered results
     const map = {} as Record<number, any[]>
-    ;filtered.forEach((p: any) => {
+    filtered.forEach((p: any) => {
       const cid = p.category_id ?? 0
       if (!map[cid]) map[cid] = []
       map[cid].push(p)
@@ -119,30 +136,26 @@ export default function Products() {
     setCategorizedProducts(map)
   }, [query, allProducts])
 
+  // Produits populaires (exemple)
+  const popularProducts = allProducts?.slice(0, 8) || []
+
+  // Filtrer les produits par catégorie sélectionnée
+  const filteredProducts = selectedCategory 
+    ? categorizedProducts[parseInt(selectedCategory)] || []
+    : products
+
   if (loading) return (
     <Container maxW="container.xl" py={8}>
       <Center minH="60vh">
-        <VStack spacing={4}>
-          <Box position="relative">
-            <Spinner 
-              size="xl" 
-              color="brand.500" 
-              thickness="4px" 
-              speed="0.8s"
-              emptyColor="gray.200"
-            />
-            <Icon 
-              as={FiPackage} 
-              position="absolute" 
-              top="50%" 
-              left="50%" 
-              transform="translate(-50%, -50%)"
-              boxSize={6}
-              color="brand.500"
-            />
-          </Box>
+        <VStack spacing={6}>
+          <Spinner 
+            size="xl" 
+            color="gray.600" 
+            thickness="3px" 
+            emptyColor="gray.200"
+          />
           <Text color="gray.600" fontSize="lg" fontWeight="500">
-            Chargement des produits...
+            Chargement...
           </Text>
         </VStack>
       </Center>
@@ -150,282 +163,373 @@ export default function Products() {
   )
 
   return (
-    <Container maxW="container.xl" py={8} pb={{ base: '120px', md: 8 }}>
-      {/* En-tête Hero */}
-      <Box 
-        mb={10}
-        p={{ base: 6, md: 10 }}
-        bg="white"
-        borderRadius="2xl"
-        boxShadow="xl"
-        border="1px solid"
-        borderColor="gray.100"
-        position="relative"
-        overflow="hidden"
-      >
-        {/* Decoration background */}
-        <Box
-          position="absolute"
-          top="-50px"
-          right="-50px"
-          width="200px"
-          height="200px"
-          bg="brand.50"
-          borderRadius="full"
-          opacity="0.5"
-          filter="blur(40px)"
-        />
-        
-        <VStack spacing={6} position="relative" zIndex={1}>
-          <VStack spacing={3}>
-            <HStack spacing={2}>
-              <Icon as={FiGrid} boxSize={8} color="brand.500" />
-              <Heading 
-                size="2xl" 
-                textAlign="center"
-                color="gray.800"
-                fontWeight="800"
-              >
-                Nos Produits
-              </Heading>
-            </HStack>
-            
-            <Text 
-              color="gray.600" 
-              textAlign="center" 
-              maxW="2xl" 
-              fontSize={{ base: 'md', md: 'lg' }}
-              fontWeight="500"
+    <Container maxW="container.xl" py={4} pb={{ base: '120px', md: 8 }} px={{ base: 4, md: 6 }}>
+      {/* En-tête minimaliste */}
+      <VStack spacing={4} align="stretch" mb={6}>
+        {/* Barre supérieure avec titre et filtre mobile */}
+        <Flex justify="space-between" align="center" gap={4}>
+          <Box flex="1">
+            <Heading 
+              size={{ base: "lg", md: "xl" }}
+              fontWeight="600" 
+              color="gray.900"
+              letterSpacing="-0.5px"
             >
-              Découvrez notre sélection de produits soigneusement choisis pour vous
+              Boutique
+            </Heading>
+            <Text color="gray.600" fontSize={{ base: "sm", md: "lg" }} mt={1}>
+              {products?.length || 0} produit{products?.length !== 1 ? 's' : ''}
             </Text>
+          </Box>
+          
+          {/* Bouton filtre mobile */}
+          {isMobile && (
+            <IconButton
+              aria-label="Filtrer par catégorie"
+              icon={<FiFilter />}
+              variant="outline"
+              borderRadius="lg"
+              borderColor={borderColor}
+              onClick={onOpen}
+            />
+          )}
+        </Flex>
 
-            {!query && products && (
+        {/* Barre de recherche épurée */}
+        <Box>
+          <InputGroup size={{ base: "md", md: "lg" }}>
+            <InputLeftElement pointerEvents="none" height={{ base: "48px", md: "56px" }}>
+              <Icon as={SearchIcon} color="gray.400" boxSize={{ base: 4, md: 5 }} />
+            </InputLeftElement>
+            <Input
+              placeholder="Rechercher des produits..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              bg={cardBg}
+              borderRadius="lg"
+              border="1px solid"
+              borderColor={borderColor}
+              _hover={{ borderColor: 'gray.300' }}
+              _focus={{
+                borderColor: 'gray.400',
+                boxShadow: 'none'
+              }}
+              fontSize={{ base: "sm", md: "md" }}
+              height={{ base: "48px", md: "56px" }}
+              px={{ base: 10, md: 12 }}
+              fontWeight="500"
+            />
+            {query && (
+              <InputRightElement height={{ base: "48px", md: "56px" }}>
+                <IconButton 
+                  aria-label="Effacer la recherche" 
+                  icon={<CloseIcon boxSize={3} />} 
+                  size="sm"
+                  variant="ghost"
+                  colorScheme="gray"
+                  borderRadius="full"
+                  onClick={() => setQuery('')}
+                />
+              </InputRightElement>
+            )}
+          </InputGroup>
+        </Box>
+      </VStack>
+
+      {/* Navigation par onglets - Version desktop */}
+      {!isMobile && (
+        <Tabs 
+          variant="line" 
+          colorScheme="gray" 
+          mb={8}
+          index={activeTab}
+          onChange={setActiveTab}
+        >
+          <TabList borderBottom="1px solid" borderColor={borderColor}>
+            <Tab 
+              fontWeight="500" 
+              color="gray.700"
+              _selected={{ color: 'gray.900', borderColor: 'gray.900' }}
+              py={3}
+            >
+              <HStack spacing={2}>
+                <Icon as={FiGrid} boxSize={4} />
+                <Text>Tous les produits</Text>
+              </HStack>
+            </Tab>
+            <Tab 
+              fontWeight="500" 
+              color="gray.700"
+              _selected={{ color: 'gray.900', borderColor: 'gray.900' }}
+              py={3}
+            >
+              <HStack spacing={2}>
+                <Icon as={StarIcon} boxSize={4} />
+                <Text>Populaires</Text>
+              </HStack>
+            </Tab>
+            <Tab 
+              fontWeight="500" 
+              color="gray.700"
+              _selected={{ color: 'gray.900', borderColor: 'gray.900' }}
+              py={3}
+            >
+              <HStack spacing={2}>
+                <Icon as={FiTrendingUp} boxSize={4} />
+                <Text>Nouveautés</Text>
+              </HStack>
+            </Tab>
+          </TabList>
+
+          <TabPanels>
+            {/* Onglet 1: Tous les produits */}
+            <TabPanel px={0}>
+              {renderAllProducts()}
+            </TabPanel>
+
+            {/* Onglet 2: Produits populaires */}
+            <TabPanel px={0}>
+              {renderPopularProducts()}
+            </TabPanel>
+
+            {/* Onglet 3: Nouveautés */}
+            <TabPanel px={0}>
+              {renderNewProducts()}
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
+      )}
+
+      {/* Version mobile - Layout simplifié */}
+      {isMobile && (
+        <Box>
+          {query && (
+            <Card bg={subtleBg} borderRadius="lg" border="1px solid" borderColor={borderColor} mb={4}>
+              <CardBody py={3}>
+                <Flex justify="space-between" align="center">
+                  <Text color="gray.700" fontSize="sm" fontWeight="500">
+                    {products?.length || 0} résultat{(products?.length || 0) > 1 ? 's' : ''}
+                  </Text>
+                  <Button 
+                    variant="ghost" 
+                    size="xs"
+                    onClick={() => setQuery('')}
+                    rightIcon={<CloseIcon />}
+                    fontWeight="500"
+                  >
+                    Effacer
+                  </Button>
+                </Flex>
+              </CardBody>
+            </Card>
+          )}
+
+          {/* Navigation mobile simplifiée */}
+          <SimpleGrid columns={3} spacing={2} mb={6}>
+            <Button
+              variant={activeTab === 0 ? "solid" : "outline"}
+              size="sm"
+              borderRadius="lg"
+              bg={activeTab === 0 ? "gray.900" : "transparent"}
+              color={activeTab === 0 ? "white" : "gray.700"}
+              borderColor={borderColor}
+              onClick={() => setActiveTab(0)}
+            >
+              Tous
+            </Button>
+            <Button
+              variant={activeTab === 1 ? "solid" : "outline"}
+              size="sm"
+              borderRadius="lg"
+              bg={activeTab === 1 ? "gray.900" : "transparent"}
+              color={activeTab === 1 ? "white" : "gray.700"}
+              borderColor={borderColor}
+              onClick={() => setActiveTab(1)}
+            >
+              Populaires
+            </Button>
+            <Button
+              variant={activeTab === 2 ? "solid" : "outline"}
+              size="sm"
+              borderRadius="lg"
+              bg={activeTab === 2 ? "gray.900" : "transparent"}
+              color={activeTab === 2 ? "white" : "gray.700"}
+              borderColor={borderColor}
+              onClick={() => setActiveTab(2)}
+            >
+              Nouveautés
+            </Button>
+          </SimpleGrid>
+
+          {/* Contenu mobile */}
+          {activeTab === 0 && renderAllProducts()}
+          {activeTab === 1 && renderPopularProducts()}
+          {activeTab === 2 && renderNewProducts()}
+        </Box>
+      )}
+
+      {/* Drawer des catégories pour mobile */}
+      <Drawer isOpen={isOpen} placement="left" onClose={onClose}>
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerCloseButton />
+          <DrawerHeader borderBottomWidth="1px">
+            Catégories
+          </DrawerHeader>
+          <DrawerBody py={4}>
+            <VStack align="stretch" spacing={2}>
+              <Button
+                variant={!selectedCategory ? "solid" : "ghost"}
+                justifyContent="start"
+                onClick={() => {
+                  setSelectedCategory(null)
+                  onClose()
+                }}
+                bg={!selectedCategory ? "gray.100" : "transparent"}
+              >
+                Toutes les catégories
+              </Button>
+              {categories?.filter(c => (categorizedProducts[c.id] || []).length > 0).map((c: any) => (
+                <Button
+                  key={c.id}
+                  variant={selectedCategory === String(c.id) ? "solid" : "ghost"}
+                  justifyContent="space-between"
+                  onClick={() => {
+                    setSelectedCategory(String(c.id))
+                    onClose()
+                    document.getElementById(`category-${c.id}`)?.scrollIntoView({ 
+                      behavior: 'smooth',
+                      block: 'start'
+                    })
+                  }}
+                  bg={selectedCategory === String(c.id) ? "gray.100" : "transparent"}
+                >
+                  <Text>{c.name}</Text>
+                  <Badge bg="gray.200" color="gray.600" fontSize="xs">
+                    {(categorizedProducts[c.id] || []).length}
+                  </Badge>
+                </Button>
+              ))}
+            </VStack>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
+    </Container>
+  )
+
+  // Fonctions de rendu réutilisables
+  function renderAllProducts() {
+    return (
+      <>
+        {!query && categories && categories.filter(c => (categorizedProducts[c.id] || []).length > 0).length > 0 && !isMobile && (
+          <Box mb={6}>
+            <Text fontSize="sm" fontWeight="600" color="gray.600" mb={3} textTransform="uppercase" letterSpacing="0.5px">
+              Parcourir par catégorie
+            </Text>
+            <SimpleGrid columns={{ base: 2, sm: 3, md: 4, lg: 6 }} spacing={2}>
+              {categories
+                .filter((c: any) => (categorizedProducts[c.id] || []).length > 0)
+                .map((c: any, index: number) => (
+                  <Button
+                    key={c.id}
+                    variant="outline"
+                    size="sm"
+                    height="auto"
+                    py={2}
+                    borderRadius="lg"
+                    borderColor={borderColor}
+                    _hover={{ bg: subtleBg, borderColor: 'gray.300' }}
+                    onClick={() => {
+                      document.getElementById(`category-${c.id}`)?.scrollIntoView({ 
+                        behavior: 'smooth',
+                        block: 'start'
+                      })
+                    }}
+                  >
+                    <VStack spacing={1}>
+                      <Text fontSize="xs" fontWeight="500" noOfLines={1}>
+                        {c.name}
+                      </Text>
+                      <Badge 
+                        bg="gray.100" 
+                        color="gray.600"
+                        fontSize="2xs" 
+                        px={1} 
+                        py={0} 
+                        borderRadius="full"
+                      >
+                        {(categorizedProducts[c.id] || []).length}
+                      </Badge>
+                    </VStack>
+                  </Button>
+                ))}
+            </SimpleGrid>
+          </Box>
+        )}
+
+        {/* Produits sans catégorie */}
+        {(categorizedProducts[0] || []).length > 0 && (
+          <Box mb={8}>
+            <HStack spacing={3} mb={4} align="center">
+              <Box w="3px" h="16px" bg="gray.400" borderRadius="full" />
+              <Heading size={{ base: "sm", md: "md" }} fontWeight="600" color="gray.900">
+                Autres produits
+              </Heading>
               <Badge 
-                colorScheme="brand" 
-                fontSize="md" 
-                px={4} 
-                py={2} 
+                bg="gray.100" 
+                color="gray.600"
+                fontSize="xs" 
+                px={2} 
+                py={1} 
                 borderRadius="full"
                 fontWeight="600"
               >
-                {products.length} produit{products.length > 1 ? 's' : ''} disponible{products.length > 1 ? 's' : ''}
+                {(categorizedProducts[0] || []).length}
               </Badge>
-            )}
-          </VStack>
+            </HStack>
 
-          {/* Barre de recherche moderne */}
-          <Box w="100%" maxW="720px">
-            <InputGroup 
-              size="lg" 
-              boxShadow="0 8px 24px rgba(0,0,0,0.08)" 
-              borderRadius="xl"
-            >
-              <InputLeftElement pointerEvents="none" height="64px">
-                <Icon as={SearchIcon} color="brand.400" boxSize={5} />
-              </InputLeftElement>
-              <Input
-                placeholder="Rechercher un produit, une catégorie..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                bg="white"
-                borderRadius="xl"
-                border="2px solid"
-                borderColor="gray.200"
-                _hover={{ borderColor: 'brand.300' }}
-                _focus={{
-                  borderColor: 'brand.500',
-                  boxShadow: '0 0 0 3px rgba(157, 123, 106, 0.1)'
-                }}
-                fontSize="md"
-                height="64px"
-                px={12}
-                fontWeight="500"
-              />
-              {query && (
-                <InputRightElement height="64px">
-                  <IconButton 
-                    aria-label="Effacer la recherche" 
-                    icon={<CloseIcon />} 
-                    size="sm"
-                    variant="ghost"
-                    colorScheme="gray"
-                    borderRadius="full"
-                    onClick={() => setQuery('')}
-                    _hover={{ bg: 'gray.100' }}
+            <Grid templateColumns={gridColumns} gap={{ base: 3, md: 6 }}>
+              {(categorizedProducts[0] || []).map((p) => {
+                const shop = (shopsMap.byId && shopsMap.byId[String(p.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(p.seller_id)])
+                return (
+                  <ProductCard 
+                    key={p.id} 
+                    id={String(p.id)} 
+                    title={p.title || p.name} 
+                    price={p.price ?? p.amount} 
+                    image_url={p.image_url ?? p.product_image} 
+                    images={p.images}
+                    quantity={p.quantity ?? p.quantite ?? p.stock ?? p.amount_available}
+                    shopId={shop?.id || p.shop_id || p.seller_id}
+                    shopName={shop?.name}
+                    shopDomain={shop?.domain}
                   />
-                </InputRightElement>
-              )}
-            </InputGroup>
+                )
+              })}
+            </Grid>
           </Box>
-        </VStack>
-      </Box>
+        )}
 
-      {/* Résultats de recherche */}
-      {query && (
-        <Card 
-          mb={6}
-          bg="blue.50"
-          borderRadius="xl"
-          border="1px solid"
-          borderColor="blue.200"
-        >
-          <CardBody p={5}>
-            <Flex justify="space-between" align="center" flexWrap="wrap" gap={3}>
-              <HStack spacing={3}>
-                <Icon as={SearchIcon} color="blue.600" boxSize={5} />
-                <Text color="gray.700" fontSize="lg" fontWeight="600">
-                  {products?.length || 0} résultat{(products?.length || 0) > 1 ? 's' : ''} pour "{query}"
-                </Text>
-              </HStack>
-              <Button 
-                variant="ghost" 
-                colorScheme="blue" 
-                size="sm"
-                onClick={() => setQuery('')}
-                rightIcon={<CloseIcon />}
-                fontWeight="600"
-              >
-                Effacer
-              </Button>
-            </Flex>
-          </CardBody>
-        </Card>
-      )}
-
-      {/* Produits organisés par catégorie */}
-      {products && products.length > 0 ? (
-        <VStack spacing={10} align="stretch">
-          {/* Produits sans catégorie */}
-          {(categorizedProducts[0] || []).length > 0 && (
-            <Box>
-              <Card 
-                bg="white"
-                mb={6}
-                borderRadius="xl"
-                boxShadow="md"
-                border="1px solid"
-                borderColor="gray.200"
-              >
-                <CardBody p={5}>
-                  <Flex align="center" justify="space-between" flexWrap="wrap" gap={3}>
-                    <HStack spacing={3}>
-                      <Box 
-                        p={2} 
-                        bg="gray.100" 
-                        borderRadius="lg"
-                      >
-                        <Icon as={FiPackage} boxSize={6} color="gray.600" />
-                      </Box>
-                      <VStack align="start" spacing={0}>
-                        <Heading size="md" color="gray.800" fontWeight="700">
-                          Autres produits
-                        </Heading>
-                        <Text fontSize="sm" color="gray.500">
-                          Produits non catégorisés
-                        </Text>
-                      </VStack>
-                    </HStack>
-                    <Badge 
-                      colorScheme="gray" 
-                      fontSize="md" 
-                      px={3} 
-                      py={1} 
-                      borderRadius="full"
-                      fontWeight="600"
-                    >
-                      {(categorizedProducts[0] || []).length}
-                    </Badge>
-                  </Flex>
-                </CardBody>
-              </Card>
-
-              <Grid templateColumns={gridColumns} gap={{ base: 3, md: 4 }}>
-                {(categorizedProducts[0] || []).map((p) => {
-                  const shop = (shopsMap.byId && shopsMap.byId[String(p.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(p.seller_id)])
-                  return (
-                    <ProductCard 
-                      key={p.id} 
-                      id={String(p.id)} 
-                      title={p.title || p.name} 
-                      price={p.price ?? p.amount} 
-                      image_url={p.image_url ?? p.product_image} 
-                      images={p.images}
-                      quantity={p.quantity ?? p.quantite ?? p.stock ?? p.amount_available}
-                      shopId={shop?.id || p.shop_id || p.seller_id}
-                      shopName={shop?.name}
-                      shopDomain={shop?.domain}
-                    />
-                  )
-                })}
-              </Grid>
-            </Box>
-          )}
-
-          {/* Produits par catégorie */}
-          {categories && categories.length > 0 && (
-            categories
+        {/* Produits par catégorie */}
+        {categories && categories.length > 0 && (
+          <VStack spacing={8} align="stretch">
+            {categories
               .filter((c: any) => (categorizedProducts[c.id] || []).length > 0)
-              .map((c: any, index: number) => (
-                <Box key={c.id}>
-                  {/* En-tête de catégorie élégante */}
-                  <Card 
-                    bg="white"
-                    mb={6}
-                    borderRadius="xl"
-                    boxShadow="lg"
-                    border="1px solid"
-                    borderColor="gray.200"
-                    overflow="hidden"
-                    transition="all 0.3s"
-                    _hover={{ 
-                      boxShadow: 'xl',
-                      transform: 'translateY(-2px)'
-                    }}
-                  >
-                    <Box
-                      h="6px"
-                      bg={`${['blue', 'purple', 'green', 'orange', 'pink'][index % 5]}.400`}
-                    />
-                    <CardBody p={6}>
-                      <Flex align="center" justify="space-between" flexWrap="wrap" gap={4}>
-                        <HStack spacing={4}>
-                          <Box 
-                            p={3} 
-                            bg={`${['blue', 'purple', 'green', 'orange', 'pink'][index % 5]}.50`}
-                            borderRadius="xl"
-                          >
-                            <Icon 
-                              as={FiGrid} 
-                              boxSize={7} 
-                              color={`${['blue', 'purple', 'green', 'orange', 'pink'][index % 5]}.600`}
-                            />
-                          </Box>
-                          <VStack align="start" spacing={1}>
-                            <Heading size="lg" color="gray.800" fontWeight="700">
-                              {c.name}
-                            </Heading>
-                            <Text color="gray.600" fontSize="sm" fontWeight="500">
-                              Découvrez notre sélection {c.name.toLowerCase()}
-                            </Text>
-                          </VStack>
-                        </HStack>
-                        <Badge 
-                          colorScheme={['blue', 'purple', 'green', 'orange', 'pink'][index % 5]}
-                          fontSize="md" 
-                          px={4} 
-                          py={2} 
-                          borderRadius="full"
-                          fontWeight="600"
-                        >
-                          {(categorizedProducts[c.id] || []).length} produit{(categorizedProducts[c.id] || []).length > 1 ? 's' : ''}
-                        </Badge>
-                      </Flex>
-                    </CardBody>
-                  </Card>
+              .map((c: any) => (
+                <Box key={c.id} id={`category-${c.id}`}>
+                  <HStack spacing={3} mb={4} align="center">
+                    <Box w="3px" h="20px" bg="gray.900" borderRadius="full" />
+                    <VStack align="start" spacing={0}>
+                      <Heading size={{ base: "sm", md: "lg" }} fontWeight="600" color="gray.900">
+                        {c.name}
+                      </Heading>
+                      <Text color="gray.600" fontSize={{ base: "xs", md: "sm" }}>
+                        {(categorizedProducts[c.id] || []).length} produit{(categorizedProducts[c.id] || []).length > 1 ? 's' : ''}
+                      </Text>
+                    </VStack>
+                  </HStack>
 
-                  {/* Grille des produits */}
-                  <Grid templateColumns={gridColumns} gap={{ base: 3, md: 4 }}>
+                  <Grid templateColumns={gridColumns} gap={{ base: 3, md: 6 }}>
                     {(categorizedProducts[c.id] || []).map((p) => {
                       const shop = (shopsMap.byId && shopsMap.byId[String(p.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(p.seller_id)])
                       return (
@@ -445,87 +549,50 @@ export default function Products() {
                     })}
                   </Grid>
                 </Box>
-              ))
-          )}
-        </VStack>
-      ) : (
-        <Center py={16} minH="40vh">
-          <Card 
-            maxW="md" 
-            textAlign="center"
-            bg="white"
-            borderRadius="2xl"
-            boxShadow="xl"
-            border="1px solid"
-            borderColor="gray.100"
-          >
-            <CardBody p={10}>
-              <VStack spacing={5}>
-                <Box 
-                  p={5} 
-                  bg="gray.50" 
-                  borderRadius="full"
-                  border="2px dashed"
-                  borderColor="gray.300"
-                >
-                  <Icon as={SearchIcon} boxSize={12} color="gray.400" />
-                </Box>
-                <VStack spacing={2}>
-                  <Heading size="md" color="gray.700">
-                    Aucun produit trouvé
-                  </Heading>
-                  <Text color="gray.500" fontSize="sm">
-                    {query ? 
-                      `Aucun produit ne correspond à "${query}"` : 
-                      "Aucun produit n'est disponible pour le moment"
-                    }
-                  </Text>
-                </VStack>
-                {query && (
-                  <Button 
-                    colorScheme="brand" 
-                    size="lg"
-                    borderRadius="xl"
-                    fontWeight="600"
-                    onClick={() => setQuery('')}
-                    px={8}
-                  >
-                    Voir tous les produits
-                  </Button>
-                )}
-              </VStack>
-            </CardBody>
-          </Card>
-        </Center>
-      )}
+              ))}
+          </VStack>
+        )}
+      </>
+    )
+  }
 
-      {/* Bouton retour en haut flottant */}
-      {products && products.length > 8 && (
-        <Box
-          position="fixed"
-          bottom={{ base: '100px', md: '30px' }}
-          right={{ base: '20px', md: '30px' }}
-          zIndex={10}
-        >
-          <Button
-            colorScheme="brand"
-            size="lg"
-            borderRadius="full"
-            boxShadow="0 8px 24px rgba(0,0,0,0.15)"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            width="56px"
-            height="56px"
-            p={0}
-            _hover={{
-              transform: 'translateY(-4px)',
-              boxShadow: '0 12px 32px rgba(0,0,0,0.2)'
-            }}
-            transition="all 0.3s"
-          >
-            ↑
-          </Button>
-        </Box>
-      )}
-    </Container>
-  )
+  function renderPopularProducts() {
+    return (
+      <Grid templateColumns={gridColumns} gap={{ base: 3, md: 6 }}>
+        {popularProducts.map((p) => {
+          const shop = (shopsMap.byId && shopsMap.byId[String(p.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(p.seller_id)])
+          return (
+            <ProductCard
+              key={p.id}
+              id={String(p.id)}
+              title={p.title || p.name}
+              price={p.price ?? p.amount}
+              image_url={p.image_url ?? p.product_image}
+              images={p.images}
+              quantity={p.quantity ?? p.quantite ?? p.stock ?? p.amount_available}
+              shopId={shop?.id || p.shop_id || p.seller_id}
+              shopName={shop?.name}
+              shopDomain={shop?.domain}
+            />
+          )
+        })}
+      </Grid>
+    )
+  }
+
+  function renderNewProducts() {
+    return (
+      <Center py={16} minH="40vh">
+        <VStack spacing={4}>
+          <Icon as={FiTrendingUp} boxSize={12} color="gray.400" />
+          <Text color="gray.600" fontSize="lg" fontWeight="500">
+            Nouveautés à venir
+          </Text>
+          <Text color="gray.500" fontSize="sm" textAlign="center">
+            De nouveaux produits arrivent bientôt
+          </Text>
+        </VStack>
+      </Center>
+    )
+  }
 }
