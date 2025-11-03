@@ -56,12 +56,12 @@ export default function ProductView() {
     const load = async () => {
       setLoading(true)
       try {
-        const list = await api.products.list()
+        // Fetch the single product directly to avoid loading the entire product list
+        const p = await api.products.get(String(id))
         if (!mounted) return
-        const p = (list || []).find((x: any) => String(x.id) === String(id))
         setProduct(p || null)
 
-        // Load review count
+        // Load review count for this product
         if (p) {
           try {
             const reviews = await api.reviews.list({ product_id: p.id, limit: 1 })
@@ -113,7 +113,15 @@ export default function ProductView() {
     </Container>
   )
 
-  const imgs: string[] = (product?.images && product.images.length) ? product.images : (product?.image_url ? [product.image_url] : (product?.product_image ? [product.product_image] : []))
+  // Build images array and deduplicate URLs client-side as a safety fallback
+  let imgs: string[] = []
+  if (product?.images && Array.isArray(product.images) && product.images.length) {
+    imgs = Array.from(new Set((product.images || []).map((x: any) => String(x)).filter(Boolean)))
+  } else if (product?.image_url) {
+    imgs = [String(product.image_url)]
+  } else if (product?.product_image) {
+    imgs = [String(product.product_image)]
+  }
   const currentSrc = highRes(imgs[imageIndex] ?? imgs[0], { width: 1200, quality: 80 }) ?? (imgs[imageIndex] ?? imgs[0])
 
   const next = () => setImageIndex(i => imgs.length ? (i + 1) % imgs.length : 0)

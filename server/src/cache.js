@@ -42,13 +42,18 @@ const refresh = async (dbQuery) => {
     SHOPS = sRes.rows || []
     CATEGORIES = cRes.rows || []
 
-    // map images by product_id
+    // map images by product_id (preserve order)
     const imgRows = imgsRes && imgsRes.rows ? imgsRes.rows : []
     const imagesMap = {}
     for (const r of imgRows) {
       if (!r || !r.product_id) continue
       if (!imagesMap[r.product_id]) imagesMap[r.product_id] = []
-      imagesMap[r.product_id].push(r.url)
+      // only push non-empty urls
+      if (r.url) imagesMap[r.product_id].push(r.url)
+    }
+    // deduplicate while preserving first occurrence order
+    for (const k of Object.keys(imagesMap)) {
+      imagesMap[k] = Array.from(new Set(imagesMap[k].filter(Boolean)))
     }
 
     // attach images array to each product (fallback to image_url legacy column)

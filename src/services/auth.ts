@@ -47,7 +47,24 @@ export function signOut() {
 
 export function getCurrentUser() {
   const u = getItem('user')
-  return u ? JSON.parse(u) : null
+  if (u) return JSON.parse(u)
+
+  // If no user object is stored but a token exists, decode the JWT payload
+  // to restore a minimal user session (id, phone, role). This keeps users
+  // logged in across refreshes even if `user` was accidentally cleared.
+  try {
+    const token = getItem('token')
+    if (!token) return null
+    const parts = token.split('.')
+    if (parts.length < 2) return null
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
+    const user = { id: payload.id, phone: payload.phone, role: payload.role }
+    // persist the minimal user to avoid repeating decode on each render
+    try { setItem('user', JSON.stringify(user)) } catch (e) { /* ignore */ }
+    return user
+  } catch (e) {
+    return null
+  }
 }
 
 export async function promoteUserToAdmin(targetUid: string, token?: string) {

@@ -90,7 +90,8 @@ export default function HeroProductStrip({ products = [], shopsMap = {} }: { pro
         {products.map((p) => {
           const img = firstImage(p as MinimalProduct)
           const shopId = (p as any).shop_id || (p as any).seller_id || ''
-          const productHref = shopId ? `/shop/${shopId}?product=${p.id}` : `/products/${p.id}`
+          // Use a direct product route to ensure ProductView receives an ID it can fetch reliably
+          const productHref = `/products/${encodeURIComponent(String(p.id))}`
           const shopHref = shopId ? `/shop/${shopId}` : '#'
 
           // try to resolve shop name from product fields first, then from shopsMap (by id or nested maps)

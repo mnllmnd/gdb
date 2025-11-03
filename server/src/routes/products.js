@@ -24,14 +24,19 @@ router.get('/', async (req, res) => {
           const ids = rows.map(r => r.id)
           if (ids.length) {
             const imgs = await query('SELECT product_id, url, position FROM product_images WHERE product_id = ANY($1)', [ids])
-            const map = {}
-            ;(imgs.rows || []).forEach(ir => {
-              if (!map[ir.product_id]) map[ir.product_id] = []
-              map[ir.product_id].push(ir.url)
-            })
-            for (const p of rows) {
-              p.images = map[p.id] && map[p.id].length ? map[p.id] : (p.image_url ? [p.image_url] : [])
-            }
+              const map = {}
+              ;(imgs.rows || []).forEach(ir => {
+                if (!ir || !ir.product_id) return
+                if (!map[ir.product_id]) map[ir.product_id] = []
+                if (ir.url) map[ir.product_id].push(ir.url)
+              })
+              // deduplicate while preserving order
+              for (const k of Object.keys(map)) {
+                map[k] = Array.from(new Set(map[k].filter(Boolean)))
+              }
+              for (const p of rows) {
+                p.images = map[p.id] && map[p.id].length ? map[p.id] : (p.image_url ? [p.image_url] : [])
+              }
           }
         } catch (e) {
           // non-fatal
@@ -69,7 +74,8 @@ router.get('/:id', async (req, res) => {
     const p = product.rows[0]
     try {
       const imgs = await query('SELECT url FROM product_images WHERE product_id = $1 ORDER BY position ASC', [id])
-      p.images = (imgs.rows || []).map(r => r.url)
+      const urls = (imgs.rows || []).map(r => r.url).filter(Boolean)
+      p.images = Array.from(new Set(urls))
       if ((!p.images || p.images.length === 0) && p.image_url) p.images = [p.image_url]
     } catch (e) { /* ignore */ }
     return res.json(p)
@@ -186,9 +192,10 @@ router.put('/:id', authenticate, async (req, res) => {
       } catch (e) { console.warn('Failed to update product images', e && e.message) }
     } else {
       // attempt to attach existing images
-      try {
+        try {
         const imgs = await query('SELECT url FROM product_images WHERE product_id = $1 ORDER BY position ASC', [id])
-        updatedProduct.images = (imgs.rows || []).map(r => r.url)
+        const urls = (imgs.rows || []).map(r => r.url).filter(Boolean)
+        updatedProduct.images = Array.from(new Set(urls))
         if ((!updatedProduct.images || updatedProduct.images.length === 0) && updatedProduct.image_url) updatedProduct.images = [updatedProduct.image_url]
       } catch (e) { /* ignore */ }
     }
