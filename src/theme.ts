@@ -46,7 +46,7 @@ const theme = extendTheme({
           bg: 'white',
           color: 'black',
           _hover: {
-            bg: 'brand.100',
+            bg: 'gray',
             _disabled: {
               bg: 'white',
             },

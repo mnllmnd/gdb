@@ -129,7 +129,7 @@ export default function Login() {
           <Button
             type="submit"
             colorScheme="blue"
-            bg="black"
+            bg="whiteAlpha.100"
             size="lg"
             w="full"
             shadow="sm"

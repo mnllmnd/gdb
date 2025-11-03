@@ -467,7 +467,7 @@ export default function ProductEditor() {
           <Button
             type="submit"
             colorScheme="blue"
-            bg="black"
+            bg="whiteAlpha.100"
             size="lg"
             height="56px"
             borderRadius="xl"
