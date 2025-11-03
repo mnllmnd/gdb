@@ -2,33 +2,35 @@ import { extendTheme } from '@chakra-ui/react'
 
 const theme = extendTheme({
   fonts: {
-    heading: `'Roboto', sans-serif`,
-    body: `'Roboto', sans-serif`,
+    // Neutral, geometric sans for a clean, Nike-like appearance
+    heading: `Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial`,
+    body: `Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial`,
   },
   colors: {
+    // Neutral palette (grayscale + black/white) for a minimalist, cinematic look
     brand: {
-    50: '#fdf6f0',
-    100: '#ffffffff',
-    200: '#ffffff',
-    300: '#c18c76ff',
-    400: '#b79074ff',
-    500: '#b9927bff',
-    600: '#b19174ff',
-    700: '#ba917dff',
-    800: '#c49b83ff',
-    900: '#be9d80ff',
-  },
+      50: '#f7f7f77',
+      100: '#efefef',
+      200: '#e0e0e0',
+      300: '#cfcfcf',
+      400: '#bdbdbd',
+      500: '#9e9e9e',
+      600: '#7e7e7e',
+      700: '#5f5f5f',
+      800: '#3f3f3f',
+      900: '#1f1f1f',
+    },
     accent: {
-      50: '#b292d3ff',
-      100: '#c2b9e6ff',
-      200: '#CBD2D9',
-      300: '#9AA5B1',
-      400: '#7B8794',
-      500: '#616E7C',
-      600: '#52606D',
-      700: '#3E4C59',
-      800: '#323F4B',
-      900: '#1F2933',
+      50: '#fafafa',
+      100: '#f5f5f5',
+      200: '#eaeaea',
+      300: '#dcdcdc',
+      400: '#cfcfcf',
+      500: '#bdbdbd',
+      600: '#9e9e9e',
+      700: '#7e7e7e',
+      800: '#616161',
+      900: '#424242',
     },
   },
 
@@ -40,21 +42,19 @@ const theme = extendTheme({
       },
       variants: {
         solid: {
-          // Use an existing brand token so solid buttons have a visible background.
-          // 'brand.980' did not exist and caused buttons to render without a background
-          // (making text appear invisible). Use the primary brand shade 500 instead.
-          bg: 'brand.500',
-          color: 'white',
+          // Neutral solid buttons — white background with dark text for cinematic CTAs
+          bg: 'white',
+          color: 'black',
           _hover: {
-            bg: 'brand.600',
+            bg: 'brand.100',
             _disabled: {
-              bg: 'brand.500',
+              bg: 'white',
             },
           },
         },
         outline: {
-          borderColor: 'brand.500',
-          color: 'brand.500',
+         
+         
           _hover: {
             bg: 'brand.50',
           },

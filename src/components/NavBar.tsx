@@ -47,15 +47,15 @@ export default function NavBar() {
   const [cartCount, setCartCount] = useState<number>(0)
   const [searchQuery, setSearchQuery] = useState('')
   
-  // Couleurs harmonieuses
-  const navBg = useColorModeValue('#D1B7A1', 'gray.900')
-  const navBorder = useColorModeValue('gray.100', 'gray.700')
+  // Neutral / cinematic palette for header (white background, dark icons)
+  const navBg = useColorModeValue('white', 'gray.900')
+  const navBorder = useColorModeValue('gray.100', 'gray.800')
   const textColor = useColorModeValue('gray.800', 'white')
-  const subtleTextColor = useColorModeValue('gray.600', 'gray.300')
-  const brandColor = useColorModeValue('brand.500', 'brand.500')
+  const subtleTextColor = useColorModeValue('gray.600', 'gray.400')
+  const brandColor = useColorModeValue('brand.900', 'brand.100')
   const hoverBg = useColorModeValue('gray.50', 'gray.700')
-  const menuBg = useColorModeValue('white', 'gray.800')
-  const menuBorder = useColorModeValue('gray.200', 'gray.600')
+  const menuBg = useColorModeValue('white', 'gray.900')
+  const menuBorder = useColorModeValue('gray.200', 'gray.700')
   
   // Utilise la fonction de recherche globale
   const handleSearch = (query: string) => {

@@ -9,8 +9,6 @@ import {
   Box,
   Image,
   Center,
-  Grid,
-  GridItem,
   useBreakpointValue,
   IconButton,
   useColorModeValue,
@@ -23,15 +21,14 @@ import {
   Card,
   CardBody,
 } from '@chakra-ui/react'
-import { CloseIcon, StarIcon, ArrowUpIcon } from '@chakra-ui/icons'
-import { FiPackage, FiTrendingUp, FiGrid, FiShoppingBag } from 'react-icons/fi'
+import { CloseIcon, ArrowUpIcon } from '@chakra-ui/icons'
+import { FiPackage, FiTrendingUp, FiShoppingBag } from 'react-icons/fi'
 import FilterNav from '../components/FilterNav'
 import AppTutorial from '../components/AppTutorial'
 import ShopCard from '../components/ShopCard'
 import ProductCard from '../components/ProductCard'
 import HeroNike from '../components/HeroNike'
 import HeroProductStrip from '../components/HeroProductStrip'
-import ProductGridItem from '../components/ProductGridItem'
 import { Link as RouterLink } from 'react-router-dom'
 import api from '../services/api'
 
@@ -125,9 +122,7 @@ export default function Home() {
   const borderColor = useColorModeValue('gray.200', 'gray.600')
   const secondaryTextColor = useColorModeValue('gray.600', 'gray.400')
 
-  const loadMoreCount = 6
-  const [visibleByCategory, setVisibleByCategory] = React.useState<Record<number, number>>({})
-  const [visibleUncategorized, setVisibleUncategorized] = React.useState<number>(initialCount)
+  // paging/visibility for detailed category sections removed — using immersive strip instead
 
   React.useEffect(() => {
     async function loadData() {
@@ -226,9 +221,7 @@ export default function Home() {
       map[cid].push(p)
     }
     setCategorizedProducts(map)
-    setVisibleByCategory({})
-    setVisibleUncategorized(initialCount)
-  }, [products, initialCount])
+  }, [products])
 
   React.useEffect(() => {
     let isMounted = true
@@ -378,247 +371,7 @@ export default function Home() {
     )
   }
 
-  const renderProductsView = () => {
-    if (!products?.length) {
-      return <NoResults message="Aucun produit trouvé" onClear={() => handleSearch('')} />
-    }
 
-    return (
-      <VStack spacing={8} align="stretch">
-        {selectedCategory === null ? (
-          <Fade in={!isLoading}>
-            <VStack spacing={8}>
-              {renderUncategorizedProducts()}
-              {categories
-                .filter(category => (categorizedProducts[category.id] || []).length > 0)
-                .map((category, index) => (
-                  <Box key={category.id} w="100%">
-                    {renderProductCategory(category, index)}
-                  </Box>
-                ))}
-            </VStack>
-          </Fade>
-        ) : (
-          <ScaleFade in={!isLoading}>
-            <SimpleGrid
-              columns={{ base: 2, md: 3 }}
-              spacing={4}
-            >
-              {(categorizedProducts[selectedCategory] || []).map((product) => (
-                <Box key={product.id} transition="all 0.3s ease">
-                  <ProductGridItem
-                    id={String(product.id)}
-                    title={product.title || product.name || ''}
-                    images={normalizeImages(product)}
-                    height={cardHeight}
-                  />
-                </Box>
-              ))}
-            </SimpleGrid>
-          </ScaleFade>
-        )}
-      </VStack>
-    )
-  }
-
-  const renderUncategorizedProducts = () => {
-    const uncategorizedProducts = products?.filter(product => !product.category_id) || []
-    if (uncategorizedProducts.length === 0) return null
-    const visible = visibleUncategorized || initialCount
-    const toShow = uncategorizedProducts.slice(0, visible)
-
-    return (
-      <Card
-        bg={categoryBg}
-        borderRadius="xl"
-        boxShadow="md"
-        border="1px solid"
-        borderColor={borderColor}
-        overflow="hidden"
-      >
-        <CardBody p={6}>
-          <HStack spacing={3} mb={4}>
-            <Box
-              p={2}
-              bg="blue.50"
-              borderRadius="lg"
-            >
-              <Icon as={FiPackage} boxSize={6} color="blue.500" />
-            </Box>
-            <VStack align="start" spacing={0}>
-              <Heading size="md" color={textColor}>
-                🎁 Découvertes
-              </Heading>
-              <Text fontSize="sm" color={secondaryTextColor}>
-                Produits uniques et variés
-              </Text>
-            </VStack>
-            <Badge
-              ml="auto"
-              colorScheme="blue"
-              fontSize="md"
-              px={3}
-              py={1}
-              borderRadius="full"
-            >
-              {uncategorizedProducts.length}
-            </Badge>
-          </HStack>
-          
-          <SimpleGrid 
-            columns={{ base: 2, sm: 3, md: 4, lg: 5 }} 
-            spacing={4}
-          >
-            {toShow.map((product) => {
-              const shop = (shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)])
-              return (
-                <Box 
-                  key={product.id}
-                  transition="all 0.3s ease"
-                  _hover={{ transform: 'translateY(-2px)' }}
-                >
-                  <ProductCard
-                    id={String(product.id)}
-                    title={product.title || product.name || ''}
-                    description={product.description || ''}
-                    price={product.price ?? product.amount}
-                    images={normalizeImages(product)}
-                    height={cardHeight}
-                    shopId={shop?.id || product.shop_id || product.seller_id}
-                    shopName={shop?.name}
-                    shopDomain={shop?.domain}
-                  />
-                </Box>
-              )
-            })}
-          </SimpleGrid>
-
-          {uncategorizedProducts.length > toShow.length && (
-            <Center mt={4}>
-              <Button 
-                size="md" 
-                variant="outline"
-                colorScheme="blue"
-                borderRadius="full"
-                onClick={() => setVisibleUncategorized(v => v + loadMoreCount)}
-              >
-                Voir plus
-              </Button>
-            </Center>
-          )}
-        </CardBody>
-      </Card>
-    )
-  }
-
-  const renderProductCategory = (category: Category, index: number) => {
-    const categoryProducts = categorizedProducts[category.id] || []
-    if (categoryProducts.length === 0) return null
-    const visible = visibleByCategory[category.id] ?? initialCount
-    const toShow = categoryProducts.slice(0, visible)
-
-    const colorSchemes = ['green', 'orange', 'pink', 'teal', 'cyan']
-    const colorScheme = colorSchemes[index % colorSchemes.length]
-
-    return (
-      <Card
-        bg={sectionBg}
-        borderRadius="xl"
-        boxShadow="md"
-        border="1px solid"
-        borderColor={borderColor}
-        overflow="hidden"
-        transition="all 0.3s ease"
-        _hover={{
-          boxShadow: 'lg',
-          borderColor: `${colorScheme}.300`,
-        }}
-      >
-        <Box
-          h="4px"
-          bg={`${colorScheme}.400`}
-        />
-        <CardBody p={6}>
-          <HStack spacing={3} mb={4}>
-            <Box
-              p={2}
-              bg={`${colorScheme}.50`}
-              borderRadius="lg"
-            >
-              <Icon as={FiGrid} boxSize={6} color={`${colorScheme}.500`} />
-            </Box>
-            <VStack align="start" spacing={0}>
-              <Heading size="md" color={textColor}>
-                {category.name}
-              </Heading>
-              <Text fontSize="sm" color={secondaryTextColor}>
-                Découvrez notre collection
-              </Text>
-            </VStack>
-            <Badge
-              ml="auto"
-              colorScheme={colorScheme}
-              fontSize="md"
-              px={3}
-              py={1}
-              borderRadius="full"
-            >
-              {categoryProducts.length}
-            </Badge>
-          </HStack>
-          
-          <SimpleGrid 
-            columns={{ base: 2, sm: 3, md: 4, lg: 5 }} 
-            spacing={4}
-          >
-            {toShow.map((product) => {
-              const shop = (shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)])
-              return (
-                <Box 
-                  key={product.id}
-                  transition="all 0.3s ease"
-                  _hover={{ transform: 'translateY(-2px)' }}
-                >
-                  <ProductCard
-                    id={String(product.id)}
-                    title={product.title || product.name || ''}
-                    description={product.description || ''}
-                    price={product.price ?? product.amount}
-                    images={normalizeImages(product)}
-                    quantity={Number(
-                      product.quantity ??
-                      product.quantite ??
-                      product.stock ??
-                      product.amount_available ??
-                      0
-                    )}
-                    height={cardHeight}
-                    shopId={shop?.id || product.shop_id || product.seller_id}
-                    shopName={shop?.name}
-                    shopDomain={shop?.domain}
-                  />
-                </Box>
-              )
-            })}
-          </SimpleGrid>
-
-          {categoryProducts.length > toShow.length && (
-            <Center mt={4}>
-              <Button 
-                size="md"
-                variant="outline"
-                colorScheme={colorScheme}
-                borderRadius="full"
-                onClick={() => setVisibleByCategory(prev => ({ ...prev, [category.id]: (prev[category.id] || initialCount) + loadMoreCount }))}
-              >
-                Voir plus
-              </Button>
-            </Center>
-          )}
-        </CardBody>
-      </Card>
-    )
-  }
 
   return (
     <Box minH="100vh" bg={pageBg}>

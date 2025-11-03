@@ -32,8 +32,9 @@ function firstImage(p: MinimalProduct) {
 }
 
 export default function HeroProductStrip({ products = [] }: { products?: MinimalProduct[] }) {
-  const cardHeight = useBreakpointValue({ base: '280px', md: '420px' })
+  const cardHeight = useBreakpointValue({ base: '260px', md: '420px' })
   const bg = useColorModeValue('white', 'gray.800')
+  const isMobile = useBreakpointValue({ base: true, md: false })
 
   const [visible, setVisible] = React.useState(false)
   React.useEffect(() => {
@@ -51,12 +52,14 @@ export default function HeroProductStrip({ products = [] }: { products?: Minimal
   if (!products || products.length === 0) return null
 
   return (
-    <Box id="hero-product-strip" as="section" my={8} px={{ base: 4, md: 6 }}>
+    <Box id="hero-product-strip" as="section" my={6} px={{ base: 2, md: 6 }}>
       <HStack
-        spacing={6}
+        spacing={4}
         overflowX="auto"
-        css={{ scrollSnapType: 'x mandatory' } as any}
+        css={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' } as any}
         py={2}
+        role="list"
+        aria-label="Produits vedettes"
       >
         {products.map((p) => {
           const img = firstImage(p as MinimalProduct)
@@ -67,15 +70,17 @@ export default function HeroProductStrip({ products = [] }: { products?: Minimal
           return (
             <Box
               key={String(p.id)}
-              minW={{ base: '85%', md: '45%', lg: '33%' }}
+              as="article"
+              role="listitem"
+              minW={{ base: '86%', md: '45%', lg: '33%' }}
               flex="0 0 auto"
               borderRadius="xl"
               overflow="hidden"
               bg={bg}
               boxShadow="md"
               transition="transform 0.25s, box-shadow 0.25s"
-              _hover={{ transform: 'translateY(-6px)', boxShadow: 'xl' }}
-              style={{ scrollSnapAlign: 'start' }}
+              _hover={{ transform: !isMobile ? 'translateY(-6px)' : undefined, boxShadow: 'xl' }}
+              style={{ scrollSnapAlign: 'start', touchAction: 'pan-x' }}
             >
               <ChakraLink as={RouterLink} to={productHref} style={{ display: 'block' }} aria-label={`Voir ${p.title || p.name}`}>
                 <Box position="relative" h={cardHeight} w="100%">
@@ -85,18 +90,17 @@ export default function HeroProductStrip({ products = [] }: { products?: Minimal
                     objectFit="cover"
                     w="100%"
                     h="100%"
-                    loading="lazy"
+                    loading={isMobile ? 'eager' : 'lazy'}
                     fallbackSrc="/img/b.jfif"
                     transition="opacity 0.4s"
                     opacity={visible ? 1 : 0}
                     transform={visible ? 'none' : 'translateY(10px)'}
                   />
-                  <Box position="absolute" inset={0} bgGradient="linear(to-b, rgba(0,0,0,0.05), rgba(0,0,0,0.55))" />
+                  <Box position="absolute" inset={0} bgGradient="linear(to-b, rgba(0,0,0,0.04), rgba(0,0,0,0.55))" />
                   <Box position="absolute" left={4} bottom={4} color="white" zIndex={2}>
-                    <Badge bg="white" color="black" borderRadius="full" px={3} py={1} fontWeight={700}>
+                    <Badge bg="white" color="black" borderRadius="full" px={{ base: 2, md: 3 }} py={1} fontWeight={700} fontSize={{ base: 'sm', md: 'md' }}>
                       {p.title || p.name}
                     </Badge>
-                    <Heading size="sm" mt={2} color="white">{/* small subtitle if needed */}</Heading>
                   </Box>
                 </Box>
               </ChakraLink>
