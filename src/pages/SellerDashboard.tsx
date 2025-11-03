@@ -108,14 +108,24 @@ export default function SellerDashboard() {
         isClosable: true,
       })
     } catch (err) {
-      console.error(err)
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de supprimer le produit',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      })
+    console.error('Delete product failed', err)
+    // try to surface a helpful server message when available
+    const e: any = err
+    const serverMsg = e?.error || e?.message || (typeof e === 'string' ? e : null)
+        // friendly mapping for common server errors
+        const friendly = serverMsg === 'Forbidden'
+          ? "Vous n'êtes pas autorisé à supprimer ce produit"
+          : serverMsg === 'Not found' || serverMsg === 'Not Found'
+            ? 'Produit introuvable'
+            : serverMsg || 'Impossible de supprimer le produit'
+
+        toast({
+          title: 'Erreur',
+          description: String(friendly),
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        })
     }
   }
 
