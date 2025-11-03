@@ -26,8 +26,18 @@ import { ChatPopup } from './components/ChatPopup';
 export default function App() {
   // Clear client-side caches on initial load to avoid stale content
   useEffect(() => {
-    try { localStorage.clear() } catch (e) { /* ignore */ }
-    try { sessionStorage.clear() } catch (e) { /* ignore */ }
+    // Do not clear full localStorage/sessionStorage on app boot — this removed
+    // authentication tokens and caused users to be logged out on every refresh.
+    // Keep other cleanup tasks but preserve stored auth data.
+    try {
+      // preserve token and user when performing any selective cleanup
+      const token = localStorage.getItem('token')
+      const user = localStorage.getItem('user')
+      // (optional) migrate or trim other keys here if needed
+      // restore preserved keys after any selective cleaning
+      if (token) localStorage.setItem('token', token)
+      if (user) localStorage.setItem('user', user)
+    } catch (e) { /* ignore */ }
 
     // Clear CacheStorage (the caches API)
     try {

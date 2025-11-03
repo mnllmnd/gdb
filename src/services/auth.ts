@@ -47,22 +47,38 @@ export function signOut() {
 
 export function getCurrentUser() {
   const u = getItem('user')
-  if (u) return JSON.parse(u)
+  if (u) {
+    try { return JSON.parse(u) } catch (e) { /* fallthrough to token decode */ }
+  }
 
   // If no user object is stored but a token exists, decode the JWT payload
-  // to restore a minimal user session (id, phone, role). This keeps users
-  // logged in across refreshes even if `user` was accidentally cleared.
+  // to restore a minimal user session (id, phone, role, display_name/email when present).
   try {
     const token = getItem('token')
     if (!token) return null
     const parts = token.split('.')
     if (parts.length < 2) return null
-    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
-    const user = { id: payload.id, phone: payload.phone, role: payload.role }
+
+    // base64url -> base64 with padding
+    let b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+    while (b64.length % 4 !== 0) b64 += '='
+    const decoded = atob(b64)
+    const payload = JSON.parse(decoded)
+
+    const user: any = {
+      id: payload.id ?? payload.sub ?? payload.userId ?? null,
+      phone: payload.phone ?? payload.phone_number ?? null,
+      role: payload.role ?? payload.roles ?? null,
+      display_name: payload.display_name ?? payload.name ?? payload.full_name ?? null,
+      email: payload.email ?? null,
+    }
+
     // persist the minimal user to avoid repeating decode on each render
     try { setItem('user', JSON.stringify(user)) } catch (e) { /* ignore */ }
     return user
-  } catch (e) {
+  } catch (err) {
+    // if decoding fails, cleanup to avoid repeated exceptions
+    try { removeItem('user') } catch (e) { /* ignore */ }
     return null
   }
 }
