@@ -7,6 +7,7 @@ import {
   Spinner,
   VStack,
   Box,
+  Image,
   Center,
   Grid,
   GridItem,
@@ -28,8 +29,11 @@ import FilterNav from '../components/FilterNav'
 import AppTutorial from '../components/AppTutorial'
 import ShopCard from '../components/ShopCard'
 import ProductCard from '../components/ProductCard'
+import HeroNike from '../components/HeroNike'
+import HeroProductStrip from '../components/HeroProductStrip'
+import ProductGridItem from '../components/ProductGridItem'
+import { Link as RouterLink } from 'react-router-dom'
 import api from '../services/api'
-import InfiniteCarousel from '../components/InfiniteCarousel'
 
 interface Product {
   id: number
@@ -68,14 +72,6 @@ const normalizeImages = (product: Product): string[] => {
   }
   
   return []
-}
-
-const SmoothCarousel: React.FC<{ children: React.ReactNode; speed?: number }> = ({ children, speed = 40 }) => {
-  return (
-    <InfiniteCarousel speed={speed} mobileSpeed={Math.round(speed * 0.7)} resumeDelay={1200}>
-      {children}
-    </InfiniteCarousel>
-  )
 }
 
 export default function Home() {
@@ -387,87 +383,8 @@ export default function Home() {
       return <NoResults message="Aucun produit trouvé" onClear={() => handleSearch('')} />
     }
 
-    const showCarousel = selectedCategory === null
-
     return (
       <VStack spacing={8} align="stretch">
-        {/* Carrousel des nouveautés */}
-        {showCarousel && (() => {
-          const newProducts = [...(products || [])]
-            .sort((a, b) => {
-              const ta = a.created_at ? new Date(String(a.created_at)).getTime() : 0
-              const tb = b.created_at ? new Date(String(b.created_at)).getTime() : 0
-              return tb - ta
-            })
-            .slice(0, 12)
-          if (!newProducts.length) return null
-
-          return (
-            <Card
-              bg={sectionBg}
-              borderRadius="xl"
-              boxShadow="lg"
-              border="1px solid"
-              borderColor={borderColor}
-              overflow="hidden"
-            >
-              <CardBody p={6}>
-                <HStack spacing={3} mb={4}>
-                  
-                  <VStack align="start" spacing={0}>
-                    <Heading size="md" color={textColor}>
-                       Nouveautés
-                    </Heading>
-                    <Text fontSize="sm" color={secondaryTextColor}>
-                      Découvrez nos derniers produits
-                    </Text>
-                  </VStack>
-                  <Badge
-                    ml="auto"
-                    colorScheme="purple"
-                    fontSize="md"
-                    px={3}
-                    py={1}
-                    borderRadius="full"
-                  >
-                    {newProducts.length}
-                  </Badge>
-                </HStack>
-
-                <SmoothCarousel speed={70}>
-                  {newProducts.map((product) => (
-                    <Box
-                      key={product.id}
-                      flex="0 0 auto"
-                      w={cardWidth}
-                      px={1.5}
-                    >
-                      <ProductCard
-                        id={String(product.id)}
-                        title={product.title || product.name || ''}
-                        description={product.description || ''}
-                        price={product.price ?? product.amount}
-                        images={normalizeImages(product)}
-                        quantity={Number( 
-                          product.quantity ??
-                          product.quantite ??
-                          product.stock ??
-                          product.amount_available ??
-                          0
-                        )}
-                        height={cardHeight}
-                        shopId={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]) )?.id || product.shop_id || product.seller_id}
-                        shopName={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.name}
-                        shopDomain={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.domain}
-                      />
-                    </Box>
-                  ))}
-                </SmoothCarousel>
-              </CardBody>
-            </Card>
-          )
-        })()}
-        
         {selectedCategory === null ? (
           <Fade in={!isLoading}>
             <VStack spacing={8}>
@@ -483,33 +400,17 @@ export default function Home() {
           </Fade>
         ) : (
           <ScaleFade in={!isLoading}>
-            <SimpleGrid 
-              columns={{ base: 2, sm: 3, md: 4, lg: 5 }} 
+            <SimpleGrid
+              columns={{ base: 2, md: 3 }}
               spacing={4}
             >
               {(categorizedProducts[selectedCategory] || []).map((product) => (
-                <Box 
-                  key={product.id}
-                  transition="all 0.3s ease"
-                  _hover={{ transform: 'translateY(-2px)' }}
-                >
-                  <ProductCard
+                <Box key={product.id} transition="all 0.3s ease">
+                  <ProductGridItem
                     id={String(product.id)}
                     title={product.title || product.name || ''}
-                    description={product.description || ''}
-                    price={product.price ?? product.amount}
                     images={normalizeImages(product)}
-                    quantity={Number(
-                      product.quantity ??
-                      product.quantite ??
-                      product.stock ??
-                      product.amount_available ??
-                      0
-                    )}
                     height={cardHeight}
-                    shopId={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]) )?.id || product.shop_id || product.seller_id}
-                    shopName={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.name}
-                    shopDomain={((shopsMap.byId && shopsMap.byId[String(product.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(product.seller_id)]))?.domain}
                   />
                 </Box>
               ))}
@@ -730,7 +631,38 @@ export default function Home() {
         onCategoryChange={setSelectedCategory}
       />
 
-      <Container maxW={{ base: '100%', lg: '90%', xl: '85%' }} py={8} px={{ base: 4, md: 6 }}>
+      {/* Hero section (immersive) */}
+      <HeroNike />
+
+  {/* Bande immersive de vrais produits (grands visuels, clic -> produit/boutique) */}
+  <HeroProductStrip products={products.slice(0, 6)} />
+
+      {/* Two-column promo tiles using real products (first two available) */}
+      <Box as="section" px={{ base: 4, md: 6 }} py={8}>
+        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+          {(products || []).slice(0, 2).map((p) => {
+            const imgs = normalizeImages(p as any)
+            const img = imgs && imgs.length ? imgs[0] : '/img/b.jfif'
+            const shop = ((shopsMap.byId && shopsMap.byId[String((p as any).shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String((p as any).seller_id)])) || null
+            const shopDomain = shop?.domain || shop?.name
+            const target = shopDomain ? `/shop/${shopDomain}?product=${(p as any).id}` : `/products/${(p as any).id}`
+
+            return (
+              <Box key={(p as any).id} position="relative" borderRadius="xl" overflow="hidden" minH={{ base: '220px', md: '420px' }}>
+                <Image src={String(img)} alt={String(p.title || (p as any).name || 'product')} objectFit="cover" w="100%" h="100%" />
+                <Box position="absolute" inset={0} bgGradient="linear(to-b, rgba(0,0,0,0.0), rgba(0,0,0,0.55))" />
+                <Box position="absolute" left={{ base: 4, md: 12 }} bottom={{ base: 6, md: 12 }} color="white" zIndex={2} maxW={{ md: 'lg' }}>
+                  <Text fontSize="sm" textTransform="uppercase" letterSpacing="wider">{(p as any).category_name || ''}</Text>
+                  <Heading size={{ base: 'lg', md: '2xl' }} mt={2}>{p.title || (p as any).name}</Heading>
+                  <Button mt={4} as={RouterLink} to={target} bg="white" color="black" borderRadius="full" px={6} py={4} fontWeight={700}>Acheter</Button>
+                </Box>
+              </Box>
+            )
+          })}
+        </SimpleGrid>
+      </Box>
+
+      <Container id="products-grid" maxW={{ base: '100%', lg: '90%', xl: '85%' }} py={8} px={{ base: 4, md: 6 }}>
         {isLoading ? (
           <Center py={12}>
             <VStack spacing={4}>
@@ -757,7 +689,14 @@ export default function Home() {
             </VStack>
           </Center>
         ) : (
-          currentView === 'products' ? renderProductsView() : renderShopsView()
+          currentView === 'products' ? (
+            <Fade in={!isLoading}>
+              {/* Remplacement: afficher la bande immersive de produits au lieu des sections catégories */}
+              <VStack spacing={8} align="stretch">
+                <HeroProductStrip products={products} />
+              </VStack>
+            </Fade>
+          ) : renderShopsView()
         )}
       </Container>
 
