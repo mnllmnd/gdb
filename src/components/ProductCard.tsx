@@ -127,6 +127,16 @@ export default function ProductCard({
   }
   // Reset index when image set changes (safe fallback) and prepare for fade-in
   React.useEffect(() => { setImageIndex(0); setImageLoaded(false) }, [finalImages.length])
+  // Auto-advance the gallery every 5 seconds with a fade transition.
+  React.useEffect(() => {
+    if (!finalImages || finalImages.length <= 1) return
+    if (isHovered) return // pause when hovered so user can inspect
+    const t = setInterval(() => {
+      setImageIndex((i) => (i + 1) % finalImages.length)
+      setImageLoaded(false)
+    }, 5000)
+    return () => clearInterval(t)
+  }, [finalImages.length, isHovered])
   
   // ✅ Taille modale adaptative pour mobile
   // Use a smaller modal on mobile so it doesn't take the whole screen.
@@ -271,17 +281,45 @@ export default function ProductCard({
             }
           }}
         >
-          <Image
-            src={resolvedSrc ?? PRODUCT_PLACEHOLDER}
-            alt={title}
-            objectFit="cover"
-            objectPosition="center center"
-            width="100%"
-            height="100%"
-            transition="transform 0.3s ease"
-            _hover={{ transform: 'scale(1.05)' }}
-            onError={(e: any) => { e.currentTarget.src = PRODUCT_PLACEHOLDER }}
-          />
+          {/* Fade slideshow: stack all images and fade by opacity */}
+          <Box position="relative" width="100%" height="100%">
+            {finalImages && finalImages.length > 0 ? (
+              finalImages.map((src, idx) => {
+                const resolved = (highRes(src, { width: 1000, quality: 80 }) ?? src) as string
+                const visible = idx === imageIndex
+                return (
+                  <Image
+                    key={idx}
+                    src={resolved}
+                    alt={title || `product-${id}-${idx}`}
+                    objectFit="cover"
+                    objectPosition="center center"
+                    width="100%"
+                    height="100%"
+                    position="absolute"
+                    top="0"
+                    left="0"
+                    transition="opacity 0.8s ease, transform 0.3s ease"
+                    opacity={visible ? 1 : 0}
+                    transform={visible ? 'scale(1.03)' : 'scale(1)'}
+                    onLoad={() => setImageLoaded(true)}
+                    onError={(e: any) => { e.currentTarget.src = PRODUCT_PLACEHOLDER }}
+                    aria-hidden={!visible}
+                  />
+                )
+              })
+            ) : (
+              <Image
+                src={PRODUCT_PLACEHOLDER}
+                alt={title}
+                objectFit="cover"
+                objectPosition="center center"
+                width="100%"
+                height="100%"
+                onError={(e: any) => { e.currentTarget.src = PRODUCT_PLACEHOLDER }}
+              />
+            )}
+          </Box>
           
           {/* Double-tap heart animation */}
           {showHeart && (

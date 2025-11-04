@@ -7,7 +7,6 @@ import {
   useColorModeValue,
   Link as ChakraLink,
   IconButton,
-  HStack,
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons'
@@ -26,6 +25,49 @@ function firstImage(p: MinimalProduct) {
   if (p.image_url) return String(p.image_url)
   if (p.product_image) return String(p.product_image)
   return '/img/b.jfif'
+}
+
+// Slideshow for small product thumbnails: cycles images with a fade every 5s and pauses on hover
+function ProductImageSlideshow({ images = [], alt }: { images?: string[]; alt?: string }) {
+  const [index, setIndex] = useState(0)
+  const [isHover, setIsHover] = useState(false)
+
+  useEffect(() => {
+    setIndex(0)
+  }, [images?.length])
+
+  useEffect(() => {
+    if (!images || images.length <= 1) return
+    if (isHover) return
+    const t = setInterval(() => setIndex((i) => (i + 1) % images.length), 4000)
+    return () => clearInterval(t)
+  }, [images, isHover])
+
+  const imgs = Array.isArray(images) && images.length ? images : ['/img/b.jfif']
+
+  return (
+    <Box position="relative" width="100%" height="100%" onMouseEnter={() => setIsHover(true)} onMouseLeave={() => setIsHover(false)}>
+      {imgs.map((src, idx) => {
+        const visible = idx === index
+        return (
+          <Image
+            key={idx}
+            src={src}
+            alt={alt}
+            objectFit="cover"
+            w="100%"
+            h="100%"
+            position="absolute"
+            top={0}
+            left={0}
+            transition="opacity 0.8s ease-in-out, transform 0.6s ease"
+            opacity={visible ? 1 : 0}
+            transform={visible ? 'scale(1.06)' : 'scale(1)'}
+          />
+        )
+      })}
+    </Box>
+  )
 }
 
 export default function HeroProductGrid({
@@ -63,8 +105,7 @@ export default function HeroProductGrid({
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
-      // Scroll d'environ 3-4 produits à la fois
-      const cardWidth = 300 // largeur approximative d'une carte
+      const cardWidth = 300
       const scrollAmount = cardWidth * 3.5
       scrollRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
@@ -139,7 +180,13 @@ export default function HeroProductGrid({
         }}
       >
         {products.map((p) => {
-          const img = firstImage(p)
+          const finalImages = Array.isArray(p.images) && p.images.length
+            ? p.images.map(String).filter(Boolean)
+            : p.image_url
+            ? [String(p.image_url)]
+            : p.product_image
+            ? [String(p.product_image)]
+            : ['/img/b.jfif']
           const productHref = `/products/${encodeURIComponent(String(p.id))}`
 
           return (
@@ -157,24 +204,8 @@ export default function HeroProductGrid({
                 _hover={{ transform: 'scale(1.02)' }}
                 w={{ base: '160px', md: '250px' }}
               >
-                <Box
-                  position="relative"
-                  aspectRatio="4/5"
-                  overflow="hidden"
-                  borderRadius="sm"
-                >
-                  <Image
-                    src={img}
-                    alt={String(p.title || p.name || 'product')}
-                    objectFit="cover"
-                    w="100%"
-                    h="100%"
-                    transition="transform 0.6s ease"
-                    _hover={{
-                      transform: 'scale(1.08)',
-                      filter: 'brightness(0.9)',
-                    }}
-                  />
+                <Box position="relative" aspectRatio="4/5" overflow="hidden" borderRadius="sm">
+                  <ProductImageSlideshow images={finalImages} alt={String(p.title || p.name || 'product')} />
                 </Box>
                 <Box mt={3} textAlign="center">
                   <Heading
