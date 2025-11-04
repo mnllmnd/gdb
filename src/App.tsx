@@ -87,7 +87,7 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
         </Routes>
       </Box>
-      <BottomNav />
+    
       {/* ChatPopup doit être ici, toujours à l'intérieur du JSX */}
       <ChatPopup />
     </BrowserRouter>

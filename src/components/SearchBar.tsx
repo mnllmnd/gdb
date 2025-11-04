@@ -82,7 +82,7 @@ export default function SearchBar({
           aria-label="Rechercher"
           icon={<SearchIcon />}
           variant="ghost"
-          color="white"
+          color="black"
           _hover={{ bg: 'whiteAlpha.200' }}
           onClick={onToggle}
         />

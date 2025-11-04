@@ -2,23 +2,21 @@ import { extendTheme } from '@chakra-ui/react'
 
 const theme = extendTheme({
   fonts: {
-    // Neutral, geometric sans for a clean, Nike-like appearance
     heading: `Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial`,
     body: `Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial`,
   },
   colors: {
-    // Neutral palette (grayscale + black/white) for a minimalist, cinematic look
     brand: {
-      50: '#f7f7f77',
-      100: '#efefef',
-      200: '#e0e0e0',
-      300: '#cfcfcf',
-      400: '#bdbdbd',
-      500: '#9e9e9e',
-      600: '#7e7e7e',
-      700: '#5f5f5f',
-      800: '#3f3f3f',
-      900: '#1f1f1f',
+      50: '#ffffff',
+      100: '#f9f9f9',
+      200: '#f0f0f0',
+      300: '#e6e6e6',
+      400: '#dcdcdc',
+      500: '#cfcfcf',
+      600: '#bdbdbd',
+      700: '#9e9e9e',
+      800: '#7e7e7e',
+      900: '#5f5f5f',
     },
     accent: {
       50: '#fafafa',
@@ -42,22 +40,17 @@ const theme = extendTheme({
       },
       variants: {
         solid: {
-          // Neutral solid buttons — white background with dark text for cinematic CTAs
           bg: 'white',
           color: 'black',
           _hover: {
             bg: 'brand.100',
-            _disabled: {
-              bg: 'white',
-            },
+            _disabled: { bg: 'white' },
           },
         },
         outline: {
-         
-         
-          _hover: {
-            bg: 'brand.50',
-          },
+          borderColor: 'brand.300',
+          color: 'black',
+          _hover: { bg: 'brand.50' },
         },
       },
     },
@@ -85,15 +78,10 @@ const theme = extendTheme({
         padding: 0,
       },
       body: {
-        // ✅ Image de fond qui s'affiche correctement
-      
-       
         position: 'relative',
         zIndex: 0,
         minHeight: '100vh',
         width: '100%',
-
-        // ✅ Overlay pour lisibilité
         _before: {
           content: '""',
           position: 'fixed',
@@ -101,39 +89,25 @@ const theme = extendTheme({
           left: 0,
           width: '100%',
           height: '100%',
-          bg: '#cec0b3ff', // Ajustez l'opacité selon vos besoins
+          bg: 'brand.50', // overlay blanc subtil
           zIndex: -1,
         },
       },
-      /* Ensure buttons and menu items are readable on light backgrounds.
-         This is a safe, small override so ghost/outline variants don't appear
-         white-on-white when a global background or overlay is present. */
-      '.chakra-button': {
-        color: 'gray.800',
-      },
+      '.chakra-button': { color: 'black' },
       '.chakra-menu__menuitem, .chakra-menu__menuitem:hover, .chakra-menu__menuitem:focus': {
-        color: 'gray.800',
+        color: 'black',
       },
-
-      // ✅ Header avec fond solide
       header: {
         position: 'relative',
         zIndex: 10,
-        bg: '#D1B7A1',
+        bg: 'white',
         backdropFilter: 'blur(6px)',
         borderBottom: '1px solid',
-        borderColor: 'gray.200',
+        borderColor: 'brand.200',
       },
-
-      '#root': {
-        position: 'relative',
-        zIndex: 1,
-        minHeight: '100vh',
-      },
-      // Make all headings white by default
-      'h1, h2, h3, h4, h5, h6': {
-        color: 'white',
-      },
+      '#root': { position: 'relative', zIndex: 1, minHeight: '100vh' },
+      'h1, h2, h3, h4, h5, h6': { color: 'black' },
+      p: { color: 'black' },
     },
   },
 })
