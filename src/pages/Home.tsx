@@ -401,15 +401,70 @@ export default function Home() {
             const target = shopDomain ? `/shop/${shopDomain}?product=${(p as any).id}` : `/products/${(p as any).id}`
 
             return (
-              <Box key={(p as any).id} position="relative" borderRadius="xl" overflow="hidden" minH={{ base: '220px', md: '420px' }}>
-                <Image src={String(img)} alt={String(p.title || (p as any).name || 'product')} objectFit="cover" w="100%" h="100%" />
-                <Box position="absolute" inset={0} bgGradient="linear(to-b, rgba(0,0,0,0.0), rgba(0,0,0,0.55))" />
-                <Box position="absolute" left={{ base: 4, md: 12 }} bottom={{ base: 6, md: 12 }} color="white" zIndex={2} maxW={{ md: 'lg' }}>
-                  <Text fontSize="sm" textTransform="uppercase" letterSpacing="wider">{(p as any).category_name || ''}</Text>
-                  <Heading size={{ base: 'lg', md: '2xl' }} mt={2}>{p.title || (p as any).name}</Heading>
-                  <Button mt={4} as={RouterLink} to={target} bg="white" color="black" borderRadius="full" px={6} py={4} fontWeight={700}>Acheter</Button>
-                </Box>
-              </Box>
+              <Box
+  key={(p as any).id}
+  position="relative"
+  borderRadius="xl"
+  overflow="hidden"
+  minH={{ base: '220px', md: '420px' }}
+>
+  <Image
+    src={String(img)}
+    alt={String(p.title || (p as any).name || 'product')}
+    objectFit="cover"
+    w="100%"
+    h="100%"
+  />
+  
+  {/* Overlay dégradé */}
+  <Box
+    position="absolute"
+    inset={0}
+    bgGradient="linear(to-b, rgba(0,0,0,0.0), rgba(0,0,0,0.55))"
+  />
+  
+  {/* Contenu texte et bouton */}
+  <Box
+    position="absolute"
+    left={{ base: 4, md: 12 }}
+    bottom={{ base: 6, md: 12 }}
+    color="white" // Couleur par défaut pour tout le texte à l'intérieur
+    zIndex={2}
+    maxW={{ md: 'lg' }}
+  >
+    <Text
+      fontSize="sm"
+      textTransform="uppercase"
+      letterSpacing="wider"
+      color="white" // S'assure que la catégorie reste blanche
+    >
+      {(p as any).category_name || ''}
+    </Text>
+
+    <Heading
+      size={{ base: 'lg', md: '2xl' }}
+      mt={2}
+      color="white" // ✅ Nom du produit en blanc
+    >
+      {p.title || (p as any).name}
+    </Heading>
+
+    <Button
+      mt={4}
+      as={RouterLink}
+      to={target}
+      bg="white"
+      color="black"
+      borderRadius="full"
+      px={6}
+      py={4}
+      fontWeight={700}
+    >
+      Acheter
+    </Button>
+  </Box>
+</Box>
+
             )
           })}
         </SimpleGrid>
