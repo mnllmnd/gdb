@@ -500,13 +500,7 @@ export default function Home() {
                 overflow="hidden"
                 minH={{ base: '220px', md: '420px' }}
               >
-                <Image
-                  src={String(img)}
-                  alt={String(p.title || (p as any).name || 'product')}
-                  objectFit="cover"
-                  w="100%"
-                  h="100%"
-                />
+                    <PromoImageSlideshow images={imgs} alt={String(p.title || (p as any).name || 'product')} />
                 
                 <Box
                   position="absolute"
@@ -667,5 +661,42 @@ function NoResults({ message, onClear }: { readonly message: string; readonly on
         </CardBody>
       </Card>
     </Center>
+  )
+}
+
+// Small slideshow for promo tiles: fade between images every 5s, pause on hover
+function PromoImageSlideshow({ images, alt }: { images?: string[]; alt?: string }) {
+  const imgs = Array.isArray(images) && images.length ? images : ['/img/b.jfif']
+  const [index, setIndex] = React.useState(0)
+  const [hover, setHover] = React.useState(false)
+
+  React.useEffect(() => setIndex(0), [imgs.length])
+
+  React.useEffect(() => {
+    if (imgs.length <= 1) return
+    if (hover) return
+    const t = setInterval(() => setIndex(i => (i + 1) % imgs.length), 5000)
+    return () => clearInterval(t)
+  }, [imgs.length, hover])
+
+  return (
+    <Box position="relative" w="100%" h="100%" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+      {imgs.map((src, idx) => (
+        <Image
+          key={idx}
+          src={src}
+          alt={alt}
+          objectFit="cover"
+          w="100%"
+          h="100%"
+          position="absolute"
+          top={0}
+          left={0}
+          transition="opacity 0.8s ease-in-out, transform 0.6s ease"
+          opacity={idx === index ? 1 : 0}
+          transform={idx === index ? 'scale(1.03)' : 'scale(1)'}
+        />
+      ))}
+    </Box>
   )
 }
