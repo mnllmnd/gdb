@@ -39,7 +39,7 @@ function ProductImageSlideshow({ images = [], alt }: { images?: string[]; alt?: 
   useEffect(() => {
     if (!images || images.length <= 1) return
     if (isHover) return
-    const t = setInterval(() => setIndex((i) => (i + 1) % images.length), 4000)
+    const t = setInterval(() => setIndex((i) => (i + 1) % images.length), 3000)
     return () => clearInterval(t)
   }, [images, isHover])
 
