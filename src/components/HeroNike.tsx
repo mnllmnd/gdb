@@ -10,25 +10,37 @@ const HeroNike: React.FC = () => {
     'https://i.pinimg.com/1200x/9e/6d/ca/9e6dcaaee3f8d5e80e9a32ebf14f1a5a.jpg',
   ]
 
-  const [swap, setSwap] = useState(false)
+  const [index, setIndex] = useState(0)
   const [loaded, setLoaded] = useState<boolean[]>(Array(images.length).fill(false))
+  const [desktopSet, setDesktopSet] = useState(0)
 
   // Précharger les images
   useEffect(() => {
     images.forEach((src, idx) => {
       const img = new window.Image()
       img.src = src
-      img.onload = () => setLoaded(prev => {
-        const copy = [...prev]
-        copy[idx] = true
-        return copy
-      })
+      img.onload = () =>
+        setLoaded(prev => {
+          const copy = [...prev]
+          copy[idx] = true
+          return copy
+        })
     })
-  }, [images])
+  }, [])
 
-  // Swap toutes les 5s
+  // Changement d'image mobile
   useEffect(() => {
-    const interval = setInterval(() => setSwap(prev => !prev), 5000)
+    const interval = setInterval(() => {
+      setIndex(prev => (prev + 1) % images.length)
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Changement de set desktop (3 nouvelles images toutes les 6 secondes)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDesktopSet(prev => (prev + 1) % 2) // Alterne entre 2 sets d'images
+    }, 6000)
     return () => clearInterval(interval)
   }, [])
 
@@ -37,57 +49,95 @@ const HeroNike: React.FC = () => {
     if (el) el.scrollIntoView({ behavior: 'smooth' })
   }
 
-  // Si images pas encore chargées
   if (!loaded.every(l => l)) return null
+
+  // Deux sets d'images pour desktop
+  const desktopSets = [
+    [images[0], images[1], images[2]],
+    [images[2], images[0], images[1]], // Rotation des images
+  ]
 
   return (
     <Box as="section" position="relative" h={{ base: '70vh', md: '90vh' }} w="100%" overflow="hidden">
-      
-      {/* Desktop : deux images côte à côte, swap smooth */}
-      <HStack display={{ base: 'none', md: 'flex' }} w="100%" h="100%" spacing={0} overflow="hidden">
-        {images.map((img, idx) => (
-          <Image
-            key={idx}
-            src={img}
-            alt={`Hero ${idx}`}
-            width="50%"
-            height="100%"
-            objectFit="cover"
-            objectPosition="center"
-            position="relative"
-            transition="transform 1s ease-in-out"
-            transform={swap ? (idx === 0 ? 'translateX(-2%)' : 'translateX(2%)') : 'translateX(0%)'}
-          />
-        ))}
-      </HStack>
-
-      {/* Mobile : cross-fade */}
-      {images.map((img, idx) => {
-        const opacity = swap ? (idx === 0 ? 0 : 1) : idx === 0 ? 1 : 0
-        return (
-          <Image
-            key={idx}
-            src={img}
-            alt={`Hero ${idx}`}
-            objectFit="cover"
-            objectPosition="center"
+      {/* Desktop : fade entre deux sets de 3 images */}
+      <Box
+        display={{ base: 'none', md: 'block' }}
+        position="relative"
+        w="100%"
+        h="100%"
+      >
+        {desktopSets.map((imageSet, setIdx) => (
+          <HStack
+            key={setIdx}
+            spacing={0}
+            w="100%"
+            h="100%"
             position="absolute"
             top={0}
             left={0}
-            width="100%"
-            height="100%"
-            transition="opacity 1s ease-in-out"
-            opacity={opacity}
-            display={{ base: 'block', md: 'none' }}
-          />
-        )
-      })}
+            transition="opacity 1.5s ease-in-out"
+            opacity={setIdx === desktopSet ? 1 : 0}
+          >
+            {imageSet.map((img, idx) => (
+              <Box
+                key={`${setIdx}-${idx}`}
+                minW="33.33%"
+                h="100%"
+                flex="0 0 auto"
+                position="relative"
+                overflow="hidden"
+              >
+                <Image
+                  src={img}
+                  alt={`Look ${idx}`}
+                  objectFit="cover"
+                  w="100%"
+                  h="100%"
+                  transition="transform 8s ease-out"
+                  transform={setIdx === desktopSet ? 'scale(1.1)' : 'scale(1)'}
+                  _hover={{ transform: 'scale(1.15) !important' }}
+                />
+              </Box>
+            ))}
+          </HStack>
+        ))}
+      </Box>
+
+      {/* Mobile : fade entre les images */}
+      {images.map((img, idx) => (
+        <Image
+          key={idx}
+          src={img}
+          alt={`Hero ${idx}`}
+          objectFit="cover"
+          objectPosition="center"
+          position="absolute"
+          top={0}
+          left={0}
+          width="100%"
+          height="100%"
+          transition="opacity 1.2s ease-in-out"
+          opacity={idx === index ? 1 : 0}
+          display={{ base: 'block', md: 'none' }}
+        />
+      ))}
 
       {/* Overlay */}
       <Box position="absolute" inset={0} bg={overlay} zIndex={1} />
 
-      {/* Contenu */}
-      <VStack position="relative" zIndex={2} h="100%" px={6} spacing={6} justify="center" align="center">
+      {/* Contenu centré */}
+      <VStack
+        position="absolute"
+        top="0"
+        left="0"
+        w="100%"
+        h="100%"
+        zIndex={2}
+        px={6}
+        spacing={6}
+        justify="center"
+        align="center"
+      >
         <Heading
           as="h1"
           size={{ base: '2xl', md: '4xl' }}
@@ -101,8 +151,13 @@ const HeroNike: React.FC = () => {
         >
           Style
         </Heading>
-        <Text color="white" maxW="container.md" textAlign="center" fontSize={{ base: 'md', md: 'lg' }}>
-          Une sélection épurée, pensée pour l’émotion et la découverte.
+        <Text
+          color="white"
+          maxW="container.md"
+          textAlign="center"
+          fontSize={{ base: 'md', md: 'lg' }}
+        >
+          Une sélection épurée, pensée pour l'émotion et la découverte.
         </Text>
 
         <Box position="absolute" bottom={{ base: 8, md: 12 }}>
