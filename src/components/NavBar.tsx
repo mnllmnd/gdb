@@ -47,16 +47,15 @@ export default function NavBar() {
   const [cartCount, setCartCount] = useState<number>(0)
   const [searchQuery, setSearchQuery] = useState('')
   
-  // Palette neutre et sophistiquée
-  const navBg = useColorModeValue('white', 'gray.900')
-  const navBorder = useColorModeValue('gray.100', 'gray.800')
-  const textColor = useColorModeValue('gray.800', 'white')
-  const subtleTextColor = useColorModeValue('gray.600', 'gray.400')
-  const brandColor = useColorModeValue('gray.900', 'brand.100')
-  const hoverBg = useColorModeValue('gray.50', 'gray.700')
-  const menuBg = useColorModeValue('white', 'gray.900')
-  const menuBorder = useColorModeValue('gray.200', 'gray.700')
-  
+ // Palette ultra-neutre comme Nike/Zara
+  const navBg = 'white'
+  const navBorder = 'gray.100'
+  const textColor = 'black'
+  const subtleTextColor = 'gray.500'
+  const brandColor = 'black'
+  const hoverBg = 'gray.50'
+  const menuBg = 'white'
+  const menuBorder = 'gray.100'
   const handleSearch = (query: string) => {
     setSearchQuery(query)
     ;(globalThis as any).handleGlobalSearch?.(query)
