@@ -21,7 +21,7 @@ import {
   Card,
   CardBody,
 } from '@chakra-ui/react'
-import { CloseIcon, ArrowUpIcon } from '@chakra-ui/icons'
+import { CloseIcon, ArrowUpIcon, ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons'
 import { FiPackage, FiTrendingUp, FiShoppingBag } from 'react-icons/fi'
 import FilterNav from '../components/FilterNav'
 import AppTutorial from '../components/AppTutorial'
@@ -54,6 +54,8 @@ interface Category {
 interface Shop {
   id: number
   name: string
+  logo_url?: string
+  domain?: string
   followers?: number
 }
 
@@ -69,6 +71,199 @@ const normalizeImages = (product: Product): string[] => {
   }
   
   return []
+}
+
+// Composant Carrousel Boutiques Style Zara
+function ShopsCarousel({ shops, title }: { shops: Shop[]; title: string }) {
+  const scrollRef = React.useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = React.useState(false)
+  const [canScrollRight, setCanScrollRight] = React.useState(true)
+  const [isHovered, setIsHovered] = React.useState(false)
+
+  const checkScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current
+      setCanScrollLeft(scrollLeft > 0)
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10)
+    }
+  }
+
+  React.useEffect(() => {
+    checkScroll()
+    const el = scrollRef.current
+    if (el) {
+      el.addEventListener('scroll', checkScroll)
+      return () => el.removeEventListener('scroll', checkScroll)
+    }
+  }, [shops])
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const cardWidth = 150
+      const scrollAmount = cardWidth * 4
+      scrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      })
+    }
+  }
+
+  return (
+    <Box
+      position="relative"
+      my={{ base: 8, md: 12 }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Titre section */}
+      <Box px={{ base: 4, md: 8 }} mb={6}>
+        <Heading
+          as="h2"
+          fontSize={{ base: 'xl', md: '3xl' }}
+          fontWeight="300"
+          letterSpacing="tight"
+          color="black"
+          textTransform="uppercase"
+        >
+          {title}
+        </Heading>
+      </Box>
+
+      {/* Bouton précédent */}
+      {canScrollLeft && isHovered && (
+        <IconButton
+          aria-label="Précédent"
+          icon={<ChevronLeftIcon boxSize={7} />}
+          position="absolute"
+          left={2}
+          top="55%"
+          transform="translateY(-50%)"
+          zIndex={10}
+          bg="white"
+          color="black"
+          border="1px solid"
+          borderColor="gray.200"
+          size="md"
+          opacity={0.9}
+          _hover={{ opacity: 1, borderColor: 'black' }}
+          onClick={() => scroll('left')}
+          transition="all 0.2s ease"
+          boxShadow="sm"
+        />
+      )}
+
+      {/* Bouton suivant */}
+      {canScrollRight && isHovered && (
+        <IconButton
+          aria-label="Suivant"
+          icon={<ChevronRightIcon boxSize={7} />}
+          position="absolute"
+          right={2}
+          top="55%"
+          transform="translateY(-50%)"
+          zIndex={10}
+          bg="white"
+          color="black"
+          border="1px solid"
+          borderColor="gray.200"
+          size="md"
+          opacity={0.9}
+          _hover={{ opacity: 1, borderColor: 'black' }}
+          onClick={() => scroll('right')}
+          transition="all 0.2s ease"
+          boxShadow="sm"
+        />
+      )}
+
+      {/* Carrousel */}
+      <Box
+        ref={scrollRef}
+        display="flex"
+        overflowX="auto"
+        gap={{ base: 3, md: 4 }}
+        px={{ base: 4, md: 8 }}
+        css={{
+          scrollbarWidth: 'none',
+          '&::-webkit-scrollbar': { display: 'none' },
+        }}
+      >
+        {shops.map((shop) => {
+          const shopHref = shop.domain ? `/shop/${shop.domain}` : `/shop/${shop.id}`
+          
+          return (
+            <Box
+              as={RouterLink}
+              key={shop.id}
+              to={shopHref}
+              flexShrink={0}
+              w={{ base: '120px', md: '140px' }}
+              cursor="pointer"
+              _hover={{ textDecoration: 'none' }}
+            >
+              <VStack spacing={3} align="center">
+                {/* Logo boutique */}
+                <Box
+                  w={{ base: '100px', md: '120px' }}
+                  h={{ base: '100px', md: '120px' }}
+                  borderRadius="sm"
+                  overflow="hidden"
+                  bg="gray.100"
+                  transition="opacity 0.3s ease"
+                  _hover={{ opacity: 0.85 }}
+                >
+                  {shop.logo_url ? (
+                    <Image
+                      src={shop.logo_url}
+                      alt={shop.name}
+                      objectFit="cover"
+                      w="100%"
+                      h="100%"
+                    />
+                  ) : (
+                    <Center h="100%" bg="gray.200">
+                      <Text
+                        fontSize="3xl"
+                        fontWeight="700"
+                        color="gray.500"
+                        textTransform="uppercase"
+                      >
+                        {shop.name?.charAt(0) || '?'}
+                      </Text>
+                    </Center>
+                  )}
+                </Box>
+
+                {/* Nom boutique */}
+                <VStack spacing={0} align="center" w="100%">
+                  <Text
+                    fontSize={{ base: 'xs', md: 'sm' }}
+                    fontWeight="400"
+                    color="black"
+                    letterSpacing="wide"
+                    textTransform="uppercase"
+                    noOfLines={2}
+                    textAlign="center"
+                    lineHeight="1.3"
+                  >
+                    {shop.name}
+                  </Text>
+                  {shop.followers && shop.followers > 0 && (
+                    <Text
+                      fontSize="xs"
+                      color="gray.500"
+                      mt={1}
+                    >
+                      {shop.followers} abonné{shop.followers > 1 ? 's' : ''}
+                    </Text>
+                  )}
+                </VStack>
+              </VStack>
+            </Box>
+          )
+        })}
+      </Box>
+    </Box>
+  )
 }
 
 export default function Home() {
@@ -121,8 +316,6 @@ export default function Home() {
   const pageBg = useColorModeValue('gray.50', 'gray.900')
   const borderColor = useColorModeValue('gray.200', 'gray.600')
   const secondaryTextColor = useColorModeValue('gray.600', 'gray.400')
-
-  // paging/visibility for detailed category sections removed — using immersive strip instead
 
   React.useEffect(() => {
     async function loadData() {
@@ -252,126 +445,25 @@ export default function Home() {
       return <NoResults message="Aucune boutique trouvée" onClear={() => handleSearch('')} />
     }
 
+    const popularIds = new Set((popularShops || []).map(p => String(p.id)))
+    const otherShops = (shops || []).filter(s => !popularIds.has(String(s.id)))
+
     return (
       <ScaleFade in={!isLoading} initialScale={0.95}>
-        <VStack spacing={8} align="stretch">
+        <VStack spacing={0} align="stretch">
+          {/* Boutiques populaires */}
           {popularShops && popularShops.length > 0 && (
-            <Box>
-              <Card
-                bg={sectionBg}
-                borderRadius="xl"
-                boxShadow="md"
-                border="1px solid"
-                borderColor={borderColor}
-                overflow="hidden"
-              >
-                <CardBody p={6}>
-                  <HStack spacing={3} mb={4}>
-                    <Box
-                      p={2}
-                      bg="orange.50"
-                      borderRadius="lg"
-                    >
-                      <Icon as={FiTrendingUp} boxSize={6} color="orange.500" />
-                    </Box>
-                    <VStack align="start" spacing={0}>
-                      <Heading size="md" color={textColor}>
-                         Boutiques populaires
-                      </Heading>
-                      <Text fontSize="sm" color={secondaryTextColor}>
-                        Les plus suivies par la communauté
-                      </Text>
-                    </VStack>
-                    <Badge
-                      ml="auto"
-                      colorScheme="orange"
-                      fontSize="md"
-                      px={3}
-                      py={1}
-                      borderRadius="full"
-                    >
-                      {popularShops.length}
-                    </Badge>
-                  </HStack>
-                  <SimpleGrid columns={{ base: 2, sm: 3, md: 4 }} spacing={4}>
-                    {popularShops.map((s) => (
-                      <Box key={s.id} height="100%">
-                        <ShopCard {...s} id={String(s.id)} height={cardHeight} />
-                      </Box>
-                    ))}
-                  </SimpleGrid>
-                </CardBody>
-              </Card>
-            </Box>
+            <ShopsCarousel shops={popularShops} title="Boutiques populaires" />
           )}
 
-          <Card
-            bg={sectionBg}
-            borderRadius="xl"
-            boxShadow="md"
-            border="1px solid"
-            borderColor={borderColor}
-          >
-            <CardBody p={6}>
-              <HStack spacing={3} mb={4}>
-                <Box
-                  p={2}
-                  bg="brand.50"
-                  borderRadius="lg"
-                >
-                  <Icon as={FiShoppingBag} boxSize={6} color="brand.500" />
-                </Box>
-                <VStack align="start" spacing={0}>
-                  <Heading size="md" color={textColor}>
-                    Toutes les boutiques
-                  </Heading>
-                  <Text fontSize="sm" color={secondaryTextColor}>
-                    Explorez notre sélection complète
-                  </Text>
-                </VStack>
-                <Badge
-                  ml="auto"
-                  colorScheme="brand"
-                  fontSize="md"
-                  px={3}
-                  py={1}
-                  borderRadius="full"
-                >
-                  {shops.length - (popularShops?.length || 0)}
-                </Badge>
-              </HStack>
-              <SimpleGrid 
-                columns={{ base: 2, sm: 2, md: 3, lg: 4 }} 
-                spacing={4}
-              >
-                {(() => {
-                  const popularIds = new Set((popularShops || []).map(p => String(p.id)))
-                  const filtered = (shops || []).filter(s => !popularIds.has(String(s.id)))
-                  return filtered.map((shop) => (
-                    <Box 
-                      key={shop.id} 
-                      transition="all 0.3s ease"
-                      _hover={{ transform: 'translateY(-4px)' }}
-                      height="100%"
-                    >
-                      <ShopCard 
-                        {...shop} 
-                        id={String(shop.id)} 
-                        compact 
-                        height={cardHeight}
-                      />
-                    </Box>
-                  ))
-                })()}
-              </SimpleGrid>
-            </CardBody>
-          </Card>
+          {/* Toutes les boutiques */}
+          {otherShops.length > 0 && (
+            <ShopsCarousel shops={otherShops} title="Toutes les boutiques" />
+          )}
         </VStack>
       </ScaleFade>
     )
   }
-
-
 
   return (
     <Box minH="100vh" bg={pageBg}>
@@ -387,10 +479,10 @@ export default function Home() {
       {/* Hero section (immersive) */}
       <HeroNike />
 
-  {/* Bande immersive de vrais produits (grands visuels, clic -> produit/boutique) */}
-  <HeroProductStrip products={products.slice(0, 6)} shopsMap={shopsMap} />
+      {/* Bande immersive de vrais produits */}
+      <HeroProductStrip products={products.slice(0, 6)} shopsMap={shopsMap} />
 
-      {/* Two-column promo tiles using real products (first two available) */}
+      {/* Two-column promo tiles */}
       <Box as="section" px={{ base: 4, md: 6 }} py={8}>
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
           {(products || []).slice(0, 2).map((p) => {
@@ -402,69 +494,66 @@ export default function Home() {
 
             return (
               <Box
-  key={(p as any).id}
-  position="relative"
-  borderRadius="xl"
-  overflow="hidden"
-  minH={{ base: '220px', md: '420px' }}
->
-  <Image
-    src={String(img)}
-    alt={String(p.title || (p as any).name || 'product')}
-    objectFit="cover"
-    w="100%"
-    h="100%"
-  />
-  
-  {/* Overlay dégradé */}
-  <Box
-    position="absolute"
-    inset={0}
-    bgGradient="linear(to-b, rgba(0,0,0,0.0), rgba(0,0,0,0.55))"
-  />
-  
-  {/* Contenu texte et bouton */}
-  <Box
-    position="absolute"
-    left={{ base: 4, md: 12 }}
-    bottom={{ base: 6, md: 12 }}
-    color="white" // Couleur par défaut pour tout le texte à l'intérieur
-    zIndex={2}
-    maxW={{ md: 'lg' }}
-  >
-    <Text
-      fontSize="sm"
-      textTransform="uppercase"
-      letterSpacing="wider"
-      color="white" // S'assure que la catégorie reste blanche
-    >
-      {(p as any).category_name || ''}
-    </Text>
+                key={(p as any).id}
+                position="relative"
+                borderRadius="xl"
+                overflow="hidden"
+                minH={{ base: '220px', md: '420px' }}
+              >
+                <Image
+                  src={String(img)}
+                  alt={String(p.title || (p as any).name || 'product')}
+                  objectFit="cover"
+                  w="100%"
+                  h="100%"
+                />
+                
+                <Box
+                  position="absolute"
+                  inset={0}
+                  bgGradient="linear(to-b, rgba(0,0,0,0.0), rgba(0,0,0,0.55))"
+                />
+                
+                <Box
+                  position="absolute"
+                  left={{ base: 4, md: 12 }}
+                  bottom={{ base: 6, md: 12 }}
+                  color="white"
+                  zIndex={2}
+                  maxW={{ md: 'lg' }}
+                >
+                  <Text
+                    fontSize="sm"
+                    textTransform="uppercase"
+                    letterSpacing="wider"
+                    color="white"
+                  >
+                    {(p as any).category_name || ''}
+                  </Text>
 
-    <Heading
-      size={{ base: 'lg', md: '2xl' }}
-      mt={2}
-      color="white" // ✅ Nom du produit en blanc
-    >
-      {p.title || (p as any).name}
-    </Heading>
+                  <Heading
+                    size={{ base: 'lg', md: '2xl' }}
+                    mt={2}
+                    color="white"
+                  >
+                    {p.title || (p as any).name}
+                  </Heading>
 
-    <Button
-      mt={4}
-      as={RouterLink}
-      to={target}
-      bg="white"
-      color="black"
-      borderRadius="full"
-      px={6}
-      py={4}
-      fontWeight={700}
-    >
-      Acheter
-    </Button>
-  </Box>
-</Box>
-
+                  <Button
+                    mt={4}
+                    as={RouterLink}
+                    to={target}
+                    bg="white"
+                    color="black"
+                    borderRadius="full"
+                    px={6}
+                    py={4}
+                    fontWeight={700}
+                  >
+                    Acheter
+                  </Button>
+                </Box>
+              </Box>
             )
           })}
         </SimpleGrid>
@@ -499,7 +588,6 @@ export default function Home() {
         ) : (
           currentView === 'products' ? (
             <Fade in={!isLoading}>
-              {/* Remplacement: afficher la bande immersive de produits au lieu des sections catégories */}
               <VStack spacing={8} align="stretch">
                 <HeroProductStrip products={products} shopsMap={shopsMap} />
               </VStack>
@@ -508,7 +596,7 @@ export default function Home() {
         )}
       </Container>
 
-      {/* Bouton scroll to top moderne */}
+      {/* Bouton scroll to top */}
       <IconButton
         aria-label="Remonter en haut"
         icon={<ArrowUpIcon />}
