@@ -12,6 +12,7 @@ import {
   SimpleGrid,
   HStack,
   Flex,
+  useColorModeValue,
 } from '@chakra-ui/react'
 
 // helper moved outside component to satisfy lint rules
@@ -40,6 +41,9 @@ export default function TutorielPage() {
   const [run, setRun] = React.useState(false)
   const [joySteps, setJoySteps] = React.useState<Step[]>([])
   const [missingSteps, setMissingSteps] = React.useState<string[] | null>(null)
+
+  const sectionBg = useColorModeValue('white', 'gray.800')
+  const debugBg = useColorModeValue('whiteAlpha.900', 'whiteAlpha.100')
 
   // show debug panel only when explicitly requested via ?debug=1
   const isDebug = typeof globalThis !== 'undefined' && new URLSearchParams(globalThis.location?.search ?? '').get('debug') === '1'
@@ -187,7 +191,7 @@ export default function TutorielPage() {
           ].map((step) => (
             <Box
               key={step.title}
-              bg="white"
+              bg={sectionBg}
               p={{ base: 3, md: 4 }}
               borderRadius="lg"
               boxShadow="md"
@@ -216,7 +220,7 @@ export default function TutorielPage() {
         </SimpleGrid>
           {/* Debug panel: show missing selectors when present (only in debug mode) */}
           {isDebug && missingSteps && missingSteps.length > 0 && (
-            <Box bg="whiteAlpha.900" p={4} borderRadius="md" mt={4}>
+            <Box bg={debugBg} p={4} borderRadius="md" mt={4}>
               <Heading size="sm" mb={2}>Étapes manquantes détectées</Heading>
               <Text mb={3} fontSize="sm">Les sélecteurs suivants n'ont pas été trouvés dans le DOM au démarrage du tutoriel :</Text>
               <VStack align="start" spacing={1} mb={3}>

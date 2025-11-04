@@ -133,8 +133,8 @@ export default function HeroProductGrid({
           top="50%"
           transform="translateY(-50%)"
           zIndex={10}
-          bg="white"
-          color="black"
+          bg={useColorModeValue('white', 'gray.800')}
+          color={useColorModeValue('black', 'white')}
           boxShadow="xl"
           borderRadius="full"
           size="lg"
@@ -155,8 +155,8 @@ export default function HeroProductGrid({
           top="50%"
           transform="translateY(-50%)"
           zIndex={10}
-          bg="white"
-          color="black"
+          bg={useColorModeValue('white', 'gray.800')}
+          color={useColorModeValue('black', 'white')}
           boxShadow="xl"
           borderRadius="full"
           size="lg"

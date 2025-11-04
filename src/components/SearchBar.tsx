@@ -8,6 +8,7 @@ import {
   IconButton,
   Collapse,
   useDisclosure,
+  useColorModeValue,
 } from '@chakra-ui/react'
 import { SearchIcon, CloseIcon } from '@chakra-ui/icons'
 
@@ -47,7 +48,7 @@ export default function SearchBar({
                 placeholder={placeholder}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                bg="white"
+                bg={useColorModeValue('white', 'gray.800')}
                 borderRadius="full"
                 boxShadow="lg"
                 _focus={{
@@ -82,8 +83,8 @@ export default function SearchBar({
           aria-label="Rechercher"
           icon={<SearchIcon />}
           variant="ghost"
-          color="black"
-          _hover={{ bg: 'whiteAlpha.200' }}
+          color={useColorModeValue('black', 'white')}
+          _hover={{ bg: useColorModeValue('whiteAlpha.200', 'whiteAlpha.100') }}
           onClick={onToggle}
         />
       )}

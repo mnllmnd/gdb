@@ -27,9 +27,10 @@ import {
   MenuItem,
   MenuDivider,
   useColorModeValue,
+  useColorMode,
   Portal,
 } from '@chakra-ui/react'
-import { ChevronDownIcon, HamburgerIcon } from '@chakra-ui/icons'
+import { ChevronDownIcon, HamburgerIcon, SunIcon, MoonIcon } from '@chakra-ui/icons'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { signOut, getCurrentUser } from '../services/auth'
 import api from '../services/api'
@@ -47,15 +48,17 @@ export default function NavBar() {
   const [cartCount, setCartCount] = useState<number>(0)
   const [searchQuery, setSearchQuery] = useState('')
   
- // Palette ultra-neutre comme Nike/Zara
-  const navBg = 'white'
-  const navBorder = 'gray.100'
-  const textColor = 'black'
-  const subtleTextColor = 'gray.500'
-  const brandColor = 'black'
-  const hoverBg = 'gray.50'
-  const menuBg = 'white'
-  const menuBorder = 'gray.100'
+  // Palette sobre style Zara
+  const navBg = useColorModeValue('white', 'black')
+  const navBorder = useColorModeValue('gray.200', 'gray.800')
+  const textColor = useColorModeValue('black', 'white')
+  const subtleTextColor = useColorModeValue('gray.600', 'gray.400')
+  const brandColor = useColorModeValue('black', 'white')
+  const hoverBg = useColorModeValue('gray.50', 'gray.800')
+  const menuBg = useColorModeValue('white', 'black')
+  const menuBorder = useColorModeValue('gray.200', 'gray.800')
+  const { colorMode, toggleColorMode } = useColorMode()
+
   const handleSearch = (query: string) => {
     setSearchQuery(query)
     ;(globalThis as any).handleGlobalSearch?.(query)
@@ -133,16 +136,16 @@ export default function NavBar() {
     })
   }
 
-  // Icônes SVG pour un look plus épuré
+  // Icônes SVG épurées
   const HomeIcon = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
       <polyline points="9 22 9 12 15 12 15 22"/>
     </svg>
   )
 
   const ProductsIcon = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <rect x="3" y="3" width="7" height="7"/>
       <rect x="14" y="3" width="7" height="7"/>
       <rect x="14" y="14" width="7" height="7"/>
@@ -151,7 +154,7 @@ export default function NavBar() {
   )
 
   const CartIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <circle cx="9" cy="21" r="1"/>
       <circle cx="20" cy="21" r="1"/>
       <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
@@ -159,27 +162,27 @@ export default function NavBar() {
   )
 
   const ShopIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
     </svg>
   )
 
   const UserIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
       <circle cx="12" cy="7" r="4"/>
     </svg>
   )
 
   const OrdersIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
       <path d="M1 10h22"/>
     </svg>
   )
 
   const LogoutIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
       <polyline points="16,17 21,12 16,7"/>
       <line x1="21" y1="12" x2="9" y2="12"/>
@@ -189,16 +192,14 @@ export default function NavBar() {
   return (
     <Box
       as="nav"
-      bg={isScrolled ? navBg : 'transparent'}
-      borderBottom={isScrolled ? '1px solid' : 'none'}
+      bg={navBg}
+      borderBottom="1px solid"
       borderColor={navBorder}
-      boxShadow={isScrolled ? 'sm' : 'none'}
       px={4}
-      py={2}
+      py={3}
       position="sticky"
       top={0}
       zIndex={1400}
-      backdropFilter="saturate(180%) blur(10px)"
       transition="all 0.3s ease"
     >
       <Flex align="center" maxW="1200px" mx="auto" justify="space-between">
@@ -255,54 +256,69 @@ export default function NavBar() {
                 </Box>
               )}
             </Box>
+            <IconButton
+              aria-label={colorMode === 'light' ? 'Activer le mode sombre' : 'Activer le mode clair'}
+              icon={colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
+              variant="ghost"
+              size="sm"
+              onClick={toggleColorMode}
+              _hover={{ bg: hoverBg }}
+              color={textColor}
+            />
           </HStack>
         ) : (
-          // Desktop layout - Version compacte
+          // Desktop layout - Style Zara épuré
           <>
             {/* Logo + Nom */}
             <HStack spacing={3} align="center" flexShrink={0}>
               <Avatar 
                 size="sm" 
                 name="Sama Bitik" 
-                bg={brandColor} 
-                color="white" 
-                _hover={{ transform: 'scale(1.05)' }}
-                transition="transform 0.2s ease"
+                color={textColor} 
+                borderRadius="none"
               />
-              <Heading size="md" color={textColor} fontWeight="700" letterSpacing="-0.5px" whiteSpace="nowrap">
-                Sama Bitik
+              <Heading 
+                size="md" 
+                color={textColor} 
+                fontWeight="normal" 
+                letterSpacing="wide"
+                fontSize="lg"
+              >
+                SAMA BITIK
               </Heading>
             </HStack>
 
             <Spacer />
 
-            {/* Navigation centrale - Version compacte */}
-            <HStack spacing={6} align="center" mx={4} flexShrink={0}>
+            {/* Navigation centrale - Style minimaliste */}
+            <HStack spacing={8} align="center" mx={4} flexShrink={0}>
               <Button 
                 as={RouterLink} 
                 to="/" 
                 variant="ghost" 
                 size="sm" 
-                leftIcon={<HomeIcon />}
                 color={textColor}
-                fontWeight="500"
+                fontWeight="normal"
                 _hover={{ bg: hoverBg }}
-                transition="all 0.2s ease"
+                borderRadius="none"
+                fontSize="sm"
+                letterSpacing="wide"
               >
-                Accueil
+                ACCUEIL
               </Button>
               <Button 
                 as={RouterLink} 
                 to="/products" 
                 variant="ghost" 
                 size="sm" 
-                leftIcon={<ProductsIcon />}
                 color={textColor}
-                fontWeight="500"
+                fontWeight="normal"
                 _hover={{ bg: hoverBg }}
-                transition="all 0.2s ease"
+                borderRadius="none"
+                fontSize="sm"
+                letterSpacing="wide"
               >
-                Produits
+                PRODUITS
               </Button>
               <Button 
                 as={RouterLink}
@@ -310,19 +326,32 @@ export default function NavBar() {
                 variant="ghost"
                 size="sm"
                 color={textColor}
-                fontWeight="500"
+                fontWeight="normal"
                 _hover={{ bg: hoverBg }}
-                transition="all 0.2s ease"
+                borderRadius="none"
+                fontSize="sm"
+                letterSpacing="wide"
               >
-                Feed
+                FEED
               </Button>
             </HStack>
 
             <Spacer />
 
-            {/* Actions droite - Version compacte */}
+            {/* Actions droite - Style épuré */}
             <HStack spacing={4} align="center" flexShrink={0}>
-              {/* Barre de recherche compacte */}
+              {/* Theme toggle */}
+              <IconButton
+                aria-label={colorMode === 'light' ? 'Activer le mode sombre' : 'Activer le mode clair'}
+                icon={colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
+                variant="ghost"
+                size="sm"
+                onClick={toggleColorMode}
+                _hover={{ bg: hoverBg }}
+                color={textColor}
+              />
+
+              {/* Barre de recherche */}
               <Box minW="200px" flexShrink={1}>
                 <SearchBar
                   value={searchQuery}
@@ -338,15 +367,6 @@ export default function NavBar() {
                 size="sm"
                 borderColor={brandColor}
                 color={brandColor}
-                onClick={() => {
-                  if (user) navigate('/seller')
-                  else toast({ 
-                    title: 'Créez votre boutique', 
-                    description: 'Rejoignez notre communauté de vendeurs', 
-                    status: 'info',
-                    duration: 5000,
-                  })
-                }}
                 leftIcon={<ShopIcon />}
                 _hover={{ 
                   bg: brandColor,
@@ -370,7 +390,7 @@ export default function NavBar() {
                   color={textColor}
                   size="sm"
                   _hover={{ bg: hoverBg }}
-                  transition="all 0.2s ease"
+                  borderRadius="none"
                 />
                 {cartCount > 0 && (
                   <Box
@@ -408,7 +428,7 @@ export default function NavBar() {
                     _expanded={{ bg: hoverBg }}
                     px={2}
                     py={1}
-                    borderRadius="md"
+                    borderRadius="none"
                     transition="all 0.2s ease"
                     size="sm"
                   >
@@ -418,17 +438,18 @@ export default function NavBar() {
                       bg={brandColor}
                       color="white"
                       fontSize="2xs"
+                      borderRadius="none"
                     />
                   </MenuButton>
                   <Portal>
                     <MenuList 
                       bg={menuBg} 
                       borderColor={menuBorder}
-                      boxShadow="xl"
-                      borderRadius="lg"
+                      borderRadius="none"
                       py={2}
                       minW="180px"
                       zIndex={1600}
+                      borderWidth="1px"
                     >
                       <MenuItem 
                         as={RouterLink} 
@@ -439,7 +460,7 @@ export default function NavBar() {
                         py={2}
                         fontSize="sm"
                       >
-                        Mon profil
+                        MON PROFIL
                       </MenuItem>
                       <MenuItem 
                         as={RouterLink} 
@@ -450,7 +471,7 @@ export default function NavBar() {
                         py={2}
                         fontSize="sm"
                       >
-                        Mes commandes
+                        MES COMMANDES
                       </MenuItem>
                       {shop && (
                         <MenuItem 
@@ -462,7 +483,7 @@ export default function NavBar() {
                           py={2}
                           fontSize="sm"
                         >
-                          Ma boutique
+                          MA BOUTIQUE
                         </MenuItem>
                       )}
                       <MenuDivider borderColor={menuBorder} />
@@ -474,7 +495,7 @@ export default function NavBar() {
                         py={2}
                         fontSize="sm"
                       >
-                        Se déconnecter
+                        SE DÉCONNECTER
                       </MenuItem>
                     </MenuList>
                   </Portal>
@@ -489,24 +510,27 @@ export default function NavBar() {
                     color={textColor}
                     _hover={{ bg: hoverBg }}
                     transition="all 0.2s ease"
-                    fontWeight="500"
-                    whiteSpace="nowrap"
+                    fontWeight="normal"
+                    borderRadius="none"
+                    fontSize="sm"
+                    letterSpacing="wide"
                   >
-                    Connexion
+                    CONNEXION
                   </Button>
                   <Button
                     as={RouterLink}
                     to="/signup"
                     variant="solid"
                     size="sm"
-                    bg={brandColor}
-                    color="white"
+                    color={textColor}
                     _hover={{ bg: 'gray.700' }}
                     transition="all 0.2s ease"
-                    fontWeight="500"
-                    whiteSpace="nowrap"
+                    fontWeight="normal"
+                    borderRadius="none"
+                    fontSize="sm"
+                    letterSpacing="wide"
                   >
-                    S'inscrire
+                    S'INSCRIRE
                   </Button>
                 </HStack>
               )}
@@ -515,18 +539,20 @@ export default function NavBar() {
         )}
       </Flex>
 
-      {/* Mobile drawer */}
+      {/* Mobile drawer - Style Zara */}
       <Drawer placement="left" onClose={onClose} isOpen={isOpen} size="xs">
         <DrawerOverlay />
-        <DrawerContent bg={menuBg} zIndex={1700}>
+        <DrawerContent bg={menuBg} zIndex={1700} borderRadius="none">
           <DrawerHeader borderBottomWidth="1px" borderColor={menuBorder} py={4}>
             <HStack spacing={3}>
-              <Avatar size="sm" name="Sama Bitik" bg={brandColor} color="white" />
-              <Heading size="md" color={textColor} fontWeight="700">Sama Bitik</Heading>
+              <Avatar size="sm" name="Sama Bitik" color={textColor} borderRadius="none" />
+              <Heading size="md" color={textColor} fontWeight="normal" letterSpacing="wide">
+                SAMA BITIK
+              </Heading>
             </HStack>
           </DrawerHeader>
           <DrawerBody py={4}>
-            <VStack align="stretch" spacing={1}>
+            <VStack align="stretch" spacing={0}>
               {/* Navigation principale */}
               <Button 
                 as={RouterLink} 
@@ -534,13 +560,15 @@ export default function NavBar() {
                 onClick={onClose} 
                 variant="ghost" 
                 size="md" 
-                leftIcon={<HomeIcon />}
                 color={textColor}
                 _hover={{ bg: hoverBg }}
                 justifyContent="flex-start"
-                py={3}
+                py={4}
+                borderRadius="none"
+                fontWeight="normal"
+                letterSpacing="wide"
               >
-                Accueil
+                ACCUEIL
               </Button>
               <Button 
                 as={RouterLink} 
@@ -548,13 +576,15 @@ export default function NavBar() {
                 onClick={onClose} 
                 variant="ghost" 
                 size="md" 
-                leftIcon={<ProductsIcon />}
                 color={textColor}
                 _hover={{ bg: hoverBg }}
                 justifyContent="flex-start"
-                py={3}
+                py={4}
+                borderRadius="none"
+                fontWeight="normal"
+                letterSpacing="wide"
               >
-                Produits
+                PRODUITS
               </Button>
               <Button 
                 as={RouterLink}
@@ -565,18 +595,21 @@ export default function NavBar() {
                 color={textColor}
                 _hover={{ bg: hoverBg }}
                 justifyContent="flex-start"
-                py={3}
+                py={4}
+                borderRadius="none"
+                fontWeight="normal"
+                letterSpacing="wide"
               >
-                Feed
+                FEED
               </Button>
 
-              <Divider borderColor={menuBorder} my={3} />
+              <Divider borderColor={menuBorder} my={2} />
 
               {/* Section utilisateur */}
               {user ? (
                 <>
-                  <Text fontSize="sm" color={subtleTextColor} px={3} py={2}>
-                    Connecté en tant que <Text as="span" fontWeight="600">{user.display_name ?? user.phone}</Text>
+                  <Text fontSize="sm" color={subtleTextColor} px={3} py={3} letterSpacing="wide">
+                    Connecté en tant que <Text as="span" fontWeight="normal">{user.display_name ?? user.phone}</Text>
                   </Text>
                   
                   <Button 
@@ -585,13 +618,15 @@ export default function NavBar() {
                     onClick={onClose} 
                     variant="ghost" 
                     size="md" 
-                    leftIcon={<UserIcon />}
                     color={textColor}
                     _hover={{ bg: hoverBg }}
                     justifyContent="flex-start"
-                    py={3}
+                    py={4}
+                    borderRadius="none"
+                    fontWeight="normal"
+                    letterSpacing="wide"
                   >
-                    Mon profil
+                    MON PROFIL
                   </Button>
                   <Button 
                     as={RouterLink} 
@@ -599,13 +634,15 @@ export default function NavBar() {
                     onClick={onClose} 
                     variant="ghost" 
                     size="md" 
-                    leftIcon={<OrdersIcon />}
                     color={textColor}
                     _hover={{ bg: hoverBg }}
                     justifyContent="flex-start"
-                    py={3}
+                    py={4}
+                    borderRadius="none"
+                    fontWeight="normal"
+                    letterSpacing="wide"
                   >
-                    Mes commandes
+                    MES COMMANDES
                   </Button>
                   
                   <Button 
@@ -618,10 +655,12 @@ export default function NavBar() {
                       handleLogout()
                     }}
                     justifyContent="flex-start"
-                    leftIcon={<LogoutIcon />}
-                    py={3}
+                    py={4}
+                    borderRadius="none"
+                    fontWeight="normal"
+                    letterSpacing="wide"
                   >
-                    Se déconnecter
+                    SE DÉCONNECTER
                   </Button>
                 </>
               ) : (
@@ -635,9 +674,12 @@ export default function NavBar() {
                     color={textColor}
                     _hover={{ bg: hoverBg }}
                     justifyContent="flex-start"
-                    py={3}
+                    py={4}
+                    borderRadius="none"
+                    fontWeight="normal"
+                    letterSpacing="wide"
                   >
-                    Connexion
+                    CONNEXION
                   </Button>
                   <Button 
                     as={RouterLink} 
@@ -649,18 +691,21 @@ export default function NavBar() {
                     color="white"
                     _hover={{ bg: 'gray.700' }}
                     justifyContent="flex-start"
-                    py={3}
+                    py={4}
+                    borderRadius="none"
+                    fontWeight="normal"
+                    letterSpacing="wide"
                   >
-                    S'inscrire
+                    S'INSCRIRE
                   </Button>
                 </>
               )}
 
-              <Divider borderColor={menuBorder} my={3} />
+              <Divider borderColor={menuBorder} my={2} />
 
               {/* Section vendeur */}
-              <Text fontSize="sm" color={subtleTextColor} fontWeight="600" px={3} py={2}>
-                Devenir vendeur
+              <Text fontSize="sm" color={subtleTextColor} fontWeight="normal" px={3} py={3} letterSpacing="wide">
+                DEVENIR VENDEUR
               </Text>
               <Button
                 onClick={() => {
@@ -680,7 +725,10 @@ export default function NavBar() {
                 leftIcon={<ShopIcon />}
                 _hover={{ bg: brandColor, color: 'white' }}
                 justifyContent="flex-start"
-                py={3}
+                py={4}
+                borderRadius="none"
+                fontWeight="500"
+                whiteSpace="nowrap"
               >
                 Vendre
               </Button>
@@ -694,16 +742,19 @@ export default function NavBar() {
                   color={textColor}
                   _hover={{ bg: hoverBg }}
                   justifyContent="flex-start"
-                  py={3}
+                  py={4}
+                  borderRadius="none"
+                  fontWeight="normal"
+                  letterSpacing="wide"
                 >
-                  Ma boutique
+                  MA BOUTIQUE
                 </Button>
               )}
             </VStack>
           </DrawerBody>
           <Recommendations ref={recRef} hideTrigger />
           <DrawerFooter borderTopWidth="1px" borderColor={menuBorder} py={4}>
-            <Text fontSize="sm" color={subtleTextColor}>Dalal ak jamm</Text>
+            <Text fontSize="sm" color={subtleTextColor} letterSpacing="wide">DALAL AK JAMM</Text>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>

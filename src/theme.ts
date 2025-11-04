@@ -1,4 +1,5 @@
 import { extendTheme } from '@chakra-ui/react'
+import { mode } from '@chakra-ui/theme-tools'
 
 const theme = extendTheme({
   fonts: {
@@ -32,6 +33,11 @@ const theme = extendTheme({
     },
   },
 
+  config: {
+    initialColorMode: 'light',
+    useSystemColorMode: false,
+  },
+
   components: {
     Button: {
       baseStyle: {
@@ -40,17 +46,17 @@ const theme = extendTheme({
       },
       variants: {
         solid: {
-          bg: 'white',
-          color: 'black',
+          bg: (props: any) => mode('white', 'gray.800')(props),
+          color: (props: any) => mode('black', 'white')(props),
           _hover: {
-            bg: 'brand.100',
-            _disabled: { bg: 'white' },
+            bg: (props: any) => mode('brand.100', 'gray.700')(props),
+            _disabled: { bg: (props: any) => mode('white', 'gray.800')(props) },
           },
         },
         outline: {
-          borderColor: 'brand.300',
-          color: 'black',
-          _hover: { bg: 'brand.50' },
+          borderColor: (props: any) => mode('brand.300', 'gray.600')(props),
+          color: (props: any) => mode('black', 'white')(props),
+          _hover: { bg: (props: any) => mode('brand.50', 'gray.700')(props) },
         },
       },
     },
@@ -59,7 +65,7 @@ const theme = extendTheme({
         container: {
           borderRadius: 'xl',
           overflow: 'hidden',
-          bg: 'white',
+          bg: (props: any) => mode('white', 'gray.800')(props),
           transition: 'all 0.3s ease',
           _hover: {
             transform: 'translateY(-4px)',
@@ -77,11 +83,12 @@ const theme = extendTheme({
         margin: 0,
         padding: 0,
       },
-      body: {
+      body: (props: any) => ({
         position: 'relative',
         zIndex: 0,
         minHeight: '100vh',
         width: '100%',
+        color: mode('#0f172a', '#E6EEF8')(props),
         _before: {
           content: '""',
           position: 'fixed',
@@ -89,25 +96,25 @@ const theme = extendTheme({
           left: 0,
           width: '100%',
           height: '100%',
-          bg: 'brand.50', // overlay blanc subtil
+          bg: mode('brand.50', 'gray.900')(props), // overlay selon mode
           zIndex: -1,
         },
-      },
-      '.chakra-button': { color: 'black' },
+      }),
+      '.chakra-button': { color: (props: any) => mode('black', 'white')(props) },
       '.chakra-menu__menuitem, .chakra-menu__menuitem:hover, .chakra-menu__menuitem:focus': {
-        color: 'black',
+        color: (props: any) => mode('black', 'white')(props),
       },
-      header: {
+      header: (props: any) => ({
         position: 'relative',
         zIndex: 10,
-        bg: 'white',
+        bg: mode('white', 'gray.900')(props),
         backdropFilter: 'blur(6px)',
         borderBottom: '1px solid',
-        borderColor: 'brand.200',
-      },
+        borderColor: mode('brand.200', 'gray.800')(props),
+      }),
       '#root': { position: 'relative', zIndex: 1, minHeight: '100vh' },
-      'h1, h2, h3, h4, h5, h6': { color: 'black' },
-      p: { color: 'black' },
+      'h1, h2, h3, h4, h5, h6': { color: (props: any) => mode('black', 'white')(props) },
+      p: { color: (props: any) => mode('black', 'white')(props) },
     },
   },
 })

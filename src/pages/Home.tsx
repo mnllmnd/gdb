@@ -316,6 +316,8 @@ export default function Home() {
   const pageBg = useColorModeValue('gray.50', 'gray.900')
   const borderColor = useColorModeValue('gray.200', 'gray.600')
   const secondaryTextColor = useColorModeValue('gray.600', 'gray.400')
+  const ctaBg = useColorModeValue('white', 'gray.700')
+  const ctaColor = useColorModeValue('black', 'white')
 
   React.useEffect(() => {
     async function loadData() {
@@ -543,8 +545,8 @@ export default function Home() {
                     mt={4}
                     as={RouterLink}
                     to={target}
-                    bg="white"
-                    color="black"
+                    bg={ctaBg}
+                    color={ctaColor}
                     borderRadius="full"
                     px={6}
                     py={4}

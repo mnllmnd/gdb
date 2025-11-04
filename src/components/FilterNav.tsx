@@ -16,7 +16,6 @@ import {
   useBreakpointValue,
   Button,
   Flex,
-  Center,
 } from '@chakra-ui/react'
 import { ChevronDownIcon } from '@chakra-ui/icons'
 import { FaStore, FaBox, FaFilter } from 'react-icons/fa'
@@ -40,7 +39,10 @@ export default function FilterNav({
 
   const navBg = useColorModeValue('whiteAlpha.80', 'gray.900')
   const borderColor = useColorModeValue('gray.200', 'gray.700')
-  const textColor = useColorModeValue('gray.800', 'gray.100')
+
+  // Couleurs principales adaptées au mode clair/sombre
+  const textPrimary = useColorModeValue('gray.800', 'white')
+  const textSecondary = useColorModeValue('gray.600', 'gray.300')
   const activeColor = useColorModeValue('black', 'white')
   const inactiveColor = useColorModeValue('gray.500', 'gray.400')
 
@@ -71,33 +73,49 @@ export default function FilterNav({
             <TabList gap={isMobile ? 4 : 8}>
               <Tab
                 fontWeight="500"
-                fontSize={isMobile ? "sm" : "md"}
+                fontSize={isMobile ? 'sm' : 'md'}
                 color={view === 'shops' ? activeColor : inactiveColor}
-                borderBottom={view === 'shops' ? '2px solid currentColor' : '2px solid transparent'}
+                borderBottom={
+                  view === 'shops'
+                    ? '2px solid currentColor'
+                    : '2px solid transparent'
+                }
                 _hover={{ color: activeColor }}
                 transition="all 0.2s ease"
                 px={isMobile ? 3 : 4}
                 py={2}
               >
                 <HStack spacing={2}>
-                  <Icon as={FaStore} boxSize={isMobile ? 3 : 4} />
-                  <Text>Boutiques</Text>
+                  <Icon
+                    as={FaStore}
+                    boxSize={isMobile ? 3 : 4}
+                    color={view === 'shops' ? activeColor : textSecondary}
+                  />
+                  <Text color={textPrimary}>Boutiques</Text>
                 </HStack>
               </Tab>
 
               <Tab
                 fontWeight="500"
-                fontSize={isMobile ? "sm" : "md"}
+                fontSize={isMobile ? 'sm' : 'md'}
                 color={view === 'products' ? activeColor : inactiveColor}
-                borderBottom={view === 'products' ? '2px solid currentColor' : '2px solid transparent'}
+                borderBottom={
+                  view === 'products'
+                    ? '2px solid currentColor'
+                    : '2px solid transparent'
+                }
                 _hover={{ color: activeColor }}
                 transition="all 0.2s ease"
                 px={isMobile ? 3 : 4}
                 py={2}
               >
                 <HStack spacing={2}>
-                  <Icon as={FaBox} boxSize={isMobile ? 3 : 4} />
-                  <Text>Produits</Text>
+                  <Icon
+                    as={FaBox}
+                    boxSize={isMobile ? 3 : 4}
+                    color={view === 'products' ? activeColor : textSecondary}
+                  />
+                  <Text color={textPrimary}>Produits</Text>
                 </HStack>
               </Tab>
             </TabList>
@@ -106,10 +124,10 @@ export default function FilterNav({
           {/* Sélecteur de catégories positionné à droite */}
           {view === 'products' && categories.length > 0 && (
             <Box
-              position={isMobile ? "static" : "absolute"}
+              position={isMobile ? 'static' : 'absolute'}
               right={isMobile ? 0 : 4}
-              top={isMobile ? "auto" : "50%"}
-              transform={isMobile ? "none" : "translateY(-50%)"}
+              top={isMobile ? 'auto' : '50%'}
+              transform={isMobile ? 'none' : 'translateY(-50%)'}
             >
               <Menu>
                 <MenuButton
@@ -118,13 +136,13 @@ export default function FilterNav({
                   rightIcon={<ChevronDownIcon />}
                   fontWeight="500"
                   fontSize="sm"
-                  color={textColor}
+                  color={textPrimary}
                   px={3}
-                  size={isMobile ? "sm" : "md"}
+                  size={isMobile ? 'sm' : 'md'}
                 >
                   <HStack spacing={2}>
-                    <Icon as={FaFilter} boxSize={3.5} />
-                    <Text>
+                    <Icon as={FaFilter} boxSize={3.5} color={textPrimary} />
+                    <Text color={textPrimary}>
                       {selectedCategory == null
                         ? 'Toutes les catégories'
                         : categories.find((c) => c.id === selectedCategory)?.name}
@@ -140,7 +158,7 @@ export default function FilterNav({
                   <MenuItem
                     onClick={() => onCategoryChange?.(null)}
                     fontSize="sm"
-                    color={selectedCategory === null ? activeColor : textColor}
+                    color={selectedCategory === null ? activeColor : textPrimary}
                   >
                     Toutes les catégories
                   </MenuItem>
@@ -150,7 +168,7 @@ export default function FilterNav({
                       key={c.id}
                       onClick={() => onCategoryChange?.(c.id)}
                       fontSize="sm"
-                      color={selectedCategory === c.id ? activeColor : textColor}
+                      color={selectedCategory === c.id ? activeColor : textPrimary}
                     >
                       {c.name}
                     </MenuItem>

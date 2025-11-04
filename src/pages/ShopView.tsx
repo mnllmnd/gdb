@@ -22,6 +22,7 @@ import {
   Icon,
   Image,
   Divider,
+  useColorModeValue,
 } from '@chakra-ui/react'
 import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons'
 import api from '../services/api'
@@ -46,6 +47,9 @@ export default function ShopView() {
   const [reviewsOpen, setReviewsOpen] = useState(false)
   const [reviewCount, setReviewCount] = useState(0)
   const cardHeight = useBreakpointValue({ base: '140px', md: '200px' })
+  const pageBg = useColorModeValue('gray.50', 'gray.900')
+  const sectionBg = useColorModeValue('white', 'gray.800')
+  const cardBorderColor = useColorModeValue('gray.100', 'gray.700')
 
   useEffect(() => {
     async function load() {
@@ -106,7 +110,7 @@ export default function ShopView() {
   if (!domain) return <Container py={8}>Nom de boutique manquant</Container>
 
   return (
-    <Box w="100vw" overflowX="hidden" bg="gray.50">
+    <Box w="100vw" overflowX="hidden" bg={pageBg}>
       {/* 🏞️ Hero section */}
       {shop?.banner_url ? (
         <Box
@@ -115,7 +119,7 @@ export default function ShopView() {
           h={{ base: '220px', md: '300px' }}
           mb={-10}
           borderBottom="1px solid"
-          borderColor="gray.200"
+          borderColor={cardBorderColor}
           overflow="hidden"
         >
           <Image
@@ -163,10 +167,10 @@ export default function ShopView() {
               mb={10}
               p={{ base: 5, md: 8 }}
               borderRadius="2xl"
-              bg="white"
+              bg={sectionBg}
               boxShadow="sm"
               border="1px solid"
-              borderColor="gray.100"
+              borderColor={cardBorderColor}
               _hover={{ boxShadow: 'md', transition: '0.3s ease' }}
             >
               <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -195,17 +199,17 @@ export default function ShopView() {
               mb={10}
               borderRadius="2xl"
               overflow="hidden"
-              bg="white"
+              bg={sectionBg}
               boxShadow="sm"
               border="1px solid"
-              borderColor="gray.100"
+              borderColor={cardBorderColor}
             >
               <Button
                 w="100%"
                 justifyContent="space-between"
                 onClick={() => setReviewsOpen(!reviewsOpen)}
-                bg="gray.50"
-                _hover={{ bg: 'gray.100' }}
+                bg={useColorModeValue('gray.50', 'gray.800')}
+                _hover={{ bg: useColorModeValue('gray.100', 'gray.700') }}
                 borderRadius="0"
                 py={5}
                 px={4}
@@ -224,7 +228,7 @@ export default function ShopView() {
               </Button>
 
               <Collapse in={reviewsOpen} animateOpacity>
-                <Box p={6} bg="gray.50">
+                <Box p={6} bg={useColorModeValue('gray.50', 'gray.900')}>
                   <Tabs colorScheme="yellow" variant="soft-rounded">
                     <TabList mb={4}>
                       <Tab fontWeight={600}>Voir les avis</Tab>

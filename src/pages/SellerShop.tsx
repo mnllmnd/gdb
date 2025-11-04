@@ -23,6 +23,7 @@ import {
   Badge,
   Flex
 } from '@chakra-ui/react'
+import { useColorModeValue } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
 import { FiPackage, FiShoppingCart, FiLink, FiBarChart2, FiUsers, FiDollarSign, FiTrash2 } from 'react-icons/fi'
 import BackButton from '../components/BackButton'
@@ -46,6 +47,8 @@ export default function SellerShop() {
   // Tailles responsives optimisées
   const gridColumns = useBreakpointValue({ base: 2, sm: 2, md: 3 })
   const statsColumns = useBreakpointValue({ base: 2, md: 4 })
+  const sectionBg = useColorModeValue('white', 'gray.800')
+  const cardBorderColor = useColorModeValue('gray.200', 'gray.700')
 
   async function loadAll() {
     try {
@@ -175,11 +178,11 @@ export default function SellerShop() {
       <Box
         mb={8}
         p={{ base: 6, md: 8 }}
-        bg="white"
+        bg={sectionBg}
         borderRadius="2xl"
         boxShadow="xl"
         border="1px solid"
-        borderColor="gray.100"
+        borderColor={cardBorderColor}
         position="relative"
         overflow="hidden"
       >
@@ -219,11 +222,11 @@ export default function SellerShop() {
         mb={6}
       >
         <Card 
-          bg="white"
+          bg={sectionBg}
           borderRadius="xl"
           boxShadow="md"
           border="1px solid"
-          borderColor="gray.200"
+          borderColor={cardBorderColor}
           _hover={{
             transform: 'translateY(-2px)',
             boxShadow: 'lg',
@@ -250,11 +253,11 @@ export default function SellerShop() {
         </Card>
 
         <Card 
-          bg="white"
+          bg={sectionBg}
           borderRadius="xl"
           boxShadow="md"
           border="1px solid"
-          borderColor="gray.200"
+          borderColor={cardBorderColor}
           _hover={{
             transform: 'translateY(-2px)',
             boxShadow: 'lg',
@@ -281,11 +284,11 @@ export default function SellerShop() {
         </Card>
 
         <Card 
-          bg="white"
+          bg={sectionBg}
           borderRadius="xl"
           boxShadow="md"
           border="1px solid"
-          borderColor="gray.200"
+          borderColor={cardBorderColor}
           _hover={{
             transform: 'translateY(-2px)',
             boxShadow: 'lg',
@@ -314,11 +317,11 @@ export default function SellerShop() {
 
       {/* Statistiques compactes */}
       <Card 
-        bg="white"
+        bg={sectionBg}
         borderRadius="xl"
         boxShadow="lg"
         border="1px solid"
-        borderColor="gray.200"
+        borderColor={cardBorderColor}
         mb={6}
       >
         <CardBody p={{ base: 4, md: 6 }}>
@@ -401,11 +404,11 @@ export default function SellerShop() {
 
       {/* Section dettes compacte */}
       <Card 
-        bg="white"
+        bg={sectionBg}
         borderRadius="xl"
         boxShadow="lg"
         border="1px solid"
-        borderColor="gray.200"
+        borderColor={cardBorderColor}
         mb={6}
       >
         <CardBody p={{ base: 4, md: 6 }}>

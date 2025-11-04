@@ -17,6 +17,7 @@ import {
   ModalContent, 
   ModalBody, 
   ModalCloseButton, 
+  useColorModeValue,
   useDisclosure,
   VStack,
   HStack,
@@ -30,7 +31,7 @@ import {
   Grid,
   GridItem
 } from '@chakra-ui/react'
-import { FaChevronLeft, FaChevronRight, FaBox, FaStore, FaStar, FaInfoCircle } from 'react-icons/fa'
+import { FaChevronLeft, FaChevronRight, FaBox, FaStar, FaInfoCircle } from 'react-icons/fa'
 import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons'
 import { highRes, PRODUCT_PLACEHOLDER } from '../utils/image'
 import api from '../services/api'
@@ -50,6 +51,15 @@ export default function ProductView() {
   const [reviewCount, setReviewCount] = React.useState(0)
   const touchStartRef = React.useRef<number | null>(null)
   const { isOpen: isImageOpen, onOpen: onImageOpen, onClose: onImageClose } = useDisclosure()
+
+  // Theme-aware tokens
+  const bgCard = useColorModeValue('white', 'gray.800')
+  const bgSubtle = useColorModeValue('gray.50', 'gray.700')
+  const textSecondary = useColorModeValue('gray.700', 'gray.300')
+  const borderColorVar = useColorModeValue('gray.200','gray.700')
+  const arrowBg = useColorModeValue('white','gray.800')
+  const arrowHoverBg = useColorModeValue('gray.100','gray.700')
+  const arrowIconColor = useColorModeValue('gray.700','white')
 
   React.useEffect(() => {
     let mounted = true
@@ -91,21 +101,21 @@ export default function ProductView() {
     <Container maxW="container.xl" py={12}>
       <Box 
         textAlign="center" 
-        bg="white" 
+        bg={bgCard} 
         p={16} 
         borderRadius="xl" 
         border="1px solid"
-        borderColor="gray.200"
+  borderColor={borderColorVar}
       >
         <Icon as={FaBox} boxSize={20} color="gray.400" mb={6} />
         <Heading size="lg" mb={4} fontWeight="500">Produit introuvable</Heading>
-        <Text color="gray.600" mb={8} fontSize="lg">Le produit demandé est introuvable ou a été supprimé.</Text>
+        <Text color={textSecondary} mb={8} fontSize="lg">Le produit demandé est introuvable ou a été supprimé.</Text>
         <Button 
           variant="outline"
           size="lg" 
           onClick={() => navigate(location.state?.from || '/products')}
           borderColor="gray.300"
-          _hover={{ bg: 'gray.50' }}
+          _hover={{ bg: bgSubtle }}
         >
           Retour aux produits
         </Button>
@@ -116,7 +126,7 @@ export default function ProductView() {
   // Build images array and deduplicate URLs client-side as a safety fallback
   let imgs: string[] = []
   if (product?.images && Array.isArray(product.images) && product.images.length) {
-    imgs = Array.from(new Set((product.images || []).map((x: any) => String(x)).filter(Boolean)))
+    imgs = Array.from(new Set((product.images || []).map(String).filter(Boolean)))
   } else if (product?.image_url) {
     imgs = [String(product.image_url)]
   } else if (product?.product_image) {
@@ -151,11 +161,11 @@ export default function ProductView() {
         <GridItem>
           {/* Image Gallery */}
           <Box 
-            bg="white" 
+            bg={bgCard} 
             borderRadius="xl" 
             overflow="hidden" 
             border="1px solid"
-            borderColor="gray.200"
+            borderColor={borderColorVar}
             mb={6}
           >
             <Box position="relative">
@@ -183,26 +193,26 @@ export default function ProductView() {
                     {/* Navigation Arrows */}
                     {imgs.length > 1 && (
                       <>
-                        <Box 
-                          position="absolute" 
-                          left={4} 
-                          top="50%" 
-                          transform="translateY(-50%)" 
-                          zIndex={2}
-                        >
-                          <Box 
-                            bg="white" 
-                            p={3} 
-                            borderRadius="full" 
-                            onClick={(e) => { e.stopPropagation(); prev() }} 
-                            cursor="pointer"
-                            transition="all 0.2s"
-                            _hover={{ bg: 'gray.100', transform: 'scale(1.05)' }}
-                            boxShadow="md"
-                          >
-                            <Icon as={FaChevronLeft} color="gray.700" boxSize={4} />
-                          </Box>
-                        </Box>
+                                <Box 
+                                  position="absolute" 
+                                  left={4} 
+                                  top="50%" 
+                                  transform="translateY(-50%)" 
+                                  zIndex={2}
+                                >
+                                  <Box 
+                                    bg={arrowBg} 
+                                    p={3} 
+                                    borderRadius="full" 
+                                    onClick={(e) => { e.stopPropagation(); prev() }} 
+                                    cursor="pointer"
+                                    transition="all 0.2s"
+                                    _hover={{ bg: arrowHoverBg, transform: 'scale(1.05)' }}
+                                    boxShadow="md"
+                                  >
+                                    <Icon as={FaChevronLeft} color={arrowIconColor} boxSize={4} />
+                                  </Box>
+                                </Box>
 
                         <Box 
                           position="absolute" 
@@ -212,16 +222,16 @@ export default function ProductView() {
                           zIndex={2}
                         >
                           <Box 
-                            bg="white" 
+                            bg={arrowBg} 
                             p={3} 
                             borderRadius="full" 
                             onClick={(e) => { e.stopPropagation(); next() }} 
                             cursor="pointer"
                             transition="all 0.2s"
-                            _hover={{ bg: 'gray.100', transform: 'scale(1.05)' }}
+                            _hover={{ bg: arrowHoverBg, transform: 'scale(1.05)' }}
                             boxShadow="md"
                           >
-                            <Icon as={FaChevronRight} color="gray.700" boxSize={4} />
+                            <Icon as={FaChevronRight} color={arrowIconColor} boxSize={4} />
                           </Box>
                         </Box>
                       </>
@@ -415,7 +425,7 @@ export default function ProductView() {
                   <Text fontSize="2xl" fontWeight="700" color="gray.900">
                     {Math.floor(product.price)} FCFA
                   </Text>
-                  {typeof product.quantity !== 'undefined' && product.quantity !== null && (
+                  {product.quantity !== undefined && product.quantity !== null && (
                     <Badge 
                       bg={product.quantity > 0 ? 'green.50' : 'red.50'} 
                       color={product.quantity > 0 ? 'green.700' : 'red.700'}

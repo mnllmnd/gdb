@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Container, Heading, Box, Text, useToast, Stack, Spinner, Button, Image, HStack, VStack, Badge } from '@chakra-ui/react'
+import { Container, Heading, Box, Text, useToast, Stack, Spinner, Button, Image, HStack, VStack, Badge, useColorModeValue } from '@chakra-ui/react'
 import BackButton from '../components/BackButton'
 import api from '../services/api'
 import { getItem } from '../utils/localAuth'
@@ -11,6 +11,8 @@ export default function SellerOrders() {
   const [shipped, setShipped] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
   const toast = useToast()
+
+  const sectionBg = useColorModeValue('white', 'gray.800')
 
   useEffect(() => { load() }, [])
 
@@ -52,7 +54,7 @@ export default function SellerOrders() {
       {!loading && orders.length > 0 && (
         <Stack spacing={{ base: 3, md: 4 }}>
           {orders.map((o) => (
-            <Box key={o.id} bg="white" borderRadius="lg" p={{ base: 3, md: 4 }} boxShadow="sm" borderWidth="1px">
+            <Box key={o.id} bg={sectionBg} borderRadius="lg" p={{ base: 3, md: 4 }} boxShadow="sm" borderWidth="1px">
               <HStack align="start" spacing={{ base: 3, md: 4 }}>
                 {o.product_image && (
                   <Image src={o.product_image} alt={o.product_title || 'Produit'} boxSize={{ base: '56px', md: '88px' }} objectFit="cover" borderRadius="md" />

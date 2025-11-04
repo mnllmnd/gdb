@@ -4,10 +4,10 @@
 html, body, #root {
   height: 100%;
 }
+
 body {
-  /* modern system font stack for readability */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif;
-  background: linear-gradient(180deg, #b7aed2 0%, #cbbadc 100%);
+  /* SUPPRIMÉ: background fixe qui empêche le dark mode */
   margin: 0;
   color: #0f172a;
 }
@@ -19,13 +19,9 @@ body {
   --card-shadow: 0 6px 18px rgba(15,23,42,0.06);
 }
 
-/* Reserve space for the mobile BottomNav so buttons near the bottom remain tappable.
-   BottomNav is shown on base (mobile) breakpoints only. Increase if you change
-   the BottomNav sizing. Also include safe-area inset for iOS devices. */
+/* Reserve space for the mobile BottomNav */
 @media (max-width: 48em) {
   :root { --bottom-nav-height: calc(env(safe-area-inset-bottom, 0px) + 88px); }
-  /* Apply the padding to both body and the root container so Chakra's Containers
-     that rely on body height won't be overlapped. */
   body, #root {
     padding-bottom: var(--bottom-nav-height);
   }
@@ -35,15 +31,24 @@ body {
   --chakra-colors-bg: #f7fafc;
 }
 
-/* Make Chakra Container feel more airy by default */
+/* Dark mode overrides */
+.chakra-ui-dark {
+  --card-bg: #0b1220;
+  --card-radius: 12px;
+  --card-shadow: 0 6px 18px rgba(2,6,23,0.6);
+}
+
+.chakra-ui-dark body {
+  /* SUPPRIMÉ: background fixe en dark mode */
+  color: #E6EEF8;
+}
+
 .chakra-container {
   padding-left: 16px;
   padding-right: 16px;
 }
 
-body {
-  background-color: #F8FAFC;
-}
+/* SUPPRIMÉ: body { background-color: #F8FAFC; } qui écrasait tout */
 
 .product-card {
   transition: all 0.3s ease;
@@ -54,7 +59,6 @@ body {
 }
 
 .hero-gradient {
-  background-image: image();
   background: linear-gradient(135deg, #0967D2 0%, #0552B5 100%);
 }
 
@@ -68,4 +72,36 @@ body {
 
 .shadow-hover:hover {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Global dark-mode background fallbacks
+   Many components still use explicit bg="white" which becomes inline styles.
+   Inline styles are hard to override, so provide conservative, targeted overrides
+   in the dark theme that force common surface elements to use the --card-bg
+   variable. This is a pragmatic fallback until components are updated to
+   use Chakra's color-mode tokens (useColorModeValue).
+*/
+.chakra-ui-dark .product-card,
+.chakra-ui-dark .card,
+.chakra-ui-dark .chakra-card,
+.chakra-ui-dark .chakra-modal__content,
+.chakra-ui-dark .chakra-drawer__content,
+.chakra-ui-dark .chakra-popover__content,
+.chakra-ui-dark .chakra-container,
+.chakra-ui-dark .product-card > *,
+.chakra-ui-dark .card > *,
+.chakra-ui-dark .chakra-card__body,
+.chakra-ui-dark .chakra-modal__content *,
+.chakra-ui-dark .chakra-drawer__content * {
+  background-color: var(--card-bg) !important;
+  box-shadow: var(--card-shadow) !important;
+  color: inherit !important;
+}
+
+/* also ensure modal/drawer footers and similar surfaces use dark tokens */
+.chakra-ui-dark .modal-footer,
+.chakra-ui-dark .drawer-footer,
+.chakra-ui-dark .chakra-modal__footer,
+.chakra-ui-dark .chakra-drawer__footer {
+  background-color: var(--card-bg) !important;
 }

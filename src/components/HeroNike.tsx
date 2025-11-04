@@ -57,6 +57,12 @@ const HeroNike: React.FC = () => {
     [images[2], images[0], images[1]], // Rotation des images
   ]
 
+  const headingColor = useColorModeValue('black', 'white')
+  const textColor = useColorModeValue('gray.800', 'gray.200')
+  const ctaBg = useColorModeValue('white', 'gray.700')
+  const ctaColor = useColorModeValue('black', 'white')
+  const ctaHover = useColorModeValue('gray.100', 'gray.600')
+
   return (
     <Box as="section" position="relative" h={{ base: '70vh', md: '90vh' }} w="100%" overflow="hidden">
       {/* Desktop : fade entre deux sets de 3 images */}
@@ -143,7 +149,7 @@ const HeroNike: React.FC = () => {
           size={{ base: '2xl', md: '4xl' }}
           textAlign="center"
           maxW="container.md"
-          color="white"
+          color={headingColor}
           fontWeight={800}
           letterSpacing={-1}
           lineHeight={0.9}
@@ -152,7 +158,7 @@ const HeroNike: React.FC = () => {
           Style
         </Heading>
         <Text
-          color="white"
+          color={textColor}
           maxW="container.md"
           textAlign="center"
           fontSize={{ base: 'md', md: 'lg' }}
@@ -163,15 +169,15 @@ const HeroNike: React.FC = () => {
         <Box position="absolute" bottom={{ base: 8, md: 12 }}>
           <Button
             size="lg"
-            bg="white"
-            color="black"
+            bg={ctaBg}
+            color={ctaColor}
             borderRadius="999px"
             onClick={scrollToProducts}
             px={6}
             py={3}
             fontWeight={800}
             boxShadow="lg"
-            _hover={{ bg: 'gray.100' }}
+            _hover={{ bg: ctaHover }}
           >
             Découvrir
           </Button>

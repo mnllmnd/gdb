@@ -57,6 +57,14 @@ export default function Products() {
   const borderColor = useColorModeValue('gray.200', 'gray.600')
   const cardBg = useColorModeValue('white', 'gray.800')
   const subtleBg = useColorModeValue('gray.50', 'gray.700')
+  const textPrimary = useColorModeValue('black', 'white')
+  const textSecondary = useColorModeValue('gray.700', 'gray.300')
+  const activeBg = useColorModeValue('black', 'white')
+  const activeColor = useColorModeValue('white', 'black')
+  const badgeBg = useColorModeValue('gray.100', 'gray.700')
+  const iconColor = useColorModeValue('black', 'gray.300')
+  const hoverBorderColor = useColorModeValue('gray.300','gray.600')
+  const tertiaryText = useColorModeValue('gray.700','gray.400')
 
   const gridColumns = useBreakpointValue({ 
     base: 'repeat(2, 1fr)', 
@@ -150,11 +158,11 @@ export default function Products() {
         <VStack spacing={6}>
           <Spinner 
             size="xl" 
-            color="gray.600" 
+            color={textSecondary} 
             thickness="3px" 
-            emptyColor="gray.200"
+            emptyColor={useColorModeValue('gray.200','gray.700')}
           />
-          <Text color="gray.600" fontSize="lg" fontWeight="500">
+          <Text color={textSecondary} fontSize="lg" fontWeight="500">
             Chargement...
           </Text>
         </VStack>
@@ -172,12 +180,12 @@ export default function Products() {
             <Heading 
               size={{ base: "lg", md: "xl" }}
               fontWeight="600" 
-              color="gray.900"
+              color={textPrimary}
               letterSpacing="-0.5px"
             >
               Boutique
             </Heading>
-            <Text color="gray.600" fontSize={{ base: "sm", md: "lg" }} mt={1}>
+            <Text color={textSecondary} fontSize={{ base: "sm", md: "lg" }} mt={1}>
               {products?.length || 0} produit{products?.length !== 1 ? 's' : ''}
             </Text>
           </Box>
@@ -199,7 +207,7 @@ export default function Products() {
         <Box>
           <InputGroup size={{ base: "md", md: "lg" }}>
             <InputLeftElement pointerEvents="none" height={{ base: "48px", md: "56px" }}>
-              <Icon as={SearchIcon} color="gray.400" boxSize={{ base: 4, md: 5 }} />
+              <Icon as={SearchIcon} color={iconColor} boxSize={{ base: 4, md: 5 }} />
             </InputLeftElement>
             <Input
               placeholder="Rechercher des produits..."
@@ -209,9 +217,9 @@ export default function Products() {
               borderRadius="lg"
               border="1px solid"
               borderColor={borderColor}
-              _hover={{ borderColor: 'gray.300' }}
+              _hover={{ borderColor: useColorModeValue('gray.300','gray.600') }}
               _focus={{
-                borderColor: 'gray.400',
+                borderColor: useColorModeValue('gray.400','gray.500'),
                 boxShadow: 'none'
               }}
               fontSize={{ base: "sm", md: "md" }}
@@ -248,8 +256,8 @@ export default function Products() {
           <TabList borderBottom="1px solid" borderColor={borderColor}>
             <Tab 
               fontWeight="500" 
-              color="gray.700"
-              _selected={{ color: 'gray.900', borderColor: 'gray.900' }}
+              color={textPrimary}
+              _selected={{ color: textPrimary, borderColor: textPrimary }}
               py={3}
             >
               <HStack spacing={2}>
@@ -259,8 +267,8 @@ export default function Products() {
             </Tab>
             <Tab 
               fontWeight="500" 
-              color="gray.700"
-              _selected={{ color: 'gray.900', borderColor: 'gray.900' }}
+             color={textPrimary}
+              _selected={{ color: textPrimary, borderColor: textPrimary }}
               py={3}
             >
               <HStack spacing={2}>
@@ -270,8 +278,8 @@ export default function Products() {
             </Tab>
             <Tab 
               fontWeight="500" 
-              color="gray.700"
-              _selected={{ color: 'gray.900', borderColor: 'gray.900' }}
+              color={textPrimary}
+              _selected={{ color: textPrimary, borderColor: textPrimary }}
               py={3}
             >
               <HStack spacing={2}>
@@ -307,7 +315,7 @@ export default function Products() {
             <Card bg={subtleBg} borderRadius="lg" border="1px solid" borderColor={borderColor} mb={4}>
               <CardBody py={3}>
                 <Flex justify="space-between" align="center">
-                  <Text color="gray.700" fontSize="sm" fontWeight="500">
+                  <Text color={textPrimary} fontSize="sm" fontWeight="500">
                     {products?.length || 0} résultat{(products?.length || 0) > 1 ? 's' : ''}
                   </Text>
                   <Button 
@@ -330,8 +338,8 @@ export default function Products() {
               variant={activeTab === 0 ? "solid" : "outline"}
               size="sm"
               borderRadius="lg"
-              bg={activeTab === 0 ? "gray.900" : "transparent"}
-              color={activeTab === 0 ? "white" : "gray.700"}
+              bg={activeTab === 0 ? activeBg : "transparent"}
+              color={activeTab === 0 ? activeColor : textSecondary}
               borderColor={borderColor}
               onClick={() => setActiveTab(0)}
             >
@@ -341,8 +349,8 @@ export default function Products() {
               variant={activeTab === 1 ? "solid" : "outline"}
               size="sm"
               borderRadius="lg"
-              bg={activeTab === 1 ? "gray.900" : "transparent"}
-              color={activeTab === 1 ? "white" : "gray.700"}
+              bg={activeTab === 1 ? activeBg : "transparent"}
+              color={activeTab === 1 ? activeColor : textSecondary}
               borderColor={borderColor}
               onClick={() => setActiveTab(1)}
             >
@@ -352,8 +360,8 @@ export default function Products() {
               variant={activeTab === 2 ? "solid" : "outline"}
               size="sm"
               borderRadius="lg"
-              bg={activeTab === 2 ? "gray.900" : "transparent"}
-              color={activeTab === 2 ? "white" : "gray.700"}
+              bg={activeTab === 2 ? activeBg : "transparent"}
+              color={activeTab === 2 ? activeColor : textSecondary}
               borderColor={borderColor}
               onClick={() => setActiveTab(2)}
             >
@@ -385,7 +393,7 @@ export default function Products() {
                   setSelectedCategory(null)
                   onClose()
                 }}
-                bg={!selectedCategory ? "gray.100" : "transparent"}
+                bg={!selectedCategory ? subtleBg : "transparent"}
               >
                 Toutes les catégories
               </Button>
@@ -402,10 +410,10 @@ export default function Products() {
                       block: 'start'
                     })
                   }}
-                  bg={selectedCategory === String(c.id) ? "gray.100" : "transparent"}
+                  bg={selectedCategory === String(c.id) ? subtleBg : "transparent"}
                 >
                   <Text>{c.name}</Text>
-                  <Badge bg="gray.200" color="gray.600" fontSize="xs">
+                  <Badge bg={badgeBg} color={textSecondary} fontSize="xs">
                     {(categorizedProducts[c.id] || []).length}
                   </Badge>
                 </Button>
@@ -423,14 +431,14 @@ export default function Products() {
       <>
         {!query && categories && categories.filter(c => (categorizedProducts[c.id] || []).length > 0).length > 0 && !isMobile && (
           <Box mb={6}>
-            <Text fontSize="sm" fontWeight="600" color="gray.600" mb={3} textTransform="uppercase" letterSpacing="0.5px">
+            <Text fontSize="sm" fontWeight="600" color={textSecondary} mb={3} textTransform="uppercase" letterSpacing="0.5px">
               Parcourir par catégorie
             </Text>
             <SimpleGrid columns={{ base: 2, sm: 3, md: 4, lg: 6 }} spacing={2}>
               {categories
                 .filter((c: any) => (categorizedProducts[c.id] || []).length > 0)
                 .map((c: any, index: number) => (
-                  <Button
+                    <Button
                     key={c.id}
                     variant="outline"
                     size="sm"
@@ -438,7 +446,7 @@ export default function Products() {
                     py={2}
                     borderRadius="lg"
                     borderColor={borderColor}
-                    _hover={{ bg: subtleBg, borderColor: 'gray.300' }}
+                    _hover={{ bg: subtleBg, borderColor: hoverBorderColor }}
                     onClick={() => {
                       document.getElementById(`category-${c.id}`)?.scrollIntoView({ 
                         behavior: 'smooth',
@@ -451,8 +459,8 @@ export default function Products() {
                         {c.name}
                       </Text>
                       <Badge 
-                        bg="gray.100" 
-                        color="gray.600"
+                        bg={badgeBg} 
+                        color={textSecondary}
                         fontSize="2xs" 
                         px={1} 
                         py={0} 
@@ -471,13 +479,13 @@ export default function Products() {
         {(categorizedProducts[0] || []).length > 0 && (
           <Box mb={8}>
             <HStack spacing={3} mb={4} align="center">
-              <Box w="3px" h="16px" bg="gray.400" borderRadius="full" />
-              <Heading size={{ base: "sm", md: "md" }} fontWeight="600" color="gray.900">
+              <Box w="3px" h="16px" bg={iconColor} borderRadius="full" />
+              <Heading size={{ base: "sm", md: "md" }} fontWeight="600" color={textPrimary}>
                 Autres produits
               </Heading>
               <Badge 
-                bg="gray.100" 
-                color="gray.600"
+                bg={badgeBg} 
+                color={textSecondary}
                 fontSize="xs" 
                 px={2} 
                 py={1} 
@@ -518,12 +526,12 @@ export default function Products() {
               .map((c: any) => (
                 <Box key={c.id} id={`category-${c.id}`}>
                   <HStack spacing={3} mb={4} align="center">
-                    <Box w="3px" h="20px" bg="gray.900" borderRadius="full" />
+                    <Box w="3px" h="20px" bg={textPrimary} borderRadius="full" />
                     <VStack align="start" spacing={0}>
-                      <Heading size={{ base: "sm", md: "lg" }} fontWeight="600" color="gray.900">
+                      <Heading size={{ base: "sm", md: "lg" }} fontWeight="600" color={textPrimary}>
                         {c.name}
                       </Heading>
-                      <Text color="gray.600" fontSize={{ base: "xs", md: "sm" }}>
+                      <Text color={textSecondary} fontSize={{ base: "xs", md: "sm" }}>
                         {(categorizedProducts[c.id] || []).length} produit{(categorizedProducts[c.id] || []).length > 1 ? 's' : ''}
                       </Text>
                     </VStack>
@@ -584,11 +592,11 @@ export default function Products() {
     return (
       <Center py={16} minH="40vh">
         <VStack spacing={4}>
-          <Icon as={FiTrendingUp} boxSize={12} color="gray.400" />
-          <Text color="gray.600" fontSize="lg" fontWeight="500">
+          <Icon as={FiTrendingUp} boxSize={12} color={iconColor} />
+          <Text color={textSecondary} fontSize="lg" fontWeight="500">
             Nouveautés à venir
           </Text>
-          <Text color="gray.500" fontSize="sm" textAlign="center">
+          <Text color={tertiaryText} fontSize="sm" textAlign="center">
             De nouveaux produits arrivent bientôt
           </Text>
         </VStack>
