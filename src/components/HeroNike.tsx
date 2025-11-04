@@ -7,7 +7,7 @@ const HeroNike: React.FC = () => {
   const images: string[] = [
     'https://i.pinimg.com/736x/f7/cf/89/f7cf894ae66c91a7cd8587e23e814bb4.jpg',
     'https://res.cloudinary.com/dcs9vkwe0/image/upload/v1761999319/gestion_de_boutique/mghjkzerwo2spwmobzaf.jpg',
-    'https://i.pinimg.com/1200x/9e/6d/ca/9e6dcaaee3f8d5e80e9a32ebf14f1a5a.jpg',
+    'https://i.pinimg.com/736x/e9/a5/40/e9a540abf4dc3a36dee98282e12babd3.jpg',
   ]
 
   const [index, setIndex] = useState(0)
@@ -149,7 +149,7 @@ const HeroNike: React.FC = () => {
           size={{ base: '2xl', md: '4xl' }}
           textAlign="center"
           maxW="container.md"
-          color={headingColor}
+          color="white"
           fontWeight={800}
           letterSpacing={-1}
           lineHeight={0.9}
@@ -158,7 +158,7 @@ const HeroNike: React.FC = () => {
           Style
         </Heading>
         <Text
-          color={textColor}
+          color="white"
           maxW="container.md"
           textAlign="center"
           fontSize={{ base: 'md', md: 'lg' }}

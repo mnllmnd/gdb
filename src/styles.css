@@ -1,107 +1,110 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* Global styles: Times New Roman and modern neutral background */
+/* Reset et base */
 html, body, #root {
   height: 100%;
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif;
-  /* SUPPRIMÉ: background fixe qui empêche le dark mode */
   margin: 0;
-  color: #0f172a;
+  padding: 0;
 }
 
-/* Card variables */
-:root{
-  --card-bg: #ffffff;
-  --card-radius: 12px;
-  --card-shadow: 0 6px 18px rgba(15,23,42,0.06);
+/* Variables CSS pour le design Zara */
+:root {
+  --card-radius: 0px; /* Angles droits comme Zara */
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
-/* Reserve space for the mobile BottomNav */
+/* Mode clair */
+.chakra-ui-light {
+  --bg-primary: #ffffff;
+  --bg-secondary: #fafafa;
+  --text-primary: #171717;
+  --text-secondary: #404040;
+  --border-color: #e5e5e5;
+}
+
+/* Mode sombre Zara - vrai noir */
+.chakra-ui-dark {
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --text-primary: #ffffff;
+  --text-secondary: #a3a3a3;
+  --border-color: #262626;
+}
+
+/* Application des variables */
+.chakra-ui-light body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.chakra-ui-dark body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Cartes avec style Zara */
+.product-card, .chakra-card {
+  border-radius: var(--card-radius) !important;
+  box-shadow: var(--card-shadow) !important;
+  transition: all 0.3s ease !important;
+}
+
+.product-card:hover, .chakra-card:hover {
+  box-shadow: var(--card-shadow-hover) !important;
+}
+
+/* Navigation mobile */
 @media (max-width: 48em) {
-  :root { --bottom-nav-height: calc(env(safe-area-inset-bottom, 0px) + 88px); }
+  :root { 
+    --bottom-nav-height: calc(env(safe-area-inset-bottom, 0px) + 80px); 
+  }
   body, #root {
     padding-bottom: var(--bottom-nav-height);
   }
 }
 
-.chakra-ui-light {
-  --chakra-colors-bg: #f7fafc;
-}
-
-/* Dark mode overrides */
-.chakra-ui-dark {
-  --card-bg: #0b1220;
-  --card-radius: 12px;
-  --card-shadow: 0 6px 18px rgba(2,6,23,0.6);
-}
-
-.chakra-ui-dark body {
-  /* SUPPRIMÉ: background fixe en dark mode */
-  color: #E6EEF8;
-}
-
-.chakra-container {
-  padding-left: 16px;
-  padding-right: 16px;
-}
-
-/* SUPPRIMÉ: body { background-color: #F8FAFC; } qui écrasait tout */
-
-.product-card {
-  transition: all 0.3s ease;
-}
-
-.product-card:hover {
-  transform: translateY(-4px);
-}
-
-.hero-gradient {
-  background: linear-gradient(135deg, #0967D2 0%, #0552B5 100%);
-}
-
-.section-padding {
-  padding: 4rem 0;
-}
-
-.shadow-hover {
-  transition: box-shadow 0.3s ease;
-}
-
-.shadow-hover:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-/* Global dark-mode background fallbacks
-   Many components still use explicit bg="white" which becomes inline styles.
-   Inline styles are hard to override, so provide conservative, targeted overrides
-   in the dark theme that force common surface elements to use the --card-bg
-   variable. This is a pragmatic fallback until components are updated to
-   use Chakra's color-mode tokens (useColorModeValue).
-*/
+/* Overrides pour garantir le style Zara en dark mode */
 .chakra-ui-dark .product-card,
-.chakra-ui-dark .card,
 .chakra-ui-dark .chakra-card,
 .chakra-ui-dark .chakra-modal__content,
 .chakra-ui-dark .chakra-drawer__content,
 .chakra-ui-dark .chakra-popover__content,
-.chakra-ui-dark .chakra-container,
-.chakra-ui-dark .product-card > *,
-.chakra-ui-dark .card > *,
-.chakra-ui-dark .chakra-card__body,
-.chakra-ui-dark .chakra-modal__content *,
-.chakra-ui-dark .chakra-drawer__content * {
-  background-color: var(--card-bg) !important;
-  box-shadow: var(--card-shadow) !important;
-  color: inherit !important;
+.chakra-ui-dark .chakra-menu__list {
+  background-color: var(--bg-primary) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
 }
 
-/* also ensure modal/drawer footers and similar surfaces use dark tokens */
-.chakra-ui-dark .modal-footer,
-.chakra-ui-dark .drawer-footer,
-.chakra-ui-dark .chakra-modal__footer,
-.chakra-ui-dark .chakra-drawer__footer {
-  background-color: var(--card-bg) !important;
+/* Typographie élégante */
+.hero-gradient {
+  background: linear-gradient(135deg, #000000 0%, #262626 100%);
+}
+
+.section-padding {
+  padding: 3rem 0;
+}
+
+/* Animations subtiles */
+.shadow-hover {
+  transition: all 0.3s ease;
+}
+
+.shadow-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow-hover);
+}
+
+/* Focus visible pour l'accessibilité */
+button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #000000;
+  outline-offset: 2px;
+}
+
+.chakra-ui-dark button:focus-visible,
+.chakra-ui-dark a:focus-visible,
+.chakra-ui-dark [tabindex]:focus-visible {
+  outline: 2px solid #ffffff;
 }

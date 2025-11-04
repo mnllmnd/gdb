@@ -522,7 +522,7 @@ export default function NavBar() {
                     to="/signup"
                     variant="solid"
                     size="sm"
-                    color={textColor}
+                    
                     _hover={{ bg: 'gray.700' }}
                     transition="all 0.2s ease"
                     fontWeight="normal"
@@ -546,7 +546,13 @@ export default function NavBar() {
           <DrawerHeader borderBottomWidth="1px" borderColor={menuBorder} py={4}>
             <HStack spacing={3}>
               <Avatar size="sm" name="Sama Bitik" color={textColor} borderRadius="none" />
-              <Heading size="md" color={textColor} fontWeight="normal" letterSpacing="wide">
+              <Heading 
+                size="md" 
+                color={textColor} 
+                fontWeight="normal" 
+                letterSpacing="wide"
+                fontSize="lg"
+              >
                 SAMA BITIK
               </Heading>
             </HStack>
@@ -559,13 +565,14 @@ export default function NavBar() {
                 to="/" 
                 onClick={onClose} 
                 variant="ghost" 
-                size="md" 
+                size="sm" 
                 color={textColor}
                 _hover={{ bg: hoverBg }}
                 justifyContent="flex-start"
-                py={4}
+                py={3}
                 borderRadius="none"
                 fontWeight="normal"
+                fontSize="sm"
                 letterSpacing="wide"
               >
                 ACCUEIL
@@ -575,13 +582,14 @@ export default function NavBar() {
                 to="/products" 
                 onClick={onClose} 
                 variant="ghost" 
-                size="md" 
+                size="sm" 
                 color={textColor}
                 _hover={{ bg: hoverBg }}
                 justifyContent="flex-start"
-                py={4}
+                py={3}
                 borderRadius="none"
                 fontWeight="normal"
+                fontSize="sm"
                 letterSpacing="wide"
               >
                 PRODUITS
@@ -591,13 +599,14 @@ export default function NavBar() {
                 to="/feed"
                 onClick={onClose}
                 variant="ghost"
-                size="md"
+                size="sm"
                 color={textColor}
                 _hover={{ bg: hoverBg }}
                 justifyContent="flex-start"
-                py={4}
+                py={3}
                 borderRadius="none"
                 fontWeight="normal"
+                fontSize="sm"
                 letterSpacing="wide"
               >
                 FEED
@@ -608,8 +617,8 @@ export default function NavBar() {
               {/* Section utilisateur */}
               {user ? (
                 <>
-                  <Text fontSize="sm" color={subtleTextColor} px={3} py={3} letterSpacing="wide">
-                    Connecté en tant que <Text as="span" fontWeight="normal">{user.display_name ?? user.phone}</Text>
+                  <Text fontSize="xs" color={subtleTextColor} px={3} py={2} letterSpacing="wide">
+                    Connecté en tant que <Text as="span" fontWeight="normal" color={textColor}>{user.display_name ?? user.phone}</Text>
                   </Text>
                   
                   <Button 
@@ -617,13 +626,14 @@ export default function NavBar() {
                     to="/profile" 
                     onClick={onClose} 
                     variant="ghost" 
-                    size="md" 
+                    size="sm" 
                     color={textColor}
                     _hover={{ bg: hoverBg }}
                     justifyContent="flex-start"
-                    py={4}
+                    py={3}
                     borderRadius="none"
                     fontWeight="normal"
+                    fontSize="sm"
                     letterSpacing="wide"
                   >
                     MON PROFIL
@@ -633,20 +643,21 @@ export default function NavBar() {
                     to="/orders" 
                     onClick={onClose} 
                     variant="ghost" 
-                    size="md" 
+                    size="sm" 
                     color={textColor}
                     _hover={{ bg: hoverBg }}
                     justifyContent="flex-start"
-                    py={4}
+                    py={3}
                     borderRadius="none"
                     fontWeight="normal"
+                    fontSize="sm"
                     letterSpacing="wide"
                   >
                     MES COMMANDES
                   </Button>
                   
                   <Button 
-                    size="md" 
+                    size="sm" 
                     variant="ghost"
                     color={textColor}
                     _hover={{ bg: hoverBg }}
@@ -655,9 +666,10 @@ export default function NavBar() {
                       handleLogout()
                     }}
                     justifyContent="flex-start"
-                    py={4}
+                    py={3}
                     borderRadius="none"
                     fontWeight="normal"
+                    fontSize="sm"
                     letterSpacing="wide"
                   >
                     SE DÉCONNECTER
@@ -669,14 +681,15 @@ export default function NavBar() {
                     as={RouterLink} 
                     to="/login" 
                     onClick={onClose} 
-                    size="md" 
+                    size="sm" 
                     variant="ghost"
                     color={textColor}
                     _hover={{ bg: hoverBg }}
                     justifyContent="flex-start"
-                    py={4}
+                    py={3}
                     borderRadius="none"
                     fontWeight="normal"
+                    fontSize="sm"
                     letterSpacing="wide"
                   >
                     CONNEXION
@@ -685,15 +698,15 @@ export default function NavBar() {
                     as={RouterLink} 
                     to="/signup" 
                     onClick={onClose} 
-                    size="md" 
+                    size="sm" 
                     variant="solid"
-                    bg={brandColor}
-                    color="white"
+                    color="textColor"
                     _hover={{ bg: 'gray.700' }}
                     justifyContent="flex-start"
-                    py={4}
+                    py={3}
                     borderRadius="none"
                     fontWeight="normal"
+                    fontSize="sm"
                     letterSpacing="wide"
                   >
                     S'INSCRIRE
@@ -704,7 +717,7 @@ export default function NavBar() {
               <Divider borderColor={menuBorder} my={2} />
 
               {/* Section vendeur */}
-              <Text fontSize="sm" color={subtleTextColor} fontWeight="normal" px={3} py={3} letterSpacing="wide">
+              <Text fontSize="xs" color={subtleTextColor} fontWeight="normal" px={3} py={2} letterSpacing="wide">
                 DEVENIR VENDEUR
               </Text>
               <Button
@@ -721,14 +734,15 @@ export default function NavBar() {
                 variant="outline"
                 borderColor={brandColor}
                 color={brandColor}
-                size="md"
+                size="sm"
                 leftIcon={<ShopIcon />}
                 _hover={{ bg: brandColor, color: 'white' }}
                 justifyContent="flex-start"
-                py={4}
+                py={3}
                 borderRadius="none"
                 fontWeight="500"
                 whiteSpace="nowrap"
+                fontSize="sm"
               >
                 Vendre
               </Button>
@@ -737,14 +751,15 @@ export default function NavBar() {
                   as={RouterLink} 
                   to="/seller/shop" 
                   onClick={onClose} 
-                  size="md" 
+                  size="sm" 
                   variant="ghost"
                   color={textColor}
                   _hover={{ bg: hoverBg }}
                   justifyContent="flex-start"
-                  py={4}
+                  py={3}
                   borderRadius="none"
                   fontWeight="normal"
+                  fontSize="sm"
                   letterSpacing="wide"
                 >
                   MA BOUTIQUE
@@ -754,7 +769,7 @@ export default function NavBar() {
           </DrawerBody>
           <Recommendations ref={recRef} hideTrigger />
           <DrawerFooter borderTopWidth="1px" borderColor={menuBorder} py={4}>
-            <Text fontSize="sm" color={subtleTextColor} letterSpacing="wide">DALAL AK JAMM</Text>
+            <Text fontSize="xs" color={subtleTextColor} letterSpacing="wide">DALAL AK JAMM</Text>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
