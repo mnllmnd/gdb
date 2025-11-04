@@ -39,7 +39,7 @@ export default function Feed() {
   const [stories, setStories] = React.useState<any[]>([])
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [activeStory, setActiveStory] = React.useState<Record<string, any> | null>(null)
-  const [activeTab, setActiveTab] = React.useState(0) // Maintenant 0 = Reels, 1 = Personnalisé
+  const [activeTab, setActiveTab] = React.useState(0)
 
   React.useEffect(() => {
     let mounted = true
@@ -47,13 +47,11 @@ export default function Feed() {
       setIsLoading(true)
       try {
         const token = globalThis.localStorage?.getItem('token') ?? undefined
-        // Use server-side paginated feed
         const res = await api.feed.list(page, limit, token)
         if (!mounted) return
         setProducts(res.items || [])
         setTotal(res.total || 0)
 
-        // For stories, fetch followed shops (simple strip of logos)
         const shops = await api.shops.following(token)
         if (mounted) setStories(shops || [])
       } catch (err) {
@@ -81,35 +79,41 @@ export default function Feed() {
 
   if (isLoading) {
     return (
-      <Center py={12}>
+      <Center py={12} bg="black" minH="100vh">
         <VStack>
-          <Spinner size="xl" />
-          <Text>Chargement du fil d'actualité…</Text>
+          <Spinner size="xl" color="white" />
+          <Text color="white">Chargement du fil d'actualité…</Text>
         </VStack>
       </Center>
     )
   }
 
   return (
-    <Box py={6} px={{ base: 3, md: 6 }}>
-      <Heading size="lg" mb={4}>Fil d'actualité</Heading>
+    <Box 
+      py={6} 
+      px={{ base: 3, md: 6 }} 
+      bg="black" 
+      minH="100vh"
+      color="white"
+    >
+      <Heading size="lg" mb={4} color="white">Fil d'actualité</Heading>
 
-      {/* Navigation Tabs - Reels en premier */}
+      {/* Navigation Tabs */}
       <Tabs 
         variant="enclosed" 
         colorScheme="brand" 
         mb={6}
         onChange={(index) => setActiveTab(index)}
-        defaultIndex={0} // Reels par défaut
+        defaultIndex={0}
       >
         <TabList>
-          <Tab>
+          <Tab color="white" _selected={{ color: 'white', bg: 'gray.800' }}>
             <HStack spacing={2}>
               <Icon as={FaPhotoVideo} />
               <Text>Reels</Text>
             </HStack>
           </Tab>
-          <Tab>
+          <Tab color="white" _selected={{ color: 'white', bg: 'gray.800' }}>
             <HStack spacing={2}>
               <Icon as={FaUserFriends} />
               <Text>Personnalisé</Text>
@@ -118,11 +122,11 @@ export default function Feed() {
         </TabList>
 
         <TabPanels>
-          {/* Tab 1: Reels Section (MAINTENANT PREMIER ONGLET) */}
+          {/* Tab 1: Reels Section */}
           <TabPanel px={0}>
             <Box mb={4}>
-              <Heading size="md" mb={4}>Reels populaires</Heading>
-              <Text color="gray.600" mb={6}>
+              <Heading size="md" mb={4} color="white">Reels populaires</Heading>
+              <Text color="gray.300" mb={6}>
                 Découvrez les vidéos tendance de nos créateurs
               </Text>
               
@@ -135,6 +139,9 @@ export default function Feed() {
                   colorScheme="brand" 
                   variant="outline"
                   size="lg"
+                  color="white"
+                  borderColor="brand.500"
+                  _hover={{ bg: 'brand.500' }}
                 >
                   Explorer tous les Reels
                 </Button>
@@ -144,10 +151,10 @@ export default function Feed() {
 
           {/* Tab 2: Fil personnalisé (Produits) */}
           <TabPanel px={0}>
-            {/* Stories strip - seulement dans l'onglet Personnalisé */}
+            {/* Stories strip */}
             {stories && stories.length > 0 && (
-              <Box mb={6} p={4} bg="white" borderRadius="lg" shadow="sm">
-                <Heading size="md" mb={3}>Vos boutiques</Heading>
+              <Box mb={6} p={4} bg="gray.900" borderRadius="lg" shadow="sm">
+                <Heading size="md" mb={3} color="white">Vos boutiques</Heading>
                 <Box overflowX="auto">
                   <HStack spacing={4} px={2}>
                     {stories.map((s: any) => (
@@ -173,6 +180,7 @@ export default function Feed() {
                           fontWeight="medium"
                           noOfLines={1}
                           maxW="70px"
+                          color="white"
                         >
                           {s.name}
                         </Text>
@@ -185,10 +193,10 @@ export default function Feed() {
 
             {/* Products Grid */}
             {(!products || products.length === 0) ? (
-              <Center py={12} bg="white" borderRadius="lg" shadow="sm">
+              <Center py={12} bg="gray.900" borderRadius="lg" shadow="sm">
                 <VStack spacing={4}>
-                  <Heading size="md">Votre fil est vide</Heading>
-                  <Text color="gray.600" textAlign="center">
+                  <Heading size="md" color="white">Votre fil est vide</Heading>
+                  <Text color="gray.300" textAlign="center">
                     Suivez des boutiques pour voir leurs produits ici.
                   </Text>
                   <Button as={Link} to="/products" colorScheme="brand">
@@ -233,14 +241,14 @@ export default function Feed() {
       {/* Story modal */}
       <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
         <ModalOverlay />
-        <ModalContent>
-          <ModalCloseButton />
+        <ModalContent bg="gray.900">
+          <ModalCloseButton color="white" />
           <ModalBody py={8}>
             {activeStory && (
               <VStack spacing={4} align="center" textAlign="center">
                 <Avatar size="2xl" name={activeStory.name} src={activeStory.logo_url} mb={2} />
-                <Heading size="md">{activeStory.name}</Heading>
-                <Text color="gray.600">{activeStory.description}</Text>
+                <Heading size="md" color="white">{activeStory.name}</Heading>
+                <Text color="gray.300">{activeStory.description}</Text>
                 <Button 
                   as={Link} 
                   to={`/shop/${activeStory.domain || activeStory.id}`} 
