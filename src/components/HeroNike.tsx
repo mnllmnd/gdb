@@ -5,9 +5,9 @@ const HeroNike: React.FC = () => {
   const overlay = useColorModeValue('rgba(255,255,255,0.02)', 'rgba(0,0,0,0.6)')
 
   const images: string[] = [
+    'https://i.pinimg.com/1200x/cf/4d/09/cf4d092c6378bda6d354eb38b815d638.jpg',
+    'https://i.pinimg.com/736x/cd/9b/37/cd9b37f46c6747e392c5c5097010818a.jpg',
     'https://i.pinimg.com/1200x/d6/b9/c2/d6b9c24dff769465c3f373f9bf5db15e.jpg',
-    'https://i.pinimg.com/1200x/12/0e/8c/120e8c840d0cd85f6757c62a5366c86d.jpg',
-    'https://i.pinimg.com/1200x/24/d5/94/24d594bae81ad07330bf9aaab8c20f8c.jpg',
   ]
 
   const [index, setIndex] = useState(0)
