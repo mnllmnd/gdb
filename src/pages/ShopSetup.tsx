@@ -10,10 +10,11 @@ import {
   Textarea,
   Image,
   Box,
-  Text,
   useColorModeValue,
   Divider,
+  useToast,
 } from '@chakra-ui/react'
+import { useNavigate } from 'react-router-dom'
 import BackButton from '../components/BackButton'
 import api from '../services/api'
 import { highRes, SHOP_PLACEHOLDER } from '../utils/image'
@@ -27,6 +28,9 @@ export default function ShopSetup() {
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
+
+  const navigate = useNavigate()
+  const toast = useToast()
 
   const token =
     typeof globalThis !== 'undefined' && globalThis.localStorage
@@ -69,7 +73,13 @@ export default function ShopSetup() {
       const res = await api.uploads.uploadFile(logo, token)
       setLogoUrl(res.url)
     } catch (err: any) {
-      alert(err?.error || 'Échec du téléversement')
+      toast({
+        title: 'Erreur lors du téléversement',
+        description: err?.error || 'Échec du téléversement',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      })
     } finally {
       setUploading(false)
     }
@@ -92,9 +102,25 @@ export default function ShopSetup() {
         if (res.user) localStorage.setItem('user', JSON.stringify(res.user))
         globalThis.dispatchEvent(new Event('authChange'))
       }
-      alert('Boutique enregistrée avec succès 🎉')
+
+      toast({
+        title: 'Boutique enregistrée',
+        description: 'Votre boutique a été enregistrée avec succès',
+        status: 'success',
+        duration: 4000,
+        isClosable: true,
+      })
+
+      // 🔹 Redirection vers /seller
+      navigate('/seller')
     } catch (err: any) {
-      alert(err?.error || 'Échec de l’enregistrement')
+      toast({
+        title: 'Erreur',
+        description: err?.error || 'Échec de l’enregistrement',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      })
     } finally {
       setLoading(false)
     }
@@ -115,9 +141,9 @@ export default function ShopSetup() {
           <Heading mb={4} color={headingColor}>
             Configurer ma boutique
           </Heading>
-          <Text color="gray.500" mb={6}>
+          <Box color="gray.500" mb={6}>
             Connectez-vous pour pouvoir créer ou configurer votre boutique.
-          </Text>
+          </Box>
           <Button
             colorScheme="blue"
             size="lg"
@@ -199,9 +225,7 @@ export default function ShopSetup() {
                 borderRadius="full"
                 objectFit="cover"
                 border="2px solid #ccc"
-                onError={(e: any) => {
-                  e.currentTarget.src = SHOP_PLACEHOLDER
-                }}
+                onError={(e: any) => { e.currentTarget.src = SHOP_PLACEHOLDER }}
               />
             )}
           </FormControl>
