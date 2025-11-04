@@ -700,7 +700,7 @@ export default function NavBar() {
                     onClick={onClose} 
                     size="sm" 
                     variant="solid"
-                    color="textColor"
+                   
                     _hover={{ bg: 'gray.700' }}
                     justifyContent="flex-start"
                     py={3}
