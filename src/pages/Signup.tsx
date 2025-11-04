@@ -155,7 +155,7 @@ export default function Signup() {
 
           <Button
             colorScheme="blue"
-            bg="black"
+            bg="white"
             size="lg"
             w="full"
             shadow="md"

@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react'
 import { FcGoogle } from 'react-icons/fc'
 import { signInWithPhone, signInWithGoogle } from '../services/auth'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link as RouterLink } from 'react-router-dom'
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
 
@@ -50,7 +50,14 @@ export default function Login() {
   }
 
   return (
-    <Container maxW="md" py={10} display="flex" justifyContent="center" alignItems="center" minH="100vh">
+    <Container
+      maxW="md"
+      py={10}
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      minH="100vh"
+    >
       <Box
         bg={bgCard}
         p={8}
@@ -91,8 +98,8 @@ export default function Login() {
                 placeholder="Ex : +221 77 123 45 67"
                 countrySelectProps={{ searchable: true }}
                 style={{
-                  border: 'none',         // ✅ enlève la bordure noire interne
-                  outline: 'none',        // ✅ empêche tout contour noir
+                  border: 'none',
+                  outline: 'none',
                   width: '100%',
                   fontSize: '16px',
                   backgroundColor: 'transparent',
@@ -163,6 +170,23 @@ export default function Login() {
             transition="all 0.2s ease"
           >
             Continuer avec Google
+          </Button>
+
+          {/* 🔹 Bouton S'inscrire style similaire */}
+          <Button
+            as={RouterLink}
+            to="/signup"
+            variant="outline"
+            color="gray.800"
+            size="lg"
+            w="full"
+            _hover={{
+              bg: useColorModeValue('gray.100', 'gray.700'),
+              transform: 'scale(1.02)',
+            }}
+            transition="all 0.2s ease"
+          >
+            Pas encore de compte ? S'inscrire
           </Button>
         </Stack>
       </Box>

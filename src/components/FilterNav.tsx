@@ -50,7 +50,7 @@ export default function FilterNav({
       borderBottom="1px solid"
       borderColor={borderColor}
       backdropFilter="blur(10px)"
-      position="sticky"
+      position="relative"
       top="0"
       zIndex="sticky"
     >
