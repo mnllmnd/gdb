@@ -51,7 +51,7 @@ export default function ReviewForm({ productId, shopId, onSuccess }: { productId
     <Box 
       borderRadius="xl" 
       p={6} 
-      bg="white" 
+      bg="ctaBg" 
       boxShadow="md"
       border="1px solid"
       borderColor="gray.100"
@@ -59,13 +59,13 @@ export default function ReviewForm({ productId, shopId, onSuccess }: { productId
       _hover={{ boxShadow: 'lg' }}
     >
       <VStack align="stretch" spacing={4}>
-        <Text fontSize="lg" fontWeight={700} color="gray.800">
+        <Text fontSize="lg" fontWeight={700} color="ctaBg">
           ✍️ Laisser un avis
         </Text>
 
         {/* Star Rating */}
         <Box>
-          <Text fontSize="sm" fontWeight={600} color="gray.600" mb={2}>
+          <Text fontSize="sm" fontWeight={600} color="ctaBg" mb={2}>
             Votre note
           </Text>
           <HStack spacing={2}>

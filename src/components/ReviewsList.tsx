@@ -46,11 +46,11 @@ export default function ReviewsList({ productId, shopId }: { productId?: string;
       </HStack>
 
       {reviews.length === 0 ? (
-        <Text color="gray.600">Aucun avis pour le moment.</Text>
+        <Text color="ctaBg">Aucun avis pour le moment.</Text>
       ) : (
         <VStack align="stretch" spacing={3}>
           {reviews.map((r) => (
-            <Box key={r.id} p={3} borderRadius="md" bg="white" boxShadow="sm">
+            <Box key={r.id} p={3} borderRadius="md" bg="ctaBg" boxShadow="sm">
               <HStack justify="space-between" mb={2}>
                 <Text fontWeight={600}>{r.user_name || 'Utilisateur anonyme'}</Text>
                 <HStack>

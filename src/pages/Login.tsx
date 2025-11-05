@@ -25,12 +25,12 @@ export default function Login() {
   const nav = useNavigate()
 
   // 🎨 Palette de couleurs style Zara
-  const bgPage = useColorModeValue('white', 'gray.900')
-  const bgCard = useColorModeValue('white', 'gray.800')
+  const bgPage = useColorModeValue('white', 'black')
+  const bgCard = useColorModeValue('white', 'blaclk')
   const labelColor = useColorModeValue('gray.700', 'gray.300')
   const textColor = useColorModeValue('gray.600', 'gray.400')
   const headingColor = useColorModeValue('black', 'white')
-  const inputBg = useColorModeValue('white', 'gray.700')
+  const inputBg = useColorModeValue('white', 'black')
   const inputBorder = useColorModeValue('gray.200', 'gray.600')
   const buttonBg = useColorModeValue('black', 'white')
   const buttonColor = useColorModeValue('white', 'black')

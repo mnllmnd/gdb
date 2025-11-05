@@ -59,7 +59,7 @@ const HeroNike: React.FC = () => {
 
   const headingColor = useColorModeValue('black', 'white')
   const textColor = useColorModeValue('gray.800', 'gray.200')
-  const ctaBg = useColorModeValue('white', 'gray.700')
+  const ctaBg = useColorModeValue('white', 'black')
   const ctaColor = useColorModeValue('black', 'white')
   const ctaHover = useColorModeValue('gray.100', 'gray.600')
 

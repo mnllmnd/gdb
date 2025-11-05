@@ -60,11 +60,11 @@ export default function SellerDashboard() {
   const [products, setProducts] = useState<Record<string, any>[]>([])
   const [shop, setShop] = useState<Record<string, any> | null>(null)
   const user = getItem('user') ? JSON.parse(getItem('user') as string) : null
-
-  const bgColor = useColorModeValue('gray.50', 'gray.900')
-  const cardBg = useColorModeValue('white', 'gray.800')
+ 
+  const cardBg = useColorModeValue('white', 'black')
   const headingColor = useColorModeValue('gray.800', 'white')
   const textMuted = useColorModeValue('gray.600', 'gray.400')
+  const navBg = useColorModeValue('white', 'black')
 
   useEffect(() => {
     let mounted = true
@@ -161,12 +161,12 @@ export default function SellerDashboard() {
   }
 
   return (
-    <Box minH="100vh" bg={bgColor}>
+    <Box minH="100vh" bg={navBg}>
       <Container maxW="container.lg" py={4} pb={{ base: '100px', md: 8 }}>
         <BackButton />
 
         {/* Header simplifié */}
-        <Card mb={4} bg={cardBg} borderRadius="xl" shadow="sm">
+        <Card mb={4} bg={navBg} borderRadius="xl" shadow="sm">
           <CardBody p={4}>
             <VStack spacing={3} align="stretch">
               <HStack spacing={3}>
@@ -214,7 +214,7 @@ export default function SellerDashboard() {
 
         {/* Navigation tabs mobile optimisée */}
         <Tabs variant="soft-rounded" colorScheme="blue" isFitted>
-          <TabList mb={4} bg="white" p={1} borderRadius="xl" shadow="sm">
+          <TabList mb={4} bg={navBg} p={1} borderRadius="xl" shadow="sm">
             <Tab 
               py={3}
               _selected={{ bg: 'blue.500', color: 'white' }}
@@ -271,7 +271,7 @@ export default function SellerDashboard() {
                       </HStack>
                       
                       <SimpleGrid columns={2} spacing={3}>
-                        <Box p={3} bg="blue.50" borderRadius="lg">
+                        <Box p={3} bg="navBg" borderRadius="lg">
                           <Text fontSize="sm" fontWeight="600" color="blue.700">
                             {products.length} produit{products.length > 1 ? 's' : ''}
                           </Text>
@@ -279,7 +279,7 @@ export default function SellerDashboard() {
                             {products.length > 0 ? '🟢 En ligne' : '🔴 Aucun'}
                           </Text>
                         </Box>
-                        <Box p={3} bg="green.50" borderRadius="lg">
+                        <Box p={3} bg="navBg" borderRadius="lg">
                           <Text fontSize="sm" fontWeight="600" color="green.700">
                             {shop ? 'Active' : 'Inactive'}
                           </Text>
@@ -293,7 +293,7 @@ export default function SellerDashboard() {
                 </Card>
 
                 {/* Accès rapide */}
-                <Card bg={cardBg} borderRadius="xl" shadow="sm">
+                <Card bg={navBg} borderRadius="xl" shadow="sm">
                   <CardBody p={4}>
                     <VStack spacing={3} align="stretch">
                       <HStack>
@@ -326,7 +326,7 @@ export default function SellerDashboard() {
                 </Card>
 
                 {/* Activité récente */}
-                <Card bg={cardBg} borderRadius="xl" shadow="sm">
+                <Card bg={navBg} borderRadius="xl" shadow="sm">
                   <CardBody p={4}>
                     <VStack spacing={3} align="stretch">
                       <HStack>
@@ -336,7 +336,7 @@ export default function SellerDashboard() {
                       
                       <VStack spacing={2} align="stretch">
                         {products.slice(0, 2).map((product, index) => (
-                          <HStack key={product.id} p={2} bg="gray.50" borderRadius="md">
+                          <HStack key={product.id} p={2} bg={navBg} borderRadius="md">
                             <Avatar 
                               size="sm" 
                               src={highRes(product.image_url) ?? PRODUCT_PLACEHOLDER}

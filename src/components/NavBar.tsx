@@ -363,6 +363,8 @@ export default function NavBar() {
 
               {/* Bouton Vendre */}
               <Button
+                as={RouterLink}
+                to="/seller"
                 variant="outline"
                 size="sm"
                 borderColor={brandColor}
@@ -435,15 +437,14 @@ export default function NavBar() {
                     <Avatar 
                       size="xs" 
                       name={user.display_name ?? user.phone} 
-                      bg={brandColor}
-                      color="white"
+                      color="navBg"
                       fontSize="2xs"
                       borderRadius="none"
                     />
                   </MenuButton>
                   <Portal>
                     <MenuList 
-                      bg={menuBg} 
+                      bg={navBg} 
                       borderColor={menuBorder}
                       borderRadius="none"
                       py={2}

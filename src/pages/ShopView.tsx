@@ -47,9 +47,8 @@ export default function ShopView() {
   const [reviewsOpen, setReviewsOpen] = useState(false)
   const [reviewCount, setReviewCount] = useState(0)
   const cardHeight = useBreakpointValue({ base: '140px', md: '200px' })
-  const pageBg = useColorModeValue('gray.50', 'gray.900')
-  const sectionBg = useColorModeValue('white', 'gray.800')
   const cardBorderColor = useColorModeValue('gray.100', 'gray.700')
+  const ctaBg = useColorModeValue('white', 'black')
 
   useEffect(() => {
     async function load() {
@@ -110,7 +109,7 @@ export default function ShopView() {
   if (!domain) return <Container py={8}>Nom de boutique manquant</Container>
 
   return (
-    <Box w="100vw" overflowX="hidden" bg={pageBg}>
+    <Box w="100vw" overflowX="hidden" bg={ctaBg}>
       {/* 🏞️ Hero section */}
       {shop?.banner_url ? (
         <Box
@@ -141,14 +140,14 @@ export default function ShopView() {
             px={4}
           >
             <Heading
-              color="white"
+              color="ctaBg"
               fontSize={{ base: '2xl', md: '4xl' }}
               fontWeight="700"
               textShadow="0px 3px 6px rgba(0,0,0,0.5)"
             >
               {shop.name || shop.domain}
             </Heading>
-            <Text color="whiteAlpha.900" mt={2} fontSize={{ base: 'sm', md: 'md' }}>
+            <Text color="ctaBg" mt={2} fontSize={{ base: 'sm', md: 'md' }}>
               Découvrez nos produits et créations uniques
             </Text>
           </Box>
@@ -167,14 +166,14 @@ export default function ShopView() {
               mb={10}
               p={{ base: 5, md: 8 }}
               borderRadius="2xl"
-              bg={sectionBg}
+              bg={ctaBg}
               boxShadow="sm"
               border="1px solid"
               borderColor={cardBorderColor}
               _hover={{ boxShadow: 'md', transition: '0.3s ease' }}
             >
               <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Heading size="lg" color="gray.800" fontWeight="700">
+                <Heading size="lg" color="ctaBg" fontWeight="700">
                   À propos de la boutique
                 </Heading>
                 <FollowButton id={String(shop.id)} />
@@ -183,7 +182,7 @@ export default function ShopView() {
               <Divider my={4} />
 
               <Text
-                color="gray.700"
+                color="ctaBg"
                 fontSize={{ base: 'sm', md: 'md' }}
                 lineHeight="tall"
                 whiteSpace="pre-line"
@@ -199,7 +198,7 @@ export default function ShopView() {
               mb={10}
               borderRadius="2xl"
               overflow="hidden"
-              bg={sectionBg}
+              bg={ctaBg}
               boxShadow="sm"
               border="1px solid"
               borderColor={cardBorderColor}
@@ -208,7 +207,7 @@ export default function ShopView() {
                 w="100%"
                 justifyContent="space-between"
                 onClick={() => setReviewsOpen(!reviewsOpen)}
-                bg={useColorModeValue('gray.50', 'gray.800')}
+                bg={ctaBg}
                 _hover={{ bg: useColorModeValue('gray.100', 'gray.700') }}
                 borderRadius="0"
                 py={5}
@@ -216,7 +215,7 @@ export default function ShopView() {
                 rightIcon={<Icon as={reviewsOpen ? ChevronUpIcon : ChevronDownIcon} boxSize={6} />}
               >
                 <HStack spacing={3}>
-                  <Text fontSize="lg" fontWeight="semibold" color="gray.800">
+                  <Text fontSize="lg" fontWeight="semibold" color="ctaBg">
                     Avis clients
                   </Text>
                   {reviewCount > 0 && (
@@ -228,7 +227,7 @@ export default function ShopView() {
               </Button>
 
               <Collapse in={reviewsOpen} animateOpacity>
-                <Box p={6} bg={useColorModeValue('gray.50', 'gray.900')}>
+                <Box p={6} bg={useColorModeValue('ctaBg', 'ctaBg')}>
                   <Tabs colorScheme="yellow" variant="soft-rounded">
                     <TabList mb={4}>
                       <Tab fontWeight={600}>Voir les avis</Tab>
@@ -242,7 +241,7 @@ export default function ShopView() {
                           css={{
                             '&::-webkit-scrollbar': { width: '6px' },
                             '&::-webkit-scrollbar-thumb': {
-                              background: '#bbb',
+                              background: 'ctaBg',
                               borderRadius: '10px',
                             },
                           }}
@@ -264,17 +263,15 @@ export default function ShopView() {
 
             {/* 🛒 Produits */}
             <Box
-              bg="white"
+              bg="ctaBg"
               p={{ base: 5, md: 8 }}
-              borderRadius="2xl"
-              boxShadow="md"
-              border="1px solid"
-              borderColor="gray.100"
+             
+              
             >
               <Heading
                 size="lg"
                 mb={8}
-                color="gray.800"
+                color="ctaBg"
                 textAlign="center"
                 fontWeight="700"
                 letterSpacing="wide"
@@ -284,7 +281,7 @@ export default function ShopView() {
 
               {products === null && <Spinner />}
               {products !== null && products.length === 0 && (
-                <Text color="gray.500" textAlign="center" py={8}>
+                <Text color="ctaBg" textAlign="center" py={8}>
                   Aucun produit disponible pour le moment.
                 </Text>
               )}
@@ -300,7 +297,7 @@ export default function ShopView() {
                         <Heading
                           size="md"
                           mb={5}
-                          color="gray.800"
+                          color="ctaBg"
                           textAlign="left"
                           borderLeft="4px solid #C19A6B"
                           pl={3}
@@ -348,7 +345,7 @@ export default function ShopView() {
                         <Heading
                           size="md"
                           mb={5}
-                          color="gray.800"
+                          color="ctaBg"
                           textAlign="left"
                           borderLeft="4px solid #C19A6B"
                           pl={3}

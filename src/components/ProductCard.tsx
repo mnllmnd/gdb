@@ -54,6 +54,7 @@ export default function ProductCard({
   const shopBadgeText = useColorModeValue('#111111', 'white')
   const accentColor = useColorModeValue('#111111', 'white')
   const hoverShadow = useColorModeValue('0 8px 25px rgba(0,0,0,0.15)', '0 8px 25px rgba(0,0,0,0.4)')
+  const ctaBg = useColorModeValue('white', 'black')
 
   const numericPrice = (() => {
     if (typeof price === 'number') return price
@@ -237,10 +238,10 @@ export default function ProductCard({
   return (
     <ScaleFade in={true} initialScale={0.95}>
       <Box
-        borderWidth="1px"
+        borderWidth="0.6px"
         borderRadius="none"
         overflow="hidden"
-        bg={cardBg}
+        bg={ctaBg}
         boxShadow="sm"
         transition="all 0.3s ease"
         _hover={{ 
@@ -261,7 +262,7 @@ export default function ProductCard({
         <Box 
           position="relative" 
           height={height} 
-          bg="gray.50" 
+          bg="ctaBg" 
           display="flex" 
           alignItems="center" 
           justifyContent="center" 
@@ -316,15 +317,15 @@ export default function ProductCard({
               left="0"
               right="0"
               bottom="0"
-              bg="blackAlpha.100"
+              bg="ctaBg"
               display="flex"
               alignItems="flex-end"
               justifyContent="flex-start"
               p={3}
             >
               <Badge 
-                bg="blackAlpha.800" 
-                color="white" 
+                bg="ctaBg" 
+                color="ctaBg" 
                 px={3} 
                 py={2}
                 borderRadius="none"
@@ -443,8 +444,8 @@ export default function ProductCard({
                   size="md"
                   height="42px"
                   variant="solid"
-                  bg={accentColor}
-                  color="white"
+                  bg={ctaBg}
+                  color="ctaBg"
                   isDisabled={stock != null && stock <= 0}
                   _hover={{ 
                     bg: '#333333',

@@ -218,11 +218,10 @@ function ShopsCarousel({ shops, title }: { shops: Shop[]; title: string }) {
                 key={shop.id}
                 to={shopHref}
                 position="relative"
-                bg="white"
+                bg="ctaBg"
                 borderRadius="lg"
                 overflow="hidden"
-                border="1px solid"
-                borderColor="gray.100"
+               
                 transition="all 0.3s ease"
                 _hover={{
                   transform: 'translateY(-8px)',
@@ -240,7 +239,7 @@ function ShopsCarousel({ shops, title }: { shops: Shop[]; title: string }) {
                   position="relative"
                   w="100%"
                   h="280px"
-                  bg="gray.50"
+                  bg="ctabg"
                   overflow="hidden"
                 >
                   {shop.logo_url ? (
@@ -395,7 +394,7 @@ export default function Home() {
   const textColor = useColorModeValue('gray.800', 'white')
   const borderColor = useColorModeValue('gray.200', 'gray.600')
   const secondaryTextColor = useColorModeValue('gray.600', 'gray.400')
-  const ctaBg = useColorModeValue('white', 'gray.700')
+  const ctaBg = useColorModeValue('white', 'black')
   const ctaColor = useColorModeValue('black', 'white')
 
   React.useEffect(() => {
