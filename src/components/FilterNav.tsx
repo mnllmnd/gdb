@@ -36,8 +36,7 @@ export default function FilterNav({
   onCategoryChange,
 }: FilterNavProps) {
   const isMobile = useBreakpointValue({ base: true, md: false })
-
-  const navBg = useColorModeValue('whiteAlpha.80', 'gray.900')
+ 
   const borderColor = useColorModeValue('gray.200', 'gray.700')
 
   // Couleurs principales adaptées au mode clair/sombre
@@ -48,7 +47,6 @@ export default function FilterNav({
 
   return (
     <Box
-      bg={navBg}
       borderBottom="1px solid"
       borderColor={borderColor}
       backdropFilter="blur(10px)"
@@ -150,7 +148,6 @@ export default function FilterNav({
                   </HStack>
                 </MenuButton>
                 <MenuList
-                  bg={navBg}
                   borderColor={borderColor}
                   minW="200px"
                   py={2}

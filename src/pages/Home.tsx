@@ -393,7 +393,6 @@ export default function Home() {
   const sectionBg = useColorModeValue('white', 'gray.800')
   const categoryBg = useColorModeValue('white', 'brand.900')
   const textColor = useColorModeValue('gray.800', 'white')
-  const pageBg = useColorModeValue('gray.50', 'gray.900')
   const borderColor = useColorModeValue('gray.200', 'gray.600')
   const secondaryTextColor = useColorModeValue('gray.600', 'gray.400')
   const ctaBg = useColorModeValue('white', 'gray.700')
@@ -548,7 +547,7 @@ export default function Home() {
   }
 
   return (
-    <Box minH="100vh" bg={pageBg}>
+    <Box minH="100vh">
       <AppTutorial />
       <FilterNav 
         view={currentView} 
