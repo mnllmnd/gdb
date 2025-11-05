@@ -239,7 +239,7 @@ function ShopsCarousel({ shops, title }: { shops: Shop[]; title: string }) {
                 <Box
                   position="relative"
                   w="100%"
-                  h="240px"
+                  h="280px"
                   bg="gray.50"
                   overflow="hidden"
                 >
@@ -247,12 +247,12 @@ function ShopsCarousel({ shops, title }: { shops: Shop[]; title: string }) {
                     <Image
                       src={shop.logo_url}
                       alt={shop.name}
-                      objectFit="contain"
+                      objectFit="cover"
                       w="100%"
                       h="100%"
-                      p={8}
+                      p={4}
                       transition="transform 0.3s ease"
-                      _hover={{ transform: 'scale(1.05)' }}
+                      _hover={{ transform: 'scale(1.08)' }}
                     />
                   ) : (
                     <Center h="100%" bg="gray.100">
