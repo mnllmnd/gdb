@@ -52,7 +52,7 @@ export default function ShopView() {
   const [reviewCount, setReviewCount] = useState(0)
   
   // Couleurs style Nike/Zara
-  const bgColor = useColorModeValue('white', 'gray.900')
+  const bgColor = useColorModeValue('white', 'black')
   const textPrimary = useColorModeValue('#111111', 'white')
   const textSecondary = useColorModeValue('#666666', 'gray.400')
   const accentColor = useColorModeValue('#111111', 'white')
@@ -150,7 +150,7 @@ export default function ShopView() {
             bg="linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.6))"
           >
             <Heading
-              color="white"
+              color={bgColor}
               fontSize={{ base: '3xl', md: '6xl' }} // Typographie plus grande
               fontWeight="900" // Font weight plus fort style Nike
               letterSpacing="tight"
@@ -160,9 +160,9 @@ export default function ShopView() {
             >
               {shop.name || shop.domain}
             </Heading>
-            <Text 
-              color="white" 
-              mt={4} 
+            <Text
+              color={bgColor}
+              mt={4}
               fontSize={{ base: 'lg', md: 'xl' }}
               fontWeight="500"
               letterSpacing="wide"
