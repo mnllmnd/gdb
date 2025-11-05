@@ -221,7 +221,7 @@ function ShopsCarousel({ shops, title }: { shops: Shop[]; title: string }) {
                 bg="ctaBg"
                 borderRadius="lg"
                 overflow="hidden"
-               
+                    
                 transition="all 0.3s ease"
                 _hover={{
                   transform: 'translateY(-8px)',
