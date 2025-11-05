@@ -37,15 +37,13 @@ import {
   useDisclosure,
   Image,
   AspectRatio,
-  Link as ChakraLink,
 } from '@chakra-ui/react'
 import { SearchIcon, CloseIcon, StarIcon, ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons'
 import { FiPackage, FiGrid, FiFilter, FiTrendingUp, FiMenu } from 'react-icons/fi'
-import { Link as RouterLink } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
 import api from '../services/api'
 
-// Composant Carrousel inspiré de HeroProductGrid
+// Composant Carrousel pour les produits
 function ProductsCarousel({ products, title, shopsMap }: { products: any[]; title: string; shopsMap: Record<string, any> }) {
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = React.useState(false)
@@ -71,8 +69,8 @@ function ProductsCarousel({ products, title, shopsMap }: { products: any[]; titl
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
-      const cardWidth = 300
-      const scrollAmount = cardWidth * 3.5
+      const cardWidth = 280 // Largeur approximative d'une carte
+      const scrollAmount = cardWidth * 2
       scrollRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth',
@@ -82,9 +80,6 @@ function ProductsCarousel({ products, title, shopsMap }: { products: any[]; titl
 
   const accentColor = useColorModeValue('#111111', 'white')
   const borderColor = useColorModeValue('#e5e5e5', 'gray.600')
-  const bg = useColorModeValue('white', '#0e0e0e')
-  const textColor = useColorModeValue('black', 'white')
-  const muted = useColorModeValue('gray.500', 'gray.400')
 
   return (
     <Box
@@ -108,7 +103,7 @@ function ProductsCarousel({ products, title, shopsMap }: { products: any[]; titl
         </HStack>
 
         {/* Indicateur de scroll */}
-        {products.length > 1 && (
+        {products.length > 4 && (
           <HStack spacing={2}>
             <Text fontSize="sm" color={useColorModeValue('#666666', 'gray.400')} fontWeight="500">
               Faites défiler
@@ -120,59 +115,61 @@ function ProductsCarousel({ products, title, shopsMap }: { products: any[]; titl
 
       {/* Contrôles de navigation */}
       <Box position="relative">
-        {canScrollLeft && isHovered && (
+        {canScrollLeft && (
           <IconButton
             aria-label="Précédent"
-            icon={<ChevronLeftIcon boxSize={8} />}
+            icon={<ChevronLeftIcon boxSize={6} />}
             position="absolute"
-            left={2}
+            left={-4}
             top="50%"
             transform="translateY(-50%)"
             zIndex={10}
-            bg={bg}
-            color={textColor}
-            boxShadow="xl"
-            borderRadius="full"
+            bg="white"
+            color="black"
+            border="1px solid"
+            borderColor={borderColor}
             size="lg"
-            opacity={0.95}
+            opacity={isHovered ? 1 : 0}
             _hover={{ 
-              opacity: 1, 
-              transform: 'translateY(-50%) scale(1.1)',
-              bg: accentColor,
-              color: 'white'
+              bg: "black", 
+              color: "white",
+              transform: "translateY(-50%) scale(1.1)" 
             }}
             onClick={() => scroll('left')}
-            transition="all 0.2s ease"
+            transition="all 0.3s ease"
+            boxShadow="xl"
+            borderRadius="none"
           />
         )}
 
-        {canScrollRight && isHovered && (
+        {canScrollRight && (
           <IconButton
             aria-label="Suivant"
-            icon={<ChevronRightIcon boxSize={8} />}
+            icon={<ChevronRightIcon boxSize={6} />}
             position="absolute"
-            right={2}
+            right={-4}
             top="50%"
             transform="translateY(-50%)"
             zIndex={10}
-            bg={bg}
-            color={textColor}
-            boxShadow="xl"
-            borderRadius="full"
+            bg="white"
+            color="black"
+            border="1px solid"
+            borderColor={borderColor}
             size="lg"
-            opacity={0.95}
+            opacity={isHovered ? 1 : 0}
             _hover={{ 
-              opacity: 1, 
-              transform: 'translateY(-50%) scale(1.1)',
-              bg: accentColor,
-              color: 'white'
+              bg: "black", 
+              color: "white",
+              transform: "translateY(-50%) scale(1.1)" 
             }}
             onClick={() => scroll('right')}
-            transition="all 0.2s ease"
+            transition="all 0.3s ease"
+            boxShadow="xl"
+            borderRadius="none"
           />
         )}
 
-        {/* Carrousel des produits - TOUJOURS activé */}
+        {/* Carrousel des produits */}
         <Box
           ref={scrollRef}
           display="flex"
@@ -204,7 +201,7 @@ function ProductsCarousel({ products, title, shopsMap }: { products: any[]; titl
                   shopId={shop?.id || p.shop_id || p.seller_id}
                   shopName={shop?.name}
                   shopDomain={shop?.domain}
-                  height={{ base: '320px', md: '380px' }}
+                  height={{ base: '320px', md: '380px' }} // Cartes plus volumineuses
                 />
               </Box>
             )
@@ -240,6 +237,15 @@ export default function Products() {
   const iconColor = useColorModeValue('#666666', 'gray.300')
   const hoverBorderColor = useColorModeValue('#111111','gray.400')
   const tertiaryText = useColorModeValue('#888888','gray.400')
+
+  // Configuration de grille pour les vues non-carrousel
+  const gridColumns = useBreakpointValue({ 
+    base: 'repeat(1, 1fr)', 
+    sm: 'repeat(2, 1fr)', 
+    md: 'repeat(3, 1fr)', 
+    lg: 'repeat(4, 1fr)',
+    xl: 'repeat(5, 1fr)'
+  })
 
   const isMobile = useBreakpointValue({ base: true, md: false })
 
@@ -754,10 +760,10 @@ export default function Products() {
           </Box>
         )}
 
-        {/* Produits sans catégorie - TOUJOURS en carrousel sur desktop */}
+        {/* Produits sans catégorie - Version carrousel pour desktop, grille pour mobile */}
         {(categorizedProducts[0] || []).length > 0 && (
           <Box mb={12}>
-            {!isMobile ? (
+            {!isMobile && (categorizedProducts[0] || []).length > 4 ? (
               <ProductsCarousel 
                 products={categorizedProducts[0] || []}
                 title="Découvertes"
@@ -768,16 +774,16 @@ export default function Products() {
                 <HStack spacing={4} mb={6} align="center">
                   <Box w="4px" h="24px" bg={accentColor} borderRadius="none" />
                   <VStack align="start" spacing={1}>
-                    <Heading size="md" fontWeight="700" color={textPrimary} letterSpacing="-0.5px">
+                    <Heading size={{ base: "md", md: "xl" }} fontWeight="700" color={textPrimary} letterSpacing="-0.5px">
                       Découvertes
                     </Heading>
-                    <Text color={textSecondary} fontSize="sm" fontWeight="400">
+                    <Text color={textSecondary} fontSize={{ base: "sm", md: "md" }} fontWeight="400">
                       {(categorizedProducts[0] || []).length} produit{(categorizedProducts[0] || []).length > 1 ? 's' : ''}
                     </Text>
                   </VStack>
                 </HStack>
 
-                <SimpleGrid columns={2} gap={4}>
+                <Grid templateColumns={gridColumns} gap={{ base: 4, md: 6 }}>
                   {(categorizedProducts[0] || []).map((p) => {
                     const shop = (shopsMap.byId && shopsMap.byId[String(p.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(p.seller_id)])
                     return (
@@ -793,24 +799,24 @@ export default function Products() {
                         shopId={shop?.id || p.shop_id || p.seller_id}
                         shopName={shop?.name}
                         shopDomain={shop?.domain}
-                        height="300px"
+                        height={{ base: '320px', md: '380px' }} // Cartes plus volumineuses
                       />
                     )
                   })}
-                </SimpleGrid>
+                </Grid>
               </>
             )}
           </Box>
         )}
 
-        {/* Produits par catégorie - TOUJOURS en carrousel sur desktop */}
+        {/* Produits par catégorie - Version carrousel pour desktop, grille pour mobile */}
         {categories && categories.length > 0 && (
           <VStack spacing={12} align="stretch">
             {categories
               .filter((c: any) => (categorizedProducts[c.id] || []).length > 0)
               .map((c: any) => (
                 <Box key={c.id} id={`category-${c.id}`}>
-                  {!isMobile ? (
+                  {!isMobile && (categorizedProducts[c.id] || []).length > 1 ? (
                     <ProductsCarousel 
                       products={categorizedProducts[c.id] || []}
                       title={c.name}
@@ -821,16 +827,16 @@ export default function Products() {
                       <HStack spacing={4} mb={6} align="center">
                         <Box w="4px" h="28px" bg={accentColor} borderRadius="none" />
                         <VStack align="start" spacing={1}>
-                          <Heading size="lg" fontWeight="700" color={textPrimary} letterSpacing="-0.5px">
+                          <Heading size={{ base: "lg", md: "2xl" }} fontWeight="700" color={textPrimary} letterSpacing="-0.5px">
                             {c.name}
                           </Heading>
-                          <Text color={textSecondary} fontSize="sm" fontWeight="400">
+                          <Text color={textSecondary} fontSize={{ base: "sm", md: "lg" }} fontWeight="400">
                             {(categorizedProducts[c.id] || []).length} produit{(categorizedProducts[c.id] || []).length > 1 ? 's' : ''}
                           </Text>
                         </VStack>
                       </HStack>
 
-                      <SimpleGrid columns={2} gap={4}>
+                      <Grid templateColumns={gridColumns} gap={{ base: 4, md: 6 }}>
                         {(categorizedProducts[c.id] || []).map((p) => {
                           const shop = (shopsMap.byId && shopsMap.byId[String(p.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(p.seller_id)])
                           return (
@@ -846,11 +852,11 @@ export default function Products() {
                               shopId={shop?.id || p.shop_id || p.seller_id}
                               shopName={shop?.name}
                               shopDomain={shop?.domain}
-                              height="300px"
+                              height={{ base: '320px', md: '380px' }} // Cartes plus volumineuses
                             />
                           )
                         })}
-                      </SimpleGrid>
+                      </Grid>
                     </>
                   )}
                 </Box>
@@ -863,35 +869,27 @@ export default function Products() {
 
   function renderPopularProducts() {
     return (
-      !isMobile ? (
-        <ProductsCarousel 
-          products={popularProducts}
-          title="Produits Populaires"
-          shopsMap={shopsMap}
-        />
-      ) : (
-        <SimpleGrid columns={2} gap={4}>
-          {popularProducts.map((p) => {
-            const shop = (shopsMap.byId && shopsMap.byId[String(p.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(p.seller_id)])
-            return (
-              <ProductCard
-                key={p.id}
-                id={String(p.id)}
-                title={p.title || p.name}
-                price={p.price ?? p.amount}
-                description={p.description}
-                image_url={p.image_url ?? p.product_image}
-                images={p.images}
-                quantity={p.quantity ?? p.quantite ?? p.stock ?? p.amount_available}
-                shopId={shop?.id || p.shop_id || p.seller_id}
-                shopName={shop?.name}
-                shopDomain={shop?.domain}
-                height="300px"
-              />
-            )
-          })}
-        </SimpleGrid>
-      )
+      <Grid templateColumns={gridColumns} gap={{ base: 4, md: 6 }}>
+        {popularProducts.map((p) => {
+          const shop = (shopsMap.byId && shopsMap.byId[String(p.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(p.seller_id)])
+          return (
+            <ProductCard
+              key={p.id}
+              id={String(p.id)}
+              title={p.title || p.name}
+              price={p.price ?? p.amount}
+              description={p.description}
+              image_url={p.image_url ?? p.product_image}
+              images={p.images}
+              quantity={p.quantity ?? p.quantite ?? p.stock ?? p.amount_available}
+              shopId={shop?.id || p.shop_id || p.seller_id}
+              shopName={shop?.name}
+              shopDomain={shop?.domain}
+              height={{ base: '320px', md: '380px' }} // Cartes plus volumineuses
+            />
+          )
+        })}
+      </Grid>
     )
   }
 
