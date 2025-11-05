@@ -73,7 +73,7 @@ const normalizeImages = (product: Product): string[] => {
   return []
 }
 
-// Composant Carrousel Boutiques Style Zara
+// Composant Carrousel Boutiques Style Zara/Nike
 function ShopsCarousel({ shops, title }: { shops: Shop[]; title: string }) {
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = React.useState(false)
@@ -99,8 +99,8 @@ function ShopsCarousel({ shops, title }: { shops: Shop[]; title: string }) {
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
-      const cardWidth = 150
-      const scrollAmount = cardWidth * 4
+      const cardWidth = 320
+      const scrollAmount = cardWidth * 2
       scrollRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth',
@@ -111,156 +111,236 @@ function ShopsCarousel({ shops, title }: { shops: Shop[]; title: string }) {
   return (
     <Box
       position="relative"
-      my={{ base: 8, md: 12 }}
+      my={{ base: 12, md: 16 }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Titre section */}
-      <Box px={{ base: 4, md: 8 }} mb={6}>
+      {/* En-tête de section style Nike */}
+      <Box px={{ base: 4, md: 8 }} mb={8}>
         <Heading
           as="h2"
-          fontSize={{ base: 'xl', md: '3xl' }}
-          fontWeight="300"
+          fontSize={{ base: '2xl', md: '4xl' }}
+          fontWeight="700"
           letterSpacing="tight"
           color="black"
           textTransform="uppercase"
+          position="relative"
+          display="inline-block"
+          _after={{
+            content: '""',
+            position: 'absolute',
+            bottom: '-8px',
+            left: '0',
+            width: '60px',
+            height: '3px',
+            bg: 'black',
+          }}
         >
           {title}
         </Heading>
       </Box>
 
-      {/* Bouton précédent */}
-      {canScrollLeft && isHovered && (
-        <IconButton
-          aria-label="Précédent"
-          icon={<ChevronLeftIcon boxSize={7} />}
-          position="absolute"
-          left={2}
-          top="55%"
-          transform="translateY(-50%)"
-          zIndex={10}
-          bg="white"
-          color="black"
-          border="1px solid"
-          borderColor="gray.200"
-          size="md"
-          opacity={0.9}
-          _hover={{ opacity: 1, borderColor: 'black' }}
-          onClick={() => scroll('left')}
-          transition="all 0.2s ease"
-          boxShadow="sm"
-        />
-      )}
+      {/* Contrôles de navigation */}
+      <Box position="relative">
+        {canScrollLeft && (
+          <IconButton
+            aria-label="Précédent"
+            icon={<ChevronLeftIcon boxSize={6} />}
+            position="absolute"
+            left={-2}
+            top="50%"
+            transform="translateY(-50%)"
+            zIndex={10}
+            bg="white"
+            color="black"
+            border="1px solid"
+            borderColor="gray.300"
+            size="lg"
+            opacity={isHovered ? 0.9 : 0}
+            _hover={{ 
+              bg: "black", 
+              color: "white",
+              transform: "translateY(-50%) scale(1.1)" 
+            }}
+            onClick={() => scroll('left')}
+            transition="all 0.3s ease"
+            boxShadow="lg"
+            borderRadius="full"
+          />
+        )}
 
-      {/* Bouton suivant */}
-      {canScrollRight && isHovered && (
-        <IconButton
-          aria-label="Suivant"
-          icon={<ChevronRightIcon boxSize={7} />}
-          position="absolute"
-          right={2}
-          top="55%"
-          transform="translateY(-50%)"
-          zIndex={10}
-          bg="white"
-          color="black"
-          border="1px solid"
-          borderColor="gray.200"
-          size="md"
-          opacity={0.9}
-          _hover={{ opacity: 1, borderColor: 'black' }}
-          onClick={() => scroll('right')}
-          transition="all 0.2s ease"
-          boxShadow="sm"
-        />
-      )}
+        {canScrollRight && (
+          <IconButton
+            aria-label="Suivant"
+            icon={<ChevronRightIcon boxSize={6} />}
+            position="absolute"
+            right={-2}
+            top="50%"
+            transform="translateY(-50%)"
+            zIndex={10}
+            bg="white"
+            color="black"
+            border="1px solid"
+            borderColor="gray.300"
+            size="lg"
+            opacity={isHovered ? 0.9 : 0}
+            _hover={{ 
+              bg: "black", 
+              color: "white",
+              transform: "translateY(-50%) scale(1.1)" 
+            }}
+            onClick={() => scroll('right')}
+            transition="all 0.3s ease"
+            boxShadow="lg"
+            borderRadius="full"
+          />
+        )}
 
-      {/* Carrousel */}
-      <Box
-        ref={scrollRef}
-        display="flex"
-        overflowX="auto"
-        gap={{ base: 3, md: 4 }}
-        px={{ base: 4, md: 8 }}
-        css={{
-          scrollbarWidth: 'none',
-          '&::-webkit-scrollbar': { display: 'none' },
-        }}
-      >
-        {shops.map((shop) => {
-          const shopHref = shop.domain ? `/shop/${shop.domain}` : `/shop/${shop.id}`
-          
-          return (
-            <Box
-              as={RouterLink}
-              key={shop.id}
-              to={shopHref}
-              flexShrink={0}
-              w={{ base: '120px', md: '140px' }}
-              cursor="pointer"
-              _hover={{ textDecoration: 'none' }}
-            >
-              <VStack spacing={3} align="center">
-                {/* Logo boutique */}
+        {/* Carrousel des boutiques style produit */}
+        <Box
+          ref={scrollRef}
+          display="flex"
+          overflowX="auto"
+          gap={6}
+          px={{ base: 4, md: 8 }}
+          py={2}
+          css={{
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': { display: 'none' },
+          }}
+        >
+          {shops.map((shop) => {
+            const shopHref = shop.domain ? `/shop/${shop.domain}` : `/shop/${shop.id}`
+            
+            return (
+              <Box
+                as={RouterLink}
+                key={shop.id}
+                to={shopHref}
+                position="relative"
+                bg="white"
+                borderRadius="lg"
+                overflow="hidden"
+                border="1px solid"
+                borderColor="gray.100"
+                transition="all 0.3s ease"
+                _hover={{
+                  transform: 'translateY(-8px)',
+                  boxShadow: 'xl',
+                  borderColor: 'gray.200',
+                  textDecoration: 'none'
+                }}
+                cursor="pointer"
+                flexShrink={0}
+                w={{ base: '280px', md: '320px' }}
+                minW={{ base: '280px', md: '320px' }}
+              >
+                {/* Container image */}
                 <Box
-                  w={{ base: '100px', md: '120px' }}
-                  h={{ base: '100px', md: '120px' }}
-                  borderRadius="sm"
+                  position="relative"
+                  w="100%"
+                  h="240px"
+                  bg="gray.50"
                   overflow="hidden"
-                  bg="gray.100"
-                  transition="opacity 0.3s ease"
-                  _hover={{ opacity: 0.85 }}
                 >
                   {shop.logo_url ? (
                     <Image
                       src={shop.logo_url}
                       alt={shop.name}
-                      objectFit="cover"
+                      objectFit="contain"
                       w="100%"
                       h="100%"
+                      p={8}
+                      transition="transform 0.3s ease"
+                      _hover={{ transform: 'scale(1.05)' }}
                     />
                   ) : (
-                    <Center h="100%" bg="gray.200">
+                    <Center h="100%" bg="gray.100">
                       <Text
-                        fontSize="3xl"
-                        fontWeight="700"
-                        color="gray.500"
+                        fontSize="6xl"
+                        fontWeight="900"
+                        color="gray.400"
                         textTransform="uppercase"
+                        opacity={0.5}
                       >
                         {shop.name?.charAt(0) || '?'}
                       </Text>
                     </Center>
                   )}
+                  
+                  {/* Overlay au hover */}
+                  <Box
+                    position="absolute"
+                    inset={0}
+                    bg="black"
+                    opacity={0}
+                    transition="opacity 0.3s ease"
+                    _hover={{ opacity: 0.1 }}
+                  />
+                  
+                  {/* Badge followers en overlay */}
+                  {shop.followers && shop.followers > 0 && (
+                    <Badge
+                      position="absolute"
+                      top={4}
+                      right={4}
+                      bg="black"
+                      color="white"
+                      px={3}
+                      py={1}
+                      borderRadius="full"
+                      fontSize="xs"
+                      fontWeight="600"
+                      letterSpacing="wide"
+                      zIndex={2}
+                    >
+                      {shop.followers.toLocaleString()}
+                    </Badge>
+                  )}
                 </Box>
 
-                {/* Nom boutique */}
-                <VStack spacing={0} align="center" w="100%">
-                  <Text
-                    fontSize={{ base: 'xs', md: 'sm' }}
-                    fontWeight="400"
-                    color="black"
-                    letterSpacing="wide"
-                    textTransform="uppercase"
-                    noOfLines={2}
-                    textAlign="center"
-                    lineHeight="1.3"
-                  >
-                    {shop.name}
-                  </Text>
-                  {shop.followers && shop.followers > 0 && (
-                    <Text
-                      fontSize="xs"
-                      color="gray.500"
-                      mt={1}
+                {/* Informations de la boutique */}
+                <Box p={6}>
+                  <VStack spacing={3} align="start">
+                    {/* Nom de la boutique */}
+                    <Heading
+                      as="h3"
+                      fontSize="xl"
+                      fontWeight="700"
+                      color="black"
+                      letterSpacing="tight"
+                      textTransform="uppercase"
+                      lineHeight="1.2"
+                      noOfLines={2}
                     >
-                      {shop.followers} abonné{shop.followers > 1 ? 's' : ''}
-                    </Text>
-                  )}
-                </VStack>
-              </VStack>
-            </Box>
-          )
-        })}
+                      {shop.name}
+                    </Heading>
+
+                    {/* Description / CTA */}
+                    <HStack justify="space-between" w="100%" pt={2}>
+                      <Text
+                        fontSize="sm"
+                        fontWeight="600"
+                        color="gray.600"
+                        textTransform="uppercase"
+                        letterSpacing="wide"
+                      >
+                        Visiter la boutique
+                      </Text>
+                      <Text
+                        fontSize="lg"
+                        fontWeight="700"
+                        color="black"
+                      >
+                        →
+                      </Text>
+                    </HStack>
+                  </VStack>
+                </Box>
+              </Box>
+            )
+          })}
+        </Box>
       </Box>
     </Box>
   )
