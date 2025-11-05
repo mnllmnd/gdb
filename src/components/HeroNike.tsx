@@ -32,7 +32,7 @@ const HeroNike: React.FC = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex(prev => (prev + 1) % images.length)
-    }, 5000)
+    }, 3000)
     return () => clearInterval(interval)
   }, [])
 
@@ -40,7 +40,7 @@ const HeroNike: React.FC = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setDesktopSet(prev => (prev + 1) % 2) // Alterne entre 2 sets d'images
-    }, 6000)
+    }, 3000)
     return () => clearInterval(interval)
   }, [])
 
