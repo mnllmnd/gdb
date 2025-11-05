@@ -2,6 +2,7 @@ import express from 'express'
 import { query } from '../db.js'
 import { authenticate } from '../middleware/auth.js'
 import cache from '../cache.js'
+import tfidf from '../tfidf_cache.js' // Correction du chemin d'import
 import dotenv from 'dotenv'
 dotenv.config()
 import fs from 'fs'
@@ -175,6 +176,132 @@ router.get('/cache/verify', async (req, res) => {
   } catch (err) {
     console.error('Failed to verify cache vs DB:', err)
     return res.status(500).json({ error: 'Failed to verify cache vs DB', details: err.message })
+  }
+})
+
+// ✅ Route pour rafraîchir le cache TF-IDF
+router.post('/tfidf/refresh', async (req, res) => {
+  const adminToken = process.env.ADMIN_TOKEN
+  const providedToken = req.headers['x-admin-token'] || req.body?.admin_token
+  let allowed = false
+  if (req.user && req.user.role === 'admin') allowed = true
+  if (!allowed && adminToken && providedToken && String(providedToken) === String(adminToken)) allowed = true
+  if (!allowed) return res.status(403).json({ error: 'Forbidden' })
+
+  try {
+    const success = await tfidf.forceRefresh()
+    const cacheInfo = tfidf.getCacheInfo()
+    
+    if (success) {
+      res.json({
+        success: true,
+        message: 'TF-IDF cache refreshed successfully',
+        cacheInfo
+      })
+    } else {
+      res.status(500).json({
+        success: false,
+        message: 'Failed to refresh TF-IDF cache',
+        cacheInfo
+      })
+    }
+  } catch (error) {
+    console.error('TF-IDF cache refresh failed:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Error refreshing TF-IDF cache',
+      error: error.message,
+      cacheInfo: tfidf.getCacheInfo()
+    })
+  }
+})
+
+// ✅ Route pour voir l'état du cache TF-IDF
+router.get('/tfidf/info', async (req, res) => {
+  const adminToken = process.env.ADMIN_TOKEN
+  const providedToken = req.headers['x-admin-token'] || req.query?.admin_token
+  let allowed = false
+  if (req.user && req.user.role === 'admin') allowed = true
+  if (!allowed && adminToken && providedToken && String(providedToken) === String(adminToken)) allowed = true
+  if (!allowed) return res.status(403).json({ error: 'Forbidden' })
+
+  try {
+    const cacheInfo = tfidf.getCacheInfo()
+    res.json({
+      success: true,
+      cacheInfo
+    })
+  } catch (error) {
+    console.error('Failed to get TF-IDF cache info:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Error getting TF-IDF cache info',
+      error: error.message
+    })
+  }
+})
+
+// ✅ Route pour vérifier la cohérence TF-IDF vs Base de données
+router.get('/tfidf/verify', async (req, res) => {
+  const adminToken = process.env.ADMIN_TOKEN
+  const providedToken = req.headers['x-admin-token'] || req.query?.admin_token
+  let allowed = false
+  if (req.user && req.user.role === 'admin') allowed = true
+  if (!allowed && adminToken && providedToken && String(providedToken) === String(adminToken)) allowed = true
+  if (!allowed) return res.status(403).json({ error: 'Forbidden' })
+
+  try {
+    // Compter les produits dans la base de données (avec les mêmes critères)
+    const dbResult = await query(`
+      SELECT COUNT(*)::int AS count 
+      FROM products 
+      WHERE price IS NOT NULL 
+        AND quantity > 0
+    `)
+    const dbCount = Number(dbResult.rows[0]?.count || 0)
+    
+    // Compter les produits dans le cache TF-IDF
+    const tfidfProducts = tfidf.getProducts()
+    const tfidfCount = tfidfProducts.length
+    
+    // Vérifier les IDs manquants
+    const dbIdsResult = await query(`
+      SELECT id 
+      FROM products 
+      WHERE price IS NOT NULL 
+        AND quantity > 0
+      ORDER BY id
+    `)
+    const dbIds = new Set(dbIdsResult.rows.map(row => row.id))
+    const tfidfIds = new Set(tfidfProducts.map(p => p.id))
+    
+    const missingInTfidf = Array.from(dbIds).filter(id => !tfidfIds.has(id))
+    const extraInTfidf = Array.from(tfidfIds).filter(id => !dbIds.has(id))
+    
+    const cacheInfo = tfidf.getCacheInfo()
+    
+    res.json({
+      success: true,
+      counts: {
+        database: dbCount,
+        tfidf: tfidfCount,
+        match: dbCount === tfidfCount
+      },
+      discrepancies: {
+        missingInTfidf,
+        extraInTfidf,
+        totalDiscrepancies: missingInTfidf.length + extraInTfidf.length
+      },
+      cacheInfo,
+      criteria: "products with price NOT NULL and quantity > 0"
+    })
+  } catch (error) {
+    console.error('TF-IDF verification failed:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Error verifying TF-IDF cache',
+      error: error.message
+    })
   }
 })
 
