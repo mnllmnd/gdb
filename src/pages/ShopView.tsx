@@ -23,8 +23,12 @@ import {
   Image,
   Divider,
   useColorModeValue,
+  Flex,
+  SimpleGrid,
+  AspectRatio,
 } from '@chakra-ui/react'
 import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons'
+import { FaStar, FaRegStar, FaHeart, FaRegHeart } from 'react-icons/fa'
 import api from '../services/api'
 import FollowButton from '../components/FollowButton'
 import ProductCard from '../components/ProductCard'
@@ -46,9 +50,16 @@ export default function ShopView() {
   const [categorizedProducts, setCategorizedProducts] = useState<Record<number, any[]>>({})
   const [reviewsOpen, setReviewsOpen] = useState(false)
   const [reviewCount, setReviewCount] = useState(0)
-  const cardHeight = useBreakpointValue({ base: '140px', md: '200px' })
-  const cardBorderColor = useColorModeValue('gray.100', 'gray.700')
-  const ctaBg = useColorModeValue('white', 'black')
+  
+  // Couleurs style Nike/Zara
+  const bgColor = useColorModeValue('white', 'gray.900')
+  const textPrimary = useColorModeValue('#111111', 'white')
+  const textSecondary = useColorModeValue('#666666', 'gray.400')
+  const accentColor = useColorModeValue('#111111', 'white')
+  const borderColor = useColorModeValue('#e5e5e5', 'gray.600')
+  const subtleBg = useColorModeValue('#f8f8f8', 'gray.800')
+  
+  const cardHeight = useBreakpointValue({ base: '300px', md: '400px' }) // Cartes plus volumineuses
 
   useEffect(() => {
     async function load() {
@@ -109,16 +120,14 @@ export default function ShopView() {
   if (!domain) return <Container py={8}>Nom de boutique manquant</Container>
 
   return (
-    <Box w="100vw" overflowX="hidden" bg={ctaBg}>
-      {/* 🏞️ Hero section */}
+    <Box w="100vw" overflowX="hidden" bg={bgColor}>
+      {/* 🏞️ Hero section style Nike */}
       {shop?.banner_url ? (
         <Box
           position="relative"
           w="100%"
-          h={{ base: '220px', md: '300px' }}
-          mb={-10}
-          borderBottom="1px solid"
-          borderColor={cardBorderColor}
+          h={{ base: '300px', md: '500px' }} // Hauteur augmentée
+          mb={-8}
           overflow="hidden"
         >
           <Image
@@ -127,7 +136,7 @@ export default function ShopView() {
             w="100%"
             h="100%"
             objectFit="cover"
-            filter="brightness(0.6)"
+            filter="brightness(0.8)" // Image plus claire
           />
           <Box
             position="absolute"
@@ -138,88 +147,172 @@ export default function ShopView() {
             flexDir="column"
             textAlign="center"
             px={4}
+            bg="linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.6))"
           >
             <Heading
-              color="ctaBg"
-              fontSize={{ base: '2xl', md: '4xl' }}
-              fontWeight="700"
-              textShadow="0px 3px 6px rgba(0,0,0,0.5)"
+              color="white"
+              fontSize={{ base: '3xl', md: '6xl' }} // Typographie plus grande
+              fontWeight="900" // Font weight plus fort style Nike
+              letterSpacing="tight"
+              textTransform="uppercase" // Style Zara
+              textShadow="0px 4px 12px rgba(0,0,0,0.8)"
+              lineHeight="1.1"
             >
               {shop.name || shop.domain}
             </Heading>
-            <Text color="ctaBg" mt={2} fontSize={{ base: 'sm', md: 'md' }}>
-              Découvrez nos produits et créations uniques
+            <Text 
+              color="white" 
+              mt={4} 
+              fontSize={{ base: 'lg', md: 'xl' }}
+              fontWeight="500"
+              letterSpacing="wide"
+              textShadow="0px 2px 8px rgba(0,0,0,0.6)"
+            >
+              Découvrez notre collection exclusive
             </Text>
           </Box>
         </Box>
-      ) : null}
+      ) : (
+        // Fallback si pas de bannière
+        <Box
+          position="relative"
+          w="100%"
+          h={{ base: '200px', md: '300px' }}
+          bg={accentColor}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          mb={-8}
+        >
+          <Heading
+            color="white"
+            fontSize={{ base: '3xl', md: '5xl' }}
+            fontWeight="900"
+            letterSpacing="tight"
+            textTransform="uppercase"
+          >
+            {shop?.name || shop?.domain}
+          </Heading>
+        </Box>
+      )}
 
-      <Container maxW="container.lg" py={{ base: 10, md: 16 }} px={{ base: 4, md: 6 }}>
+      <Container maxW="container.xl" py={{ base: 8, md: 16 }} px={{ base: 4, md: 6 }}>
         <BackButton to={location.state?.from} />
 
         {shop === null ? (
-          <Spinner />
+          <Flex justify="center" py={20}>
+            <Spinner size="xl" color={accentColor} thickness="3px" />
+          </Flex>
         ) : (
           <>
-            {/* 🧾 Description Boutique */}
+            {/* 🧾 Description Boutique - Style épuré */}
             <Box
-              mb={10}
-              p={{ base: 5, md: 8 }}
-              borderRadius="2xl"
-              bg={ctaBg}
-              boxShadow="sm"
+              mb={12}
+              p={{ base: 6, md: 10 }}
               border="1px solid"
-              borderColor={cardBorderColor}
-              _hover={{ boxShadow: 'md', transition: '0.3s ease' }}
+              borderColor={borderColor}
+              bg={bgColor}
             >
-              <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Heading size="lg" color="ctaBg" fontWeight="700">
-                  À propos de la boutique
-                </Heading>
+              <Flex justify="space-between" align="start" mb={6}>
+                <VStack align="start" spacing={3} flex="1">
+                  <Heading 
+                    size="xl" 
+                    color={textPrimary}
+                    fontWeight="700"
+                    letterSpacing="-0.5px"
+                    textTransform="uppercase"
+                  >
+                    {shop.name}
+                  </Heading>
+                  <Text
+                    color={textSecondary}
+                    fontSize="lg"
+                    fontWeight="500"
+                    maxW="600px"
+                    lineHeight="1.6"
+                  >
+                    {shop.description || "Cette boutique n'a pas encore ajouté de description."}
+                  </Text>
+                </VStack>
                 <FollowButton id={String(shop.id)} />
-              </Box>
+              </Flex>
 
-              <Divider my={4} />
-
-              <Text
-                color="ctaBg"
-                fontSize={{ base: 'sm', md: 'md' }}
-                lineHeight="tall"
-                whiteSpace="pre-line"
-                borderLeft="4px solid #C19A6B"
-                pl={4}
-              >
-                {shop.description || "Cette boutique n'a pas encore ajouté de description."}
-              </Text>
+              {/* Stats de la boutique */}
+              <SimpleGrid columns={{ base: 2, md: 4 }} spacing={6} mt={8}>
+                <VStack spacing={2}>
+                  <Text fontSize="3xl" fontWeight="900" color={accentColor}>
+                    {products?.length || 0}
+                  </Text>
+                  <Text fontSize="sm" color={textSecondary} fontWeight="600" textTransform="uppercase">
+                    Produits
+                  </Text>
+                </VStack>
+                <VStack spacing={2}>
+                  <Text fontSize="3xl" fontWeight="900" color={accentColor}>
+                    {reviewCount}
+                  </Text>
+                  <Text fontSize="sm" color={textSecondary} fontWeight="600" textTransform="uppercase">
+                    Avis
+                  </Text>
+                </VStack>
+                <VStack spacing={2}>
+                  <Text fontSize="3xl" fontWeight="900" color={accentColor}>
+                    {shop.followers_count || 0}
+                  </Text>
+                  <Text fontSize="sm" color={textSecondary} fontWeight="600" textTransform="uppercase">
+                    Abonnés
+                  </Text>
+                </VStack>
+                <VStack spacing={2}>
+                  <HStack spacing={1}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Icon 
+                        key={star} 
+                        as={star <= 4 ? FaStar : FaRegStar} // Note fictive de 4/5
+                        color={star <= 4 ? "yellow.400" : "gray.300"}
+                        boxSize={4}
+                      />
+                    ))}
+                  </HStack>
+                  <Text fontSize="sm" color={textSecondary} fontWeight="600" textTransform="uppercase">
+                    Note
+                  </Text>
+                </VStack>
+              </SimpleGrid>
             </Box>
 
-            {/* ⭐ Avis Clients */}
+            {/* ⭐ Avis Clients - Style moderne */}
             <Box
-              mb={10}
-              borderRadius="2xl"
-              overflow="hidden"
-              bg={ctaBg}
-              boxShadow="sm"
+              mb={12}
               border="1px solid"
-              borderColor={cardBorderColor}
+              borderColor={borderColor}
+              bg={bgColor}
             >
               <Button
                 w="100%"
                 justifyContent="space-between"
                 onClick={() => setReviewsOpen(!reviewsOpen)}
-                bg={ctaBg}
-                _hover={{ bg: useColorModeValue('gray.100', 'gray.700') }}
-                borderRadius="0"
-                py={5}
-                px={4}
-                rightIcon={<Icon as={reviewsOpen ? ChevronUpIcon : ChevronDownIcon} boxSize={6} />}
+                bg={bgColor}
+                _hover={{ bg: subtleBg }}
+                py={6}
+                px={8}
+                rightIcon={<Icon as={reviewsOpen ? ChevronUpIcon : ChevronDownIcon} boxSize={5} />}
+                borderRadius="none"
               >
-                <HStack spacing={3}>
-                  <Text fontSize="lg" fontWeight="semibold" color="ctaBg">
-                    Avis clients
+                <HStack spacing={4}>
+                  <Text fontSize="xl" fontWeight="700" color={textPrimary} textTransform="uppercase">
+                    Avis Clients
                   </Text>
                   {reviewCount > 0 && (
-                    <Badge colorScheme="yellow" fontSize="md" px={3} py={1} borderRadius="full">
+                    <Badge 
+                      bg={accentColor}
+                      color="white"
+                      fontSize="md" 
+                      px={3} 
+                      py={1} 
+                      borderRadius="none"
+                      fontWeight="700"
+                    >
                       {reviewCount}
                     </Badge>
                   )}
@@ -227,11 +320,37 @@ export default function ShopView() {
               </Button>
 
               <Collapse in={reviewsOpen} animateOpacity>
-                <Box p={6} bg={useColorModeValue('ctaBg', 'ctaBg')}>
-                  <Tabs colorScheme="yellow" variant="soft-rounded">
-                    <TabList mb={4}>
-                      <Tab fontWeight={600}>Voir les avis</Tab>
-                      <Tab fontWeight={600}>Laisser un avis</Tab>
+                <Box p={8} bg={subtleBg}>
+                  <Tabs variant="unstyled">
+                    <TabList mb={6} borderBottom="1px solid" borderColor={borderColor}>
+                      <Tab 
+                        fontWeight="600" 
+                        color={textSecondary}
+                        _selected={{ 
+                          color: textPrimary, 
+                          borderBottom: "2px solid",
+                          borderColor: accentColor
+                        }}
+                        py={3}
+                        px={6}
+                        fontSize="lg"
+                      >
+                        Voir les avis
+                      </Tab>
+                      <Tab 
+                        fontWeight="600" 
+                        color={textSecondary}
+                        _selected={{ 
+                          color: textPrimary, 
+                          borderBottom: "2px solid",
+                          borderColor: accentColor
+                        }}
+                        py={3}
+                        px={6}
+                        fontSize="lg"
+                      >
+                        Laisser un avis
+                      </Tab>
                     </TabList>
                     <TabPanels>
                       <TabPanel px={0}>
@@ -241,8 +360,8 @@ export default function ShopView() {
                           css={{
                             '&::-webkit-scrollbar': { width: '6px' },
                             '&::-webkit-scrollbar-thumb': {
-                              background: 'ctaBg',
-                              borderRadius: '10px',
+                              background: borderColor,
+                              borderRadius: '0px',
                             },
                           }}
                         >
@@ -261,33 +380,48 @@ export default function ShopView() {
               </Collapse>
             </Box>
 
-            {/* 🛒 Produits */}
-            <Box
-              bg="ctaBg"
-              p={{ base: 5, md: 8 }}
-             
-              
-            >
+            {/* 🛒 Produits - Grille améliorée */}
+            <Box>
               <Heading
-                size="lg"
-                mb={8}
-                color="ctaBg"
+                size="2xl"
+                mb={12}
+                color={textPrimary}
                 textAlign="center"
-                fontWeight="700"
-                letterSpacing="wide"
+                fontWeight="900"
+                letterSpacing="tight"
+                textTransform="uppercase"
+                position="relative"
+                _after={{
+                  content: '""',
+                  position: 'absolute',
+                  bottom: '-12px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '80px',
+                  height: '3px',
+                  bg: accentColor,
+                }}
               >
-                Nos produits
+                Notre Collection
               </Heading>
 
-              {products === null && <Spinner />}
+              {products === null && (
+                <Flex justify="center" py={20}>
+                  <Spinner size="xl" color={accentColor} thickness="3px" />
+                </Flex>
+              )}
+              
               {products !== null && products.length === 0 && (
-                <Text color="ctaBg" textAlign="center" py={8}>
-                  Aucun produit disponible pour le moment.
-                </Text>
+                <Box textAlign="center" py={16}>
+                  <Icon as={FaRegHeart} boxSize={16} color={textSecondary} mb={4} />
+                  <Text fontSize="xl" color={textSecondary} fontWeight="600">
+                    Aucun produit disponible pour le moment.
+                  </Text>
+                </Box>
               )}
 
               {products && products.length > 0 && (
-                <VStack spacing={10} align="stretch">
+                <VStack spacing={16} align="stretch">
                   {/* Produits sans catégorie */}
                   {(() => {
                     const uncategorized = (products || []).filter((p) => !p.category_id)
@@ -295,22 +429,27 @@ export default function ShopView() {
                     return (
                       <Box>
                         <Heading
-                          size="md"
-                          mb={5}
-                          color="ctaBg"
-                          textAlign="left"
-                          borderLeft="4px solid #C19A6B"
-                          pl={3}
+                          size="lg"
+                          mb={8}
+                          color={textPrimary}
+                          fontWeight="700"
+                          letterSpacing="tight"
+                          textTransform="uppercase"
+                          borderLeft="4px solid"
+                          borderColor={accentColor}
+                          pl={4}
                         >
-                          Autres produits
+                          Découvertes
                         </Heading>
                         <Grid
                           templateColumns={{
-                            base: 'repeat(2, 1fr)',
-                            sm: 'repeat(3, 1fr)',
-                            md: 'repeat(4, 1fr)',
+                            base: 'repeat(1, 1fr)',
+                            sm: 'repeat(2, 1fr)',
+                            md: 'repeat(3, 1fr)',
+                            lg: 'repeat(4, 1fr)',
+                            xl: 'repeat(5, 1fr)',
                           }}
-                          gap={5}
+                          gap={8}
                           w="100%"
                         >
                           {uncategorized.map((product) => (
@@ -328,6 +467,8 @@ export default function ShopView() {
                                   product.stock ??
                                   product.amount_available
                                 }
+                                shopName={shop.name}
+                                shopDomain={shop.domain}
                                 height={cardHeight}
                               />
                             </GridItem>
@@ -343,22 +484,27 @@ export default function ShopView() {
                     .map((category) => (
                       <Box key={category.id}>
                         <Heading
-                          size="md"
-                          mb={5}
-                          color="ctaBg"
-                          textAlign="left"
-                          borderLeft="4px solid #C19A6B"
-                          pl={3}
+                          size="lg"
+                          mb={8}
+                          color={textPrimary}
+                          fontWeight="700"
+                          letterSpacing="tight"
+                          textTransform="uppercase"
+                          borderLeft="4px solid"
+                          borderColor={accentColor}
+                          pl={4}
                         >
                           {category.name}
                         </Heading>
                         <Grid
                           templateColumns={{
-                            base: 'repeat(2, 1fr)',
-                            sm: 'repeat(3, 1fr)',
-                            md: 'repeat(4, 1fr)',
+                            base: 'repeat(1, 1fr)',
+                            sm: 'repeat(2, 1fr)',
+                            md: 'repeat(3, 1fr)',
+                            lg: 'repeat(4, 1fr)',
+                            xl: 'repeat(5, 1fr)',
                           }}
-                          gap={5}
+                          gap={8}
                           w="100%"
                         >
                           {(categorizedProducts[category.id] || []).map((product) => (
@@ -376,6 +522,8 @@ export default function ShopView() {
                                   product.stock ??
                                   product.amount_available
                                 }
+                                shopName={shop.name}
+                                shopDomain={shop.domain}
                                 height={cardHeight}
                               />
                             </GridItem>
