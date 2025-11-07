@@ -87,7 +87,7 @@ router.get('/:id', async (req, res) => {
 
 // Create product (seller)
 router.post('/', authenticate, requireRole('seller'), async (req, res) => {
-  const { title, description, price, image_url, category_id, quantity, images } = req.body
+  const { title, description, price, image_url, category_id, quantity, images, discount, original_price } = req.body
   try {
     // ensure the seller has a shop before allowing product creation
     const shopCheck = await query('SELECT id FROM shops WHERE owner_id = $1', [req.user.id])
@@ -105,11 +105,21 @@ router.post('/', authenticate, requireRole('seller'), async (req, res) => {
 
     // Log incoming payload and final params for easier debugging when something goes wrong
     console.debug('Creating product, payload:', { title, description, price, image_url, category_id, quantity, userId: req.user.id })
-  const params = [cleanedTitle, cleanedDescription || null, parsedPrice, image_url || null, category_id, req.user.id, qty]
+    const params = [
+      cleanedTitle, 
+      cleanedDescription || null, 
+      parsedPrice, 
+      original_price || parsedPrice,  // Si pas de prix original, utiliser le prix actuel
+      discount || 0,  // Si pas de réduction, mettre 0
+      image_url || null, 
+      category_id, 
+      req.user.id, 
+      qty
+    ]
     console.debug('INSERT params:', params)
 
     const r = await query(
-      'INSERT INTO products (title, description, price, image_url, category_id, seller_id, quantity) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *',
+      'INSERT INTO products (title, description, price, original_price, discount, image_url, category_id, seller_id, quantity) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
       params
     )
     const created = r.rows[0]
@@ -150,8 +160,8 @@ router.post('/', authenticate, requireRole('seller'), async (req, res) => {
 // Update product (seller or admin)
 router.put('/:id', authenticate, async (req, res) => {
   const { id } = req.params
-  // include category_id and quantity
-  const { title, description, price, image_url, category_id, quantity, images } = req.body
+  // include category_id, quantity, and discount fields
+  const { title, description, price, image_url, category_id, quantity, images, discount, original_price } = req.body
   try {
     // check owner
     const product = await query('SELECT * FROM products WHERE id = $1', [id])
@@ -172,11 +182,36 @@ router.put('/:id', authenticate, async (req, res) => {
       finalPrice = Number(price)
     }
 
-  const params = [cleanedTitle ?? p.title, cleanedDescription ?? p.description, finalPrice, image_url ?? p.image_url, category_id ?? p.category_id, qty, id]
-    console.debug('UPDATE params:', params)
-    const updated = await query(
-      'UPDATE products SET title=$1, description=$2, price=$3, image_url=$4, category_id=$5, quantity=$6 WHERE id=$7 RETURNING *',
-      params
+  // Traiter le prix original et la réduction
+  let finalOriginalPrice = p.original_price
+  if (typeof original_price !== 'undefined') {
+    if (!Number.isFinite(Number(original_price))) return res.status(400).json({ error: 'original_price must be a number' })
+    finalOriginalPrice = Number(original_price)
+  }
+
+  let finalDiscount = p.discount ?? 0
+  if (typeof discount !== 'undefined') {
+    if (!Number.isFinite(Number(discount)) || Number(discount) < 0 || Number(discount) > 100) {
+      return res.status(400).json({ error: 'discount must be a number between 0 and 100' })
+    }
+    finalDiscount = Number(discount)
+  }
+
+  const params = [
+    cleanedTitle ?? p.title,
+    cleanedDescription ?? p.description,
+    finalPrice,
+    finalOriginalPrice ?? finalPrice,
+    finalDiscount,
+    image_url ?? p.image_url,
+    category_id ?? p.category_id,
+    qty,
+    id
+  ]
+  console.debug('UPDATE params:', params)
+  const updated = await query(
+    'UPDATE products SET title=$1, description=$2, price=$3, original_price=$4, discount=$5, image_url=$6, category_id=$7, quantity=$8 WHERE id=$9 RETURNING *',
+    params
     )
     const updatedProduct = updated.rows[0]
     // if images provided, replace them

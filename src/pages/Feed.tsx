@@ -29,6 +29,7 @@ import ProductCard from '../components/ProductCard'
 import ReelGrid from '../components/ReelGrid'
 import { Link } from 'react-router-dom'
 import ScrollTopButton from '../components/ScrollTopButton'
+import { useColorModeValue } from '@chakra-ui/react'
 
 export default function Feed() {
   const [products, setProducts] = React.useState<any[]>([])
@@ -40,6 +41,8 @@ export default function Feed() {
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [activeStory, setActiveStory] = React.useState<Record<string, any> | null>(null)
   const [activeTab, setActiveTab] = React.useState(0)
+
+  const textColor = useColorModeValue('black', 'white')
 
   React.useEffect(() => {
     let mounted = true
@@ -79,10 +82,10 @@ export default function Feed() {
 
   if (isLoading) {
     return (
-      <Center py={12} bg="black" minH="100vh">
+      <Center py={12} bg={textColor} minH="100vh">
         <VStack>
-          <Spinner size="xl" color="white" />
-          <Text color="white">Chargement du fil d'actualité…</Text>
+          <Spinner size="xl" color={textColor} />
+          <Text color={textColor}>Chargement du fil d'actualité…</Text>
         </VStack>
       </Center>
     )
@@ -92,28 +95,27 @@ export default function Feed() {
     <Box 
       py={6} 
       px={{ base: 3, md: 6 }} 
-      bg="black" 
       minH="100vh"
-      color="white"
+      color={textColor}
     >
-      <Heading size="lg" mb={4} color="white">Fil d'actualité</Heading>
+      <Heading size="lg" mb={4} color={textColor}>Fil d'actualité</Heading>
 
       {/* Navigation Tabs */}
       <Tabs 
         variant="enclosed" 
-        colorScheme="brand" 
+        colorScheme="textColor" 
         mb={6}
         onChange={(index) => setActiveTab(index)}
         defaultIndex={0}
       >
         <TabList>
-          <Tab color="white" _selected={{ color: 'white', bg: 'gray.800' }}>
+          <Tab color={textColor}>
             <HStack spacing={2}>
               <Icon as={FaPhotoVideo} />
               <Text>Reels</Text>
             </HStack>
           </Tab>
-          <Tab color="white" _selected={{ color: 'white', bg: 'gray.800' }}>
+          <Tab color={textColor}>
             <HStack spacing={2}>
               <Icon as={FaUserFriends} />
               <Text>Personnalisé</Text>
@@ -125,8 +127,8 @@ export default function Feed() {
           {/* Tab 1: Reels Section */}
           <TabPanel px={0}>
             <Box mb={4}>
-              <Heading size="md" mb={4} color="white">Reels populaires</Heading>
-              <Text color="gray.300" mb={6}>
+              <Heading size="md" mb={4} color={textColor}>Reels populaires</Heading>
+              <Text color={textColor} mb={6}>
                 Découvrez les vidéos tendance de nos créateurs
               </Text>
               
@@ -136,12 +138,12 @@ export default function Feed() {
                 <Button 
                   as={Link} 
                   to="/reels" 
-                  colorScheme="brand" 
+                  colorScheme="textColor" 
                   variant="outline"
                   size="lg"
-                  color="white"
-                  borderColor="brand.500"
-                  _hover={{ bg: 'brand.500' }}
+                  color={textColor}
+                  borderColor={textColor}
+                  _hover={{ bg: textColor }}
                 >
                   Explorer tous les Reels
                 </Button>
@@ -153,8 +155,8 @@ export default function Feed() {
           <TabPanel px={0}>
             {/* Stories strip */}
             {stories && stories.length > 0 && (
-              <Box mb={6} p={4} bg="gray.900" borderRadius="lg" shadow="sm">
-                <Heading size="md" mb={3} color="white">Vos boutiques</Heading>
+              <Box mb={6} p={4} bg={textColor} borderRadius="lg" shadow="sm">
+                <Heading size="md" mb={3} color={textColor}>Vos boutiques</Heading>
                 <Box overflowX="auto">
                   <HStack spacing={4} px={2}>
                     {stories.map((s: any) => (
@@ -170,7 +172,7 @@ export default function Feed() {
                           name={s.name} 
                           src={s.logo_url} 
                           border="2px solid"
-                          borderColor="brand.500"
+                          borderColor={textColor}
                           _hover={{ transform: 'scale(1.1)' }}
                           transition="transform 0.2s"
                         />
@@ -180,7 +182,7 @@ export default function Feed() {
                           fontWeight="medium"
                           noOfLines={1}
                           maxW="70px"
-                          color="white"
+                          color={textColor}
                         >
                           {s.name}
                         </Text>
@@ -193,13 +195,13 @@ export default function Feed() {
 
             {/* Products Grid */}
             {(!products || products.length === 0) ? (
-              <Center py={12} bg="gray.900" borderRadius="lg" shadow="sm">
+              <Center py={12} bg={textColor} borderRadius="lg" shadow="sm">
                 <VStack spacing={4}>
-                  <Heading size="md" color="white">Votre fil est vide</Heading>
-                  <Text color="gray.300" textAlign="center">
+                  <Heading size="md" color={textColor}>Votre fil est vide</Heading>
+                  <Text color={textColor} textAlign="center">
                     Suivez des boutiques pour voir leurs produits ici.
                   </Text>
-                  <Button as={Link} to="/products" colorScheme="brand">
+                  <Button as={Link} to="/products" colorScheme="textColor">
                     Découvrir des produits
                   </Button>
                 </VStack>
@@ -227,7 +229,7 @@ export default function Feed() {
 
                 {products.length < total && (
                   <Center mt={8}>
-                    <Button onClick={loadMore} colorScheme="brand" size="lg">
+                    <Button onClick={loadMore} colorScheme={textColor} size="lg">
                       Charger plus de produits
                     </Button>
                   </Center>
@@ -241,8 +243,8 @@ export default function Feed() {
       {/* Story modal */}
       <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
         <ModalOverlay />
-        <ModalContent bg="gray.900">
-          <ModalCloseButton color="white" />
+        <ModalContent bg={textColor}>
+          <ModalCloseButton color={textColor} />
           <ModalBody py={8}>
             {activeStory && (
               <VStack spacing={4} align="center" textAlign="center">

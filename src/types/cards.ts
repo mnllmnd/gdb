@@ -3,6 +3,8 @@ export interface ProductCardProps {
   id: string
   title?: string
   price?: string | number | null
+  discount?: number  // Pourcentage de réduction
+  originalPrice?: string | number | null  // Prix avant réduction
   image?: string
   image_url?: string
   shopName?: string

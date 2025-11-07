@@ -19,6 +19,8 @@ export default function ProductCard({
   title,
   description,
   price,
+  discount = 0,
+  originalPrice,
   image,
   image_url,
   images,
@@ -32,6 +34,8 @@ export default function ProductCard({
   title?: string
   description?: string
   price: number | string | null | undefined
+  discount?: number
+  originalPrice?: number | string | null | undefined
   image?: string
   image_url?: string
   images?: string[]
@@ -56,24 +60,38 @@ export default function ProductCard({
   const hoverShadow = useColorModeValue('0 8px 25px rgba(0,0,0,0.15)', '0 8px 25px rgba(0,0,0,0.4)')
   const ctaBg = useColorModeValue('white', 'black')
 
-  const numericPrice = (() => {
-    if (typeof price === 'number') return price
-    if (typeof price === 'string' && price.trim() !== '') {
-      const n = Number(price)
+  const formatPrice = (value: number | string | null | undefined) => {
+    if (typeof value === 'number') return value
+    if (typeof value === 'string' && value.trim() !== '') {
+      const n = Number(value)
       return Number.isFinite(n) ? n : null
     }
     return null
-  })()
+  }
 
-  const formattedPrice = (() => {
-    if (numericPrice == null) return null
-    const whole = Math.floor(numericPrice)
+  const numericPrice = formatPrice(price)
+  const numericOriginalPrice = formatPrice(originalPrice)
+
+  const calculateDiscountedPrice = (price: number, discount: number) => {
+    return price * (1 - discount / 100)
+  }
+
+  const finalPrice = discount && numericPrice 
+    ? calculateDiscountedPrice(numericPrice, discount)
+    : numericPrice
+
+  const formatDisplayPrice = (value: number | null) => {
+    if (value == null) return null
+    const whole = Math.floor(value)
     try {
       return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(whole)
     } catch (e) {
       return String(whole)
     }
-  })()
+  }
+
+  const formattedOriginalPrice = formatDisplayPrice(numericOriginalPrice)
+  const formattedPrice = formatDisplayPrice(finalPrice)
 
   const [hasImage, setHasImage] = useState<boolean | null>(null)
   const [liked, setLiked] = useState<boolean | null>(null)
@@ -415,14 +433,30 @@ export default function ProductCard({
 
             {formattedPrice && (
               <Flex align="center" justify="space-between" mt="auto">
-                <Text 
-                  fontSize="lg" 
-                  fontWeight="700" 
-                  color={priceText}
-                  letterSpacing="-0.5px"
-                >
-                  {formattedPrice} FCFA
-                </Text>
+                <VStack align="flex-start" spacing={1}>
+                  {discount > 0 && formattedOriginalPrice && (
+                    <HStack spacing={2}>
+                      <Text
+                        fontSize="sm"
+                        textDecoration="line-through"
+                        color="gray.500"
+                      >
+                        {formattedOriginalPrice} FCFA
+                      </Text>
+                      <Badge colorScheme="red" variant="solid" borderRadius="full">
+                        -{discount}%
+                      </Badge>
+                    </HStack>
+                  )}
+                  <Text 
+                    fontSize={discount > 0 ? "xl" : "lg"}
+                    fontWeight="700" 
+                    color={discount > 0 ? "red.500" : priceText}
+                    letterSpacing="-0.5px"
+                  >
+                    {formattedPrice} FCFA
+                  </Text>
+                </VStack>
                 
                 {likesCount != null && (
                   <HStack spacing={1}>
@@ -691,7 +725,29 @@ export default function ProductCard({
                   <VStack spacing={6} align="stretch" height="100%">
                     <VStack spacing={3} align="start">
                       <Text fontSize="3xl" fontWeight="700" color={textColor}>
-                        {formattedPrice ? `${formattedPrice} FCFA` : 'Prix indisponible'}
+                        {formattedPrice ? (
+                          <HStack spacing={2} align="baseline">
+                            <Text
+                              fontSize="lg"
+                              fontWeight="bold"
+                              color={priceText}
+                            >
+                              {formattedPrice} FCFA
+                            </Text>
+                            {discount > 0 && formattedOriginalPrice && (
+                              <>
+                                <Text
+                                  fontSize="sm"
+                                  textDecoration="line-through"
+                                  color="gray.500"
+                                >
+                                  {formattedOriginalPrice} FCFA
+                                </Text>
+                                <Badge colorScheme="red">-{discount}%</Badge>
+                              </>
+                            )}
+                          </HStack>
+                        ) : 'Prix indisponible'}
                       </Text>
                       
                       {stock != null && (

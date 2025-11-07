@@ -36,6 +36,8 @@ export default function ProductEditor() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState<number | undefined>(undefined)
+  const [originalPrice, setOriginalPrice] = useState<number | undefined>(undefined)
+  const [discount, setDiscount] = useState<number>(0)
   const [quantity, setQuantity] = useState<number | undefined>(0)
   const [images, setImages] = useState<Array<{ file?: File; url: string }>>([])
   const [loading, setLoading] = useState(false)
@@ -60,7 +62,9 @@ export default function ProductEditor() {
           setTitle(p.title)
           setDescription(p.description || '')
           setPrice(p.price)
-      setImages(p.images?.length ? p.images.map((u: string) => ({ url: u })) : (p.image_url ? [{ url: p.image_url }] : (p.image ? [{ url: p.image }] : [])))
+          setOriginalPrice(p.original_price || p.price)
+          setDiscount(p.discount || 0)
+          setImages(p.images?.length ? p.images.map((u: string) => ({ url: u })) : (p.image_url ? [{ url: p.image_url }] : (p.image ? [{ url: p.image }] : [])))
           setSelectedCategory(p.category_id)
           setQuantity(typeof p.quantity !== 'undefined' && p.quantity !== null ? Number(p.quantity) : 0)
         }
@@ -203,6 +207,8 @@ export default function ProductEditor() {
         title,
         description,
         price: typeof price === 'number' ? price : (price ? Number(price) : null),
+        original_price: typeof originalPrice === 'number' ? originalPrice : (originalPrice ? Number(originalPrice) : price),
+        discount: typeof discount === 'number' ? discount : 0,
         category_id: selectedCategory,
       }
       // include quantity if provided
@@ -316,7 +322,68 @@ export default function ProductEditor() {
 
           <FormControl>
             <FormLabel color={labelColor} fontWeight="600" fontSize="sm" mb={2}>
-              Prix (FCFA)
+              Prix original (FCFA)
+            </FormLabel>
+            <NumberInput 
+              min={0} 
+              precision={0} 
+              value={originalPrice} 
+              onChange={(v) => setOriginalPrice(Number(v) || undefined)}
+            >
+              <NumberInputField
+                bg="white"
+                color="gray.800"
+                borderRadius="lg"
+                border="2px solid"
+                borderColor={borderColor}
+                _hover={{ borderColor: 'gray.300' }}
+                _focus={{
+                  borderColor: 'blue.500',
+                  boxShadow: '0 0 0 1px blue.500'
+                }}
+                placeholder="Prix avant réduction"
+              />
+            </NumberInput>
+          </FormControl>
+
+          <FormControl>
+            <FormLabel color={labelColor} fontWeight="600" fontSize="sm" mb={2}>
+              Réduction (%)
+            </FormLabel>
+            <NumberInput 
+              min={0} 
+              max={100}
+              precision={0} 
+              value={discount} 
+              onChange={(v) => {
+                const val = Number(v) || 0
+                setDiscount(Math.min(100, Math.max(0, val)))
+                if (originalPrice && val > 0) {
+                  // Calculer automatiquement le nouveau prix avec la réduction
+                  const discountedPrice = originalPrice * (1 - val / 100)
+                  setPrice(Math.round(discountedPrice))
+                }
+              }}
+            >
+              <NumberInputField
+                bg="white"
+                color="gray.800"
+                borderRadius="lg"
+                border="2px solid"
+                borderColor={borderColor}
+                _hover={{ borderColor: 'gray.300' }}
+                _focus={{
+                  borderColor: 'blue.500',
+                  boxShadow: '0 0 0 1px blue.500'
+                }}
+                placeholder="0"
+              />
+            </NumberInput>
+          </FormControl>
+
+          <FormControl>
+            <FormLabel color={labelColor} fontWeight="600" fontSize="sm" mb={2}>
+              Prix final (FCFA)
             </FormLabel>
             <NumberInput 
               min={0} 

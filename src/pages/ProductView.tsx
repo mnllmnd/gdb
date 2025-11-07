@@ -421,28 +421,49 @@ export default function ProductView() {
                   {product.title || product.name}
                 </Heading>
                 
-                <HStack spacing={4} align="center" mb={3}>
-                  <Text fontSize="2xl" fontWeight="700" color="gray.900">
+                {/* Prix et réduction */}
+                <Box mb={4}>
+                  {product.discount > 0 && (
+                    <HStack spacing={3} mb={2}>
+                      <Text
+                        fontSize="lg"
+                        textDecoration="line-through"
+                        color="gray.500"
+                      >
+                        {Math.floor(product.original_price)} FCFA
+                      </Text>
+                      <Badge colorScheme="red" variant="solid" fontSize="md" borderRadius="full">
+                        -{product.discount}%
+                      </Badge>
+                    </HStack>
+                  )}
+                  <Text 
+                    fontSize="2xl" 
+                    fontWeight="700" 
+                    color={product.discount > 0 ? "red.500" : "gray.900"}
+                  >
                     {Math.floor(product.price)} FCFA
                   </Text>
-                  {product.quantity !== undefined && product.quantity !== null && (
-                    <Badge 
-                      bg={product.quantity > 0 ? 'green.50' : 'red.50'} 
-                      color={product.quantity > 0 ? 'green.700' : 'red.700'}
-                      fontSize="sm" 
-                      px={3} 
-                      py={1} 
-                      borderRadius="md"
-                      border="1px solid"
-                      borderColor={product.quantity > 0 ? 'green.200' : 'red.200'}
-                    >
-                      {product.quantity > 0 
-                        ? `✓ En stock` 
-                        : '✕ Rupture'
-                      }
-                    </Badge>
-                  )}
-                </HStack>
+                </Box>
+
+                {/* Badge de stock */}
+                {product.quantity !== undefined && product.quantity !== null && (
+                  <Badge 
+                    bg={product.quantity > 0 ? 'green.50' : 'red.50'} 
+                    color={product.quantity > 0 ? 'green.700' : 'red.700'}
+                    fontSize="sm" 
+                    px={3} 
+                    py={1} 
+                    borderRadius="md"
+                    border="1px solid"
+                    borderColor={product.quantity > 0 ? 'green.200' : 'red.200'}
+                  >
+                    {product.quantity > 0 
+                      ? `✓ En stock` 
+                      : '✕ Rupture'
+                    }
+                  </Badge>
+                )}
 
                 {product.quantity > 0 && (
                   <Text color="gray.600" fontSize="sm">
