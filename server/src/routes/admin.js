@@ -15,7 +15,8 @@ router.use(authenticate)
 router.get('/users', async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' })
   try {
-    const r = await query('SELECT id, email, display_name, role, created_at FROM users ORDER BY created_at DESC')
+  // include phone so admin UI can display user phone numbers
+  const r = await query('SELECT id, email, phone, display_name, role, created_at FROM users ORDER BY created_at DESC')
     res.json(r.rows)
   } catch (err) {
     console.error(err)

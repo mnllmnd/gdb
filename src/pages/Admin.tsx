@@ -312,7 +312,7 @@ export default function Admin() {
                     <Tr>
                       <Th color={mutedTextColor}>UID</Th>
                       <Th color={mutedTextColor}>Nom</Th>
-                      <Th color={mutedTextColor}>Contact</Th>
+                      <Th color={mutedTextColor}>Téléphone</Th>
                       <Th color={mutedTextColor}>Rôle</Th>
                       <Th textAlign="center" color={mutedTextColor}>Actions</Th>
                     </Tr>
@@ -329,10 +329,7 @@ export default function Admin() {
                         </Td>
                         <Td fontWeight="medium">{user.display_name || '-'}</Td>
                         <Td>
-                          <VStack align="start" spacing={0}>
-                            {user.email && <Text fontSize="sm">{user.email}</Text>}
-                            {user.phone && <Text fontSize="sm" color={mutedTextColor}>{user.phone}</Text>}
-                          </VStack>
+                          <Text fontSize="sm">{user.phone || '-'}</Text>
                         </Td>
                         <Td>{getRoleBadge(user.role)}</Td>
                         <Td>
@@ -419,7 +416,16 @@ export default function Admin() {
                             {shop.domain}
                           </Badge>
                         </Td>
-                        <Td>{shop.owner?.display_name || shop.owner?.email || '-'}</Td>
+                        <Td>
+                          {
+                            (() => {
+                              // find owner from loaded users (admin page already loads users)
+                              const owner = users.find(u => String(u.id) === String((shop as any).owner_id))
+                              if (owner) return `${owner.display_name || owner.email || owner.id} — ${owner.phone || ''}`
+                              return (shop as any).owner_id ? String((shop as any).owner_id).slice(0,8) + '...' : '-'
+                            })()
+                          }
+                        </Td>
                         <Td>
                           <HStack spacing={2} justify="center">
                             <Tooltip label="Modifier la boutique" hasArrow>
@@ -434,7 +440,7 @@ export default function Admin() {
                                   setNewShop({ 
                                     name: shop.name ?? '', 
                                     domain: shop.domain ?? '', 
-                                    owner_id: shop.owner?.id ?? '' 
+                                    owner_id: (shop as any).owner_id ?? '' 
                                   })
                                   onShopOpen()
                                 }}
@@ -592,7 +598,7 @@ export default function Admin() {
                   >
                     {users.map(user => (
                       <option key={user.id} value={user.id}>
-                        {user.display_name || user.email || user.id}
+                        {user.display_name ? `${user.display_name} — ${user.phone || user.email || user.id}` : (user.phone || user.email || user.id)}
                       </option>
                     ))}
                   </Select>

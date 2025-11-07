@@ -45,7 +45,11 @@ export default function NavBar() {
   type Shop = { name?: string; logo_url?: string; domain?: string }
 
   const [isScrolled, setIsScrolled] = useState(false)
-  const [user, setUser] = useState<User | null>(getCurrentUser() as User | null)
+  const [user, setUser] = useState<User | null>(() => {
+    const currentUser = getCurrentUser() as User | null;
+    console.log('Current user:', currentUser);
+    return currentUser;
+  })
   const [shop, setShop] = useState<Shop | null>(null)
   const [cartCount, setCartCount] = useState<number>(0)
   const [searchQuery, setSearchQuery] = useState('')
@@ -71,6 +75,16 @@ export default function NavBar() {
   const showMobileMenu = useBreakpointValue({ base: true, md: false })
   const { isOpen, onOpen, onClose } = useDisclosure()
   const recRef = React.useRef<any>(null)
+
+  // Helper to detect admin role in different possible shapes
+  const isAdmin = (u: User | null | undefined) => {
+    if (!u) return false
+    const r: any = (u as any).role
+    if (!r) return false
+    if (Array.isArray(r)) return r.map(String).some(s => s.toLowerCase() === 'admin')
+    if (typeof r === 'string') return r.toLowerCase() === 'admin'
+    return false
+  }
 
   // Scroll effect
   useEffect(() => {
@@ -183,11 +197,19 @@ export default function NavBar() {
     </svg>
   )
 
-  const LogoutIcon = () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-      <polyline points="16,17 21,12 16,7"/>
-      <line x1="21" y1="12" x2="9" y2="12"/>
+const LogoutIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
+  )
+
+  const AdminIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M12 4L4 8l8 4 8-4-8-4z" />
+      <path d="M4 12l8 4 8-4" />
+      <path d="M4 16l8 4 8-4" />
     </svg>
   )
 
@@ -515,6 +537,23 @@ export default function NavBar() {
                           MA BOUTIQUE
                         </MenuItem>
                       )}
+                      {isAdmin(user) && (
+                        <>
+                          <MenuDivider borderColor={menuBorder} />
+                          <MenuItem 
+                            as={RouterLink} 
+                            to="/admin" 
+                            icon={<AdminIcon />}
+                            color="red.500"
+                            _hover={{ bg: hoverBg }}
+                            py={2}
+                            fontSize="sm"
+                            fontWeight="bold"
+                          >
+                            ADMIN
+                          </MenuItem>
+                        </>
+                      )}
                       <MenuDivider borderColor={menuBorder} />
                       <MenuItem 
                         onClick={handleLogout}
@@ -793,6 +832,30 @@ export default function NavBar() {
                 >
                   MA BOUTIQUE
                 </Button>
+              )}
+              {isAdmin(user) && (
+                <>
+                  <Divider borderColor={menuBorder} my={2} />
+                  <Button 
+                    as={RouterLink} 
+                    to="/admin" 
+                    onClick={onClose} 
+                    size="sm" 
+                    variant="solid"
+                    bg="red.500"
+                    color="white"
+                    _hover={{ bg: 'red.600' }}
+                    justifyContent="flex-start"
+                    py={3}
+                    borderRadius="none"
+                    fontWeight="bold"
+                    fontSize="sm"
+                    letterSpacing="wide"
+                    leftIcon={<AdminIcon />}
+                  >
+                    ADMIN
+                  </Button>
+                </>
               )}
             </VStack>
           </DrawerBody>
