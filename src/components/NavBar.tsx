@@ -29,8 +29,10 @@ import {
   useColorModeValue,
   useColorMode,
   Portal,
+  Icon,
 } from '@chakra-ui/react'
 import { ChevronDownIcon, HamburgerIcon, SunIcon, MoonIcon } from '@chakra-ui/icons'
+import { FaHeart } from 'react-icons/fa'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { signOut, getCurrentUser } from '../services/auth'
 import api from '../services/api'
@@ -225,6 +227,18 @@ export default function NavBar() {
             <Box position="relative">
               <IconButton
                 as={RouterLink}
+                to="/wishlist"
+                aria-label="Wishlist"
+                icon={<Icon as={FaHeart} />}
+                variant="ghost"
+                color={textColor}
+                size="sm"
+                _hover={{ bg: hoverBg }}
+              />
+            </Box>
+            <Box position="relative">
+              <IconButton
+                as={RouterLink}
                 to="/cart"
                 aria-label="Panier"
                 icon={<CartIcon />}
@@ -380,6 +394,20 @@ export default function NavBar() {
               >
                 Vendre
               </Button>
+
+              {/* Wishlist */}
+              <Box position="relative">
+                <IconButton
+                  as={RouterLink}
+                  to="/wishlist"
+                  aria-label="Wishlist"
+                  icon={<Icon as={FaHeart} />}
+                  variant="ghost"
+                  color={textColor}
+                  size="sm"
+                  _hover={{ bg: hoverBg }}
+                />
+              </Box>
 
               {/* Panier */}
               <Box position="relative">

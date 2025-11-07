@@ -1,5 +1,34 @@
 import axios from 'axios'
 
+export const apiClient = {
+  get: async (path: string) => {
+    const response = await request(path);
+    return response;
+  },
+  post: async (path: string, data?: any) => {
+    const response = await request(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return response;
+  },
+  put: async (path: string, data?: any) => {
+    const response = await request(path, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return response;
+  },
+  delete: async (path: string) => {
+    const response = await request(path, {
+      method: 'DELETE'
+    });
+    return response;
+  }
+};
+
 // Normalize the API base so values like ':4000/api' (missing host/protocol)
 // become a valid absolute URL. Prefer VITE_API_URL; when not set, fall back
 // at runtime to the current page origin + /api so a static site served on

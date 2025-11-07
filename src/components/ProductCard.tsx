@@ -13,6 +13,7 @@ import { getItem } from '../utils/localAuth'
 import { highRes, PRODUCT_PLACEHOLDER } from '../utils/image'
 import api from '../services/api'
 import { FaCartShopping } from 'react-icons/fa6'
+import WishlistButton from './WishlistButton'
 
 export default function ProductCard({
   id,
@@ -204,6 +205,31 @@ export default function ProductCard({
     }
     load()
     return () => { mounted = false }
+  }, [id])
+
+  // Listen to likes updates emitted elsewhere (for example when wishlist toggles a like)
+  React.useEffect(() => {
+    const handler = (e: any) => {
+      try {
+        const d = e?.detail || {}
+        if (!d) return
+        if (d.productId === id && typeof d.count !== 'undefined') {
+          setLikesCount(typeof d.count === 'number' ? d.count : Number(d.count || 0))
+        }
+      } catch (err) {
+        // ignore
+      }
+    }
+    if (typeof globalThis !== 'undefined' && typeof globalThis.addEventListener === 'function') {
+      globalThis.addEventListener('product:likesChanged', handler as any)
+    }
+    return () => {
+      try {
+        if (typeof globalThis !== 'undefined' && typeof globalThis.removeEventListener === 'function') {
+          globalThis.removeEventListener('product:likesChanged', handler as any)
+        }
+      } catch (e) { /* ignore */ }
+    }
   }, [id])
 
   React.useEffect(() => { setStock(quantity ?? null) }, [quantity])
@@ -499,44 +525,7 @@ export default function ProductCard({
                   </HStack>
                 </Button>
 
-                <Button
-                  aria-label={liked ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-                  onClick={async () => {
-                    const token = globalThis.localStorage?.getItem('token') ?? undefined
-                    if (!token) {
-                      toast({ title: 'Connectez-vous', description: 'Veuillez vous connecter pour ajouter aux favoris.', status: 'info', duration: 2500 })
-                      return
-                    }
-                    try {
-                      if (liked) {
-                        const res = await api.products.unlike(id, token)
-                        setLiked(false)
-                        if (res && typeof res.count === 'number') setLikesCount(res.count)
-                      } else {
-                        const res = await api.products.like(id, token)
-                        setLiked(true)
-                        if (res && typeof res.count === 'number') setLikesCount(res.count)
-                      }
-                    } catch (err) {
-                      console.error('Like action failed', err)
-                      toast({ title: 'Erreur', description: 'Impossible de mettre à jour les favoris', status: 'error', duration: 2500 })
-                    }
-                  }}
-                  size="md"
-                  height="42px"
-                  borderRadius="none"
-                  variant="outline"
-                  borderColor={borderColor}
-                  _hover={{
-                    borderColor: accentColor,
-                    bg: 'transparent'
-                  }}
-                  flexShrink={0}
-                  minW="42px"
-                  px={0}
-                >
-                  <Icon as={liked ? FaHeart : FaRegHeart} color={liked ? 'red.400' : subtleTextColor} />
-                </Button>
+                <WishlistButton productId={id} />
               </HStack>
             </VStack>
           </VStack>

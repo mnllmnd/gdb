@@ -1,4 +1,19 @@
 // src/types/cards.ts
+export interface Product {
+  id: string;
+  name: string;
+  description?: string;
+  price: number | string | null;
+  original_price?: number | string | null;
+  discount?: number;
+  image_url?: string;
+  images?: string[];
+  quantity?: number;
+  shopName?: string;
+  shopDomain?: string;
+  shopId?: string;
+}
+
 export interface ProductCardProps {
   id: string
   title?: string

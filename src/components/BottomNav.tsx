@@ -64,7 +64,19 @@ export default function BottomNav() {
         size="lg"
       />
 
-      
+      {/* Wishlist */}
+      <IconButton
+        as={Link}
+        to="/wishlist"
+        aria-label="Liste de souhaits"
+        icon={<span style={{ fontSize: 24 }}>❤️</span>}
+        bg="whiteAlpha.900"
+        _hover={{ bg: 'whiteAlpha.800', transform: 'scale(1.05)' }}
+        color="black"
+        borderRadius="full"
+        boxShadow="md"
+        size="lg"
+      />
     </HStack>
   )
 }

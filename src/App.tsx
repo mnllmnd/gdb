@@ -21,6 +21,7 @@ import Products from './pages/Products';
 import ProductView from './pages/ProductView';
 import TutorielPage from './pages/Tutoriel';
 import Profile from './pages/Profile';
+import Wishlist from './pages/Wishlist';
 import { ChatPopup } from './components/ChatPopup';
 
 export default function App() {
@@ -85,6 +86,7 @@ export default function App() {
           <Route path="/products/:id" element={<ProductView />} />
           <Route path="/tutoriel" element={<TutorielPage />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/wishlist" element={<Wishlist />} />
         </Routes>
       </Box>
     
