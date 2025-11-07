@@ -216,6 +216,8 @@ export default function Feed() {
                         title={p.title || p.name}
                         description={p.description}
                         price={p.price ?? p.amount}
+                        originalPrice={p.original_price ?? p.originalPrice}
+                        discount={p.discount ?? 0}
                         image_url={p.image_url ?? p.product_image}
                         images={p.images ?? (p.image_url ? [p.image_url] : (p.product_image ? [p.product_image] : []))}
                         shopId={p.shop_id || p.seller_id || p.shopId}

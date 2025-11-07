@@ -479,10 +479,12 @@ export default function ProductView() {
                 <ProductCard
                   id={String(product.id)}
                   title={product.title || product.name}
-                  price={product.price ?? product.amount}
-                  image_url={product.image_url ?? product.product_image}
-                  images={product.images}
-                  quantity={product.quantity ?? product.quantite ?? product.stock ?? product.amount_available}
+            price={product.price ?? product.amount}
+            originalPrice={product.original_price ?? product.originalPrice}
+            discount={product.discount ?? 0}
+            image_url={product.image_url ?? product.product_image}
+            images={product.images}
+            quantity={product.quantity ?? product.quantite ?? product.stock ?? product.amount_available}
                  
                 />
               </Box>

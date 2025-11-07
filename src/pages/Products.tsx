@@ -1053,6 +1053,8 @@ export default function Products() {
                               id={String(p.id)}
                               title={p.title || p.name}
                               price={p.price ?? p.amount}
+                              originalPrice={p.original_price ?? p.price ?? p.amount}
+                              discount={p.discount ?? 0}
                               description={p.description}
                               image_url={p.image_url ?? p.product_image}
                               images={p.images}
@@ -1099,6 +1101,8 @@ export default function Products() {
               id={String(p.id)}
               title={p.title || p.name}
               price={p.price ?? p.amount}
+              originalPrice={p.original_price ?? p.price ?? p.amount}
+              discount={p.discount ?? 0}
               description={p.description}
               image_url={p.image_url ?? p.product_image}
               images={p.images}

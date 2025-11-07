@@ -299,6 +299,8 @@ const Recommendations = forwardRef(({ hideTrigger = false }: Props, ref) => {
                               id={String(r.id)}
                               title={r.name}
                               price={r.price}
+                              originalPrice={r.original_price ?? r.originalPrice}
+                              discount={r.discount ?? 0}
                               image_url={r.image || r.image_url}
                               images={r.images}
                               quantity={r.quantity ?? r.quantite ?? r.stock ?? r.amount_available}

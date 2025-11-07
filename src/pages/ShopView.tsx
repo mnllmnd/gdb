@@ -459,6 +459,8 @@ export default function ShopView() {
                                 title={product.title || product.name || ''}
                                 description={product.description || product.details || ''}
                                 price={product.price ?? product.amount}
+                                originalPrice={product.original_price ?? product.originalPrice}
+                                discount={product.discount ?? 0}
                                 image_url={product.image_url ?? product.product_image}
                                 images={product.images}
                                 quantity={
@@ -514,6 +516,8 @@ export default function ShopView() {
                                 title={product.title || product.name || ''}
                                 description={product.description || product.details || ''}
                                 price={product.price ?? product.amount}
+                                originalPrice={product.original_price ?? product.originalPrice}
+                                discount={product.discount ?? 0}
                                 image_url={product.image_url ?? product.product_image}
                                 images={product.images}
                                 quantity={
