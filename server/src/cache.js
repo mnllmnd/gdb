@@ -4,8 +4,10 @@ import path from 'path'
 let PRODUCTS = []
 let SHOPS = []
 let CATEGORIES = []
+let CACHE_VERSION = Date.now()
 
 const cacheFile = path.resolve(process.cwd(), 'server', 'data', 'cache_snapshot.json')
+const CACHE_TTL = 60 * 1000 // 1 minute
 
 const init = async (dbQuery) => {
   // try load snapshot
@@ -29,7 +31,12 @@ const init = async (dbQuery) => {
   return refresh(dbQuery)
 }
 
-const refresh = async (dbQuery) => {
+const refresh = async (dbQuery, force = false) => {
+  // Check if cache is still fresh unless force refresh is requested
+  if (!force && Date.now() - CACHE_VERSION < CACHE_TTL) {
+    return false;
+  }
+  
   try {
     const [pRes, sRes, cRes, imgsRes] = await Promise.all([
       dbQuery('SELECT * FROM products ORDER BY created_at DESC'),
@@ -90,6 +97,14 @@ const getShops = () => SHOPS
 const getShopByDomain = (domain) => SHOPS.find(s => String(s.domain) === String(domain))
 const getCategories = () => CATEGORIES
 
+const getStatus = () => ({
+  version: CACHE_VERSION,
+  age: Date.now() - CACHE_VERSION,
+  productsCount: PRODUCTS.length,
+  shopsCount: SHOPS.length,
+  categoriesCount: CATEGORIES.length
+})
+
 export default {
   init,
   refresh,
@@ -98,5 +113,6 @@ export default {
   listProducts,
   getShops,
   getShopByDomain,
-  getCategories
+  getCategories,
+  getStatus
 }
