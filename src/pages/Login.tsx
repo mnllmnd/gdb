@@ -129,6 +129,22 @@ export default function Login() {
               </Box>
             </FormControl>
 
+            {/* Lien mot de passe oublié */}
+            <Box textAlign="right">
+              <Button
+                as={RouterLink}
+                to="/forgot-password"
+                variant="link"
+                size="sm"
+                color={headingColor}
+                _hover={{ textDecoration: 'underline' }}
+                p={0}
+                mr={0}
+              >
+                Mot de passe oublié ?
+              </Button>
+            </Box>
+
             {/* Champ mot de passe */}
             <FormControl>
               <FormLabel 

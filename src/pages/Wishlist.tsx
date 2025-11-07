@@ -63,21 +63,21 @@ const Wishlist = () => {
   if (!user) {
     return (
       <Container maxW="container.xl" py={8}>
-        <Text>Please log in to view your wishlist.</Text>
+        <Text>Connectez-vous pour voir votre liste de souhaits.</Text>
       </Container>
     );
   }
 
   return (
     <Container maxW="container.xl" py={8}>
-      <Heading mb={6}>My Wishlist</Heading>
+      <Heading mb={6}>Ma liste de souhaits</Heading>
       {(() => {
         if (isLoading) {
-          return <Text>Loading...</Text>;
+          return <Text>Chargement...</Text>;
         }
         
         if (wishlistItems.length === 0) {
-          return <Text>Your wishlist is empty.</Text>;
+          return <Text>Votre liste de souhaits est vide.</Text>;
         }
         
         return (

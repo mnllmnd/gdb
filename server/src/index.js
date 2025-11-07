@@ -13,6 +13,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import authRoutes from './routes/auth.js';
+import passwordResetRoutes from './routes/passwordReset.js';
 import productRoutes from './routes/products.js';
 import orderRoutes from './routes/orders.js';
 import adminRoutes from './routes/admin.js';
@@ -63,6 +64,7 @@ app.use('/api', (req, res, next) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/auth', passwordResetRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);

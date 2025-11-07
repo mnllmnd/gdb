@@ -5,6 +5,56 @@ import { generateToken, authenticate } from '../middleware/auth.js'
 
 const router = express.Router()
 
+// Simple in-memory rate limiter to mitigate brute-force on login
+const MAX_ATTEMPTS = 5
+const WINDOW_MS = 15 * 60 * 1000 // 15 minutes
+const LOCK_TIME_MS = 15 * 60 * 1000 // 15 minutes
+
+const attemptsByIp = new Map()
+const attemptsByUser = new Map()
+
+function cleanupAttempts(map) {
+  const now = Date.now()
+  for (const [k, v] of map.entries()) {
+    if (v.lockedUntil && v.lockedUntil <= now) {
+      map.delete(k)
+      continue
+    }
+    // prune old timestamps
+    if (Array.isArray(v.ts)) {
+      v.ts = v.ts.filter(t => now - t <= WINDOW_MS)
+      if (v.ts.length === 0 && !v.lockedUntil) map.delete(k)
+    }
+  }
+}
+
+function isBlocked(map, key) {
+  const rec = map.get(key)
+  if (!rec) return false
+  if (rec.lockedUntil && rec.lockedUntil > Date.now()) return true
+  if (Array.isArray(rec.ts) && rec.ts.length >= MAX_ATTEMPTS) {
+    // lock
+    rec.lockedUntil = Date.now() + LOCK_TIME_MS
+    return true
+  }
+  return false
+}
+
+function recordAttempt(map, key) {
+  const now = Date.now()
+  const rec = map.get(key) || { ts: [], lockedUntil: null }
+  rec.ts = (rec.ts || []).filter(t => now - t <= WINDOW_MS)
+  rec.ts.push(now)
+  if (rec.ts.length >= MAX_ATTEMPTS) {
+    rec.lockedUntil = Date.now() + LOCK_TIME_MS
+  }
+  map.set(key, rec)
+}
+
+function resetAttempts(map, key) {
+  map.delete(key)
+}
+
 router.post('/register', async (req, res) => {
   // Accept phone + password for simpler signup. Email is optional.
   const { email, phone, password, displayName, role } = req.body
@@ -41,6 +91,19 @@ router.post('/login', async (req, res) => {
   const { phone, password } = req.body
   console.log('POST /auth/login body:', { phone: req.body.phone ? '***' : undefined })
   if (!phone || !password) return res.status(400).json({ error: 'Missing phone or password' })
+  // Run simple rate-limit checks
+  try {
+    cleanupAttempts(attemptsByIp)
+    cleanupAttempts(attemptsByUser)
+  } catch (e) { /* ignore cleanup errors */ }
+
+  const ip = (req.headers['x-forwarded-for'] || req.ip || req.connection?.remoteAddress || 'unknown').toString()
+  if (isBlocked(attemptsByIp, ip)) {
+    return res.status(429).json({ error: 'Too many attempts from this IP, try again later' })
+  }
+  if (isBlocked(attemptsByUser, phone)) {
+    return res.status(429).json({ error: 'Too many attempts for this account, try again later' })
+  }
   try {
     const find = await query('SELECT id, email, phone, password_hash, display_name, role FROM users WHERE phone = $1', [phone])
     if (find.rowCount === 0) return res.status(401).json({ error: 'Invalid credentials' })
@@ -48,8 +111,16 @@ router.post('/login', async (req, res) => {
     const ok = await bcrypt.compare(password, user.password_hash)
     if (!ok) return res.status(401).json({ error: 'Invalid credentials' })
     const token = generateToken({ id: user.id, phone: user.phone, role: user.role })
+    // successful login -> reset attempts
+    resetAttempts(attemptsByIp, ip)
+    resetAttempts(attemptsByUser, phone)
     res.json({ user: { id: user.id, email: user.email, phone: user.phone, display_name: user.display_name, role: user.role }, token })
   } catch (err) {
+    // record failed attempt
+    try {
+      recordAttempt(attemptsByIp, ip)
+      recordAttempt(attemptsByUser, phone)
+    } catch (e) { /* ignore recording errors */ }
     console.error(err)
     res.status(500).json({ error: 'Login failed' })
   }

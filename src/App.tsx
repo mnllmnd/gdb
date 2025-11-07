@@ -8,6 +8,7 @@ import ProductEditor from './pages/ProductEditor';
 import Admin from './pages/Admin';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import { ForgotPassword } from './pages/ForgotPassword';
 import NavBar from './components/NavBar';
 import BottomNav from './components/BottomNav';
 import MyOrders from './pages/MyOrders';
@@ -80,6 +81,7 @@ export default function App() {
           <Route path="/feed" element={<Feed />} />
           <Route path="/reels" element={<ReelsPage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/products" element={<Products />} />
