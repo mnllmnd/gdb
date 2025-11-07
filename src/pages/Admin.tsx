@@ -46,6 +46,7 @@ import {
 import { DeleteIcon, EditIcon, AddIcon, StarIcon } from '@chakra-ui/icons'
 import api from '../services/api'
 import { getItem } from '../utils/localAuth'
+import useCache from '../hooks/useCache'
 
 interface User {
   id: string
@@ -617,5 +618,24 @@ export default function Admin() {
         </Modal>
       </Container>
     </Box>
+  )
+}
+
+
+function AdminPanel() {
+  const { refresh, refreshing, status, getStatus } = useCache()
+
+  return (
+    <div>
+      <button onClick={refresh} disabled={refreshing}>
+        {refreshing ? 'Rafraîchissement...' : 'Rafraîchir le cache'}
+      </button>
+      {status && (
+        <div>
+          <p>Dernière mise à jour : {new Date(status.version).toLocaleString()}</p>
+          <p>Age du cache : {Math.round(status.age / 1000)} secondes</p>
+        </div>
+      )}
+    </div>
   )
 }
