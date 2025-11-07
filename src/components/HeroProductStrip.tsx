@@ -134,9 +134,9 @@ export default function HeroProductGrid({
       {canScrollLeft && (isHovered || isMobile) && (
         <IconButton
           aria-label="Précédent"
-          icon={<ChevronLeftIcon boxSize={isMobile ? 6 : 8} />}
+          icon={<ChevronLeftIcon boxSize={isMobile ? 5 : 7} />}
           position="absolute"
-          left={2}
+          left={isMobile ? 1 : 2}
           top="50%"
           transform="translateY(-50%)"
           zIndex={10}
@@ -144,11 +144,21 @@ export default function HeroProductGrid({
           color={useColorModeValue('black', 'white')}
           boxShadow="xl"
           borderRadius="full"
-          size={isMobile ? 'md' : 'lg'}
-          opacity={0.95}
-          _hover={{ opacity: 1, transform: 'translateY(-50%) scale(1.1)' }}
+          size={isMobile ? 'sm' : 'lg'}
+          opacity={isMobile ? 0.9 : 0.95}
+          _hover={{ 
+            opacity: 1, 
+            transform: 'translateY(-50%) scale(1.1)',
+            bg: useColorModeValue('gray.50', 'gray.700')
+          }}
+          _active={{
+            transform: 'translateY(-50%) scale(0.95)'
+          }}
           onClick={() => scroll('left')}
-          transition="all 0.2s ease"
+          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+          border="1px solid"
+          borderColor={useColorModeValue('gray.200', 'gray.600')}
+          backdropFilter="blur(8px)"
         />
       )}
 
@@ -156,9 +166,9 @@ export default function HeroProductGrid({
       {canScrollRight && (isHovered || isMobile) && (
         <IconButton
           aria-label="Suivant"
-          icon={<ChevronRightIcon boxSize={isMobile ? 6 : 8} />}
+          icon={<ChevronRightIcon boxSize={isMobile ? 5 : 7} />}
           position="absolute"
-          right={2}
+          right={isMobile ? 1 : 2}
           top="50%"
           transform="translateY(-50%)"
           zIndex={10}
@@ -166,11 +176,21 @@ export default function HeroProductGrid({
           color={useColorModeValue('black', 'white')}
           boxShadow="xl"
           borderRadius="full"
-          size={isMobile ? 'md' : 'lg'}
-          opacity={0.95}
-          _hover={{ opacity: 1, transform: 'translateY(-50%) scale(1.1)' }}
+          size={isMobile ? 'sm' : 'lg'}
+          opacity={isMobile ? 0.9 : 0.95}
+          _hover={{ 
+            opacity: 1, 
+            transform: 'translateY(-50%) scale(1.1)',
+            bg: useColorModeValue('gray.50', 'gray.700')
+          }}
+          _active={{
+            transform: 'translateY(-50%) scale(0.95)'
+          }}
           onClick={() => scroll('right')}
-          transition="all 0.2s ease"
+          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+          border="1px solid"
+          borderColor={useColorModeValue('gray.200', 'gray.600')}
+          backdropFilter="blur(8px)"
         />
       )}
 
@@ -181,9 +201,11 @@ export default function HeroProductGrid({
         overflowX="auto"
         gap={{ base: 4, md: 6 }}
         px={{ base: 4, md: 8 }}
+        py={2}
         css={{
           scrollbarWidth: 'none',
           '&::-webkit-scrollbar': { display: 'none' },
+          scrollBehavior: 'smooth',
         }}
       >
         {products.map((p) => {
