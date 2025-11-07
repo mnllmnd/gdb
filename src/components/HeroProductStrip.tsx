@@ -7,6 +7,7 @@ import {
   useColorModeValue,
   Link as ChakraLink,
   IconButton,
+  useBreakpointValue,
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons'
@@ -27,7 +28,6 @@ function firstImage(p: MinimalProduct) {
   return '/img/b.jfif'
 }
 
-// Slideshow for small product thumbnails: cycles images with a fade every 5s and pauses on hover
 function ProductImageSlideshow({ images = [], alt }: { images?: string[]; alt?: string }) {
   const [index, setIndex] = useState(0)
   const [isHover, setIsHover] = useState(false)
@@ -46,7 +46,13 @@ function ProductImageSlideshow({ images = [], alt }: { images?: string[]; alt?: 
   const imgs = Array.isArray(images) && images.length ? images : ['/img/b.jfif']
 
   return (
-    <Box position="relative" width="100%" height="100%" onMouseEnter={() => setIsHover(true)} onMouseLeave={() => setIsHover(false)}>
+    <Box
+      position="relative"
+      width="100%"
+      height="100%"
+      onMouseEnter={() => setIsHover(true)}
+      onMouseLeave={() => setIsHover(false)}
+    >
       {imgs.map((src, idx) => {
         const visible = idx === index
         return (
@@ -81,6 +87,7 @@ export default function HeroProductGrid({
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
   const [isHovered, setIsHovered] = useState(false)
+  const isMobile = useBreakpointValue({ base: true, md: false })
 
   const bg = useColorModeValue('white', '#0e0e0e')
   const textColor = useColorModeValue('black', 'white')
@@ -124,10 +131,10 @@ export default function HeroProductGrid({
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Bouton précédent */}
-      {canScrollLeft && isHovered && (
+      {canScrollLeft && (isHovered || isMobile) && (
         <IconButton
           aria-label="Précédent"
-          icon={<ChevronLeftIcon boxSize={8} />}
+          icon={<ChevronLeftIcon boxSize={isMobile ? 6 : 8} />}
           position="absolute"
           left={2}
           top="50%"
@@ -137,7 +144,7 @@ export default function HeroProductGrid({
           color={useColorModeValue('black', 'white')}
           boxShadow="xl"
           borderRadius="full"
-          size="lg"
+          size={isMobile ? 'md' : 'lg'}
           opacity={0.95}
           _hover={{ opacity: 1, transform: 'translateY(-50%) scale(1.1)' }}
           onClick={() => scroll('left')}
@@ -146,10 +153,10 @@ export default function HeroProductGrid({
       )}
 
       {/* Bouton suivant */}
-      {canScrollRight && isHovered && (
+      {canScrollRight && (isHovered || isMobile) && (
         <IconButton
           aria-label="Suivant"
-          icon={<ChevronRightIcon boxSize={8} />}
+          icon={<ChevronRightIcon boxSize={isMobile ? 6 : 8} />}
           position="absolute"
           right={2}
           top="50%"
@@ -159,7 +166,7 @@ export default function HeroProductGrid({
           color={useColorModeValue('black', 'white')}
           boxShadow="xl"
           borderRadius="full"
-          size="lg"
+          size={isMobile ? 'md' : 'lg'}
           opacity={0.95}
           _hover={{ opacity: 1, transform: 'translateY(-50%) scale(1.1)' }}
           onClick={() => scroll('right')}
@@ -167,7 +174,7 @@ export default function HeroProductGrid({
         />
       )}
 
-      {/* Carrousel - TOUS les produits en ligne horizontale */}
+      {/* Carrousel horizontal */}
       <Box
         ref={scrollRef}
         display="flex"
@@ -205,7 +212,10 @@ export default function HeroProductGrid({
                 w={{ base: '160px', md: '250px' }}
               >
                 <Box position="relative" aspectRatio="4/5" overflow="hidden" borderRadius="sm">
-                  <ProductImageSlideshow images={finalImages} alt={String(p.title || p.name || 'product')} />
+                  <ProductImageSlideshow
+                    images={finalImages}
+                    alt={String(p.title || p.name || 'product')}
+                  />
                 </Box>
                 <Box mt={3} textAlign="center">
                   <Heading
