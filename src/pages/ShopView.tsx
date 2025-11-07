@@ -53,6 +53,8 @@ export default function ShopView() {
   
   // Couleurs style Nike/Zara
   const bgColor = useColorModeValue('white', 'black')
+  const textColors = useColorModeValue('black', 'white')
+
   const textPrimary = useColorModeValue('#111111', 'white')
   const textSecondary = useColorModeValue('#666666', 'gray.400')
   const accentColor = useColorModeValue('#111111', 'white')
@@ -178,14 +180,13 @@ export default function ShopView() {
           position="relative"
           w="100%"
           h={{ base: '200px', md: '300px' }}
-          bg={accentColor}
           display="flex"
           alignItems="center"
           justifyContent="center"
           mb={-8}
         >
           <Heading
-            color="white"
+            color="bgColor"
             fontSize={{ base: '3xl', md: '5xl' }}
             fontWeight="900"
             letterSpacing="tight"
@@ -305,8 +306,8 @@ export default function ShopView() {
                   </Text>
                   {reviewCount > 0 && (
                     <Badge 
-                      bg={accentColor}
-                      color="white"
+                      bg={textColors}
+                      color={bgColor}
                       fontSize="md" 
                       px={3} 
                       py={1} 

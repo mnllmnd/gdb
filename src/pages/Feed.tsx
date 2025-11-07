@@ -16,17 +16,11 @@ import {
   ModalCloseButton, 
   useDisclosure, 
   Button,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanels,
-  TabPanel,
   Icon
 } from '@chakra-ui/react'
-import { FaPhotoVideo, FaUserFriends } from 'react-icons/fa'
+import { FaUserFriends } from 'react-icons/fa'
 import api from '../services/api'
 import ProductCard from '../components/ProductCard'
-import ReelGrid from '../components/ReelGrid'
 import { Link } from 'react-router-dom'
 import ScrollTopButton from '../components/ScrollTopButton'
 import { useColorModeValue } from '@chakra-ui/react'
@@ -40,7 +34,6 @@ export default function Feed() {
   const [stories, setStories] = React.useState<any[]>([])
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [activeStory, setActiveStory] = React.useState<Record<string, any> | null>(null)
-  const [activeTab, setActiveTab] = React.useState(0)
 
   const textColor = useColorModeValue('black', 'white')
 
@@ -100,147 +93,91 @@ export default function Feed() {
     >
       <Heading size="lg" mb={4} color={textColor}>Fil d'actualité</Heading>
 
-      {/* Navigation Tabs */}
-      <Tabs 
-        variant="enclosed" 
-        colorScheme="textColor" 
-        mb={6}
-        onChange={(index) => setActiveTab(index)}
-        defaultIndex={0}
-      >
-        <TabList>
-          <Tab color={textColor}>
-            <HStack spacing={2}>
-              <Icon as={FaPhotoVideo} />
-              <Text>Reels</Text>
-            </HStack>
-          </Tab>
-          <Tab color={textColor}>
-            <HStack spacing={2}>
-              <Icon as={FaUserFriends} />
-              <Text>Personnalisé</Text>
-            </HStack>
-          </Tab>
-        </TabList>
-
-        <TabPanels>
-          {/* Tab 1: Reels Section */}
-          <TabPanel px={0}>
-            <Box mb={4}>
-              <Heading size="md" mb={4} color={textColor}>Reels populaires</Heading>
-              <Text color={textColor} mb={6}>
-                Découvrez les vidéos tendance de nos créateurs
-              </Text>
-              
-              <ReelGrid limit={12} />
-              
-              <Center mt={8}>
-                <Button 
-                  as={Link} 
-                  to="/reels" 
-                  colorScheme="textColor" 
-                  variant="outline"
-                  size="lg"
-                  color={textColor}
-                  borderColor={textColor}
-                  _hover={{ bg: textColor }}
+      {/* Stories strip */}
+      {stories && stories.length > 0 && (
+        <Box mb={6} p={4}  borderRadius="lg" shadow="sm">
+          <Heading size="md" mb={3} color={textColor}>Vos boutiques suivies</Heading>
+          <Box overflowX="auto">
+            <HStack spacing={4} px={2}>
+              {stories.map((s: any) => (
+                <VStack 
+                  key={s.id} 
+                  onClick={() => openStory(s)} 
+                  cursor="pointer"
+                  spacing={1}
+                  minW="70px"
                 >
-                  Explorer tous les Reels
-                </Button>
-              </Center>
-            </Box>
-          </TabPanel>
-
-          {/* Tab 2: Fil personnalisé (Produits) */}
-          <TabPanel px={0}>
-            {/* Stories strip */}
-            {stories && stories.length > 0 && (
-              <Box mb={6} p={4} bg={textColor} borderRadius="lg" shadow="sm">
-                <Heading size="md" mb={3} color={textColor}>Vos boutiques</Heading>
-                <Box overflowX="auto">
-                  <HStack spacing={4} px={2}>
-                    {stories.map((s: any) => (
-                      <VStack 
-                        key={s.id} 
-                        onClick={() => openStory(s)} 
-                        cursor="pointer"
-                        spacing={1}
-                        minW="70px"
-                      >
-                        <Avatar 
-                          size="md" 
-                          name={s.name} 
-                          src={s.logo_url} 
-                          border="2px solid"
-                          borderColor={textColor}
-                          _hover={{ transform: 'scale(1.1)' }}
-                          transition="transform 0.2s"
-                        />
-                        <Text 
-                          fontSize="xs" 
-                          textAlign="center" 
-                          fontWeight="medium"
-                          noOfLines={1}
-                          maxW="70px"
-                          color={textColor}
-                        >
-                          {s.name}
-                        </Text>
-                      </VStack>
-                    ))}
-                  </HStack>
-                </Box>
-              </Box>
-            )}
-
-            {/* Products Grid */}
-            {(!products || products.length === 0) ? (
-              <Center py={12} bg={textColor} borderRadius="lg" shadow="sm">
-                <VStack spacing={4}>
-                  <Heading size="md" color={textColor}>Votre fil est vide</Heading>
-                  <Text color={textColor} textAlign="center">
-                    Suivez des boutiques pour voir leurs produits ici.
+                  <Avatar 
+                    size="md" 
+                    name={s.name} 
+                    src={s.logo_url} 
+                    border="2px solid"
+                    borderColor={textColor}
+                    _hover={{ transform: 'scale(1.1)' }}
+                    transition="transform 0.2s"
+                  />
+                  <Text 
+                    fontSize="xs" 
+                    textAlign="center" 
+                    fontWeight="medium"
+                    noOfLines={1}
+                    maxW="70px"
+                    color={textColor}
+                  >
+                    {s.name}
                   </Text>
-                  <Button as={Link} to="/products" colorScheme="textColor">
-                    Découvrir des produits
-                  </Button>
                 </VStack>
-              </Center>
-            ) : (
-              <>
-                <SimpleGrid columns={{ base: 2, md: 3, lg: 4 }} spacing={4}>
-                  {products.map((p) => (
-                    <Box key={p.id}>
-                      <ProductCard
-                        id={String(p.id)}
-                        title={p.title || p.name}
-                        description={p.description}
-                        price={p.price ?? p.amount}
-                        originalPrice={p.original_price ?? p.originalPrice}
-                        discount={p.discount ?? 0}
-                        image_url={p.image_url ?? p.product_image}
-                        images={p.images ?? (p.image_url ? [p.image_url] : (p.product_image ? [p.product_image] : []))}
-                        shopId={p.shop_id || p.seller_id || p.shopId}
-                        quantity={p.quantity ?? p.quantite ?? p.stock ?? p.amount_available}
-                        shopName={p.shop_name}
-                        shopDomain={p.shop_domain}
-                      />
-                    </Box>
-                  ))}
-                </SimpleGrid>
+              ))}
+            </HStack>
+          </Box>
+        </Box>
+      )}
 
-                {products.length < total && (
-                  <Center mt={8}>
-                    <Button onClick={loadMore} colorScheme={textColor} size="lg">
-                      Charger plus de produits
-                    </Button>
-                  </Center>
-                )}
-              </>
-            )}
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
+      {/* Products Grid */}
+      {(!products || products.length === 0) ? (
+        <Center py={12} borderRadius="lg" shadow="sm">
+          <VStack spacing={4}>
+            <Heading size="md" color={textColor}>Votre fil est vide</Heading>
+            <Text color={textColor} textAlign="center">
+              Suivez des boutiques pour voir leurs produits ici.
+            </Text>
+            <Button as={Link} to="/products" colorScheme="gray">
+              Découvrir des produits
+            </Button>
+          </VStack>
+        </Center>
+      ) : (
+        <>
+          <SimpleGrid columns={{ base: 2, md: 3, lg: 4 }} spacing={4}>
+            {products.map((p) => (
+              <Box key={p.id}>
+                <ProductCard
+                  id={String(p.id)}
+                  title={p.title || p.name}
+                  description={p.description}
+                  price={p.price ?? p.amount}
+                  originalPrice={p.original_price ?? p.originalPrice}
+                  discount={p.discount ?? 0}
+                  image_url={p.image_url ?? p.product_image}
+                  images={p.images ?? (p.image_url ? [p.image_url] : (p.product_image ? [p.product_image] : []))}
+                  shopId={p.shop_id || p.seller_id || p.shopId}
+                  quantity={p.quantity ?? p.quantite ?? p.stock ?? p.amount_available}
+                  shopName={p.shop_name}
+                  shopDomain={p.shop_domain}
+                />
+              </Box>
+            ))}
+          </SimpleGrid>
+
+          {products.length < total && (
+            <Center mt={8}>
+              <Button onClick={loadMore} colorScheme="gray" size="lg">
+                Charger plus de produits
+              </Button>
+            </Center>
+          )}
+        </>
+      )}
 
       {/* Story modal */}
       <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
@@ -266,6 +203,7 @@ export default function Feed() {
           </ModalBody>
         </ModalContent>
       </Modal>
+
       <ScrollTopButton />
     </Box>
   )
