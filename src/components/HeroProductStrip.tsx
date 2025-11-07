@@ -158,7 +158,6 @@ export default function HeroProductGrid({
           transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
           border="1px solid"
           borderColor={useColorModeValue('gray.200', 'gray.600')}
-          backdropFilter="blur(8px)"
         />
       )}
 
@@ -190,7 +189,6 @@ export default function HeroProductGrid({
           transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
           border="1px solid"
           borderColor={useColorModeValue('gray.200', 'gray.600')}
-          backdropFilter="blur(8px)"
         />
       )}
 
