@@ -22,6 +22,7 @@ import {
   Progress,
   AspectRatio,
   useToast,
+  useBreakpointValue,
 } from '@chakra-ui/react'
 import { FiUpload, FiImage, FiX, FiCheck, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import BackButton from '../components/BackButton'
@@ -51,6 +52,13 @@ export default function ProductEditor() {
   const borderColor = useColorModeValue('gray.200', 'gray.600')
   const hoverBorderColor = useColorModeValue('blue.400', 'blue.300')
 
+  // Responsive values
+  const containerPadding = useBreakpointValue({ base: 4, sm: 6, md: 10 })
+  const formPadding = useBreakpointValue({ base: 4, sm: 6, md: 8 })
+  const imageSize = useBreakpointValue({ base: '80px', sm: '100px', md: '120px' })
+  const buttonSize = useBreakpointValue({ base: 'sm', md: 'lg' })
+  const headingSize = useBreakpointValue({ base: 'xl', md: '2xl' })
+
   useEffect(() => {
     api.categories.list().then(setCategories).catch(console.error)
 
@@ -74,7 +82,7 @@ export default function ProductEditor() {
 
   useEffect(() => {
     if (id) return
-    (async () => {
+    ;(async () => {
       try {
         const token = getItem('token')
         const s = await api.shops.me(token ?? undefined)
@@ -213,8 +221,8 @@ export default function ProductEditor() {
       }
       // include quantity if provided
       if (typeof quantity !== 'undefined' && quantity !== null) payload.quantity = Number(quantity)
-  if (image_url) payload.image_url = image_url
-  if (imagesPayload && imagesPayload.length) payload.images = imagesPayload
+      if (image_url) payload.image_url = image_url
+      if (imagesPayload && imagesPayload.length) payload.images = imagesPayload
 
       if (id) {
         await api.products.update(id, payload, token ?? undefined)
@@ -253,26 +261,34 @@ export default function ProductEditor() {
   }
 
   return (
-    <Container maxW="container.sm" py={10} pb={{ base: '120px', md: 10 }} overflow="visible">
+    <Container 
+      maxW="container.sm" 
+      py={containerPadding} 
+      pb={{ base: '120px', md: 10 }} 
+      overflow="visible"
+      px={4}
+    >
       <BackButton />
       <Heading 
         mb={6} 
         textAlign="center" 
-        fontSize="2xl" 
-        bgGradient="linear(to-r, white)"
+        fontSize={headingSize}
+        bgGradient="linear(to-r, blue.400, blue.600)"
         bgClip="text"
         fontWeight="700"
+        px={2}
       >
         {id ? 'Modifier le produit' : 'Ajouter un produit'}
       </Heading>
 
       <Box
         bg={bgForm}
-        p={8}
+        p={formPadding}
         borderRadius="2xl"
         boxShadow="0 8px 32px rgba(0,0,0,0.08)"
         border="1px solid"
         borderColor={borderColor}
+        overflow="hidden"
       >
         <Stack spacing={6} as="form" onSubmit={handleSubmit}>
           <FormControl isRequired>
@@ -320,17 +336,134 @@ export default function ProductEditor() {
             />
           </FormControl>
 
-          <FormControl>
-            <FormLabel color={labelColor} fontWeight="600" fontSize="sm" mb={2}>
-              Prix original (FCFA)
-            </FormLabel>
-            <NumberInput 
-              min={0} 
-              precision={0} 
-              value={originalPrice} 
-              onChange={(v) => setOriginalPrice(Number(v) || undefined)}
-            >
-              <NumberInputField
+          {/* Grid pour les champs de prix sur mobile */}
+          <Flex 
+            direction={{ base: 'column', sm: 'row' }} 
+            gap={{ base: 4, sm: 3 }}
+            wrap="wrap"
+          >
+            <FormControl flex={{ base: '1', sm: '1' }} minW={{ base: '100%', sm: '140px' }}>
+              <FormLabel color={labelColor} fontWeight="600" fontSize="sm" mb={2}>
+                Prix original (FCFA)
+              </FormLabel>
+              <NumberInput 
+                min={0} 
+                precision={0} 
+                value={originalPrice} 
+                onChange={(v) => setOriginalPrice(Number(v) || undefined)}
+              >
+                <NumberInputField
+                  bg="white"
+                  color="gray.800"
+                  borderRadius="lg"
+                  border="2px solid"
+                  borderColor={borderColor}
+                  _hover={{ borderColor: 'gray.300' }}
+                  _focus={{
+                    borderColor: 'blue.500',
+                    boxShadow: '0 0 0 1px blue.500'
+                  }}
+                  placeholder="Prix avant réduction"
+                />
+              </NumberInput>
+            </FormControl>
+
+            <FormControl flex={{ base: '1', sm: '0.8' }} minW={{ base: '100%', sm: '110px' }}>
+              <FormLabel color={labelColor} fontWeight="600" fontSize="sm" mb={2}>
+                Réduction (%)
+              </FormLabel>
+              <NumberInput 
+                min={0} 
+                max={100}
+                precision={0} 
+                value={discount} 
+                onChange={(v) => {
+                  const val = Number(v) || 0
+                  setDiscount(Math.min(100, Math.max(0, val)))
+                  if (originalPrice && val > 0) {
+                    // Calculer automatiquement le nouveau prix avec la réduction
+                    const discountedPrice = originalPrice * (1 - val / 100)
+                    setPrice(Math.round(discountedPrice))
+                  }
+                }}
+              >
+                <NumberInputField
+                  bg="white"
+                  color="gray.800"
+                  borderRadius="lg"
+                  border="2px solid"
+                  borderColor={borderColor}
+                  _hover={{ borderColor: 'gray.300' }}
+                  _focus={{
+                    borderColor: 'blue.500',
+                    boxShadow: '0 0 0 1px blue.500'
+                  }}
+                  placeholder="0"
+                />
+              </NumberInput>
+            </FormControl>
+
+            <FormControl flex={{ base: '1', sm: '1' }} minW={{ base: '100%', sm: '140px' }}>
+              <FormLabel color={labelColor} fontWeight="600" fontSize="sm" mb={2}>
+                Prix final (FCFA)
+              </FormLabel>
+              <NumberInput 
+                min={0} 
+                precision={0} 
+                value={price} 
+                onChange={(v) => setPrice(Number(v) || 0)}
+              >
+                <NumberInputField
+                  bg="white"
+                  color="gray.800"
+                  borderRadius="lg"
+                  border="2px solid"
+                  borderColor={borderColor}
+                  _hover={{ borderColor: 'gray.300' }}
+                  _focus={{
+                    borderColor: 'blue.500',
+                    boxShadow: '0 0 0 1px blue.500'
+                  }}
+                  placeholder="5000"
+                />
+              </NumberInput>
+            </FormControl>
+          </Flex>
+
+          <Flex 
+            direction={{ base: 'column', sm: 'row' }} 
+            gap={{ base: 4, sm: 3 }}
+            wrap="wrap"
+          >
+            <FormControl flex={{ base: '1', sm: '1' }} minW={{ base: '100%', sm: '160px' }}>
+              <FormLabel color={labelColor} fontWeight="600" fontSize="sm" mb={2}>
+                Quantité disponible
+              </FormLabel>
+              <NumberInput min={0} value={quantity} onChange={(v) => setQuantity(Number(v) || 0)}>
+                <NumberInputField
+                  bg="white"
+                  color="gray.800"
+                  borderRadius="lg"
+                  border="2px solid"
+                  borderColor={borderColor}
+                  _hover={{ borderColor: 'gray.300' }}
+                  _focus={{
+                    borderColor: 'blue.500',
+                    boxShadow: '0 0 0 1px blue.500'
+                  }}
+                  placeholder="0"
+                />
+              </NumberInput>
+            </FormControl>
+
+            <FormControl isRequired flex={{ base: '1', sm: '2' }} minW={{ base: '100%', sm: '200px' }}>
+              <FormLabel color={labelColor} fontWeight="600" fontSize="sm" mb={2}>
+                Catégorie
+              </FormLabel>
+              <Select
+                placeholder="Choisissez une catégorie"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(Number(e.target.value))}
                 bg="white"
                 color="gray.800"
                 borderRadius="lg"
@@ -341,120 +474,16 @@ export default function ProductEditor() {
                   borderColor: 'blue.500',
                   boxShadow: '0 0 0 1px blue.500'
                 }}
-                placeholder="Prix avant réduction"
-              />
-            </NumberInput>
-          </FormControl>
-
-          <FormControl>
-            <FormLabel color={labelColor} fontWeight="600" fontSize="sm" mb={2}>
-              Réduction (%)
-            </FormLabel>
-            <NumberInput 
-              min={0} 
-              max={100}
-              precision={0} 
-              value={discount} 
-              onChange={(v) => {
-                const val = Number(v) || 0
-                setDiscount(Math.min(100, Math.max(0, val)))
-                if (originalPrice && val > 0) {
-                  // Calculer automatiquement le nouveau prix avec la réduction
-                  const discountedPrice = originalPrice * (1 - val / 100)
-                  setPrice(Math.round(discountedPrice))
-                }
-              }}
-            >
-              <NumberInputField
-                bg="white"
-                color="gray.800"
-                borderRadius="lg"
-                border="2px solid"
-                borderColor={borderColor}
-                _hover={{ borderColor: 'gray.300' }}
-                _focus={{
-                  borderColor: 'blue.500',
-                  boxShadow: '0 0 0 1px blue.500'
-                }}
-                placeholder="0"
-              />
-            </NumberInput>
-          </FormControl>
-
-          <FormControl>
-            <FormLabel color={labelColor} fontWeight="600" fontSize="sm" mb={2}>
-              Prix final (FCFA)
-            </FormLabel>
-            <NumberInput 
-              min={0} 
-              precision={0} 
-              value={price} 
-              onChange={(v) => setPrice(Number(v) || 0)}
-            >
-              <NumberInputField
-                bg="white"
-                color="gray.800"
-                borderRadius="lg"
-                border="2px solid"
-                borderColor={borderColor}
-                _hover={{ borderColor: 'gray.300' }}
-                _focus={{
-                  borderColor: 'blue.500',
-                  boxShadow: '0 0 0 1px blue.500'
-                }}
-                placeholder="5000"
-              />
-            </NumberInput>
-          </FormControl>
-
-          <FormControl>
-            <FormLabel color={labelColor} fontWeight="600" fontSize="sm" mb={2}>
-              Quantité disponible
-            </FormLabel>
-            <NumberInput min={0} value={quantity} onChange={(v) => setQuantity(Number(v) || 0)}>
-              <NumberInputField
-                bg="white"
-                color="gray.800"
-                borderRadius="lg"
-                border="2px solid"
-                borderColor={borderColor}
-                _hover={{ borderColor: 'gray.300' }}
-                _focus={{
-                  borderColor: 'blue.500',
-                  boxShadow: '0 0 0 1px blue.500'
-                }}
-                placeholder="0"
-              />
-            </NumberInput>
-          </FormControl>
-
-          <FormControl isRequired>
-            <FormLabel color={labelColor} fontWeight="600" fontSize="sm" mb={2}>
-              Catégorie
-            </FormLabel>
-            <Select
-              placeholder="Choisissez une catégorie"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(Number(e.target.value))}
-              bg="white"
-              color="gray.800"
-              borderRadius="lg"
-              border="2px solid"
-              borderColor={borderColor}
-              _hover={{ borderColor: 'gray.300' }}
-              _focus={{
-                borderColor: 'blue.500',
-                boxShadow: '0 0 0 1px blue.500'
-              }}
-              size="lg"
-            >
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </Select>
-          </FormControl>
+                size="lg"
+              >
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </Select>
+            </FormControl>
+          </Flex>
 
           <FormControl>
             <FormLabel color={labelColor} fontWeight="600" fontSize="sm" mb={3}>
@@ -466,7 +495,7 @@ export default function ProductEditor() {
                 border="2px dashed"
                 borderColor={isDragging ? 'blue.400' : borderColor}
                 borderRadius="xl"
-                p={8}
+                p={6}
                 textAlign="center"
                 cursor="pointer"
                 transition="all 0.3s ease"
@@ -484,11 +513,11 @@ export default function ProductEditor() {
                 <VStack spacing={4}>
                   <Icon as={FiUpload} boxSize={8} color="gray.400" />
                   <Box>
-                    <Text fontWeight="600" color="gray.700" mb={1}>
+                    <Text fontWeight="600" color="gray.700" mb={1} fontSize="sm">
                       Cliquez pour uploader ou glissez-déposez
                     </Text>
-                    <Text fontSize="sm" color="gray.500">
-                      PNG, JPG, WEBP jusqu’à 10 MB (jusqu'à 12 images)
+                    <Text fontSize="xs" color="gray.500">
+                      PNG, JPG, WEBP jusqu'à 10 MB (max 12 images)
                     </Text>
                   </Box>
                   <Button
@@ -503,40 +532,140 @@ export default function ProductEditor() {
                 </VStack>
               </Box>
             ) : (
-              <Box>
-                <Text fontSize="sm" color="gray.500" mb={2}>{images.length} image(s)</Text>
-                <Flex wrap="wrap" gap={3}>
-                  {images.map((it, idx) => (
-                    <Box key={idx} position="relative" width="120px" borderRadius="md" overflow="hidden" border="1px solid" borderColor={borderColor}>
-                      <AspectRatio ratio={4/3}>
-                        <Image src={it.url} alt={`Image ${idx+1}`} objectFit="cover" />
-                      </AspectRatio>
-                      <Box position="absolute" top={2} right={2} display="flex" gap={2}>
-                        <Icon as={FiX} boxSize={4} color="white" bg="red.500" borderRadius="full" p={1} cursor="pointer" onClick={() => removeImage(idx)} />
+              <Box overflow="hidden">
+                <Text fontSize="sm" color="gray.500" mb={3}>
+                  {images.length} image(s) - Glissez pour réorganiser
+                </Text>
+                
+                {/* Container scrollable pour les images */}
+                <Box 
+                  overflowX="auto" 
+                  overflowY="visible"
+                  pb={2}
+                  sx={{
+                    '&::-webkit-scrollbar': {
+                      height: '6px',
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      background: 'gray.100',
+                      borderRadius: '3px',
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      background: 'gray.300',
+                      borderRadius: '3px',
+                    },
+                    '&::-webkit-scrollbar-thumb:hover': {
+                      background: 'gray.400',
+                    },
+                  }}
+                >
+                  <Flex 
+                    gap={3} 
+                    minW="min-content"
+                    wrap="nowrap"
+                    pb={1}
+                  >
+                    {images.map((it, idx) => (
+                      <Box 
+                        key={idx} 
+                        position="relative" 
+                        width={imageSize}
+                        flexShrink={0}
+                        borderRadius="md" 
+                        overflow="hidden" 
+                        border="1px solid" 
+                        borderColor={borderColor}
+                        boxShadow="sm"
+                      >
+                        <AspectRatio ratio={4/3}>
+                          <Image 
+                            src={it.url} 
+                            alt={`Image ${idx+1}`} 
+                            objectFit="cover" 
+                            w="100%"
+                            h="100%"
+                          />
+                        </AspectRatio>
+                        
+                        {/* Boutons de contrôle */}
+                        <Box position="absolute" top={1} right={1} display="flex" gap={1}>
+                          <Icon 
+                            as={FiX} 
+                            boxSize={3} 
+                            color="white" 
+                            bg="red.500" 
+                            borderRadius="full" 
+                            p={1} 
+                            cursor="pointer" 
+                            onClick={() => removeImage(idx)}
+                            fontSize="10px"
+                          />
+                        </Box>
+                        
+                        <Box position="absolute" left={1} bottom={1} display="flex" gap={1}>
+                          <Icon 
+                            as={FiChevronLeft} 
+                            boxSize={3} 
+                            color="white" 
+                            bg="blackAlpha.700" 
+                            borderRadius="full" 
+                            p={1} 
+                            cursor="pointer" 
+                            onClick={() => moveImage(idx, Math.max(0, idx - 1))}
+                            fontSize="10px"
+                          />
+                          <Icon 
+                            as={FiChevronRight} 
+                            boxSize={3} 
+                            color="white" 
+                            bg="blackAlpha.700" 
+                            borderRadius="full" 
+                            p={1} 
+                            cursor="pointer" 
+                            onClick={() => moveImage(idx, Math.min(images.length - 1, idx + 1))}
+                            fontSize="10px"
+                          />
+                        </Box>
                       </Box>
-                      <Box position="absolute" left={2} bottom={2} display="flex" gap={2}>
-                        <Icon as={FiChevronLeft} boxSize={4} color="white" bg="blackAlpha.600" borderRadius="full" p={1} cursor="pointer" onClick={() => moveImage(idx, Math.max(0, idx - 1))} />
-                        <Icon as={FiChevronRight} boxSize={4} color="white" bg="blackAlpha.600" borderRadius="full" p={1} cursor="pointer" onClick={() => moveImage(idx, Math.min(images.length - 1, idx + 1))} />
-                      </Box>
-                    </Box>
-                  ))}
-                </Flex>
+                    ))}
+                  </Flex>
+                </Box>
 
-                <HStack spacing={3} mt={4}>
-                  <Button size="sm" variant="outline" leftIcon={<FiImage />} onClick={handleClickUpload}>Ajouter d'autres images</Button>
-                  <Button size="sm" colorScheme="red" variant="ghost" onClick={() => { setImages([]) }}>Supprimer toutes</Button>
-                </HStack>
+                {/* Boutons d'action pour les images */}
+                <Flex 
+                  direction={{ base: 'column', sm: 'row' }} 
+                  gap={3} 
+                  mt={4}
+                  wrap="wrap"
+                >
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    leftIcon={<FiImage />} 
+                    onClick={handleClickUpload}
+                    flex={{ base: '1', sm: 'none' }}
+                  >
+                    Ajouter d'autres images
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    colorScheme="red" 
+                    variant="ghost" 
+                    onClick={() => { setImages([]) }}
+                    flex={{ base: '1', sm: 'none' }}
+                  >
+                    Supprimer toutes
+                  </Button>
+                </Flex>
               </Box>
             )}
           </FormControl>
 
-
           <Button
             type="submit"
             colorScheme="blue"
-            bg="whiteAlpha.100"
-            size="lg"
-            height="56px"
+            size={buttonSize}
+            height={{ base: '48px', md: '56px' }}
             borderRadius="xl"
             fontSize="md"
             fontWeight="600"
@@ -549,6 +678,7 @@ export default function ProductEditor() {
             }}
             transition="all 0.3s ease"
             leftIcon={loading ? undefined : <FiCheck />}
+            width="full"
           >
             {id ? 'Mettre à jour le produit' : 'Créer le produit'}
           </Button>
