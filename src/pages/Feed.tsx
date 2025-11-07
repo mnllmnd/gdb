@@ -35,7 +35,12 @@ export default function Feed() {
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [activeStory, setActiveStory] = React.useState<Record<string, any> | null>(null)
 
-  const textColor = useColorModeValue('black', 'white')
+  // CORRECTION : Utilisation correcte de useColorModeValue
+  const bgColor = useColorModeValue('white', 'black')
+  const textColor = useColorModeValue('gray.800', 'white')
+  const borderColor = useColorModeValue('gray.200', 'gray.600')
+  const modalBg = useColorModeValue('white', 'gray.800')
+  const modalTextColor = useColorModeValue('gray.800', 'white')
 
   React.useEffect(() => {
     let mounted = true
@@ -75,9 +80,9 @@ export default function Feed() {
 
   if (isLoading) {
     return (
-      <Center py={12} bg={textColor} minH="100vh">
+      <Center py={12} bg={bgColor} minH="100vh">
         <VStack>
-          <Spinner size="xl" color={textColor} />
+          <Spinner size="xl" color="blue.500" />
           <Text color={textColor}>Chargement du fil d'actualité…</Text>
         </VStack>
       </Center>
@@ -89,13 +94,22 @@ export default function Feed() {
       py={6} 
       px={{ base: 3, md: 6 }} 
       minH="100vh"
+      bg={bgColor}
       color={textColor}
     >
       <Heading size="lg" mb={4} color={textColor}>Fil d'actualité</Heading>
 
       {/* Stories strip */}
       {stories && stories.length > 0 && (
-        <Box mb={6} p={4}  borderRadius="lg" shadow="sm">
+        <Box 
+          mb={6} 
+          p={4} 
+          bg={bgColor}
+          border="1px solid"
+          borderColor={borderColor}
+          borderRadius="lg" 
+          shadow="sm"
+        >
           <Heading size="md" mb={3} color={textColor}>Vos boutiques suivies</Heading>
           <Box overflowX="auto">
             <HStack spacing={4} px={2}>
@@ -112,7 +126,7 @@ export default function Feed() {
                     name={s.name} 
                     src={s.logo_url} 
                     border="2px solid"
-                    borderColor={textColor}
+                    borderColor="blue.500" // Couleur fixe pour la bordure
                     _hover={{ transform: 'scale(1.1)' }}
                     transition="transform 0.2s"
                   />
@@ -135,13 +149,20 @@ export default function Feed() {
 
       {/* Products Grid */}
       {(!products || products.length === 0) ? (
-        <Center py={12} borderRadius="lg" shadow="sm">
+        <Center 
+          py={12} 
+          bg={bgColor}
+          border="1px solid"
+          borderColor={borderColor}
+          borderRadius="lg" 
+          shadow="sm"
+        >
           <VStack spacing={4}>
             <Heading size="md" color={textColor}>Votre fil est vide</Heading>
             <Text color={textColor} textAlign="center">
               Suivez des boutiques pour voir leurs produits ici.
             </Text>
-            <Button as={Link} to="/products" colorScheme="gray">
+            <Button as={Link} to="/products" colorScheme="blue">
               Découvrir des produits
             </Button>
           </VStack>
@@ -171,7 +192,7 @@ export default function Feed() {
 
           {products.length < total && (
             <Center mt={8}>
-              <Button onClick={loadMore} colorScheme="gray" size="lg">
+              <Button onClick={loadMore} colorScheme="blue" size="lg">
                 Charger plus de produits
               </Button>
             </Center>
@@ -179,21 +200,23 @@ export default function Feed() {
         </>
       )}
 
-      {/* Story modal */}
+      {/* Story modal - CORRECTION */}
       <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
         <ModalOverlay />
-        <ModalContent bg={textColor}>
-          <ModalCloseButton color={textColor} />
+        <ModalContent bg={modalBg} color={modalTextColor}>
+          <ModalCloseButton />
           <ModalBody py={8}>
             {activeStory && (
               <VStack spacing={4} align="center" textAlign="center">
                 <Avatar size="2xl" name={activeStory.name} src={activeStory.logo_url} mb={2} />
-                <Heading size="md" color="white">{activeStory.name}</Heading>
-                <Text color="gray.300">{activeStory.description}</Text>
+                <Heading size="md" color={modalTextColor}>{activeStory.name}</Heading>
+                <Text color={modalTextColor} opacity={0.8}>
+                  {activeStory.description}
+                </Text>
                 <Button 
                   as={Link} 
                   to={`/shop/${activeStory.domain || activeStory.id}`} 
-                  colorScheme="brand"
+                  colorScheme="blue"
                   mt={4}
                 >
                   Visiter la boutique
