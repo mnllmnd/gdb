@@ -531,12 +531,12 @@ export default function Home() {
     return (
       <ScaleFade in={!isLoading} initialScale={0.95}>
         <VStack spacing={0} align="stretch">
-          {/* Boutiques populaires - MAINTENANT EN HAUT */}
+          {/* Boutiques populaires */}
           {popularShops && popularShops.length > 0 && (
             <ShopsCarousel shops={popularShops} title="Boutiques populaires" />
           )}
 
-          {/* Toutes les boutiques - ENSUITE */}
+          {/* Toutes les boutiques */}
           {otherShops.length > 0 && (
             <ShopsCarousel shops={otherShops} title="Toutes les boutiques" />
           )}
@@ -556,7 +556,89 @@ export default function Home() {
         onCategoryChange={setSelectedCategory}
       />
 
-      {/* CONTENU PRINCIPAL - LES BOUTIQUES S'AFFICHENT MAINTENANT EN PRIORITÉ EN HAUT */}
+      {/* Hero section (immersive) */}
+      <HeroNike />
+
+      {/* Bande immersive de vrais produits */}
+      <HeroProductStrip products={products.slice(0, 6)} shopsMap={shopsMap} />
+
+      {/* Two-column promo tiles */}
+      <Box as="section" px={{ base: 4, md: 6 }} py={8}>
+        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+          {(products || []).slice(0, 2).map((p) => {
+            const imgs = normalizeImages(p as any)
+            const img = imgs && imgs.length ? imgs[0] : '/img/b.jfif'
+            const shop = ((shopsMap.byId && shopsMap.byId[String((p as any).shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String((p as any).seller_id)])) || null
+            const shopDomain = shop?.domain || shop?.name
+            const target = shopDomain ? `/shop/${shopDomain}?product=${(p as any).id}` : `/products/${(p as any).id}`
+
+            return (
+              <Box
+                key={(p as any).id}
+                position="relative"
+                borderRadius="xl"
+                overflow="hidden"
+                minH={{ base: '220px', md: '420px' }}
+              >
+                <Image
+                  src={String(img)}
+                  alt={String(p.title || (p as any).name || 'product')}
+                  objectFit="cover"
+                  w="100%"
+                  h="100%"
+                />
+                
+                <Box
+                  position="absolute"
+                  inset={0}
+                  bgGradient="linear(to-b, rgba(0,0,0,0.0), rgba(0,0,0,0.55))"
+                />
+                
+                <Box
+                  position="absolute"
+                  left={{ base: 4, md: 12 }}
+                  bottom={{ base: 6, md: 12 }}
+                  color="white"
+                  zIndex={2}
+                  maxW={{ md: 'lg' }}
+                >
+                  <Text
+                    fontSize="sm"
+                    textTransform="uppercase"
+                    letterSpacing="wider"
+                    color="white"
+                  >
+                    {(p as any).category_name || ''}
+                  </Text>
+
+                  <Heading
+                    size={{ base: 'lg', md: '2xl' }}
+                    mt={2}
+                    color="white"
+                  >
+                    {p.title || (p as any).name}
+                  </Heading>
+
+                  <Button
+                    mt={4}
+                    as={RouterLink}
+                    to={target}
+                    bg={ctaBg}
+                    color={ctaColor}
+                    borderRadius="full"
+                    px={6}
+                    py={4}
+                    fontWeight={700}
+                  >
+                    Acheter
+                  </Button>
+                </Box>
+              </Box>
+            )
+          })}
+        </SimpleGrid>
+      </Box>
+
       <Container id="products-grid" maxW={{ base: '100%', lg: '90%', xl: '85%' }} py={8} px={{ base: 4, md: 6 }}>
         {isLoading ? (
           <Center py={12}>
@@ -584,103 +666,13 @@ export default function Home() {
             </VStack>
           </Center>
         ) : (
-          currentView === 'shops' ? (
-            // AFFICHAGE DES BOUTIQUES EN PREMIER
-            <Box>
-              {renderShopsView()}
-            </Box>
-          ) : (
-            // AFFICHAGE DES PRODUITS (l'ancien contenu)
+          currentView === 'products' ? (
             <Fade in={!isLoading}>
               <VStack spacing={8} align="stretch">
-                {/* Hero section (immersive) */}
-                <HeroNike />
-
-                {/* Bande immersive de vrais produits */}
-                <HeroProductStrip products={products.slice(0, 6)} shopsMap={shopsMap} />
-
-                {/* Two-column promo tiles */}
-                <Box as="section" px={{ base: 4, md: 6 }} py={8}>
-                  <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-                    {(products || []).slice(0, 2).map((p) => {
-                      const imgs = normalizeImages(p as any)
-                      const img = imgs && imgs.length ? imgs[0] : '/img/b.jfif'
-                      const shop = ((shopsMap.byId && shopsMap.byId[String((p as any).shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String((p as any).seller_id)])) || null
-                      const shopDomain = shop?.domain || shop?.name
-                      const target = shopDomain ? `/shop/${shopDomain}?product=${(p as any).id}` : `/products/${(p as any).id}`
-
-                      return (
-                        <Box
-                          key={(p as any).id}
-                          position="relative"
-                          borderRadius="xl"
-                          overflow="hidden"
-                          minH={{ base: '220px', md: '420px' }}
-                        >
-                          <Image
-                            src={String(img)}
-                            alt={String(p.title || (p as any).name || 'product')}
-                            objectFit="cover"
-                            w="100%"
-                            h="100%"
-                          />
-                          
-                          <Box
-                            position="absolute"
-                            inset={0}
-                            bgGradient="linear(to-b, rgba(0,0,0,0.0), rgba(0,0,0,0.55))"
-                          />
-                          
-                          <Box
-                            position="absolute"
-                            left={{ base: 4, md: 12 }}
-                            bottom={{ base: 6, md: 12 }}
-                            color="white"
-                            zIndex={2}
-                            maxW={{ md: 'lg' }}
-                          >
-                            <Text
-                              fontSize="sm"
-                              textTransform="uppercase"
-                              letterSpacing="wider"
-                              color="white"
-                            >
-                              {(p as any).category_name || ''}
-                            </Text>
-
-                            <Heading
-                              size={{ base: 'lg', md: '2xl' }}
-                              mt={2}
-                              color="white"
-                            >
-                              {p.title || (p as any).name}
-                            </Heading>
-
-                            <Button
-                              mt={4}
-                              as={RouterLink}
-                              to={target}
-                              bg={ctaBg}
-                              color={ctaColor}
-                              borderRadius="full"
-                              px={6}
-                              py={4}
-                              fontWeight={700}
-                            >
-                              Acheter
-                            </Button>
-                          </Box>
-                        </Box>
-                      )
-                    })}
-                  </SimpleGrid>
-                </Box>
-
-                {/* Grille de produits principale */}
                 <HeroProductStrip products={products} shopsMap={shopsMap} />
               </VStack>
             </Fade>
-          )
+          ) : renderShopsView()
         )}
       </Container>
 
