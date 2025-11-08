@@ -105,8 +105,8 @@ function ProductsCarousel({ products, title, shopsMap }: { products: any[]; titl
     }
   }
 
-  const accentColor = useColorModeValue('#111111', 'white')
-  const borderColor = useColorModeValue('#e5e5e5', 'gray.600')
+  const accentColor = useColorModeValue('#white', 'black')
+  const borderColor = useColorModeValue('#white', 'black')
 
   return (
     <Box
