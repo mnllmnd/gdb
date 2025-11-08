@@ -16,7 +16,6 @@ import SellerShop from './pages/SellerShop';
 import SellerOrders from './pages/SellerOrders';
 import ShopView from './pages/ShopView';
 import Feed from './pages/Feed';
-import ReelsPage from './pages/Reels';
 import CartPage from './pages/Cart';
 import Products from './pages/Products';
 import ProductView from './pages/ProductView';
@@ -79,7 +78,6 @@ export default function App() {
           <Route path="/cart" element={<CartPage />} />
           <Route path="/shop/:domain" element={<ShopView />} />
           <Route path="/feed" element={<Feed />} />
-          <Route path="/reels" element={<ReelsPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/signup" element={<Signup />} />

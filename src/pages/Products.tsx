@@ -42,9 +42,30 @@ import {
   MenuList,
   MenuItem,
   Divider,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+  Slider,
+  SliderTrack,
+  SliderFilledTrack,
+  SliderThumb,
+  RangeSlider,
+  RangeSliderTrack,
+  RangeSliderFilledTrack,
+  RangeSliderThumb,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverHeader,
+  PopoverBody,
+  PopoverFooter,
+  PopoverArrow,
+  PopoverCloseButton,
 } from '@chakra-ui/react'
 import { SearchIcon, CloseIcon, StarIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from '@chakra-ui/icons'
-import { FiPackage, FiGrid, FiFilter, FiTrendingUp, FiMenu, FiCheck } from 'react-icons/fi'
+import { FiPackage, FiGrid, FiFilter, FiTrendingUp, FiMenu, FiCheck, FiDollarSign } from 'react-icons/fi'
 import ProductCard from '../components/ProductCard'
 import api from '../services/api'
 
@@ -215,6 +236,119 @@ function ProductsCarousel({ products, title, shopsMap }: { products: any[]; titl
   )
 }
 
+// Composant pour le filtre de prix en FCFA
+function PriceFilter({ minPrice, maxPrice, onPriceChange, onApplyPriceFilter }: { 
+  minPrice: number, 
+  maxPrice: number, 
+  onPriceChange: (min: number, max: number) => void,
+  onApplyPriceFilter: () => void 
+}) {
+  const [localMinPrice, setLocalMinPrice] = React.useState(minPrice)
+  const [localMaxPrice, setLocalMaxPrice] = React.useState(maxPrice)
+
+  const handleSliderChange = (values: number[]) => {
+    setLocalMinPrice(values[0])
+    setLocalMaxPrice(values[1])
+  }
+
+  const handleApply = () => {
+    onPriceChange(localMinPrice, localMaxPrice)
+    onApplyPriceFilter()
+  }
+
+  const handleReset = () => {
+    setLocalMinPrice(0)
+    setLocalMaxPrice(1000000)
+    onPriceChange(0, 1000000)
+  }
+
+  // Fonction pour formater les prix en FCFA
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('fr-FR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(price) + ' FCFA'
+  }
+
+  return (
+    <VStack spacing={4} align="stretch" p={4}>
+      <Text fontWeight="600" fontSize="sm">Filtrer par prix (FCFA)</Text>
+      
+      <RangeSlider
+        aria-label={['prix min', 'prix max']}
+        min={0}
+        max={100000}
+        step={1000}
+        value={[localMinPrice, localMaxPrice]}
+        onChange={handleSliderChange}
+      >
+        <RangeSliderTrack bg="gray.200">
+          <RangeSliderFilledTrack bg="black" />
+        </RangeSliderTrack>
+        <RangeSliderThumb index={0} />
+        <RangeSliderThumb index={1} />
+      </RangeSlider>
+
+      <HStack spacing={3}>
+        <Box flex="1">
+          <Text fontSize="sm" mb={1} fontWeight="500">Prix minimum</Text>
+          <NumberInput
+            size="sm"
+            value={localMinPrice}
+            onChange={(_, value) => setLocalMinPrice(isNaN(value) ? 0 : value)}
+            min={0}
+            max={localMaxPrice}
+          >
+            <NumberInputField />
+            <NumberInputStepper>
+              <NumberIncrementStepper />
+              <NumberDecrementStepper />
+            </NumberInputStepper>
+          </NumberInput>
+          <Text fontSize="xs" color="gray.500" mt={1}>
+            {formatPrice(localMinPrice)}
+          </Text>
+        </Box>
+        <Box flex="1">
+          <Text fontSize="sm" mb={1} fontWeight="500">Prix maximum</Text>
+          <NumberInput
+            size="sm"
+            value={localMaxPrice}
+            onChange={(_, value) => setLocalMaxPrice(isNaN(value) ? 100000 : value)}
+            min={localMinPrice}
+            max={100000}
+          >
+            <NumberInputField />
+            <NumberInputStepper>
+              <NumberIncrementStepper />
+              <NumberDecrementStepper />
+            </NumberInputStepper>
+          </NumberInput>
+          <Text fontSize="xs" color="gray.500" mt={1}>
+            {formatPrice(localMaxPrice)}
+          </Text>
+        </Box>
+      </HStack>
+
+      <Box bg="gray.50" p={3} borderRadius="md">
+        <Text fontSize="sm" fontWeight="500" mb={1}>Plage sélectionnée :</Text>
+        <Text fontSize="md" fontWeight="600" color="green.600">
+          {formatPrice(localMinPrice)} - {formatPrice(localMaxPrice)}
+        </Text>
+      </Box>
+
+      <HStack spacing={2} mt={2}>
+        <Button size="sm" flex="1" onClick={handleApply} bg="black" color="white" _hover={{ bg: "gray.700" }}>
+          Appliquer
+        </Button>
+        <Button size="sm" flex="1" variant="outline" onClick={handleReset}>
+          Réinitialiser
+        </Button>
+      </HStack>
+    </VStack>
+  )
+}
+
 export default function Products() {
   const [products, setProducts] = React.useState<any[] | null>(null)
   const [categories, setCategories] = React.useState<any[] | null>(null)
@@ -226,6 +360,9 @@ export default function Products() {
   const [activeTab, setActiveTab] = React.useState(0)
   const [selectedCategory, setSelectedCategory] = React.useState<number | null>(null)
   const [sortBy, setSortBy] = React.useState<'default' | 'price-asc' | 'price-desc' | 'name'>('default')
+  const [minPrice, setMinPrice] = React.useState(0)
+  const [maxPrice, setMaxPrice] = React.useState(1000000)
+  const [isPriceFilterActive, setIsPriceFilterActive] = React.useState(false)
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   const borderColor = useColorModeValue('#e5e5e5', 'gray.600')
@@ -248,6 +385,14 @@ export default function Products() {
   })
 
   const isMobile = useBreakpointValue({ base: true, md: false })
+
+  // Fonction pour formater les prix en FCFA
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('fr-FR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(price) + ' FCFA'
+  }
 
   React.useEffect(() => {
     let mounted = true
@@ -296,7 +441,7 @@ export default function Products() {
       case 'price-asc':
         return sorted.sort((a, b) => (a.price ?? a.amount ?? 0) - (b.price ?? b.amount ?? 0))
       case 'price-desc':
-        return sorted.sort((a, b) => (b.price ?? b.amount ?? 0) - (a.price ?? a.amount ?? 0))
+        return sorted.sort((a, b) => (b.price ?? b.amount ?? 0) - (a.price ?? b.amount ?? 0))
       case 'name':
         return sorted.sort((a, b) => (a.title || a.name || '').localeCompare(b.title || b.name || ''))
       default:
@@ -322,6 +467,14 @@ export default function Products() {
       filtered = filtered.filter((p) => (p.category_id ?? 0) === selectedCategory)
     }
 
+    // Appliquer le filtre de prix
+    if (isPriceFilterActive) {
+      filtered = filtered.filter((p) => {
+        const price = p.price ?? p.amount ?? 0
+        return price >= minPrice && price <= maxPrice
+      })
+    }
+
     // Appliquer le tri
     filtered = sortProducts(filtered)
 
@@ -335,7 +488,7 @@ export default function Products() {
       map[cid].push(p)
     })
     setCategorizedProducts(map)
-  }, [query, selectedCategory, sortBy, allProducts])
+  }, [query, selectedCategory, sortBy, allProducts, minPrice, maxPrice, isPriceFilterActive])
 
   const popularProducts = React.useMemo(() => {
     return sortProducts(allProducts?.slice(0, 8) || [])
@@ -349,10 +502,26 @@ export default function Products() {
     }
   }
 
+  const handlePriceChange = (newMinPrice: number, newMaxPrice: number) => {
+    setMinPrice(newMinPrice)
+    setMaxPrice(newMaxPrice)
+  }
+
+  const applyPriceFilter = () => {
+    setIsPriceFilterActive(true)
+  }
+
+  const clearPriceFilter = () => {
+    setMinPrice(0)
+    setMaxPrice(100000)
+    setIsPriceFilterActive(false)
+  }
+
   const clearFilters = () => {
     setSelectedCategory(null)
     setQuery('')
     setSortBy('default')
+    clearPriceFilter()
   }
 
   if (loading) return (
@@ -373,7 +542,7 @@ export default function Products() {
     </Container>
   )
 
-  const hasActiveFilters = selectedCategory !== null || query.trim() !== '' || sortBy !== 'default'
+  const hasActiveFilters = selectedCategory !== null || query.trim() !== '' || sortBy !== 'default' || isPriceFilterActive
 
   return (
     <Container maxW="container.xl" py={4} pb={{ base: '120px', md: 8 }} px={{ base: 4, md: 6 }}>
@@ -562,6 +731,31 @@ export default function Products() {
                       />
                     </Badge>
                   )}
+                  {isPriceFilterActive && (
+                    <Badge 
+                      bg={badgeBg}
+                      color={badgeColor}
+                      px={3}
+                      py={1}
+                      borderRadius="full"
+                      fontWeight="500"
+                      display="flex"
+                      alignItems="center"
+                      gap={2}
+                    >
+                      {formatPrice(minPrice)} - {formatPrice(maxPrice)}
+                      <IconButton
+                        aria-label="Supprimer filtre prix"
+                        icon={<CloseIcon boxSize={2} />}
+                        size="xs"
+                        variant="unstyled"
+                        minW="auto"
+                        h="auto"
+                        onClick={clearPriceFilter}
+                        _hover={{ transform: 'scale(1.2)' }}
+                      />
+                    </Badge>
+                  )}
                   {sortBy !== 'default' && (
                     <Badge 
                       bg={badgeBg}
@@ -597,6 +791,109 @@ export default function Products() {
           {products?.length || 0} produit{(products?.length || 0) > 1 ? 's' : ''} {hasActiveFilters ? 'trouvé' + ((products?.length || 0) > 1 ? 's' : '') : ''}
         </Text>
       </VStack>
+
+      {/* Filtres desktop */}
+      {!isMobile && (
+        <Flex gap={6} mb={8}>
+          {/* Menu déroulant des catégories */}
+          <Menu>
+            <MenuButton
+              as={Button}
+              rightIcon={<ChevronDownIcon />}
+              variant="outline"
+              borderRadius="none"
+              borderColor={borderColor}
+              height="48px"
+              px={6}
+              fontWeight="500"
+              _hover={{ borderColor: accentColor }}
+              _active={{ bg: subtleBg }}
+              leftIcon={<FiPackage />}
+            >
+              {selectedCategory !== null 
+                ? categories?.find(c => c.id === selectedCategory)?.name || 'Catégorie'
+                : 'Toutes les catégories'}
+            </MenuButton>
+            <MenuList 
+              borderRadius="none" 
+              borderColor={borderColor}
+              maxH="400px"
+              overflowY="auto"
+            >
+              <MenuItem 
+                onClick={() => handleCategorySelect(null)}
+                fontWeight={selectedCategory === null ? '600' : '400'}
+                bg={selectedCategory === null ? subtleBg : 'transparent'}
+              >
+                Toutes les catégories
+                <Badge ml={2} colorScheme="black" variant="solid">
+                  {allProducts?.length || 0}
+                </Badge>
+              </MenuItem>
+              <Divider />
+              {categories?.filter(c => {
+                const allCatProducts = (allProducts || []).filter(p => (p.category_id ?? 0) === c.id)
+                return allCatProducts.length > 0
+              }).map((c: any) => {
+                const allCatProducts = (allProducts || []).filter(p => (p.category_id ?? 0) === c.id)
+                return (
+                  <MenuItem 
+                    key={c.id}
+                    onClick={() => handleCategorySelect(c.id)}
+                    fontWeight={selectedCategory === c.id ? '600' : '400'}
+                    bg={selectedCategory === c.id ? subtleBg : 'transparent'}
+                  >
+                    {c.name}
+                    <Badge ml={2} colorScheme="black" variant="solid">
+                      {allCatProducts.length}
+                    </Badge>
+                  </MenuItem>
+                )
+              })}
+            </MenuList>
+          </Menu>
+
+          {/* Filtre de prix */}
+          <Popover>
+            <PopoverTrigger>
+              <Button
+                variant="outline"
+                borderRadius="none"
+                borderColor={borderColor}
+                height="48px"
+                px={6}
+                fontWeight="500"
+                _hover={{ borderColor: accentColor }}
+                _active={{ bg: subtleBg }}
+                bg={isPriceFilterActive ? accentColor : 'transparent'}
+                color={isPriceFilterActive ? 'white' : textPrimary}
+              >
+                Prix
+                {isPriceFilterActive && (
+                  <Badge ml={2} variant="solid" colorScheme="white" color="black">
+                    {formatPrice(minPrice)} - {formatPrice(maxPrice)}
+                  </Badge>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent borderRadius="none" borderColor={borderColor}>
+              <PopoverArrow />
+              <PopoverCloseButton />
+              <PopoverHeader fontWeight="600" borderBottom="1px solid" borderColor={borderColor}>
+                Filtrer par prix (FCFA)
+              </PopoverHeader>
+              <PopoverBody p={0}>
+                <PriceFilter
+                  minPrice={minPrice}
+                  maxPrice={maxPrice}
+                  onPriceChange={handlePriceChange}
+                  onApplyPriceFilter={applyPriceFilter}
+                />
+              </PopoverBody>
+            </PopoverContent>
+          </Popover>
+        </Flex>
+      )}
 
       {/* Navigation desktop */}
       {!isMobile && !hasActiveFilters && (
@@ -762,61 +1059,83 @@ export default function Products() {
             fontWeight="600"
             py={6}
           >
-            Catégories
+            Filtres
           </DrawerHeader>
           <DrawerBody py={6} px={4}>
-            <VStack align="stretch" spacing={1}>
-              <Button
-                variant={selectedCategory === null ? "solid" : "ghost"}
-                justifyContent="start"
-                borderRadius="none"
-                py={4}
-                bg={selectedCategory === null ? accentColor : "transparent"}
-                color={selectedCategory === null ? "white" : textPrimary}
-                fontWeight="500"
-                onClick={() => handleCategorySelect(null)}
-                _hover={{
-                  bg: selectedCategory === null ? hoverColor : subtleBg
-                }}
-              >
-                Toutes les catégories
-              </Button>
-              <Divider my={2} />
-              {categories?.filter(c => {
-                const allCatProducts = (allProducts || []).filter(p => (p.category_id ?? 0) === c.id)
-                return allCatProducts.length > 0
-              }).map((c: any) => {
-                const allCatProducts = (allProducts || []).filter(p => (p.category_id ?? 0) === c.id)
-                return (
+            <VStack align="stretch" spacing={6}>
+              {/* Filtre de prix mobile */}
+              <Box>
+                <Text fontWeight="600" mb={4} fontSize="lg">Prix (FCFA)</Text>
+                <PriceFilter
+                  minPrice={minPrice}
+                  maxPrice={maxPrice}
+                  onPriceChange={handlePriceChange}
+                  onApplyPriceFilter={applyPriceFilter}
+                />
+              </Box>
+
+              <Divider />
+
+              {/* Catégories mobile */}
+              <Box>
+                <Text fontWeight="600" mb={4} fontSize="lg">Catégories</Text>
+                <VStack align="stretch" spacing={1}>
                   <Button
-                    key={c.id}
-                    variant={selectedCategory === c.id ? "solid" : "ghost"}
-                    justifyContent="space-between"
+                    variant={selectedCategory === null ? "solid" : "ghost"}
+                    justifyContent="start"
                     borderRadius="none"
                     py={4}
-                    bg={selectedCategory === c.id ? accentColor : "transparent"}
-                    color={selectedCategory === c.id ? "white" : textPrimary}
+                    bg={selectedCategory === null ? accentColor : "transparent"}
+                    color={selectedCategory === null ? "white" : textPrimary}
                     fontWeight="500"
-                    onClick={() => handleCategorySelect(c.id)}
+                    onClick={() => handleCategorySelect(null)}
                     _hover={{
-                      bg: selectedCategory === c.id ? hoverColor : subtleBg
+                      bg: selectedCategory === null ? hoverColor : subtleBg
                     }}
                   >
-                    <Text>{c.name}</Text>
-                    <Badge 
-                      bg={selectedCategory === c.id ? "white" : badgeBg} 
-                      color={selectedCategory === c.id ? accentColor : badgeColor}
-                      fontSize="xs"
-                      px={2}
-                      py={1}
-                      borderRadius="none"
-                      fontWeight="600"
-                    >
-                      {allCatProducts.length}
+                    Toutes les catégories
+                    <Badge ml="auto" bg={selectedCategory === null ? "white" : badgeBg} color={selectedCategory === null ? accentColor : badgeColor}>
+                      {allProducts?.length || 0}
                     </Badge>
                   </Button>
-                )
-              })}
+                  <Divider my={2} />
+                  {categories?.filter(c => {
+                    const allCatProducts = (allProducts || []).filter(p => (p.category_id ?? 0) === c.id)
+                    return allCatProducts.length > 0
+                  }).map((c: any) => {
+                    const allCatProducts = (allProducts || []).filter(p => (p.category_id ?? 0) === c.id)
+                    return (
+                      <Button
+                        key={c.id}
+                        variant={selectedCategory === c.id ? "solid" : "ghost"}
+                        justifyContent="space-between"
+                        borderRadius="none"
+                        py={4}
+                        bg={selectedCategory === c.id ? accentColor : "transparent"}
+                        color={selectedCategory === c.id ? "white" : textPrimary}
+                        fontWeight="500"
+                        onClick={() => handleCategorySelect(c.id)}
+                        _hover={{
+                          bg: selectedCategory === c.id ? hoverColor : subtleBg
+                        }}
+                      >
+                        <Text>{c.name}</Text>
+                        <Badge 
+                          bg={selectedCategory === c.id ? "white" : badgeBg} 
+                          color={selectedCategory === c.id ? accentColor : badgeColor}
+                          fontSize="xs"
+                          px={2}
+                          py={1}
+                          borderRadius="none"
+                          fontWeight="600"
+                        >
+                          {allCatProducts.length}
+                        </Badge>
+                      </Button>
+                    )
+                  })}
+                </VStack>
+              </Box>
             </VStack>
           </DrawerBody>
         </DrawerContent>
@@ -884,88 +1203,6 @@ export default function Products() {
   function renderAllProducts() {
     return (
       <>
-        {/* Grille de catégories */}
-        {!query && categories && categories.filter(c => {
-          const allCatProducts = (allProducts || []).filter(p => (p.category_id ?? 0) === c.id)
-          return allCatProducts.length > 0
-        }).length > 0 && !isMobile && (
-          <Box mb={12}>
-            <Text 
-              fontSize="md" 
-              fontWeight="600" 
-              color={textPrimary} 
-              mb={6} 
-              textTransform="uppercase" 
-              letterSpacing="1px"
-            >
-              Catégories
-            </Text>
-            <SimpleGrid columns={{ base: 2, sm: 3, md: 4, lg: 6 }} spacing={4}>
-              {categories
-                .filter((c: any) => {
-                  const allCatProducts = (allProducts || []).filter(p => (p.category_id ?? 0) === c.id)
-                  return allCatProducts.length > 0
-                })
-                .map((c: any) => {
-                  const allCatProducts = (allProducts || []).filter(p => (p.category_id ?? 0) === c.id)
-                  return (
-                    <Card 
-                      key={c.id}
-                      borderRadius="none"
-                      border="1px solid"
-                      borderColor={borderColor}
-                      bg="white"
-                      _hover={{ 
-                        borderColor: accentColor,
-                        transform: 'translateY(-2px)',
-                        transition: 'all 0.2s'
-                      }}
-                      cursor="pointer"
-                      onClick={() => handleCategorySelect(c.id)}
-                    >
-                      <CardBody p={4}>
-                        <VStack spacing={3}>
-                          <AspectRatio ratio={1} width="100%">
-                            <Box 
-                              bg={subtleBg}
-                              display="flex"
-                              alignItems="center"
-                              justifyContent="center"
-                            >
-                              <Icon as={FiPackage} boxSize={6} color={textSecondary} />
-                            </Box>
-                          </AspectRatio>
-                          <VStack spacing={1} width="100%">
-                            <Text 
-                              fontSize="sm" 
-                              fontWeight="600" 
-                              textAlign="center"
-                              noOfLines={2}
-                              color={textPrimary}
-                            >
-                              {c.name}
-                            </Text>
-                            <Badge 
-                              bg={badgeBg}
-                              color={badgeColor}
-                              fontSize="2xs" 
-                              px={2} 
-                              py={0} 
-                              borderRadius="none"
-                              fontWeight="600"
-                            >
-                              {allCatProducts.length}
-                            </Badge>
-                          </VStack>
-                        </VStack>
-                      </CardBody>
-                    </Card>
-                  )
-                })}
-            </SimpleGrid>
-          </Box>
-        )}
-
         {/* Produits sans catégorie */}
         {(categorizedProducts[0] || []).length > 0 && (
           <Box mb={12}>
