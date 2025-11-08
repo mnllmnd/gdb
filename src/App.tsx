@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { Box } from '@chakra-ui/react';
 import Home from './pages/Home';
 import SellerDashboard from './pages/SellerDashboard';
@@ -27,27 +27,19 @@ import { ChatPopup } from './components/ChatPopup';
 export default function App() {
   // Clear client-side caches on initial load to avoid stale content
   useEffect(() => {
-    // Do not clear full localStorage/sessionStorage on app boot — this removed
-    // authentication tokens and caused users to be logged out on every refresh.
-    // Keep other cleanup tasks but preserve stored auth data.
     try {
-      // preserve token and user when performing any selective cleanup
       const token = localStorage.getItem('token')
       const user = localStorage.getItem('user')
-      // (optional) migrate or trim other keys here if needed
-      // restore preserved keys after any selective cleaning
       if (token) localStorage.setItem('token', token)
       if (user) localStorage.setItem('user', user)
     } catch (e) { /* ignore */ }
 
-    // Clear CacheStorage (the caches API)
     try {
       if ('caches' in window) {
         caches.keys && caches.keys().then(keys => keys.forEach(k => { try { caches.delete(k) } catch {} }))
       }
     } catch (e) { /* ignore */ }
 
-    // Unregister any service workers
     try {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations && navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => { try { r.unregister() } catch {} }))
@@ -55,7 +47,6 @@ export default function App() {
       }
     } catch (e) { /* ignore */ }
 
-    // Best-effort: remove all IndexedDB databases where the browser exposes the list
     try {
       if ('indexedDB' in window && typeof (indexedDB as any).databases === 'function') {
         ;(indexedDB as any).databases().then((dbs: any[]) => dbs.forEach(d => { try { if (d && d.name) indexedDB.deleteDatabase(d.name) } catch {} })).catch(() => {})
@@ -65,6 +56,23 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <InnerApp />
+    </BrowserRouter>
+  )
+}
+
+function InnerApp() {
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    ;(globalThis as any).handleGlobalSearch = async (q: string) => {
+      navigate(`/products?q=${encodeURIComponent(q)}`)
+    }
+    return () => { (globalThis as any).handleGlobalSearch = undefined }
+  }, [navigate])
+
+  return (
+    <>
       <NavBar />
       <Box pb={{ base: '96px', md: 0 }}>
         <Routes>
@@ -89,9 +97,10 @@ export default function App() {
           <Route path="/wishlist" element={<Wishlist />} />
         </Routes>
       </Box>
-    
+
       {/* ChatPopup doit être ici, toujours à l'intérieur du JSX */}
       <ChatPopup />
-    </BrowserRouter>
-  );
+    </>
+  )
 }
+

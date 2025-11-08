@@ -64,10 +64,11 @@ import {
   PopoverArrow,
   PopoverCloseButton,
 } from '@chakra-ui/react'
-import { SearchIcon, CloseIcon, StarIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from '@chakra-ui/icons'
+import { CloseIcon, StarIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from '@chakra-ui/icons'
 import { FiPackage, FiGrid, FiFilter, FiTrendingUp, FiMenu, FiCheck, FiDollarSign } from 'react-icons/fi'
 import ProductCard from '../components/ProductCard'
 import api from '../services/api'
+import { useLocation } from 'react-router-dom'
 
 // Composant Carrousel pour les produits
 function ProductsCarousel({ products, title, shopsMap }: { products: any[]; title: string; shopsMap: Record<string, any> }) {
@@ -434,6 +435,17 @@ export default function Products() {
     return () => { mounted = false }
   }, [])
 
+  // Synchronise la query à partir du paramètre d'URL ?q=...
+  const location = useLocation()
+  React.useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const q = params.get('q') || ''
+    // Ne pas écraser inutilement si identique
+    if ((q || '') !== (query || '')) {
+      setQuery(q)
+    }
+  }, [location.search])
+
   // Fonction de tri
   const sortProducts = (productsList: any[]) => {
     const sorted = [...productsList]
@@ -547,8 +559,9 @@ export default function Products() {
   return (
     <Container maxW="container.xl" py={4} pb={{ base: '120px', md: 8 }} px={{ base: 4, md: 6 }}>
       <VStack spacing={6} align="stretch" mb={8}>
-        <Flex justify="space-between" align="center" gap={4}>
-          <Box flex="1">
+        {/* Header avec bouton pour ouvrir la sidebar sur mobile */}
+        <Flex justify="space-between" align="center" mb={6}>
+          <Box>
             <Heading 
               size={{ base: "xl", md: "2xl" }}
               fontWeight="700" 
@@ -565,111 +578,61 @@ export default function Products() {
           
           {isMobile && (
             <IconButton
-              aria-label="Filtrer par catégorie"
-              icon={<FiFilter />}
+              aria-label="Ouvrir les filtres"
+              icon={<FiMenu />}
+              size="lg"
               variant="outline"
               borderRadius="md"
               borderColor={borderColor}
-              bg="white"
               onClick={onOpen}
               _hover={{ bg: subtleBg }}
             />
           )}
         </Flex>
 
-        {/* Barre de recherche avec tri */}
+        {/* Barre de tri (le champ de recherche dans la navbar gère la recherche) */}
         <Flex gap={3} direction={{ base: 'column', sm: 'row' }}>
-          <Box flex="1">
-            <InputGroup size={{ base: "md", md: "lg" }}>
-              <InputLeftElement pointerEvents="none" height={{ base: "48px", md: "56px" }}>
-                <Icon as={SearchIcon} color={iconColor} boxSize={{ base: 4, md: 5 }} />
-              </InputLeftElement>
-              <Input
-                placeholder="Rechercher des produits..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                bg="white"
-                borderRadius="none"
-                border="1px solid"
-                borderColor={borderColor}
-                _hover={{ borderColor: accentColor }}
-                _focus={{
-                  borderColor: accentColor,
-                  boxShadow: 'none',
-                  borderWidth: '1.5px'
-                }}
-                fontSize={{ base: "sm", md: "md" }}
-                height={{ base: "48px", md: "56px" }}
-                px={{ base: 10, md: 12 }}
-                fontWeight="400"
-                letterSpacing="0.2px"
-              />
-              {query && (
-                <InputRightElement height={{ base: "48px", md: "56px" }}>
-                  <IconButton 
-                    aria-label="Effacer la recherche" 
-                    icon={<CloseIcon boxSize={3} />} 
-                    size="sm"
-                    variant="ghost"
-                    borderRadius="none"
-                    onClick={() => setQuery('')}
-                    _hover={{ bg: 'transparent', color: accentColor }}
-                  />
-                </InputRightElement>
-              )}
-            </InputGroup>
-          </Box>
+          {/* Espace réservé pour garder l'alignement sur petits écrans */}
+          <Box flex="1" />
 
           {/* Menu de tri */}
-          <Menu>
-            <MenuButton
-              as={Button}
-              rightIcon={<ChevronDownIcon />}
-              variant="outline"
-              borderRadius="none"
-              borderColor={borderColor}
-              height={{ base: "48px", md: "56px" }}
-              px={6}
-              fontWeight="500"
-              _hover={{ borderColor: accentColor }}
-              _active={{ bg: subtleBg }}
-            >
-              {sortBy === 'price-asc' && 'Prix croissant'}
-              {sortBy === 'price-desc' && 'Prix décroissant'}
-              {sortBy === 'name' && 'Nom A-Z'}
-              {sortBy === 'default' && 'Trier par'}
-            </MenuButton>
-            <MenuList borderRadius="none" borderColor={borderColor}>
-              <MenuItem 
-                onClick={() => setSortBy('default')}
-                fontWeight={sortBy === 'default' ? '600' : '400'}
-                icon={sortBy === 'default' ? <FiCheck /> : undefined}
-              >
-                Par défaut
-              </MenuItem>
-              <MenuItem 
-                onClick={() => setSortBy('price-asc')}
-                fontWeight={sortBy === 'price-asc' ? '600' : '400'}
-                icon={sortBy === 'price-asc' ? <FiCheck /> : undefined}
-              >
-                Prix croissant
-              </MenuItem>
-              <MenuItem 
-                onClick={() => setSortBy('price-desc')}
-                fontWeight={sortBy === 'price-desc' ? '600' : '400'}
-                icon={sortBy === 'price-desc' ? <FiCheck /> : undefined}
-              >
-                Prix décroissant
-              </MenuItem>
-              <MenuItem 
-                onClick={() => setSortBy('name')}
-                fontWeight={sortBy === 'name' ? '600' : '400'}
-                icon={sortBy === 'name' ? <FiCheck /> : undefined}
-              >
-                Nom A-Z
-              </MenuItem>
-            </MenuList>
-          </Menu>
+          <Flex justify="left" align="left" w="100%">
+  <Menu>
+    <MenuButton
+      as={Button}
+      rightIcon={<ChevronDownIcon />}
+      variant="outline"
+      borderRadius="none"
+      borderColor={borderColor}
+      height={{ base: "48px", md: "56px" }}
+      px={6}
+      fontWeight="500"
+      _hover={{ borderColor: accentColor }}
+      _active={{ bg: subtleBg }}
+    >
+      {sortBy === 'price-asc' && 'Prix croissant'}
+      {sortBy === 'price-desc' && 'Prix décroissant'}
+      {sortBy === 'name' && 'Nom A-Z'}
+      {sortBy === 'default' && 'Trier par'}
+    </MenuButton>
+
+    <MenuList borderRadius="none" borderColor={borderColor}>
+      <MenuItem onClick={() => setSortBy('default')} fontWeight={sortBy === 'default' ? '600' : '400'} icon={sortBy === 'default' ? <FiCheck /> : undefined}>
+        Par défaut
+      </MenuItem>
+      <MenuItem onClick={() => setSortBy('price-asc')} fontWeight={sortBy === 'price-asc' ? '600' : '400'} icon={sortBy === 'price-asc' ? <FiCheck /> : undefined}>
+        Prix croissant
+      </MenuItem>
+      <MenuItem onClick={() => setSortBy('price-desc')} fontWeight={sortBy === 'price-desc' ? '600' : '400'} icon={sortBy === 'price-desc' ? <FiCheck /> : undefined}>
+        Prix décroissant
+      </MenuItem>
+      <MenuItem onClick={() => setSortBy('name')} fontWeight={sortBy === 'name' ? '600' : '400'} icon={sortBy === 'name' ? <FiCheck /> : undefined}>
+        Nom A-Z
+      </MenuItem>
+    </MenuList>
+  </Menu>
+</Flex>
+
         </Flex>
 
         {/* Filtres actifs */}
@@ -942,7 +905,6 @@ export default function Products() {
               letterSpacing="0.3px"
             >
               <HStack spacing={3}>
-                <Icon as={StarIcon} boxSize={5} />
                 <Text>Populaires</Text>
               </HStack>
             </Tab>
