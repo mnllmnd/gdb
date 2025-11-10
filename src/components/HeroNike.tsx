@@ -5,9 +5,9 @@ const HeroNike: React.FC = () => {
   const overlay = useColorModeValue('rgba(255,255,255,0.02)', 'rgba(0,0,0,0.6)')
 
   const images: string[] = [
-    'https://i.pinimg.com/1200x/ec/37/0a/ec370a222fa318feaccb0564f04e2eec.jpg',
+    'https://i.pinimg.com/736x/a4/d0/db/a4d0db91c730e92177d0f72ffca000fa.jpg',
     'https://i.pinimg.com/1200x/f4/88/35/f488355a53b9431cf31a3f8492a77031.jpg',
-    'https://i.pinimg.com/1200x/5d/04/3f/5d043f1c625c436f7a79a2710938b3af.jpg',
+    'https://i.pinimg.com/736x/69/cd/fb/69cdfbc8139d1e5083854a7810372668.jpg',
   ]
 
   const [index, setIndex] = useState(0)
@@ -81,8 +81,7 @@ const HeroNike: React.FC = () => {
             position="absolute"
             top={0}
             left={0}
-            transition="opacity 1.5s ease-in-out"
-            opacity={setIdx === desktopSet ? 1 : 0}
+           
           >
             {imageSet.map((img, idx) => (
               <Box
