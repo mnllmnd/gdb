@@ -162,7 +162,7 @@ const HeroNike: React.FC = () => {
           textAlign="center"
           fontSize={{ base: 'md', md: 'lg' }}
         >
-          Une sélection épurée, pensée pour l'émotion et la découverte.
+          African Style
         </Text>
 
         <Box position="absolute" bottom={{ base: 8, md: 12 }}>
