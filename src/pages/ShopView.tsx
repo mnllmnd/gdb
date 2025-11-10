@@ -248,8 +248,8 @@ export default function ShopView() {
               bg={bgColor}
             >
               <Button
-                w="100%"
-                justifyContent="space-between"
+                w="50%"
+                justifyContent="center"
                 onClick={() => setReviewsOpen(!reviewsOpen)}
                 bg={bgColor}
                 _hover={{ bg: subtleBg }}
@@ -264,13 +264,13 @@ export default function ShopView() {
                   </Text>
                   {reviewCount > 0 && (
                     <Badge 
-                      bg={textColors}
-                      color={bgColor}
-                      fontSize={{ base: 'sm', md: 'md' }}
-                      px={{ base: 2, md: 3 }}
+                     
+                      color={textColors}
+                      fontSize={{ base: 'sm', md: 'sm' }}
+                      px={{ base: 1, md: 2 }}
                       py={1}
                       borderRadius="none"
-                      fontWeight="700"
+                      fontWeight="300"
                     >
                       {reviewCount}
                     </Badge>
@@ -341,28 +341,7 @@ export default function ShopView() {
 
             {/* 🛒 Produits - Grille améliorée */}
             <Box>
-              <Heading
-                size={{ base: 'lg', md: 'xl' }}
-                mb={{ base: 6, md: 8 }}
-                color={textPrimary}
-                textAlign="center"
-                fontWeight="900"
-                letterSpacing="tight"
-                textTransform="uppercase"
-                position="relative"
-                _after={{
-                  content: '""',
-                  position: 'absolute',
-                  bottom: '-8px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: '60px',
-                  height: '3px',
-                  bg: accentColor,
-                }}
-              >
-                Notre Collection
-              </Heading>
+             
 
               {products === null && (
                 <Flex justify="center" py={20}>
