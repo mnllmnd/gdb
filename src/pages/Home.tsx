@@ -406,6 +406,7 @@ export default function Home() {
   const secondaryTextColor = useColorModeValue('gray.600', 'gray.400')
   const ctaBg = useColorModeValue('white', 'black')
   const ctaColor = useColorModeValue('black', 'white')
+  const bgColor = useColorModeValue('gray.50', 'gray.700')
 
   React.useEffect(() => {
     async function loadData() {
@@ -580,7 +581,7 @@ export default function Home() {
           {/* CTA: montrer que chaque boutique est indépendante + inciter à créer la sienne */}
           <Box px={{ base: 4, md: 6 }} mb={6}>
   <Box
-    bg={useColorModeValue('gray.50', 'gray.700')}
+    bg={ctaBg}
     p={{ base: 4, md: 5 }}
     borderRadius="lg"
     border="1px solid"
@@ -596,7 +597,7 @@ export default function Home() {
       <HStack spacing={4} align="center" justify="center">
         <Icon as={FiShoppingBag} boxSize={6} />
         <VStack align={{ base: 'center', md: 'start' }} spacing={0}>
-          <Text fontWeight="700">
+          <Text fontWeight="500">
             Toutes les boutiques sont indépendantes
           </Text>
           <Text fontSize="sm" color={secondaryTextColor}>
@@ -612,7 +613,7 @@ export default function Home() {
         borderRadius="full"
         px={{ base: 6, md: 6 }}
         py={{ base: 3, md: 4 }}
-        fontWeight={700}
+        fontWeight={400}
         mt={{ base: 4, md: 0 }}
         width={{ base: 'full', md: 'auto' }}
       >
