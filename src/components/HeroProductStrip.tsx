@@ -8,6 +8,8 @@ import {
   Link as ChakraLink,
   IconButton,
   useBreakpointValue,
+  VStack,
+  Button,
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons'
@@ -92,6 +94,7 @@ export default function HeroProductGrid({
   const bg = useColorModeValue('white', '#0e0e0e')
   const textColor = useColorModeValue('black', 'white')
   const muted = useColorModeValue('gray.500', 'gray.400')
+  
 
   const checkScroll = () => {
     if (scrollRef.current) {
@@ -121,143 +124,222 @@ export default function HeroProductGrid({
     }
   }
 
+  const scrollToProducts = () => {
+    const el = document.getElementById('products-grid')
+    if (el) el.scrollIntoView({ behavior: 'smooth' })
+  }
+
   return (
-    <Box
-      id="hero-product-grid"
-      as="section"
-      my={12}
-      position="relative"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* Bouton précédent */}
-      {canScrollLeft && (isHovered || isMobile) && (
-        <IconButton
-          aria-label="Précédent"
-          icon={<ChevronLeftIcon boxSize={isMobile ? 5 : 7} />}
-          position="absolute"
-          left={isMobile ? 1 : 2}
-          top="50%"
-          transform="translateY(-50%)"
-          zIndex={10}
-          bg={useColorModeValue('white', 'gray.800')}
-          color={useColorModeValue('black', 'white')}
-          boxShadow="xl"
-          borderRadius="full"
-          size={isMobile ? 'sm' : 'lg'}
-          opacity={isMobile ? 0.9 : 0.95}
-          _hover={{ 
-            opacity: 1, 
-            transform: 'translateY(-50%) scale(1.1)',
-            bg: useColorModeValue('gray.50', 'gray.700')
-          }}
-          _active={{
-            transform: 'translateY(-50%) scale(0.95)'
-          }}
-          onClick={() => scroll('left')}
-          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-          border="1px solid"
-          borderColor={useColorModeValue('gray.200', 'gray.600')}
-        />
-      )}
-
-      {/* Bouton suivant */}
-      {canScrollRight && (isHovered || isMobile) && (
-        <IconButton
-          aria-label="Suivant"
-          icon={<ChevronRightIcon boxSize={isMobile ? 5 : 7} />}
-          position="absolute"
-          right={isMobile ? 1 : 2}
-          top="50%"
-          transform="translateY(-50%)"
-          zIndex={10}
-          bg={useColorModeValue('white', 'gray.800')}
-          color={useColorModeValue('black', 'white')}
-          boxShadow="xl"
-          borderRadius="full"
-          size={isMobile ? 'sm' : 'lg'}
-          opacity={isMobile ? 0.9 : 0.95}
-          _hover={{ 
-            opacity: 1, 
-            transform: 'translateY(-50%) scale(1.1)',
-            bg: useColorModeValue('gray.50', 'gray.700')
-          }}
-          _active={{
-            transform: 'translateY(-50%) scale(0.95)'
-          }}
-          onClick={() => scroll('right')}
-          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-          border="1px solid"
-          borderColor={useColorModeValue('gray.200', 'gray.600')}
-        />
-      )}
-
-      {/* Carrousel horizontal */}
+    <>
       <Box
-        ref={scrollRef}
-        display="flex"
-        overflowX="auto"
-        gap={{ base: 4, md: 6 }}
-        px={{ base: 4, md: 8 }}
-        py={2}
-        css={{
-          scrollbarWidth: 'none',
-          '&::-webkit-scrollbar': { display: 'none' },
-          scrollBehavior: 'smooth',
-        }}
+        id="hero-product-grid"
+        as="section"
+        my={12}
+        position="relative"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        {products.map((p) => {
-          const finalImages = Array.isArray(p.images) && p.images.length
-            ? p.images.map(String).filter(Boolean)
-            : p.image_url
-            ? [String(p.image_url)]
-            : p.product_image
-            ? [String(p.product_image)]
-            : ['/img/b.jfif']
-          const productHref = `/products/${encodeURIComponent(String(p.id))}`
+        {/* Bouton précédent */}
+        {canScrollLeft && (isHovered || isMobile) && (
+          <IconButton
+            aria-label="Précédent"
+            icon={<ChevronLeftIcon boxSize={isMobile ? 5 : 7} />}
+            position="absolute"
+            left={isMobile ? 1 : 2}
+            top="50%"
+            transform="translateY(-50%)"
+            zIndex={10}
+            bg={useColorModeValue('white', 'gray.800')}
+            color={useColorModeValue('black', 'white')}
+            boxShadow="xl"
+            borderRadius="full"
+            size={isMobile ? 'sm' : 'lg'}
+            opacity={isMobile ? 0.9 : 0.95}
+            _hover={{ 
+              opacity: 1, 
+              transform: 'translateY(-50%) scale(1.1)',
+              bg: useColorModeValue('gray.50', 'gray.700')
+            }}
+            _active={{
+              transform: 'translateY(-50%) scale(0.95)'
+            }}
+            onClick={() => scroll('left')}
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+            border="1px solid"
+            borderColor={useColorModeValue('gray.200', 'gray.600')}
+          />
+        )}
 
-          return (
-            <ChakraLink
-              as={RouterLink}
-              key={String(p.id)}
-              to={productHref}
-              _hover={{ textDecoration: 'none' }}
-              flexShrink={0}
-            >
-              <Box
-                bg={bg}
-                overflow="hidden"
-                transition="all 0.4s ease"
-                _hover={{ transform: 'scale(1.02)' }}
-                w={{ base: '160px', md: '250px' }}
+        {/* Bouton suivant */}
+        {canScrollRight && (isHovered || isMobile) && (
+          <IconButton
+            aria-label="Suivant"
+            icon={<ChevronRightIcon boxSize={isMobile ? 5 : 7} />}
+            position="absolute"
+            right={isMobile ? 1 : 2}
+            top="50%"
+            transform="translateY(-50%)"
+            zIndex={10}
+            bg={useColorModeValue('white', 'gray.800')}
+            color={useColorModeValue('black', 'white')}
+            boxShadow="xl"
+            borderRadius="full"
+            size={isMobile ? 'sm' : 'lg'}
+            opacity={isMobile ? 0.9 : 0.95}
+            _hover={{ 
+              opacity: 1, 
+              transform: 'translateY(-50%) scale(1.1)',
+              bg: useColorModeValue('gray.50', 'gray.700')
+            }}
+            _active={{
+              transform: 'translateY(-50%) scale(0.95)'
+            }}
+            onClick={() => scroll('right')}
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+            border="1px solid"
+            borderColor={useColorModeValue('gray.200', 'gray.600')}
+          />
+        )}
+
+        {/* Carrousel horizontal */}
+        <Box
+          ref={scrollRef}
+          display="flex"
+          overflowX="auto"
+          gap={{ base: 4, md: 6 }}
+          px={{ base: 4, md: 8 }}
+          py={2}
+          css={{
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': { display: 'none' },
+            scrollBehavior: 'smooth',
+          }}
+        >
+          {products.map((p) => {
+            const finalImages = Array.isArray(p.images) && p.images.length
+              ? p.images.map(String).filter(Boolean)
+              : p.image_url
+              ? [String(p.image_url)]
+              : p.product_image
+              ? [String(p.product_image)]
+              : ['/img/b.jfif']
+            const productHref = `/products/${encodeURIComponent(String(p.id))}`
+
+            return (
+              <ChakraLink
+                as={RouterLink}
+                key={String(p.id)}
+                to={productHref}
+                _hover={{ textDecoration: 'none' }}
+                flexShrink={0}
               >
-                <Box position="relative" aspectRatio="4/5" overflow="hidden" borderRadius="sm">
-                  <ProductImageSlideshow
-                    images={finalImages}
-                    alt={String(p.title || p.name || 'product')}
-                  />
+                <Box
+                  bg={bg}
+                  overflow="hidden"
+                  transition="all 0.4s ease"
+                  _hover={{ transform: 'scale(1.02)' }}
+                  w={{ base: '160px', md: '250px' }}
+                >
+                  <Box position="relative" aspectRatio="4/5" overflow="hidden" borderRadius="sm">
+                    <ProductImageSlideshow
+                      images={finalImages}
+                      alt={String(p.title || p.name || 'product')}
+                    />
+                  </Box>
+                  <Box mt={3} textAlign="center">
+                    <Heading
+                      as="h3"
+                      fontSize="sm"
+                      fontWeight="500"
+                      letterSpacing="wide"
+                      color={textColor}
+                      textTransform="uppercase"
+                      noOfLines={1}
+                    >
+                      {p.title || p.name}
+                    </Heading>
+                    <Text mt={1} fontSize="xs" color={muted} letterSpacing="wider">
+                      Nouvelle Collection
+                    </Text>
+                  </Box>
                 </Box>
-                <Box mt={3} textAlign="center">
-                  <Heading
-                    as="h3"
-                    fontSize="sm"
-                    fontWeight="500"
-                    letterSpacing="wide"
-                    color={textColor}
-                    textTransform="uppercase"
-                    noOfLines={1}
-                  >
-                    {p.title || p.name}
-                  </Heading>
-                  <Text mt={1} fontSize="xs" color={muted} letterSpacing="wider">
-                    Nouvelle Collection
-                  </Text>
-                </Box>
-              </Box>
-            </ChakraLink>
-          )
-        })}
+              </ChakraLink>
+            )
+          })}
+        </Box>
       </Box>
-    </Box>
+
+      {/* Section Vidéo style Zara */}
+      <Box 
+        as="section" 
+        position="relative" 
+        h={{ base: '60vh', md: '100vh' }} 
+        w="100%" 
+        overflow="hidden"
+        bg="black"
+        mt={12}
+      >
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        >
+          <source src="https://res.cloudinary.com/dcs9vkwe0/video/upload/v1762786387/fazftprabcd9j5leq0pv.mp4" type="video/mp4" />
+        </video>
+
+        {/* Overlay subtil */}
+        <Box 
+          position="absolute" 
+          inset={0} 
+          bg="rgba(0,0,0,0.1)" 
+          zIndex={1} 
+        />
+
+        {/* Texte overlay minimaliste */}
+        <VStack
+          position="absolute"
+          bottom={{ base: 8, md: 16 }}
+          left={{ base: 6, md: 12 }}
+          zIndex={2}
+          align="flex-start"
+          spacing={4}
+        >
+          <Heading
+            as="h2"
+            size={{ base: 'xl', md: '3xl' }}
+            color="white"
+            fontWeight={700}
+            letterSpacing="-0.02em"
+          >
+            Collection
+          </Heading>
+          <Button
+            size="lg"
+            bg="white"
+            color="black"
+            borderRadius="none"
+            px={8}
+            py={6}
+            fontWeight={600}
+            textTransform="uppercase"
+            letterSpacing="0.05em"
+            fontSize="sm"
+            _hover={{ bg: 'gray.100' }}
+            onClick={scrollToProducts}
+          >
+            Explorer
+          </Button>
+        </VStack>
+      </Box>
+    </>
   )
 }
