@@ -569,7 +569,7 @@ export default function Products() {
               letterSpacing="-0.5px"
               lineHeight="1.1"
             >
-              Boutique
+              Produits
             </Heading>
             <Text color={textSecondary} fontSize={{ base: "md", md: "lg" }} mt={2} fontWeight="400">
               Découvrez notre sélection exclusive
