@@ -14,6 +14,9 @@ import {
   useColorModeValue,
   HStack,
   Badge,
+  Avatar,
+  CloseButton,
+  Slide,
   Fade,
   ScaleFade,
   SimpleGrid,
@@ -355,7 +358,8 @@ export default function Home() {
   
   const [currentView, setCurrentView] = React.useState<'shops' | 'products'>(() => {
     const savedView = localStorage.getItem('homeView')
-    return savedView === 'shops' ? 'shops' : 'products'
+    // Par défaut, afficher les boutiques pour les nouveaux visiteurs
+    return savedView === 'products' ? 'products' : 'shops'
   })
 
   React.useEffect(() => {
@@ -365,6 +369,20 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = React.useState<number | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
   const [showScrollTop, setShowScrollTop] = React.useState(false)
+
+  const [showWelcome, setShowWelcome] = React.useState(false)
+  const [welcomeDismissed, setWelcomeDismissed] = React.useState(() => {
+    try { return typeof window !== 'undefined' && localStorage.getItem('welcomeDismissed') === '1' } catch { return false }
+  })
+
+  const currentUser = React.useMemo(() => {
+    try {
+      const u = typeof window !== 'undefined' ? localStorage.getItem('user') : null
+      return u ? JSON.parse(u) : null
+    } catch {
+      return null
+    }
+  }, [])
 
   React.useEffect(() => {
     const handleBeforeUnload = () => {
@@ -380,18 +398,10 @@ export default function Home() {
       window.scrollTo(0, Number(savedScroll))
     }
   }, [])
-
-  const cardHeight = useBreakpointValue({ base: '120px', md: '200px' })
-  const cardWidth = useBreakpointValue({ base: '45%', sm: '45%', md: '180px' })
-  const initialCount = useBreakpointValue({ base: 4, md: 6 }) || 6
-  
-  const bgGradient = useColorModeValue(
-    'linear(to-br, brand.500, brand.600)',
-    'linear(to-br, brand.600, brand.700)'
-  )
+ 
   const sectionBg = useColorModeValue('white', 'gray.800')
   const categoryBg = useColorModeValue('white', 'brand.900')
-  const textColor = useColorModeValue('gray.800', 'white')
+  const textColor = useColorModeValue('black', 'white')
   const borderColor = useColorModeValue('gray.200', 'gray.600')
   const secondaryTextColor = useColorModeValue('gray.600', 'gray.400')
   const ctaBg = useColorModeValue('white', 'black')
@@ -442,6 +452,14 @@ export default function Home() {
     }
     loadData()
   }, [])
+
+  // Welcome popup: show once for logged-in users unless dismissed
+  React.useEffect(() => {
+    if (!currentUser) return
+    if (welcomeDismissed) return
+    const t = setTimeout(() => setShowWelcome(true), 800)
+    return () => clearTimeout(t)
+  }, [currentUser, welcomeDismissed])
 
   React.useEffect(() => {
     const onScroll = () => {
@@ -556,6 +574,59 @@ export default function Home() {
         onCategoryChange={setSelectedCategory}
       />
 
+      {/* Si l'utilisateur est en vue 'shops', afficher les boutiques dès le haut de page */}
+      {currentView === 'shops' && (
+        <Box px={{ base: 0, md: 0 }}>
+          {/* CTA: montrer que chaque boutique est indépendante + inciter à créer la sienne */}
+          <Box px={{ base: 4, md: 6 }} mb={6}>
+  <Box
+    bg={useColorModeValue('gray.50', 'gray.700')}
+    p={{ base: 4, md: 5 }}
+    borderRadius="lg"
+    border="1px solid"
+    borderColor={borderColor}
+  >
+    <HStack
+      spacing={4}
+      align={{ base: 'flex-start', md: 'center' }}
+      justify={{ base: 'center', md: 'space-between' }}
+      flexDirection={{ base: 'column', md: 'row' }}
+      textAlign={{ base: 'center', md: 'left' }}
+    >
+      <HStack spacing={4} align="center" justify="center">
+        <Icon as={FiShoppingBag} boxSize={6} />
+        <VStack align={{ base: 'center', md: 'start' }} spacing={0}>
+          <Text fontWeight="700">
+            Toutes les boutiques sont indépendantes
+          </Text>
+          <Text fontSize="sm" color={secondaryTextColor}>
+            Créez votre boutique et commencez à vendre dès aujourd'hui.
+          </Text>
+        </VStack>
+      </HStack>
+
+      <Button
+        as={RouterLink}
+        to="/seller"
+        colorScheme="brand"
+        borderRadius="full"
+        px={{ base: 6, md: 6 }}
+        py={{ base: 3, md: 4 }}
+        fontWeight={700}
+        mt={{ base: 4, md: 0 }}
+        width={{ base: 'full', md: 'auto' }}
+      >
+        Créer ma boutique
+      </Button>
+    </HStack>
+  </Box>
+</Box>
+
+
+          {renderShopsView()}
+        </Box>
+      )}
+
       {/* Hero section (immersive) */}
       <HeroNike />
 
@@ -630,7 +701,7 @@ export default function Home() {
                     py={4}
                     fontWeight={700}
                   >
-                    Acheter
+                    Voir la Boutique
                   </Button>
                 </Box>
               </Box>
@@ -672,7 +743,7 @@ export default function Home() {
                 <HeroProductStrip products={products} shopsMap={shopsMap} />
               </VStack>
             </Fade>
-          ) : renderShopsView()
+          ) : null
         )}
       </Container>
 
@@ -705,7 +776,8 @@ function NoResults({ message, onClear }: { readonly message: string; readonly on
   const bgColor = useColorModeValue('white', 'gray.800')
   
   return (
-    <Center py={16}>
+    <>
+      <Center py={16}>
       <Card
         maxW="md"
         bg={bgColor}
@@ -747,5 +819,6 @@ function NoResults({ message, onClear }: { readonly message: string; readonly on
         </CardBody>
       </Card>
     </Center>
+    </>
   )
 }

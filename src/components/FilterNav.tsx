@@ -89,7 +89,7 @@ export default function FilterNav({
                     boxSize={isMobile ? 3 : 4}
                     color={view === 'shops' ? activeColor : textSecondary}
                   />
-                  <Text color={textPrimary}>Boutiques</Text>
+                  <Text color={textPrimary}>Les Boutiques</Text>
                 </HStack>
               </Tab>
 
@@ -113,7 +113,7 @@ export default function FilterNav({
                     boxSize={isMobile ? 3 : 4}
                     color={view === 'products' ? activeColor : textSecondary}
                   />
-                  <Text color={textPrimary}>Produits</Text>
+                  <Text color={textPrimary}>Les Produits</Text>
                 </HStack>
               </Tab>
             </TabList>
