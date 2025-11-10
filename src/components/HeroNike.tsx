@@ -7,7 +7,7 @@ const HeroNike: React.FC = () => {
   const images: string[] = [
     'https://i.pinimg.com/736x/a4/d0/db/a4d0db91c730e92177d0f72ffca000fa.jpg',
     'https://i.pinimg.com/1200x/f4/88/35/f488355a53b9431cf31a3f8492a77031.jpg',
-    'https://i.pinimg.com/1200x/db/81/65/db816504a85da7a5a756ae499f2c3c77.jpg',
+    'https://i.pinimg.com/1200x/a6/92/8a/a6928a9c2163bc5cc939711e4dd9b009.jpg',
   ]
 
   const [index, setIndex] = useState(0)
