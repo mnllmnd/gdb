@@ -631,8 +631,7 @@ export default function Home() {
       {/* Hero section (immersive) */}
       <HeroNike />
 
-      {/* Bande immersive de vrais produits */}
-      <HeroProductStrip products={products.slice(0, 6)} shopsMap={shopsMap} />
+  {/* Bande immersive de vrais produits (unique) */}
 
       {/* Two-column promo tiles */}
       <Box as="section" px={{ base: 4, md: 6 }} py={8}>
