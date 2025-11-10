@@ -52,7 +52,7 @@ export default function ProductCard({
   // Couleurs style Nike/Zara
   const cardBg = useColorModeValue('white', 'gray.800')
   const borderColor = useColorModeValue('#e5e5e5', 'gray.600')
-  const textColor = useColorModeValue('#111111', 'white')
+  const textColor = useColorModeValue('black', 'white')
   const subtleTextColor = useColorModeValue('#666666', 'gray.400')
   const priceText = useColorModeValue('#111111', 'white')
   const shopBadgeBg = useColorModeValue('#f8f8f8', 'gray.700')
@@ -770,13 +770,12 @@ export default function ProductCard({
                       <Button 
                         onClick={() => { addToCart(); onDetailClose(); }}
                         color="textcolor"
+                        bg={ctaBg}
                         size="lg"
                         height="56px"
                         borderRadius="none"
                         width="100%"
                         isDisabled={stock != null && stock <= 0}
-                        _hover={{ bg: '#333333' }}
-                        _active={{ bg: '#111111' }}
                         fontWeight="600"
                         fontSize="md"
                       >
