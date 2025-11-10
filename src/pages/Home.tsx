@@ -696,10 +696,15 @@ export default function Home() {
                     to={target}
                     bg={ctaBg}
                     color={ctaColor}
-                    borderRadius="full"
+                    borderRadius="none"
                     px={6}
                     py={4}
-                    fontWeight={700}
+                    fontWeight={600}
+                     size="lg"
+                    textTransform="uppercase"
+                    letterSpacing="0.05em"
+                    fontSize="sm"
+                    _hover={{ bg: 'gray.100' }}
                   >
                     Voir la Boutique
                   </Button>
