@@ -61,7 +61,7 @@ export default function ShopView() {
   const borderColor = useColorModeValue('#e5e5e5', 'gray.600')
   const subtleBg = useColorModeValue('#f8f8f8', 'gray.800')
   
-  const cardHeight = useBreakpointValue({ base: '300px', md: '400px' }) // Cartes plus volumineuses
+  const cardHeight = useBreakpointValue({ base: '300px', md: '400px' })
 
   useEffect(() => {
     async function load() {
@@ -123,12 +123,12 @@ export default function ShopView() {
 
   return (
     <Box w="100vw" overflowX="hidden" bg={bgColor}>
-      {/* 🏞️ Hero section style Nike */}
-      {shop?.banner_url ? (
+      {/* 🏞️ Hero Banner Minimaliste */}
+      {shop?.banner_url && (
         <Box
           position="relative"
           w="100%"
-          h={{ base: '300px', md: '500px' }} // Hauteur augmentée
+          h={{ base: '200px', md: '350px' }}
           mb={-8}
           overflow="hidden"
         >
@@ -138,62 +138,8 @@ export default function ShopView() {
             w="100%"
             h="100%"
             objectFit="cover"
-            filter="brightness(0.8)" // Image plus claire
+            filter="brightness(0.85)"
           />
-          <Box
-            position="absolute"
-            inset="0"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            flexDir="column"
-            textAlign="center"
-            px={4}
-            bg="linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.6))"
-          >
-            <Heading
-              color={bgColor}
-              fontSize={{ base: '3xl', md: '6xl' }} // Typographie plus grande
-              fontWeight="900" // Font weight plus fort style Nike
-              letterSpacing="tight"
-              textTransform="uppercase" // Style Zara
-              textShadow="0px 4px 12px rgba(0,0,0,0.8)"
-              lineHeight="1.1"
-            >
-              {shop.name || shop.domain}
-            </Heading>
-            <Text
-              color={bgColor}
-              mt={4}
-              fontSize={{ base: 'lg', md: 'xl' }}
-              fontWeight="500"
-              letterSpacing="wide"
-              textShadow="0px 2px 8px rgba(0,0,0,0.6)"
-            >
-              Découvrez notre collection exclusive
-            </Text>
-          </Box>
-        </Box>
-      ) : (
-        // Fallback si pas de bannière
-        <Box
-          position="relative"
-          w="100%"
-          h={{ base: '200px', md: '300px' }}
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          mb={-8}
-        >
-          <Heading
-            color="bgColor"
-            fontSize={{ base: '3xl', md: '5xl' }}
-            fontWeight="900"
-            letterSpacing="tight"
-            textTransform="uppercase"
-          >
-            {shop?.name || shop?.domain}
-          </Heading>
         </Box>
       )}
 
@@ -206,85 +152,97 @@ export default function ShopView() {
           </Flex>
         ) : (
           <>
-            {/* 🧾 Description Boutique - Style épuré */}
+            {/* 🧾 Description Boutique - Style compact */}
             <Box
-              mb={12}
-              p={{ base: 6, md: 10 }}
+              mb={8}
+              p={{ base: 4, md: 6 }}
               border="1px solid"
               borderColor={borderColor}
               bg={bgColor}
             >
-              <Flex justify="space-between" align="start" mb={6}>
-                <VStack align="start" spacing={3} flex="1">
-                  <Heading 
-                    size="xl" 
-                    color={textPrimary}
-                    fontWeight="700"
-                    letterSpacing="-0.5px"
-                    textTransform="uppercase"
-                  >
-                    {shop.name}
-                  </Heading>
-                  <Text
-                    color={textSecondary}
-                    fontSize="lg"
-                    fontWeight="500"
-                    maxW="600px"
-                    lineHeight="1.6"
-                  >
-                    {shop.description || "Cette boutique n'a pas encore ajouté de description."}
-                  </Text>
-                </VStack>
+              {/* En-tête avec nom et bouton follow */}
+              <Flex justify="space-between" align="center" mb={4}>
+                <Heading 
+                  size={{ base: 'md', md: 'lg' }}
+                  color={textPrimary}
+                  fontWeight="700"
+                  letterSpacing="-0.5px"
+                  textTransform="uppercase"
+                >
+                  {shop.name}
+                </Heading>
                 <FollowButton id={String(shop.id)} />
               </Flex>
 
-              {/* Stats de la boutique */}
-              <SimpleGrid columns={{ base: 2, md: 4 }} spacing={6} mt={8}>
-                <VStack spacing={2}>
-                  <Text fontSize="3xl" fontWeight="900" color={accentColor}>
+              {/* Description */}
+              {shop.description && (
+                <Text
+                  color={textSecondary}
+                  fontSize={{ base: 'sm', md: 'md' }}
+                  fontWeight="400"
+                  mb={4}
+                  lineHeight="1.5"
+                  noOfLines={2}
+                >
+                  {shop.description}
+                </Text>
+              )}
+
+              {/* Stats compactes en une ligne */}
+              <Flex 
+                gap={{ base: 4, md: 8 }} 
+                flexWrap="wrap"
+                align="center"
+                pt={3}
+                borderTop="1px solid"
+                borderColor={borderColor}
+              >
+                <HStack spacing={2}>
+                  <Text fontSize={{ base: 'lg', md: 'xl' }} fontWeight="800" color={accentColor}>
                     {products?.length || 0}
                   </Text>
-                  <Text fontSize="sm" color={textSecondary} fontWeight="600" textTransform="uppercase">
+                  <Text fontSize={{ base: 'xs', md: 'sm' }} color={textSecondary} fontWeight="600">
                     Produits
                   </Text>
-                </VStack>
-                <VStack spacing={2}>
-                  <Text fontSize="3xl" fontWeight="900" color={accentColor}>
+                </HStack>
+                
+                <HStack spacing={2}>
+                  <Text fontSize={{ base: 'lg', md: 'xl' }} fontWeight="800" color={accentColor}>
                     {reviewCount}
                   </Text>
-                  <Text fontSize="sm" color={textSecondary} fontWeight="600" textTransform="uppercase">
+                  <Text fontSize={{ base: 'xs', md: 'sm' }} color={textSecondary} fontWeight="600">
                     Avis
                   </Text>
-                </VStack>
-                <VStack spacing={2}>
-                  <Text fontSize="3xl" fontWeight="900" color={accentColor}>
+                </HStack>
+                
+                <HStack spacing={2}>
+                  <Text fontSize={{ base: 'lg', md: 'xl' }} fontWeight="800" color={accentColor}>
                     {shop.followers_count || 0}
                   </Text>
-                  <Text fontSize="sm" color={textSecondary} fontWeight="600" textTransform="uppercase">
+                  <Text fontSize={{ base: 'xs', md: 'sm' }} color={textSecondary} fontWeight="600">
                     Abonnés
                   </Text>
-                </VStack>
-                <VStack spacing={2}>
-                  <HStack spacing={1}>
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Icon 
-                        key={star} 
-                        as={star <= 4 ? FaStar : FaRegStar} // Note fictive de 4/5
-                        color={star <= 4 ? "yellow.400" : "gray.300"}
-                        boxSize={4}
-                      />
-                    ))}
-                  </HStack>
-                  <Text fontSize="sm" color={textSecondary} fontWeight="600" textTransform="uppercase">
-                    Note
+                </HStack>
+                
+                <HStack spacing={1}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Icon 
+                      key={star} 
+                      as={star <= 4 ? FaStar : FaRegStar}
+                      color={star <= 4 ? "yellow.400" : "gray.300"}
+                      boxSize={{ base: 3, md: 4 }}
+                    />
+                  ))}
+                  <Text fontSize={{ base: 'xs', md: 'sm' }} color={textSecondary} fontWeight="600" ml={1}>
+                    (4.0)
                   </Text>
-                </VStack>
-              </SimpleGrid>
+                </HStack>
+              </Flex>
             </Box>
 
-            {/* ⭐ Avis Clients - Style moderne */}
+            {/* ⭐ Avis Clients - Style compact */}
             <Box
-              mb={12}
+              mb={8}
               border="1px solid"
               borderColor={borderColor}
               bg={bgColor}
@@ -295,22 +253,22 @@ export default function ShopView() {
                 onClick={() => setReviewsOpen(!reviewsOpen)}
                 bg={bgColor}
                 _hover={{ bg: subtleBg }}
-                py={6}
-                px={8}
+                py={{ base: 4, md: 5 }}
+                px={{ base: 4, md: 6 }}
                 rightIcon={<Icon as={reviewsOpen ? ChevronUpIcon : ChevronDownIcon} boxSize={5} />}
                 borderRadius="none"
               >
-                <HStack spacing={4}>
-                  <Text fontSize="xl" fontWeight="700" color={textPrimary} textTransform="uppercase">
+                <HStack spacing={3}>
+                  <Text fontSize={{ base: 'md', md: 'md' }} fontWeight="300" color={textPrimary} textTransform="uppercase">
                     Avis Clients
                   </Text>
                   {reviewCount > 0 && (
                     <Badge 
                       bg={textColors}
                       color={bgColor}
-                      fontSize="md" 
-                      px={3} 
-                      py={1} 
+                      fontSize={{ base: 'sm', md: 'md' }}
+                      px={{ base: 2, md: 3 }}
+                      py={1}
                       borderRadius="none"
                       fontWeight="700"
                     >
@@ -321,20 +279,20 @@ export default function ShopView() {
               </Button>
 
               <Collapse in={reviewsOpen} animateOpacity>
-                <Box p={8} bg={subtleBg}>
+                <Box p={{ base: 4, md: 6 }} bg={subtleBg}>
                   <Tabs variant="unstyled">
-                    <TabList mb={6} borderBottom="1px solid" borderColor={borderColor}>
+                    <TabList mb={4} borderBottom="1px solid" borderColor={borderColor}>
                       <Tab 
-                        fontWeight="600" 
+                        fontWeight="300" 
                         color={textSecondary}
                         _selected={{ 
                           color: textPrimary, 
                           borderBottom: "2px solid",
                           borderColor: accentColor
                         }}
-                        py={3}
-                        px={6}
-                        fontSize="lg"
+                        py={2}
+                        px={{ base: 3, md: 5 }}
+                        fontSize={{ base: 'sm', md: 'md' }}
                       >
                         Voir les avis
                       </Tab>
@@ -346,9 +304,9 @@ export default function ShopView() {
                           borderBottom: "2px solid",
                           borderColor: accentColor
                         }}
-                        py={3}
-                        px={6}
-                        fontSize="lg"
+                        py={2}
+                        px={{ base: 3, md: 5 }}
+                        fontSize={{ base: 'sm', md: 'md' }}
                       >
                         Laisser un avis
                       </Tab>
@@ -384,8 +342,8 @@ export default function ShopView() {
             {/* 🛒 Produits - Grille améliorée */}
             <Box>
               <Heading
-                size="2xl"
-                mb={12}
+                size={{ base: 'lg', md: 'xl' }}
+                mb={{ base: 6, md: 8 }}
                 color={textPrimary}
                 textAlign="center"
                 fontWeight="900"
@@ -395,10 +353,10 @@ export default function ShopView() {
                 _after={{
                   content: '""',
                   position: 'absolute',
-                  bottom: '-12px',
+                  bottom: '-8px',
                   left: '50%',
                   transform: 'translateX(-50%)',
-                  width: '80px',
+                  width: '60px',
                   height: '3px',
                   bg: accentColor,
                 }}
@@ -422,7 +380,7 @@ export default function ShopView() {
               )}
 
               {products && products.length > 0 && (
-                <VStack spacing={16} align="stretch">
+                <VStack spacing={{ base: 8, md: 12 }} align="stretch">
                   {/* Produits sans catégorie */}
                   {(() => {
                     const uncategorized = (products || []).filter((p) => !p.category_id)
@@ -430,15 +388,15 @@ export default function ShopView() {
                     return (
                       <Box>
                         <Heading
-                          size="lg"
-                          mb={8}
+                          size={{ base: 'sm', md: 'md' }}
+                          mb={{ base: 4, md: 6 }}
                           color={textPrimary}
                           fontWeight="700"
                           letterSpacing="tight"
                           textTransform="uppercase"
                           borderLeft="4px solid"
                           borderColor={accentColor}
-                          pl={4}
+                          pl={3}
                         >
                           Découvertes
                         </Heading>
@@ -450,7 +408,7 @@ export default function ShopView() {
                             lg: 'repeat(4, 1fr)',
                             xl: 'repeat(5, 1fr)',
                           }}
-                          gap={8}
+                          gap={{ base: 4, md: 6 }}
                           w="100%"
                         >
                           {uncategorized.map((product) => (
@@ -487,15 +445,15 @@ export default function ShopView() {
                     .map((category) => (
                       <Box key={category.id}>
                         <Heading
-                          size="lg"
-                          mb={8}
+                          size={{ base: 'sm', md: 'md' }}
+                          mb={{ base: 4, md: 6 }}
                           color={textPrimary}
                           fontWeight="700"
                           letterSpacing="tight"
                           textTransform="uppercase"
                           borderLeft="4px solid"
                           borderColor={accentColor}
-                          pl={4}
+                          pl={3}
                         >
                           {category.name}
                         </Heading>
@@ -507,7 +465,7 @@ export default function ShopView() {
                             lg: 'repeat(4, 1fr)',
                             xl: 'repeat(5, 1fr)',
                           }}
-                          gap={8}
+                          gap={{ base: 4, md: 6 }}
                           w="100%"
                         >
                           {(categorizedProducts[category.id] || []).map((product) => (
