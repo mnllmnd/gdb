@@ -32,6 +32,18 @@ export default function CartPage() {
 
   async function checkout() {
     if (items.length === 0) return toast({ title: 'Votre panier est vide', status: 'info', duration: 2000 })
+    // Pré-remplir le nom et le téléphone si l'utilisateur est connecté
+    try {
+      const u = getItem('user') ? JSON.parse(getItem('user') as string) : null
+      if (u) {
+        // user peut contenir display_name, name, full_name, phone
+        setBuyerName(u.display_name ?? u.name ?? u.full_name ?? '')
+        setBuyerPhone(u.phone ?? u.phone_number ?? '')
+      }
+    } catch (e) {
+      // ignore parse errors
+    }
+
     onOpenCheckout()
   }
 
