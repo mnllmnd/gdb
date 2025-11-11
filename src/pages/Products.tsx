@@ -105,8 +105,8 @@ function ProductsCarousel({ products, title, shopsMap }: { products: any[]; titl
     }
   }
 
-  const accentColor = useColorModeValue('#white', 'black')
-  const borderColor = useColorModeValue('#white', 'black')
+  const accentColor = useColorModeValue('#111111', 'white')
+  const borderColor = useColorModeValue('#e5e5e5', 'gray.600')
 
   return (
     <Box
@@ -331,7 +331,7 @@ function PriceFilter({ minPrice, maxPrice, onPriceChange, onApplyPriceFilter }: 
         </Box>
       </HStack>
 
-      <Box bg="accent" p={3} borderRadius="md">
+      <Box bg="gray.100" p={3} borderRadius="md">
         <Text fontSize="sm" fontWeight="500" mb={1}>Plage sélectionnée :</Text>
         <Text fontSize="md" fontWeight="600" color="green.600">
           {formatPrice(localMinPrice)} - {formatPrice(localMaxPrice)}
@@ -590,50 +590,170 @@ export default function Products() {
           )}
         </Flex>
 
-        {/* Barre de tri (le champ de recherche dans la navbar gère la recherche) */}
-        <Flex gap={3} direction={{ base: 'column', sm: 'row' }}>
-          {/* Espace réservé pour garder l'alignement sur petits écrans */}
-          <Box flex="1" />
+        {/* Barre de filtres alignés sur une même ligne - Style Zara */}
+        {!isMobile && (
+          <Flex 
+            gap={4} 
+            align="center" 
+            justify="flex-start"
+            borderBottom="1px solid"
+            borderColor={borderColor}
+            pb={4}
+            mb={6}
+          >
+            {/* Menu Trier par */}
+            <Menu>
+              <MenuButton
+                as={Button}
+                rightIcon={<ChevronDownIcon />}
+                variant="outline"
+                borderRadius="none"
+                borderColor={borderColor}
+                height="40px"
+                px={6}
+                fontWeight="500"
+                fontSize="sm"
+                _hover={{ borderColor: accentColor }}
+                _active={{ bg: subtleBg }}
+              >
+                {sortBy === 'price-asc' && 'Prix croissant'}
+                {sortBy === 'price-desc' && 'Prix décroissant'}
+                {sortBy === 'name' && 'Nom A-Z'}
+                {sortBy === 'default' && 'Trier par'}
+              </MenuButton>
+              <MenuList borderRadius="none" borderColor={borderColor}>
+                <MenuItem 
+                  onClick={() => setSortBy('default')} 
+                  fontWeight={sortBy === 'default' ? '600' : '400'} 
+                  icon={sortBy === 'default' ? <FiCheck /> : undefined}
+                >
+                  Par défaut
+                </MenuItem>
+                <MenuItem 
+                  onClick={() => setSortBy('price-asc')} 
+                  fontWeight={sortBy === 'price-asc' ? '600' : '400'} 
+                  icon={sortBy === 'price-asc' ? <FiCheck /> : undefined}
+                >
+                  Prix croissant
+                </MenuItem>
+                <MenuItem 
+                  onClick={() => setSortBy('price-desc')} 
+                  fontWeight={sortBy === 'price-desc' ? '600' : '400'} 
+                  icon={sortBy === 'price-desc' ? <FiCheck /> : undefined}
+                >
+                  Prix décroissant
+                </MenuItem>
+                <MenuItem 
+                  onClick={() => setSortBy('name')} 
+                  fontWeight={sortBy === 'name' ? '600' : '400'} 
+                  icon={sortBy === 'name' ? <FiCheck /> : undefined}
+                >
+                  Nom A-Z
+                </MenuItem>
+              </MenuList>
+            </Menu>
 
-          {/* Menu de tri */}
-          <Flex justify="left" align="left" w="100%">
-  <Menu>
-    <MenuButton
-      as={Button}
-      rightIcon={<ChevronDownIcon />}
-      variant="outline"
-      borderRadius="none"
-      borderColor={borderColor}
-      height={{ base: "48px", md: "56px" }}
-      px={6}
-      fontWeight="500"
-      _hover={{ borderColor: accentColor }}
-      _active={{ bg: subtleBg }}
-    >
-      {sortBy === 'price-asc' && 'Prix croissant'}
-      {sortBy === 'price-desc' && 'Prix décroissant'}
-      {sortBy === 'name' && 'Nom A-Z'}
-      {sortBy === 'default' && 'Trier par'}
-    </MenuButton>
+            {/* Menu Catégories */}
+            <Menu>
+              <MenuButton
+                as={Button}
+                rightIcon={<ChevronDownIcon />}
+                variant="outline"
+                borderRadius="none"
+                borderColor={borderColor}
+                height="40px"
+                px={6}
+                fontWeight="500"
+                fontSize="sm"
+                _hover={{ borderColor: accentColor }}
+                _active={{ bg: subtleBg }}
+                leftIcon={<FiPackage />}
+              >
+                {selectedCategory !== null 
+                  ? categories?.find(c => c.id === selectedCategory)?.name || 'Catégorie'
+                  : 'Catégories'}
+              </MenuButton>
+              <MenuList 
+                borderRadius="none" 
+                borderColor={borderColor}
+                maxH="400px"
+                overflowY="auto"
+              >
+                <MenuItem 
+                  onClick={() => handleCategorySelect(null)}
+                  fontWeight={selectedCategory === null ? '600' : '400'}
+                  bg={selectedCategory === null ? subtleBg : 'transparent'}
+                >
+                  Toutes les catégories
+                  <Badge ml={2} colorScheme="black" variant="solid">
+                    {allProducts?.length || 0}
+                  </Badge>
+                </MenuItem>
+                <Divider />
+                {categories?.filter(c => {
+                  const allCatProducts = (allProducts || []).filter(p => (p.category_id ?? 0) === c.id)
+                  return allCatProducts.length > 0
+                }).map((c: any) => {
+                  const allCatProducts = (allProducts || []).filter(p => (p.category_id ?? 0) === c.id)
+                  return (
+                    <MenuItem 
+                      key={c.id}
+                      onClick={() => handleCategorySelect(c.id)}
+                      fontWeight={selectedCategory === c.id ? '600' : '400'}
+                      bg={selectedCategory === c.id ? subtleBg : 'transparent'}
+                    >
+                      {c.name}
+                      <Badge ml={2} colorScheme="black" variant="solid">
+                        {allCatProducts.length}
+                      </Badge>
+                    </MenuItem>
+                  )
+                })}
+              </MenuList>
+            </Menu>
 
-    <MenuList borderRadius="none" borderColor={borderColor}>
-      <MenuItem onClick={() => setSortBy('default')} fontWeight={sortBy === 'default' ? '600' : '400'} icon={sortBy === 'default' ? <FiCheck /> : undefined}>
-        Par défaut
-      </MenuItem>
-      <MenuItem onClick={() => setSortBy('price-asc')} fontWeight={sortBy === 'price-asc' ? '600' : '400'} icon={sortBy === 'price-asc' ? <FiCheck /> : undefined}>
-        Prix croissant
-      </MenuItem>
-      <MenuItem onClick={() => setSortBy('price-desc')} fontWeight={sortBy === 'price-desc' ? '600' : '400'} icon={sortBy === 'price-desc' ? <FiCheck /> : undefined}>
-        Prix décroissant
-      </MenuItem>
-      <MenuItem onClick={() => setSortBy('name')} fontWeight={sortBy === 'name' ? '600' : '400'} icon={sortBy === 'name' ? <FiCheck /> : undefined}>
-        Nom A-Z
-      </MenuItem>
-    </MenuList>
-  </Menu>
-</Flex>
-
-        </Flex>
+            {/* Filtre de prix */}
+            <Popover>
+              <PopoverTrigger>
+                <Button
+                  variant="outline"
+                  borderRadius="none"
+                  borderColor={borderColor}
+                  height="40px"
+                  px={6}
+                  fontWeight="500"
+                  fontSize="sm"
+                  _hover={{ borderColor: accentColor }}
+                  _active={{ bg: subtleBg }}
+                  bg={isPriceFilterActive ? accentColor : 'transparent'}
+                  color={isPriceFilterActive ? 'white' : textPrimary}
+                >
+                  Prix
+                  {isPriceFilterActive && (
+                    <Badge ml={2} variant="solid" colorScheme="white" color="black">
+                      {formatPrice(minPrice)} - {formatPrice(maxPrice)}
+                    </Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent borderRadius="none" borderColor={borderColor}>
+                <PopoverArrow />
+                <PopoverCloseButton />
+                <PopoverHeader fontWeight="600" borderBottom="1px solid" borderColor={borderColor}>
+                  Filtrer par prix (FCFA)
+                </PopoverHeader>
+                <PopoverBody p={0}>
+                  <PriceFilter
+                    minPrice={minPrice}
+                    maxPrice={maxPrice}
+                    onPriceChange={handlePriceChange}
+                    onApplyPriceFilter={applyPriceFilter}
+                  />
+                </PopoverBody>
+              </PopoverContent>
+            </Popover>
+          </Flex>
+        )}
 
         {/* Filtres actifs */}
         {hasActiveFilters && (
@@ -754,109 +874,6 @@ export default function Products() {
           {products?.length || 0} produit{(products?.length || 0) > 1 ? 's' : ''} {hasActiveFilters ? 'trouvé' + ((products?.length || 0) > 1 ? 's' : '') : ''}
         </Text>
       </VStack>
-
-      {/* Filtres desktop */}
-      {!isMobile && (
-        <Flex gap={6} mb={8}>
-          {/* Menu déroulant des catégories */}
-          <Menu>
-            <MenuButton
-              as={Button}
-              rightIcon={<ChevronDownIcon />}
-              variant="outline"
-              borderRadius="none"
-              borderColor={borderColor}
-              height="48px"
-              px={6}
-              fontWeight="500"
-              _hover={{ borderColor: accentColor }}
-              _active={{ bg: subtleBg }}
-              leftIcon={<FiPackage />}
-            >
-              {selectedCategory !== null 
-                ? categories?.find(c => c.id === selectedCategory)?.name || 'Catégorie'
-                : 'Toutes les catégories'}
-            </MenuButton>
-            <MenuList 
-              borderRadius="none" 
-              borderColor={borderColor}
-              maxH="400px"
-              overflowY="auto"
-            >
-              <MenuItem 
-                onClick={() => handleCategorySelect(null)}
-                fontWeight={selectedCategory === null ? '600' : '400'}
-                bg={selectedCategory === null ? subtleBg : 'transparent'}
-              >
-                Toutes les catégories
-                <Badge ml={2} colorScheme="black" variant="solid">
-                  {allProducts?.length || 0}
-                </Badge>
-              </MenuItem>
-              <Divider />
-              {categories?.filter(c => {
-                const allCatProducts = (allProducts || []).filter(p => (p.category_id ?? 0) === c.id)
-                return allCatProducts.length > 0
-              }).map((c: any) => {
-                const allCatProducts = (allProducts || []).filter(p => (p.category_id ?? 0) === c.id)
-                return (
-                  <MenuItem 
-                    key={c.id}
-                    onClick={() => handleCategorySelect(c.id)}
-                    fontWeight={selectedCategory === c.id ? '600' : '400'}
-                    bg={selectedCategory === c.id ? subtleBg : 'transparent'}
-                  >
-                    {c.name}
-                    <Badge ml={2} colorScheme="black" variant="solid">
-                      {allCatProducts.length}
-                    </Badge>
-                  </MenuItem>
-                )
-              })}
-            </MenuList>
-          </Menu>
-
-          {/* Filtre de prix */}
-          <Popover>
-            <PopoverTrigger>
-              <Button
-                variant="outline"
-                borderRadius="none"
-                borderColor={borderColor}
-                height="48px"
-                px={6}
-                fontWeight="500"
-                _hover={{ borderColor: accentColor }}
-                _active={{ bg: subtleBg }}
-                bg={isPriceFilterActive ? accentColor : 'transparent'}
-                color={isPriceFilterActive ? 'white' : textPrimary}
-              >
-                Prix
-                {isPriceFilterActive && (
-                  <Badge ml={2} variant="solid" colorScheme="white" color="black">
-                    {formatPrice(minPrice)} - {formatPrice(maxPrice)}
-                  </Badge>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent borderRadius="none" borderColor={borderColor}>
-              <PopoverArrow />
-              <PopoverCloseButton />
-              <PopoverHeader fontWeight="600" borderBottom="1px solid" borderColor={borderColor}>
-                Filtrer par prix (FCFA)
-              </PopoverHeader>
-              <PopoverBody p={0}>
-                <PriceFilter
-                  minPrice={minPrice}
-                  maxPrice={maxPrice}
-                  onPriceChange={handlePriceChange}
-                  onApplyPriceFilter={applyPriceFilter}
-                />
-              </PopoverBody>
-            </PopoverContent>
-          </Popover>
-        </Flex>
-      )}
 
       {/* Navigation desktop */}
       {!isMobile && !hasActiveFilters && (
