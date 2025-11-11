@@ -47,7 +47,8 @@ export default function ProductEditor() {
   const [categories, setCategories] = useState<any[]>([])
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>()
 
-  const bgForm = useColorModeValue('white', 'gray.800')
+  const bgForm = useColorModeValue('white', 'black')
+  const bgPage = useColorModeValue('black', 'white')
   const labelColor = useColorModeValue('gray.700', 'gray.200')
   const borderColor = useColorModeValue('gray.200', 'gray.600')
   const hoverBorderColor = useColorModeValue('blue.400', 'blue.300')
@@ -464,15 +465,15 @@ export default function ProductEditor() {
                 placeholder="Choisissez une catégorie"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(Number(e.target.value))}
-                bg="white"
-                color="gray.800"
+               
+                color="white"
                 borderRadius="lg"
                 border="2px solid"
                 borderColor={borderColor}
                 _hover={{ borderColor: 'gray.300' }}
                 _focus={{
-                  borderColor: 'blue.500',
-                  boxShadow: '0 0 0 1px blue.500'
+                  borderColor: 'bgForm',
+                  
                 }}
                 size="lg"
               >

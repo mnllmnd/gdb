@@ -331,7 +331,7 @@ function PriceFilter({ minPrice, maxPrice, onPriceChange, onApplyPriceFilter }: 
         </Box>
       </HStack>
 
-      <Box bg="gray.50" p={3} borderRadius="md">
+      <Box bg="accent" p={3} borderRadius="md">
         <Text fontSize="sm" fontWeight="500" mb={1}>Plage sélectionnée :</Text>
         <Text fontSize="md" fontWeight="600" color="green.600">
           {formatPrice(localMinPrice)} - {formatPrice(localMaxPrice)}
