@@ -69,6 +69,7 @@ import { FiPackage, FiGrid, FiFilter, FiTrendingUp, FiMenu, FiCheck, FiDollarSig
 import ProductCard from '../components/ProductCard'
 import api from '../services/api'
 import { useLocation } from 'react-router-dom'
+import ScrollTopButton from '../components/ScrollTopButton'
 
 // Composant Carrousel pour les produits
 function ProductsCarousel({ products, title, shopsMap }: { products: any[]; title: string; shopsMap: Record<string, any> }) {
@@ -1119,6 +1120,7 @@ export default function Products() {
           </DrawerBody>
         </DrawerContent>
       </Drawer>
+      <ScrollTopButton />
     </Container>
   )
 

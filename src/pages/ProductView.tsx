@@ -39,6 +39,7 @@ import ProductCard from '../components/ProductCard'
 import ReviewForm from '../components/ReviewForm'
 import ReviewsList from '../components/ReviewsList'
 import BackButton from '../components/BackButton'
+import ScrollTopButton from '../components/ScrollTopButton'
 
 export default function ProductView() {
   const { id } = useParams()
@@ -562,6 +563,7 @@ export default function ProductView() {
           </ModalBody>
         </ModalContent>
       </Modal>
+      <ScrollTopButton />
     </Container>
   )
 }

@@ -30,11 +30,16 @@ export default function ScrollTopButton() {
       bottom={{ base: 80, md: 12 }}
       zIndex={2000}
       borderRadius="full"
-      boxShadow="lg"
+      boxShadow="xl"
       display={visible ? 'inline-flex' : 'none'}
       colorScheme="brand"
       size="lg"
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      transition="all 0.3s"
+      _hover={{
+        transform: 'translateY(-4px)',
+        boxShadow: '2xl'
+      }}
     />
   )
 }
