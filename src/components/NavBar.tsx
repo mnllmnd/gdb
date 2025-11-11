@@ -406,10 +406,6 @@ const LogoutIcon = () => (
                 borderColor={brandColor}
                 color={brandColor}
                 leftIcon={<ShopIcon />}
-                _hover={{ 
-                  bg: brandColor,
-                  color: 'white',
-                }}
                 transition="all 0.2s ease"
                 fontWeight="500"
                 whiteSpace="nowrap"
