@@ -470,11 +470,6 @@ export default function ProductEditor() {
                 borderRadius="lg"
                 border="2px solid"
                 borderColor={borderColor}
-                _hover={{ borderColor: 'gray.300' }}
-                _focus={{
-                  borderColor: 'bgForm',
-                  
-                }}
                 size="lg"
               >
                 {categories.map((cat) => (

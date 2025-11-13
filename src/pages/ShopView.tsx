@@ -31,6 +31,8 @@ import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons'
 import { FaStar, FaRegStar, FaHeart, FaRegHeart } from 'react-icons/fa'
 import api from '../services/api'
 import FollowButton from '../components/FollowButton'
+import { FaWhatsapp } from 'react-icons/fa'
+import { normalizeSenegalPhone } from '../utils/phone'
 import ProductCard from '../components/ProductCard'
 import BackButton from '../components/BackButton'
 import ReviewForm from '../components/ReviewForm'
@@ -50,6 +52,7 @@ export default function ShopView() {
   const [categorizedProducts, setCategorizedProducts] = useState<Record<number, any[]>>({})
   const [reviewsOpen, setReviewsOpen] = useState(false)
   const [reviewCount, setReviewCount] = useState(0)
+  const [ownerPhone, setOwnerPhone] = useState<string | null>(null)
   
   // Couleurs style Nike/Zara
   const bgColor = useColorModeValue('white', 'black')
@@ -68,7 +71,9 @@ export default function ShopView() {
       try {
         if (!domain) return
         const s = await api.shops.byDomain(domain)
-        setShop(s)
+  setShop(s)
+  // debug: log shop payload so we can confirm owner_phone presence
+  try { console.debug('Shop payload:', s) } catch (e) {}
 
         let found: any[] = []
         try {
@@ -99,6 +104,9 @@ export default function ShopView() {
         } catch (err) {
           console.warn('Failed to load review count', err)
         }
+          // try to extract owner phone from shop row if present
+          const possiblePhone = s?.phone ?? s?.owner_phone ?? s?.contact_phone ?? s?.whatsapp ?? null
+          if (possiblePhone) setOwnerPhone(String(possiblePhone))
       } catch (err) {
         console.error(err)
         setShop(null)
@@ -118,6 +126,29 @@ export default function ShopView() {
     }
     setCategorizedProducts(map)
   }, [products])
+
+  // If ownerPhone not found on shop, try to fetch owner from admin users list (best-effort; will fail for non-admins)
+  useEffect(() => {
+    let cancelled = false
+    async function fetchOwnerPhone() {
+      if (ownerPhone) return
+      if (!shop?.owner_id) return
+      try {
+        const users = await api.admin.users()
+        if (cancelled) return
+        if (Array.isArray(users)) {
+          const owner = users.find((u: any) => String(u.id) === String(shop.owner_id))
+          if (owner && (owner.phone || owner.phone_number)) {
+            setOwnerPhone(owner.phone ?? owner.phone_number ?? null)
+          }
+        }
+      } catch (e) {
+        // ignore: likely not admin or endpoint not accessible
+      }
+    }
+    fetchOwnerPhone()
+    return () => { cancelled = true }
+  }, [shop, ownerPhone])
 
   if (!domain) return <Container py={8}>Nom de boutique manquant</Container>
 
@@ -171,7 +202,35 @@ export default function ShopView() {
                 >
                   {shop.name}
                 </Heading>
-                <FollowButton id={String(shop.id)} />
+                <HStack spacing={3}>
+                  <FollowButton id={String(shop.id)} />
+                  {/** If shop has a phone number, show WhatsApp chat button */}
+                  {(() => {
+                    const phone = ownerPhone ?? shop?.phone ?? shop?.contact_phone ?? shop?.whatsapp ?? null
+                    // debug: show resolved phone in console
+                    try { console.debug('Resolved owner phone:', ownerPhone, shop?.owner_phone, shop?.phone) } catch (e) {}
+                    if (!phone) return null
+                    const normalized = normalizeSenegalPhone(String(phone))
+                    if (!normalized) return null
+                    const digits = normalized.replace(/^\+/, '')
+                    const message = `Bonjour, je suis intéressé par vos produits sur ${shop?.name || 'votre boutique'}.`
+                    const href = `https://wa.me/${encodeURIComponent(digits)}?text=${encodeURIComponent(message)}`
+                    return (
+                      <Button
+                        as="a"
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        leftIcon={<Icon as={FaWhatsapp} />}
+                        colorScheme="green"
+                        variant="solid"
+                        size="sm"
+                      >
+                        WhatsApp
+                      </Button>
+                    )
+                  })()}
+                </HStack>
               </Flex>
 
               {/* Description */}
