@@ -41,6 +41,13 @@ router.post('/forgot-password', forgotPasswordLimiter, async (req, res) => {
             `${req.protocol}://${req.get('host')}`
         );
 
+        // Debug log: record provider response so we can trace delivery issues (server-side only)
+        try {
+            console.log(`forgot-password: sendResult for ${email}:`, sendResult)
+        } catch (e) {
+            // ignore logging errors
+        }
+
         // In development or if sending failed, include the link in the response for testing
         if (sendResult && (sendResult.sent === false || process.env.NODE_ENV === 'development')) {
             return res.status(200).json({

@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
 import pool from '../db.js';
+import sgMail from '@sendgrid/mail';
 
 // create transporter with sensible defaults; parse port as number
 const smtpHost = process.env.SMTP_HOST;
@@ -17,8 +18,23 @@ const transporter = smtpHost
         })
     : null;
 
+// Configure SendGrid if provided (preferred when set)
+const sendgridApiKey = process.env.SENDGRID_API_KEY || null;
+if (sendgridApiKey) {
+    try {
+        sgMail.setApiKey(sendgridApiKey);
+        console.log('ℹ️  SendGrid configured for sending emails')
+    } catch (e) {
+        console.warn('Failed to configure SendGrid:', e?.message || e)
+    }
+}
+
 function isSmtpConfigured() {
     return !!(smtpHost && smtpPort && smtpUser && smtpPass && transporter);
+}
+
+function isSendGridConfigured() {
+    return !!sendgridApiKey;
 }
 
 class PasswordResetService {
@@ -65,7 +81,31 @@ class PasswordResetService {
 
     static async sendResetEmail(email, token, origin) {
         const resetUrl = `${origin}/reset-password?token=${token}`;
-        
+
+        // Prefer SendGrid API when configured (easy free tier sign-up)
+        if (isSendGridConfigured()) {
+            try {
+                const msg = {
+                    to: email,
+                    from: process.env.SENDGRID_FROM || process.env.SMTP_FROM || smtpUser,
+                    subject: 'Réinitialisation de votre mot de passe',
+                    html: `
+                        <h1>Réinitialisation de mot de passe</h1>
+                        <p>Vous avez demandé une réinitialisation de votre mot de passe.</p>
+                        <p>Cliquez sur le lien ci-dessous pour définir un nouveau mot de passe :</p>
+                        <a href="${resetUrl}">${resetUrl}</a>
+                        <p>Ce lien expirera dans 1 heure.</p>
+                        <p>Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.</p>
+                    `
+                };
+                const info = await sgMail.send(msg);
+                return { sent: true, provider: 'sendgrid', info };
+            } catch (err_) {
+                console.error('SendGrid send failed, falling back to SMTP/log:', err_);
+                // fallthrough to SMTP or console fallback
+            }
+        }
+
         // If SMTP is not configured or we're in development, log the link to the server console and return the link
         if (!isSmtpConfigured() || process.env.NODE_ENV === 'development') {
             console.log(`Password reset link for ${email}: ${resetUrl}`);
