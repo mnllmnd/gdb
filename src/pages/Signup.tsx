@@ -18,6 +18,7 @@ import 'react-phone-number-input/style.css'
 
 export default function Signup() {
   const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
   const [phone, setPhone] = useState<string | undefined>('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -38,6 +39,8 @@ export default function Signup() {
 
   function validate() {
     if (!name.trim()) return 'Veuillez saisir votre nom complet.'
+    if (!email.trim()) return 'Veuillez saisir votre adresse email.'
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Veuillez saisir une adresse email valide.'
     if (!phone) return 'Veuillez saisir votre numéro de téléphone.'
     if (!isValidPhoneNumber(phone)) return 'Numéro de téléphone invalide. Veuillez inclure l\'indicatif pays (ex : +221).'
     if (password.length < 6) return 'Le mot de passe doit contenir au moins 6 caractères.'
@@ -55,7 +58,7 @@ export default function Signup() {
 
     try {
       const { signUpWithPhone } = await import('../services/auth')
-      await signUpWithPhone(phone!, password, name)
+      await signUpWithPhone(phone!, password, name, email)
       nav('/')
     } catch (e: any) {
       setError(e?.error || "Échec de l'inscription")
@@ -109,6 +112,33 @@ export default function Signup() {
                 height="48px"
                 fontSize="sm"
                 _hover={{ borderColor: 'gray.400' }}
+              />
+            </FormControl>
+
+            <FormControl>
+              <FormLabel 
+                fontSize="xs" 
+                fontWeight="bold" 
+                color={labelColor}
+                textTransform="uppercase"
+                letterSpacing="wide"
+                mb={2}
+              >
+                Email
+              </FormLabel>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                bg={inputBg}
+                focusBorderColor="black"
+                borderRadius="none"
+                border="1px solid"
+                borderColor={inputBorder}
+                height="48px"
+                fontSize="sm"
+                _hover={{ borderColor: 'gray.400' }}
+                placeholder="votre@exemple.com"
               />
             </FormControl>
 

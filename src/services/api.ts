@@ -100,6 +100,8 @@ export const api = {
   auth: {
     register: (payload: any) => request('/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
     login: (payload: any) => request('/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
+    // update current user profile
+    updateMe: (payload: any, token?: string) => request('/auth/me', { method: 'PATCH', body: JSON.stringify(payload), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
   },
   categories: {
     list: () => request('/categories'),

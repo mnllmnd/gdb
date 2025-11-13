@@ -1,12 +1,13 @@
-import React from 'react'
-import { Box, Heading, Text, Avatar, VStack, HStack, Button, Spinner, useColorModeValue } from '@chakra-ui/react'
+import React, { useState, useEffect } from 'react'
+import { Box, Heading, Text, Avatar, VStack, HStack, Button, Spinner, useColorModeValue, FormControl, FormLabel, Input } from '@chakra-ui/react'
 import ProductCard from '../components/ProductCard'
 import { getCurrentUser, signOut } from '../services/auth'
 import api from '../services/api'
 import { useNavigate } from 'react-router-dom'
+import { setItem } from '../utils/localAuth'
 
 export default function ProfilePage() {
-  const user = React.useMemo(() => getCurrentUser(), [])
+  const [user, setUser] = useState(() => getCurrentUser())
   const [shop, setShop] = React.useState<any | null>(null)
   const [loading, setLoading] = React.useState(false)
   const [likedProducts, setLikedProducts] = React.useState<any[] | null>(null)
@@ -34,6 +35,17 @@ export default function ProfilePage() {
     }
     load()
     return () => { mounted = false }
+  }, [user])
+
+  // editable profile state
+  const [editing, setEditing] = useState(false)
+  const [editEmail, setEditEmail] = useState<string | undefined>(user?.email ?? '')
+  const [editDisplayName, setEditDisplayName] = useState<string | undefined>(user?.display_name ?? '')
+
+  useEffect(() => {
+    // Keep editable fields in sync if user changes
+    setEditEmail(user?.email ?? '')
+    setEditDisplayName(user?.display_name ?? '')
   }, [user])
 
   // Load liked products for the profile section
@@ -68,24 +80,58 @@ export default function ProfilePage() {
   return (
     <Box p={{ base: 4, md: 8 }} maxW="900px" mx="auto">
       <HStack spacing={4} align="center">
-        <Avatar name={user.display_name ?? user.phone} size="xl" />
+        <Avatar name={user?.display_name ?? user?.phone} size="xl" />
         <VStack align="start" spacing={0}>
-          <Heading size="lg">{user.display_name ?? 'Mon profil'}</Heading>
-          <Text color={subtle}>{user.phone}</Text>
+          <Heading size="lg">{user?.display_name ?? 'Mon profil'}</Heading>
+          <Text color={subtle}>{user?.phone}</Text>
         </VStack>
       </HStack>
 
-  <Box mt={6} p={6} borderRadius="lg" border="1px solid" borderColor={borderColor}>
+      <Box mt={6} p={6} borderRadius="lg" border="1px solid" borderColor={borderColor}>
         <Heading size="md" mb={3}>Informations utilisateur</Heading>
-        <VStack align="start" spacing={2}>
-          <Text><strong>Nom :</strong> {user.display_name ?? '-'}</Text>
-          <Text><strong>Téléphone :</strong> {user.phone ?? '-'}</Text>
-          <Text><strong>Rôle :</strong> {user.role ?? 'client'}</Text>
-        </VStack>
-        <HStack mt={4} spacing={3}>
-          <Button colorScheme="brand" onClick={() => navigate('/orders')}>Mes commandes</Button>
-          <Button variant="outline" onClick={() => { signOut(); navigate('/login') }} bg={sectionBg}>Se déconnecter</Button>
-        </HStack>
+        {editing ? (
+          <VStack align="start" spacing={3}>
+            <FormControl>
+              <FormLabel>Email</FormLabel>
+              <Input value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="votre@exemple.com" />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Nom affiché</FormLabel>
+              <Input value={editDisplayName} onChange={(e) => setEditDisplayName(e.target.value)} placeholder="Nom affiché" />
+            </FormControl>
+            <HStack mt={2} spacing={3}>
+              <Button colorScheme="brand" onClick={async () => {
+                // save
+                try {
+                  const token = globalThis.localStorage?.getItem('token') ?? undefined
+                  const res = await api.auth.updateMe({ email: editEmail || null, displayName: editDisplayName || null }, token)
+                  if (res?.user) {
+                    // update local storage and state
+                    try { setItem('user', JSON.stringify(res.user)) } catch (e) {}
+                    setUser(res.user)
+                  }
+                  setEditing(false)
+                } catch (err) {
+                  console.error('Failed to update profile', err)
+                  // TODO: show user-facing error
+                }
+              }}>Enregistrer</Button>
+              <Button variant="outline" onClick={() => { setEditing(false); setEditEmail(user?.email ?? ''); setEditDisplayName(user?.display_name ?? '') }}>Annuler</Button>
+            </HStack>
+          </VStack>
+        ) : (
+          <VStack align="start" spacing={2}>
+            <Text><strong>Nom :</strong> {user?.display_name ?? '-'}</Text>
+            <Text><strong>Email :</strong> {user?.email ?? '—'}</Text>
+            <Text><strong>Téléphone :</strong> {user?.phone ?? '-'}</Text>
+            <Text><strong>Rôle :</strong> {user?.role ?? 'client'}</Text>
+            <HStack mt={4} spacing={3}>
+              <Button colorScheme="brand" onClick={() => navigate('/orders')}>Mes commandes</Button>
+              <Button variant="outline" onClick={() => { setEditing(true); }} bg={sectionBg}>Modifier mes infos</Button>
+              <Button variant="outline" onClick={() => { signOut(); navigate('/login') }} bg={sectionBg}>Se déconnecter</Button>
+            </HStack>
+          </VStack>
+        )}
       </Box>
 
       {user.role === 'seller' && (
