@@ -77,7 +77,11 @@ class PasswordResetService {
 
   // 🔹 Envoyer l'email de réinitialisation via SMTP
   static async sendResetEmail(email, token, origin) {
-    const resetUrl = `${origin}/reset-password?token=${token}`;
+    // Prefer explicit frontend URL when provided via env (deployed frontend)
+    const frontendBase = (process.env.FRONTEND_URL || process.env.CLIENT_URL || process.env.FRONTEND || '').toString().trim() || origin;
+    const base = frontendBase.replace(/\/$/, '')
+    const resetUrl = `${base}/reset-password?token=${token}`;
+    console.log(`passwordReset: using reset link base=${base}`);
 
     // Vérifier la connexion SMTP (utile pour déboguer)
     try {
