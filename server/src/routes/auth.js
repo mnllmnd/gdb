@@ -137,6 +137,31 @@ router.get('/me/likes', authenticate, async (req, res) => {
   }
 })
 
+// Update current user's profile (email, display name)
+router.patch('/me', authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id || req.user.sub || null
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' })
+    const { email, displayName } = req.body
+
+    // If email provided, ensure it's not used by another account
+    if (email) {
+      const exists = await query('SELECT id FROM users WHERE email = $1 AND id <> $2', [email, userId])
+      if (exists.rowCount > 0) return res.status(409).json({ error: 'Email already in use' })
+    }
+
+    const update = await query(
+      'UPDATE users SET email = COALESCE($1, email), display_name = COALESCE($2, display_name) WHERE id = $3 RETURNING id, email, phone, display_name, role',
+      [email || null, displayName || null, userId]
+    )
+    const user = update.rows[0]
+    res.json({ user })
+  } catch (err) {
+    console.error('Failed to update profile', err)
+    res.status(500).json({ error: 'Failed to update profile' })
+  }
+})
+
 // Follow a user
 router.post('/:id/follow', authenticate, async (req, res) => {
   const { id } = req.params

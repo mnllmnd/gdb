@@ -6,6 +6,7 @@ import pool from '../db.js';
 const smtpHost = process.env.SMTP_HOST;
 const smtpPort = process.env.SMTP_PORT ? Number.parseInt(process.env.SMTP_PORT, 10) : 465;
 const smtpUser = process.env.SMTP_USER;
+// Respecter les espaces fournis dans SMTP_PASS (ne pas les supprimer)
 const smtpPass = process.env.SMTP_PASS;
 const smtpFrom = process.env.SMTP_FROM || smtpUser;
 
@@ -36,14 +37,21 @@ class PasswordResetService {
     const token = this.generateToken();
     const tokenHash = this.hashToken(token);
     const expiresAt = new Date(Date.now() + 3600000); // expire dans 1h
-
-    await pool.query(
-      `INSERT INTO password_reset_tokens (user_id, token_hash, expires_at, used)
-       VALUES ($1, $2, $3, false)`,
-      [userId, tokenHash, expiresAt]
-    );
-
-    return token;
+    try {
+      // Retourner l'id inséré pour faciliter le debug serveur
+      const result = await pool.query(
+        `INSERT INTO password_reset_tokens (user_id, token_hash, expires_at, used)
+         VALUES ($1, $2, $3, false)
+         RETURNING id`,
+        [userId, tokenHash, expiresAt]
+      );
+      const insertedId = result?.rows?.[0]?.id;
+      console.log(`passwordReset: created token id=${insertedId} for user=${userId}, expiresAt=${expiresAt.toISOString()}`);
+      return token;
+    } catch (dbErr) {
+      console.error('passwordReset: failed to create reset token in DB:', dbErr && dbErr.message ? dbErr.message : dbErr);
+      throw dbErr;
+    }
   }
 
   // 🔹 Vérifier la validité du token
@@ -71,12 +79,13 @@ class PasswordResetService {
   static async sendResetEmail(email, token, origin) {
     const resetUrl = `${origin}/reset-password?token=${token}`;
 
+    // Vérifier la connexion SMTP (utile pour déboguer)
     try {
-      // Vérifier la connexion SMTP (utile pour déboguer)
       await transporter.verify();
+      console.log('SMTP connection verified');
     } catch (verifyError) {
       console.error('⚠️ Échec de vérification SMTP :', verifyError);
-      console.log(`Lien de réinitialisation pour ${email}: ${resetUrl}`);
+      console.log(`Lien de réinitialisation (dev) pour ${email}: ${resetUrl}`);
       return { sent: false, link: resetUrl, reason: 'smtp-verify-failed', error: String(verifyError) };
     }
 
@@ -90,17 +99,18 @@ class PasswordResetService {
           <p>Bonjour,</p>
           <p>Vous avez demandé une réinitialisation de votre mot de passe.</p>
           <p>Cliquez sur le lien ci-dessous pour créer un nouveau mot de passe :</p>
-          <a href="${resetUrl}" target="_blank">${resetUrl}</a>
+          <p><a href="${resetUrl}" target="_blank">${resetUrl}</a></p>
           <p>Ce lien expirera dans 1 heure.</p>
           <p>Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet e-mail.</p>
         `,
       });
 
-      console.log(`✅ Email de réinitialisation envoyé à ${email}`);
+      console.log(`✅ Email de réinitialisation envoyé à ${email} (messageId=${info.messageId})`);
       return { sent: true, info };
     } catch (error) {
       console.error('❌ Échec de l’envoi SMTP :', error);
-      console.log(`Lien de réinitialisation pour ${email}: ${resetUrl}`);
+      // Afficher le lien en console pour le dev
+      console.log(`Lien de réinitialisation (dev) pour ${email}: ${resetUrl}`);
       return { sent: false, link: resetUrl, reason: 'send-failed', error: String(error) };
     }
   }

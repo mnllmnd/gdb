@@ -25,7 +25,6 @@
     "natural": "^6.2.0",
     "node-nlp": "^5.0.0-alpha.5",
     "nodemailer": "^7.0.10",
-  "@sendgrid/mail": "^8.1.6",
     "pg": "8.11.0",
     "pg-format": "1.0.4"
   },
