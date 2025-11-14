@@ -504,12 +504,40 @@ export default function Products() {
 
   // Synchronise la query à partir du paramètre d'URL ?q=...
   const location = useLocation()
+  const navigate = useNavigate()
+  // Ensure Pinterest mode persists when encoded in the URL (e.g. ?view=pinterest)
+  React.useEffect(() => {
+    try {
+      const params = new URLSearchParams(location.search)
+      const view = params.get('view')
+      if (view) {
+        const isP = view === 'pinterest'
+        setIsPinterestMode(isP)
+        try { localStorage.setItem('products:view', isP ? 'pinterest' : 'grid') } catch (e) {}
+      } else {
+        // no explicit view in url: try to restore from localStorage
+        try {
+          const stored = localStorage.getItem('products:view')
+          if (stored === 'pinterest') setIsPinterestMode(true)
+          else setIsPinterestMode(false)
+        } catch (e) {
+          // ignore
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [location.search])
   // If coming back from a ProductView we may have a focusProductId to scroll into view
   React.useEffect(() => {
     try {
       const state = (location && (location.state as any)) || {}
+      // If the URL explicitly sets the view, prefer it and don't override; if no URL and no stored preference, we may use history state
+      const params = new URLSearchParams(location.search)
+      const view = params.get('view')
+      const stored = (() => { try { return localStorage.getItem('products:view') } catch (e) { return null } })()
       const returnPinterest = state.isPinterestMode || (state.from && state.from.isPinterestMode)
-      if (typeof returnPinterest !== 'undefined' && returnPinterest) {
+      if (!view && !stored && typeof returnPinterest !== 'undefined' && returnPinterest) {
         setIsPinterestMode(true)
       }
       const focusId = state.focusProductId || (state.from && state.from.focusProductId) || null
@@ -653,7 +681,18 @@ export default function Products() {
   }
 
   const togglePinterestMode = () => {
-    setIsPinterestMode(!isPinterestMode)
+    try {
+      const params = new URLSearchParams(location.search)
+      const newVal = !isPinterestMode
+      if (newVal) params.set('view', 'pinterest')
+      else params.delete('view')
+      const search = params.toString() ? `?${params.toString()}` : ''
+      navigate({ pathname: location.pathname, search }, { replace: true })
+      setIsPinterestMode(newVal)
+      try { localStorage.setItem('products:view', newVal ? 'pinterest' : 'grid') } catch (e) {}
+    } catch (e) {
+      setIsPinterestMode(!isPinterestMode)
+    }
   }
 
   if (loading) return (
