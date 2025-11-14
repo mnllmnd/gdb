@@ -38,10 +38,19 @@ import ProductCard from '../components/ProductCard'
 import BackButton from '../components/BackButton'
 import ReviewForm from '../components/ReviewForm'
 import ReviewsList from '../components/ReviewsList'
+import { getCurrentUser } from '../services/auth'
 
 interface Category {
   id: number
   name: string
+}
+
+interface User {
+  id: string
+  phone: string
+  display_name: string
+  email: string
+  role: string
 }
 
 export default function ShopView() {
@@ -55,6 +64,8 @@ export default function ShopView() {
   const [reviewCount, setReviewCount] = useState(0)
   const [ownerPhone, setOwnerPhone] = useState<string | null>(null)
   const [whatsappLoading, setWhatsappLoading] = useState(false)
+  const [ownerData, setOwnerData] = useState<User | null>(null)
+  const [allUsers, setAllUsers] = useState<User[]>([])
   
   // Couleurs style Nike/Zara
   const bgColor = useColorModeValue('white', 'black')
@@ -68,17 +79,108 @@ export default function ShopView() {
   
   const cardHeight = useBreakpointValue({ base: '300px', md: '400px' })
 
+  // Fonction pour récupérer tous les utilisateurs (admin seulement)
+  const fetchAllUsers = async () => {
+    try {
+      console.debug('Fetching all users via admin API')
+      const users = await api.admin.users()
+      if (Array.isArray(users)) {
+        setAllUsers(users)
+        console.debug('All users loaded:', users.length)
+        return users
+      }
+    } catch (error) {
+      console.debug('Admin API not available or access denied:', error)
+      return []
+    }
+    return []
+  }
+
+  // Fonction pour récupérer les données du propriétaire
+  const fetchOwnerData = async (ownerId: string) => {
+    try {
+      console.debug('Fetching owner data for ID:', ownerId)
+      
+      // Essayer d'abord avec les utilisateurs déjà chargés
+      if (allUsers.length > 0) {
+        const owner = allUsers.find((u: any) => String(u.id) === String(ownerId))
+        if (owner) {
+          console.debug('Owner found in preloaded users:', owner)
+          setOwnerData(owner)
+          if (owner.phone) {
+            setOwnerPhone(owner.phone)
+          }
+          return
+        }
+      }
+
+      // Sinon, essayer de charger les utilisateurs via admin API
+      try {
+        const users = await api.admin.users()
+        if (Array.isArray(users)) {
+          const owner = users.find((u: any) => String(u.id) === String(ownerId))
+          if (owner) {
+            console.debug('Owner found via admin API:', owner)
+            setOwnerData(owner)
+            if (owner.phone) {
+              setOwnerPhone(owner.phone)
+            }
+            return
+          }
+        }
+      } catch (adminError) {
+        console.debug('Admin API not available, trying current user')
+      }
+
+      // Dernier recours: vérifier si l'utilisateur connecté est le propriétaire
+      try {
+        const currentUser = getCurrentUser()
+        if (currentUser && currentUser.id === ownerId && currentUser.phone) {
+          console.debug('Using current user as owner:', currentUser)
+          setOwnerData(currentUser)
+          setOwnerPhone(currentUser.phone)
+          return
+        }
+      } catch (currentUserError) {
+        console.debug('Could not get current user')
+      }
+
+      console.debug('No owner data found for ID:', ownerId)
+    } catch (error) {
+      console.error('Error fetching owner data:', error)
+    }
+  }
+
   useEffect(() => {
     async function load() {
       try {
         if (!domain) return
+        
+        // Charger d'abord tous les utilisateurs (en parallèle si possible)
+        const usersPromise = fetchAllUsers()
+        
         const s = await api.shops.byDomain(domain)
         setShop(s)
         
-        // Debug: log shop payload pour confirmer la présence du numéro
-        try { console.debug('Shop payload:', s) } catch (e) {}
+        console.debug('Shop loaded:', s)
         
-        // Récupérer le statut follow (count) pour afficher le bon nombre d'abonnés
+        // Attendre que les utilisateurs soient chargés puis récupérer le propriétaire
+        const users = await usersPromise
+        if (s.owner_id) {
+          // Si les utilisateurs sont déjà chargés, chercher directement
+          if (users.length > 0) {
+            const owner = users.find((u: any) => String(u.id) === String(s.owner_id))
+            if (owner) {
+              setOwnerData(owner)
+              if (owner.phone) setOwnerPhone(owner.phone)
+            }
+          } else {
+            // Fallback
+            await fetchOwnerData(s.owner_id)
+          }
+        }
+        
+        // Récupérer le statut follow
         try {
           const followStatus = await api.shops.followStatus(String(s.id))
           if (followStatus && typeof followStatus.count === 'number') {
@@ -121,12 +223,6 @@ export default function ShopView() {
           console.warn('Failed to load review count', err)
         }
 
-        // Extraire le numéro de téléphone du propriétaire
-        const possiblePhone = s?.phone ?? s?.owner_phone ?? s?.contact_phone ?? s?.whatsapp ?? null
-        if (possiblePhone) {
-          setOwnerPhone(String(possiblePhone))
-          console.debug('Phone found in shop data:', possiblePhone)
-        }
       } catch (err) {
         console.error(err)
         setShop(null)
@@ -174,35 +270,10 @@ export default function ShopView() {
     }
   }, [location, products])
 
-  // Fallback: si ownerPhone pas trouvé dans shop, essayer de récupérer via admin
-  useEffect(() => {
-    let cancelled = false
-    async function fetchOwnerPhone() {
-      if (ownerPhone) return
-      if (!shop?.owner_id) return
-      try {
-        const users = await api.admin.users()
-        if (cancelled) return
-        if (Array.isArray(users)) {
-          const owner = users.find((u: any) => String(u.id) === String(shop.owner_id))
-          if (owner && (owner.phone || owner.phone_number)) {
-            const phone = owner.phone ?? owner.phone_number
-            setOwnerPhone(phone)
-            console.debug('Phone found via admin API:', phone)
-          }
-        }
-      } catch (e) {
-        // ignore: likely not admin or endpoint not accessible
-      }
-    }
-    fetchOwnerPhone()
-    return () => { cancelled = true }
-  }, [shop, ownerPhone])
-
   // Fonction pour obtenir le numéro WhatsApp normalisé
   const getWhatsAppNumber = () => {
-    const phone = ownerPhone ?? shop?.phone ?? shop?.contact_phone ?? shop?.whatsapp ?? null
-    console.debug('Resolved phone for WhatsApp:', phone)
+    const phone = ownerPhone
+    console.debug('Resolved phone for WhatsApp:', { ownerPhone, ownerData })
     
     if (!phone) return null
     
@@ -219,7 +290,7 @@ export default function ShopView() {
     if (whatsappNumber) {
       // Numéro disponible - ouvrir WhatsApp
       const digits = whatsappNumber.replace(/^\+/, '')
-      const message = `Bonjour, je suis intéressé par vos produits sur ${shop?.name || 'votre boutique'}.`
+      const message = `Bonjour${ownerData?.display_name ? ` ${ownerData.display_name}` : ''}, je suis intéressé par vos produits sur ${shop?.name || 'votre boutique'}.`
       const href = `https://wa.me/${encodeURIComponent(digits)}?text=${encodeURIComponent(message)}`
       window.open(href, '_blank', 'noopener,noreferrer')
     } else {
@@ -309,7 +380,7 @@ export default function ShopView() {
                   <Tooltip
                     label={
                       getWhatsAppNumber() 
-                        ? "Contacter le vendeur sur WhatsApp" 
+                        ? `Contacter ${ownerData?.display_name || 'le vendeur'} sur WhatsApp` 
                         : "Le vendeur n'a pas configuré son numéro. Cliquez pour entrer un numéro manuellement."
                     }
                     placement="top"
@@ -346,13 +417,29 @@ export default function ShopView() {
                 </Text>
               )}
 
+              {/* Informations du propriétaire (nom seulement) */}
+              {ownerData && (
+                <Flex 
+                  gap={4} 
+                  flexWrap="wrap"
+                  align="center"
+                  pt={3}
+                  borderTop="1px solid"
+                  borderColor={borderColor}
+                >
+                  <Text fontSize="sm" color={textSecondary}>
+                    Vendeur: <Text as="span" fontWeight="600" color={textPrimary}>{ownerData.display_name}</Text>
+                  </Text>
+                </Flex>
+              )}
+
               {/* Stats compactes en une ligne */}
               <Flex 
                 gap={{ base: 4, md: 8 }} 
                 flexWrap="wrap"
                 align="center"
                 pt={3}
-                borderTop="1px solid"
+                borderTop={ownerData ? "1px solid" : "none"}
                 borderColor={borderColor}
               >
                 <HStack spacing={2}>
