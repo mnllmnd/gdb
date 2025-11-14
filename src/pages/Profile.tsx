@@ -21,7 +21,7 @@ export default function ProfilePage() {
   const toast = useToast()
 
   // Design variables inspirées de ZARA
-  const bgColor = useColorModeValue('white', 'gray.900')
+  const bgColor = useColorModeValue('white', 'black')
   const subtle = useColorModeValue('gray.600', 'gray.400')
   const borderColor = useColorModeValue('gray.200', 'gray.700')
   const accentColor = 'black'
