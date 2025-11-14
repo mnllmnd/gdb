@@ -309,7 +309,7 @@ const LogoutIcon = () => (
             <HStack spacing={3} align="center" flexShrink={0}>
               <Avatar 
                 size="sm" 
-                name="Fifi" 
+                name="Boutik" 
                 color={textColor} 
                  src="https://res.cloudinary.com/dcs9vkwe0/image/upload/v1762503131/gestion_de_boutique/go7j1ubdayddayswxzmp.jpg"
                 borderRadius="full"
@@ -321,7 +321,7 @@ const LogoutIcon = () => (
                 letterSpacing="wide"
                 fontSize="lg"
               >
-                Fifi
+                Boutik
               </Heading>
             </HStack>
 
@@ -612,7 +612,7 @@ const LogoutIcon = () => (
           <HStack spacing={3}>
             <Avatar
               size="sm"
-              name="Fifi"
+              name="Boutik"
               src="https://res.cloudinary.com/dcs9vkwe0/image/upload/v1762503131/gestion_de_boutique/go7j1ubdayddayswxzmp.jpg"
               bg="transparent"
               borderRadius="full"
@@ -625,7 +625,7 @@ const LogoutIcon = () => (
               letterSpacing="wide"
               fontSize="lg"
             >
-              Fifi
+              Boutik
             </Heading>
           </HStack>
         </DrawerHeader>

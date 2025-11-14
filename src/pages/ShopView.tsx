@@ -26,6 +26,7 @@ import {
   Flex,
   SimpleGrid,
   AspectRatio,
+  Tooltip,
 } from '@chakra-ui/react'
 import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons'
 import { FaStar, FaRegStar, FaHeart, FaRegHeart } from 'react-icons/fa'
@@ -53,6 +54,7 @@ export default function ShopView() {
   const [reviewsOpen, setReviewsOpen] = useState(false)
   const [reviewCount, setReviewCount] = useState(0)
   const [ownerPhone, setOwnerPhone] = useState<string | null>(null)
+  const [whatsappLoading, setWhatsappLoading] = useState(false)
   
   // Couleurs style Nike/Zara
   const bgColor = useColorModeValue('white', 'black')
@@ -71,21 +73,22 @@ export default function ShopView() {
       try {
         if (!domain) return
         const s = await api.shops.byDomain(domain)
-  setShop(s)
-  // debug: log shop payload so we can confirm owner_phone presence
-  try { console.debug('Shop payload:', s) } catch (e) {}
-  // fetch follow status (count) so the UI shows correct followers number
-  try {
-    const followStatus = await api.shops.followStatus(String(s.id))
-    if (followStatus && typeof followStatus.count === 'number') {
-      // merge into shop object so existing UI uses shop.followers_count
-      setShop((prev) => ({ ...(prev || {}), followers_count: followStatus.count }))
-    }
-  } catch (e) {
-    // ignore follow count fetch failures — fallback to 0 already in UI
-    console.warn('Failed to fetch follow status for shop view', e)
-  }
+        setShop(s)
+        
+        // Debug: log shop payload pour confirmer la présence du numéro
+        try { console.debug('Shop payload:', s) } catch (e) {}
+        
+        // Récupérer le statut follow (count) pour afficher le bon nombre d'abonnés
+        try {
+          const followStatus = await api.shops.followStatus(String(s.id))
+          if (followStatus && typeof followStatus.count === 'number') {
+            setShop((prev) => ({ ...(prev || {}), followers_count: followStatus.count }))
+          }
+        } catch (e) {
+          console.warn('Failed to fetch follow status for shop view', e)
+        }
 
+        // Charger les produits
         let found: any[] = []
         try {
           const all = await api.products.list()
@@ -102,6 +105,7 @@ export default function ShopView() {
 
         setProducts(found)
 
+        // Charger les catégories
         try {
           const cats = await api.categories.list()
           setCategories(cats || [])
@@ -109,15 +113,20 @@ export default function ShopView() {
           console.warn('Failed to load categories', err)
         }
 
+        // Charger le nombre d'avis
         try {
           const reviews = await api.reviews.list({ shop_id: s.id, limit: 1 })
           setReviewCount(reviews?.aggregate?.count || 0)
         } catch (err) {
           console.warn('Failed to load review count', err)
         }
-          // try to extract owner phone from shop row if present
-          const possiblePhone = s?.phone ?? s?.owner_phone ?? s?.contact_phone ?? s?.whatsapp ?? null
-          if (possiblePhone) setOwnerPhone(String(possiblePhone))
+
+        // Extraire le numéro de téléphone du propriétaire
+        const possiblePhone = s?.phone ?? s?.owner_phone ?? s?.contact_phone ?? s?.whatsapp ?? null
+        if (possiblePhone) {
+          setOwnerPhone(String(possiblePhone))
+          console.debug('Phone found in shop data:', possiblePhone)
+        }
       } catch (err) {
         console.error(err)
         setShop(null)
@@ -138,7 +147,7 @@ export default function ShopView() {
     setCategorizedProducts(map)
   }, [products])
 
-  // If coming back from ProductView we may have a focusProductId to jump to
+  // Navigation vers un produit spécifique
   useEffect(() => {
     try {
       const state = (location && (location.state as any)) || {}
@@ -165,7 +174,7 @@ export default function ShopView() {
     }
   }, [location, products])
 
-  // If ownerPhone not found on shop, try to fetch owner from admin users list (best-effort; will fail for non-admins)
+  // Fallback: si ownerPhone pas trouvé dans shop, essayer de récupérer via admin
   useEffect(() => {
     let cancelled = false
     async function fetchOwnerPhone() {
@@ -177,7 +186,9 @@ export default function ShopView() {
         if (Array.isArray(users)) {
           const owner = users.find((u: any) => String(u.id) === String(shop.owner_id))
           if (owner && (owner.phone || owner.phone_number)) {
-            setOwnerPhone(owner.phone ?? owner.phone_number ?? null)
+            const phone = owner.phone ?? owner.phone_number
+            setOwnerPhone(phone)
+            console.debug('Phone found via admin API:', phone)
           }
         }
       } catch (e) {
@@ -187,6 +198,57 @@ export default function ShopView() {
     fetchOwnerPhone()
     return () => { cancelled = true }
   }, [shop, ownerPhone])
+
+  // Fonction pour obtenir le numéro WhatsApp normalisé
+  const getWhatsAppNumber = () => {
+    const phone = ownerPhone ?? shop?.phone ?? shop?.contact_phone ?? shop?.whatsapp ?? null
+    console.debug('Resolved phone for WhatsApp:', phone)
+    
+    if (!phone) return null
+    
+    const normalized = normalizeSenegalPhone(String(phone))
+    console.debug('Normalized phone:', normalized)
+    
+    return normalized
+  }
+
+  // Gestion du clic sur le bouton WhatsApp
+  const handleWhatsAppClick = () => {
+    const whatsappNumber = getWhatsAppNumber()
+    
+    if (whatsappNumber) {
+      // Numéro disponible - ouvrir WhatsApp
+      const digits = whatsappNumber.replace(/^\+/, '')
+      const message = `Bonjour, je suis intéressé par vos produits sur ${shop?.name || 'votre boutique'}.`
+      const href = `https://wa.me/${encodeURIComponent(digits)}?text=${encodeURIComponent(message)}`
+      window.open(href, '_blank', 'noopener,noreferrer')
+    } else {
+      // Numéro non disponible - demander à l'utilisateur d'entrer le numéro
+      const userPhone = prompt(
+        `Le vendeur ${shop?.name || ''} n'a pas configuré son numéro WhatsApp.\n\nVeuillez entrer le numéro du vendeur (format: +221 XX XXX XX XX) :`,
+        '+221'
+      )
+      
+      if (userPhone && userPhone.trim()) {
+        setWhatsappLoading(true)
+        try {
+          const normalizedUserPhone = normalizeSenegalPhone(userPhone.trim())
+          if (normalizedUserPhone) {
+            const digits = normalizedUserPhone.replace(/^\+/, '')
+            const message = `Bonjour, je suis intéressé par vos produits sur ${shop?.name || 'votre boutique'}.`
+            const href = `https://wa.me/${encodeURIComponent(digits)}?text=${encodeURIComponent(message)}`
+            window.open(href, '_blank', 'noopener,noreferrer')
+          } else {
+            alert('Numéro invalide. Veuillez utiliser le format: +221 XX XXX XX XX')
+          }
+        } catch (error) {
+          alert('Erreur lors de l\'ouverture de WhatsApp. Veuillez réessayer.')
+        } finally {
+          setWhatsappLoading(false)
+        }
+      }
+    }
+  }
 
   if (!domain) return <Container py={8}>Nom de boutique manquant</Container>
 
@@ -242,33 +304,31 @@ export default function ShopView() {
                 </Heading>
                 <HStack spacing={3}>
                   <FollowButton id={String(shop.id)} />
-                  {/** If shop has a phone number, show WhatsApp chat button */}
-                  {(() => {
-                    const phone = ownerPhone ?? shop?.phone ?? shop?.contact_phone ?? shop?.whatsapp ?? null
-                    // debug: show resolved phone in console
-                    try { console.debug('Resolved owner phone:', ownerPhone, shop?.owner_phone, shop?.phone) } catch (e) {}
-                    if (!phone) return null
-                    const normalized = normalizeSenegalPhone(String(phone))
-                    if (!normalized) return null
-                    const digits = normalized.replace(/^\+/, '')
-                    const message = `Bonjour, je suis intéressé par vos produits sur ${shop?.name || 'votre boutique'}.`
-                    const href = `https://wa.me/${encodeURIComponent(digits)}?text=${encodeURIComponent(message)}`
-                    return (
-                      <Button
-                        as="a"
-                        href={href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        leftIcon={<Icon as={FaWhatsapp} />}
-                        colorScheme="green"
-                        variant="solid"
-                        size="sm"
-                        bg="green.500"
-                      >
-                        WhatsApp
-                      </Button>
-                    )
-                  })()}
+                  
+                  {/* Bouton WhatsApp - Toujours affiché */}
+                  <Tooltip
+                    label={
+                      getWhatsAppNumber() 
+                        ? "Contacter le vendeur sur WhatsApp" 
+                        : "Le vendeur n'a pas configuré son numéro. Cliquez pour entrer un numéro manuellement."
+                    }
+                    placement="top"
+                    hasArrow
+                  >
+                    <Button
+                      onClick={handleWhatsAppClick}
+                      leftIcon={<Icon as={FaWhatsapp} />}
+                      colorScheme="green"
+                      variant="solid"
+                      size="sm"
+                      bg="green.500"
+                      _hover={{ bg: 'green.600' }}
+                      isLoading={whatsappLoading}
+                      loadingText="Ouverture..."
+                    >
+                      WhatsApp
+                    </Button>
+                  </Tooltip>
                 </HStack>
               </Flex>
 
@@ -362,7 +422,6 @@ export default function ShopView() {
                   </Text>
                   {reviewCount > 0 && (
                     <Badge 
-                     
                       color={textColors}
                       fontSize={{ base: 'sm', md: 'sm' }}
                       px={{ base: 1, md: 2 }}
@@ -439,8 +498,6 @@ export default function ShopView() {
 
             {/* 🛒 Produits - Grille améliorée */}
             <Box>
-             
-
               {products === null && (
                 <Flex justify="center" py={20}>
                   <Spinner size="xl" color={accentColor} thickness="3px" />
