@@ -9,6 +9,7 @@
     "migrate": "node src/migrate.js"
   },
   "dependencies": {
+    "@sendgrid/mail": "^8.1.6",
     "axios": "^1.12.2",
     "bcrypt": "^5.1.0",
     "cloudinary": "^2.7.0",
