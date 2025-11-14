@@ -169,6 +169,23 @@ export default function ProductCard({
   })
 
   const location = useLocation()
+  const navigate = useNavigate()
+
+  const handleOpen = (e?: React.MouseEvent) => {
+    // prefer full page view when clicking from product list / home / shops list
+    try {
+      const path = location?.pathname || ''
+  const shouldNavigate = path === '/' || path.startsWith('/products') || path.startsWith('/shops') || path.startsWith('/shop') || path.startsWith('/search')
+      if (shouldNavigate) {
+        // pass a precise 'from' object so BackButton (and the listing) can scroll to the exact product
+        navigate(`/products/${id}`, { state: { from: { pathname: path, focusProductId: id } } })
+        return
+      }
+    } catch (err) {
+      // fallback to modal when navigation fails
+    }
+    onDetailOpen()
+  }
 
   const chosen = finalImages[imageIndex] ?? image_url ?? image
   const resolvedSrc = (highRes(chosen, { width: 1200, quality: 90 }) ?? chosen) as string | undefined
@@ -282,6 +299,7 @@ export default function ProductCard({
   return (
     <ScaleFade in={true} initialScale={0.95}>
       <Box
+        id={`product-${id}`}
         borderWidth="0.6px"
         borderRadius="none"
         overflow="hidden"
@@ -312,7 +330,7 @@ export default function ProductCard({
           justifyContent="center" 
           overflow="hidden"
           cursor="pointer"
-          onClick={onDetailOpen}
+          onClick={handleOpen}
         >
           <Box position="relative" width="100%" height="100%">
             {finalImages && finalImages.length > 0 ? (

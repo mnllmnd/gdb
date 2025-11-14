@@ -32,7 +32,7 @@ import ShopCard from '../components/ShopCard'
 import ProductCard from '../components/ProductCard'
 import HeroNike from '../components/HeroNike'
 import HeroProductStrip from '../components/HeroProductStrip'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink, useLocation } from 'react-router-dom'
 import api from '../services/api'
 
 interface Product {
@@ -398,6 +398,35 @@ export default function Home() {
       window.scrollTo(0, Number(savedScroll))
     }
   }, [])
+  
+  // If coming back from ProductView we may have a focusProductId to jump to
+  const location = useLocation()
+  React.useEffect(() => {
+    try {
+      const state = (location && (location.state as any)) || {}
+      const focusId = state.focusProductId || (state.from && state.from.focusProductId) || null
+      if (!focusId) return
+      // Try to find the element and jump to it immediately (no smooth scroll)
+      let attempts = 0
+      const maxAttempts = 10
+      const tryJump = () => {
+        attempts += 1
+        const el = document.getElementById(`product-${String(focusId)}`)
+        if (el) {
+            try {
+            el.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' })
+            try { el.setAttribute('tabindex', '-1'); (el as HTMLElement).focus() } catch (e) {}
+            try { el.animate([{ boxShadow: '0 0 0px rgba(0,0,0,0)' }, { boxShadow: '0 0 14px rgba(0,150,136,0.28)' }, { boxShadow: '0 0 0px rgba(0,0,0,0)' }], { duration: 900 }) } catch (e) {}
+          } catch (e) {}
+        } else if (attempts < maxAttempts) {
+          setTimeout(tryJump, 60)
+        }
+      }
+      tryJump()
+    } catch (e) {
+      // ignore
+    }
+  }, [location])
  
   const sectionBg = useColorModeValue('white', 'gray.800')
   const categoryBg = useColorModeValue('white', 'brand.900')
@@ -691,23 +720,24 @@ export default function Home() {
                   </Heading>
 
                   <Button
-                    mt={4}
-                    as={RouterLink}
-                    to={target}
-                    bg={ctaBg}
-                    color={ctaColor}
-                    borderRadius="none"
-                    px={6}
-                    py={4}
-                    fontWeight={600}
-                     size="lg"
-                    textTransform="uppercase"
-                    letterSpacing="0.05em"
-                    fontSize="sm"
-                    _hover={{ bg: 'gray.100' }}
-                  >
-                    Voir la Boutique
-                  </Button>
+                          mt={4}
+                          as={RouterLink}
+                          to={target}
+                          state={{ from: { pathname: location?.pathname || '/', focusProductId: String((p as any).id) } }}
+                          bg={ctaBg}
+                          color={ctaColor}
+                          borderRadius="none"
+                          px={6}
+                          py={4}
+                          fontWeight={600}
+                           size="lg"
+                          textTransform="uppercase"
+                          letterSpacing="0.05em"
+                          fontSize="sm"
+                          _hover={{ bg: 'gray.100' }}
+                        >
+                          Voir la Boutique
+                        </Button>
                 </Box>
               </Box>
             )

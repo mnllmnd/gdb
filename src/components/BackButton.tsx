@@ -27,10 +27,33 @@ export default function BackButton({
 
   const handleClick = () => {
     if (to) {
-      navigate(to)
+      // `to` may be a string pathname or an object { pathname, focusProductId }
+      if (typeof to === 'string') {
+        navigate(to)
+      } else if (typeof to === 'object' && to !== null) {
+        // prefer navigate to the pathname and pass along focus state if present
+        const pathname = (to as any).pathname || ''
+        const focusProductId = (to as any).focusProductId || (to as any).productId
+        if (pathname) {
+          const state = focusProductId ? { focusProductId } : undefined
+          navigate(pathname, { state })
+        } else {
+          // fallback to navigate with object (react-router accepts location-like objects)
+          navigate(to as any)
+        }
+      } else {
+        navigate(to as any)
+      }
     } else if (location && (location.state as any)?.from) {
       // If the current location was reached with a 'from' state, prefer returning there
-      navigate((location.state as any).from)
+      const from = (location.state as any).from
+      if (typeof from === 'string') navigate(from)
+      else if (from && typeof from === 'object') {
+        const pathname = from.pathname || ''
+        const focusProductId = from.focusProductId || from.productId
+        if (pathname) navigate(pathname, { state: focusProductId ? { focusProductId } : undefined })
+        else navigate(from)
+      } else navigate(-1)
     } else {
       navigate(-1)
     }

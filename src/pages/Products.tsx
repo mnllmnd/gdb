@@ -438,6 +438,51 @@ export default function Products() {
 
   // Synchronise la query à partir du paramètre d'URL ?q=...
   const location = useLocation()
+  // If coming back from a ProductView we may have a focusProductId to scroll into view
+  React.useEffect(() => {
+    try {
+      const state = (location && (location.state as any)) || {}
+      const focusId = state.focusProductId || (state.from && state.from.focusProductId) || null
+      if (!focusId) return
+
+      // Try to find the element and jump to it immediately (no smooth scroll)
+      // If the element is not yet in the DOM, retry a few times quickly.
+      let attempts = 0
+      const maxAttempts = 10
+      const tryScroll = () => {
+        attempts += 1
+        const el = document.getElementById(`product-${String(focusId)}`)
+        if (el) {
+            try {
+            // immediate jump (also center inline for horizontal carousels)
+            el.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' })
+            // ensure element receives focus so keyboard users land there
+            try {
+              el.setAttribute('tabindex', '-1')
+              ;(el as HTMLElement).focus()
+            } catch (e) {}
+            // short visual highlight
+            try {
+              el.animate([
+                { boxShadow: '0 0 0px rgba(0,0,0,0)' },
+                { boxShadow: '0 0 14px rgba(0,150,136,0.28)' },
+                { boxShadow: '0 0 0px rgba(0,0,0,0)' }
+              ], { duration: 900 })
+            } catch (e) {}
+          } catch (e) {
+            // ignore scroll errors
+          }
+        } else if (attempts < maxAttempts) {
+          setTimeout(tryScroll, 60)
+        }
+      }
+
+      // Start retries immediately
+      tryScroll()
+    } catch (e) {
+      // ignore
+    }
+  }, [location])
   React.useEffect(() => {
     const params = new URLSearchParams(location.search)
     const q = params.get('q') || ''

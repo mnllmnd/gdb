@@ -138,6 +138,33 @@ export default function ShopView() {
     setCategorizedProducts(map)
   }, [products])
 
+  // If coming back from ProductView we may have a focusProductId to jump to
+  useEffect(() => {
+    try {
+      const state = (location && (location.state as any)) || {}
+      const focusId = state.focusProductId || (state.from && state.from.focusProductId) || null
+      if (!focusId) return
+      let attempts = 0
+      const maxAttempts = 10
+      const tryJump = () => {
+        attempts += 1
+        const el = document.getElementById(`product-${String(focusId)}`)
+        if (el) {
+            try {
+            el.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' })
+            try { el.setAttribute('tabindex', '-1'); (el as HTMLElement).focus() } catch (e) {}
+            try { el.animate([{ boxShadow: '0 0 0px rgba(0,0,0,0)' }, { boxShadow: '0 0 14px rgba(0,150,136,0.28)' }, { boxShadow: '0 0 0px rgba(0,0,0,0)' }], { duration: 900 }) } catch (e) {}
+          } catch (e) {}
+        } else if (attempts < maxAttempts) {
+          setTimeout(tryJump, 60)
+        }
+      }
+      tryJump()
+    } catch (e) {
+      // ignore
+    }
+  }, [location, products])
+
   // If ownerPhone not found on shop, try to fetch owner from admin users list (best-effort; will fail for non-admins)
   useEffect(() => {
     let cancelled = false

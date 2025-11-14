@@ -11,7 +11,7 @@ import {
   VStack,
   Button,
 } from '@chakra-ui/react'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink, useLocation } from 'react-router-dom'
 import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons'
 
 type MinimalProduct = {
@@ -85,6 +85,7 @@ export default function HeroProductGrid({
   products?: MinimalProduct[]
   shopsMap?: Record<string, any>
 }) {
+  const location = useLocation()
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
@@ -227,12 +228,14 @@ export default function HeroProductGrid({
 
             return (
               <ChakraLink
-                as={RouterLink}
-                key={String(p.id)}
-                to={productHref}
-                _hover={{ textDecoration: 'none' }}
-                flexShrink={0}
-              >
+                  as={RouterLink}
+                  key={String(p.id)}
+                  id={`product-${String(p.id)}`}
+                  to={productHref}
+                  state={{ from: { pathname: location?.pathname || '/', focusProductId: String(p.id) } }}
+                  _hover={{ textDecoration: 'none' }}
+                  flexShrink={0}
+                >
                 <Box
                   bg={bg}
                   overflow="hidden"
