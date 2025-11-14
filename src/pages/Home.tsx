@@ -807,6 +807,38 @@ export default function Home() {
       {(visibleProducts || []).slice(2).length > 0 && (
         <Box as="section" px={{ base: 4, md: 6 }} py={8}>
           <SimpleGrid columns={{ base: 2, md: 2 }} spacing={4}>
+            {/* Video tile included as a clickable tile in the same grid */}
+            <Box
+              as={RouterLink}
+              to="/products"
+              state={{ from: { pathname: location?.pathname || '/', focusProductId: '', isPinterestMode } }}
+              key="promo-video"
+              position="relative"
+              borderRadius="xl"
+              overflow="hidden"
+              minH={{ base: '220px', md: '420px' }}
+            >
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block'
+                }}
+              >
+                <source src="https://res.cloudinary.com/dcs9vkwe0/video/upload/v1762786387/fazftprabcd9j5leq0pv.mp4" type="video/mp4" />
+              </video>
+              <Box
+                position="absolute"
+                inset={0}
+                bg="linear-gradient(to-b, rgba(0,0,0,0.0), rgba(0,0,0,0.55))"
+              />
+            </Box>
+
             {(visibleProducts || []).slice(2).map((p) => {
               const imgs = normalizeImages(p as any)
               const img = imgs && imgs.length ? imgs[0] : '/img/b.jfif'

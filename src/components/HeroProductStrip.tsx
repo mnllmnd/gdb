@@ -281,77 +281,7 @@ export default function HeroProductGrid({
         </Box>
       </Box>
 
-      {/* Section Vidéo style Zara */}
-      <Box 
-        as="section" 
-        position="relative" 
-        h={{ base: '60vh', md: '100vh' }} 
-        w="100%" 
-        overflow="hidden"
-        bg="black"
-        mt={12}
-      >
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-          }}
-        >
-          <source src="https://res.cloudinary.com/dcs9vkwe0/video/upload/v1762786387/fazftprabcd9j5leq0pv.mp4" type="video/mp4" />
-        </video>
-
-        {/* Overlay subtil */}
-        <Box 
-          position="absolute" 
-          inset={0} 
-          bg="rgba(0,0,0,0.1)" 
-          zIndex={1} 
-        />
-
-        {/* Texte overlay minimaliste */}
-        <VStack
-          position="absolute"
-          bottom={{ base: 8, md: 16 }}
-          left={{ base: 6, md: 12 }}
-          zIndex={2}
-          align="flex-start"
-          spacing={4}
-        >
-          <Heading
-            as="h2"
-            size={{ base: 'xl', md: '3xl' }}
-            color="white"
-            fontWeight={700}
-            letterSpacing="-0.02em"
-          >
-            Collection
-          </Heading>
-          <Button
-            size="lg"
-            bg="white"
-            color="black"
-            borderRadius="none"
-            px={8}
-            py={6}
-            fontWeight={600}
-            textTransform="uppercase"
-            letterSpacing="0.05em"
-            fontSize="sm"
-            _hover={{ bg: 'gray.100' }}
-            onClick={scrollToProducts}
-          >
-            Explorer
-          </Button>
-        </VStack>
-      </Box>
+      {/* Video moved into the promo grid in Home; removed standalone video here */}
     </>
   )
 }
