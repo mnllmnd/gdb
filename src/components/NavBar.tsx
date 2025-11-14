@@ -309,9 +309,10 @@ const LogoutIcon = () => (
             <HStack spacing={3} align="center" flexShrink={0}>
               <Avatar 
                 size="sm" 
-                name="Sama Bitik" 
+                name="Woyof" 
                 color={textColor} 
-                borderRadius="none"
+                 src="https://res.cloudinary.com/dcs9vkwe0/image/upload/v1762503131/gestion_de_boutique/go7j1ubdayddayswxzmp.jpg"
+                borderRadius="full"
               />
               <Heading 
                 size="md" 
@@ -320,7 +321,7 @@ const LogoutIcon = () => (
                 letterSpacing="wide"
                 fontSize="lg"
               >
-                SAMA BITIK
+                Woyof
               </Heading>
             </HStack>
 
@@ -608,19 +609,27 @@ const LogoutIcon = () => (
         <DrawerOverlay />
         <DrawerContent bg={menuBg} zIndex={1700} borderRadius="none">
           <DrawerHeader borderBottomWidth="1px" borderColor={menuBorder} py={4}>
-            <HStack spacing={3}>
-              <Avatar size="sm" name="Sama Bitik" color={textColor} borderRadius="none" />
-              <Heading 
-                size="md" 
-                color={textColor} 
-                fontWeight="normal" 
-                letterSpacing="wide"
-                fontSize="lg"
-              >
-                SAMA BITIK
-              </Heading>
-            </HStack>
-          </DrawerHeader>
+          <HStack spacing={3}>
+            <Avatar
+              size="sm"
+              name="Woyof"
+              src="https://res.cloudinary.com/dcs9vkwe0/image/upload/v1762503131/gestion_de_boutique/go7j1ubdayddayswxzmp.jpg"
+              bg="transparent"
+              borderRadius="full"
+            />
+
+            <Heading
+              size="md"
+              color={textColor}
+              fontWeight="normal"
+              letterSpacing="wide"
+              fontSize="lg"
+            >
+              Woyof
+            </Heading>
+          </HStack>
+        </DrawerHeader>
+
           <DrawerBody py={4}>
             <VStack align="stretch" spacing={0}>
               {/* Navigation principale */}
