@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useParams, useLocation } from 'react-router-dom'
+import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import {
   Container,
   Heading,
@@ -27,8 +27,9 @@ import {
   SimpleGrid,
   AspectRatio,
   Tooltip,
+  IconButton,
 } from '@chakra-ui/react'
-import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons'
+import { ChevronDownIcon, ChevronUpIcon, ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
 import { FaStar, FaRegStar, FaHeart, FaRegHeart } from 'react-icons/fa'
 import api from '../services/api'
 import FollowButton from '../components/FollowButton'
@@ -53,9 +54,70 @@ interface User {
   role: string
 }
 
+// Composant Pinterest (images seulement)
+function PinterestProductCard({ product, shop }: { product: any; shop: any }) {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const borderColor = useColorModeValue('#e5e5e5', 'gray.600')
+  const hoverBorderColor = useColorModeValue('#111111', 'white')
+
+  const handleClick = () => {
+    // Navigate to the full product view and include a 'from' object so Back can restore state
+    try {
+      const path = location?.pathname || ''
+      navigate(`/products/${product.id}`, { state: { from: { pathname: path, focusProductId: String(product.id), isPinterestMode: true } } })
+    } catch (e) {
+      // fallback to simple navigation
+      try { navigate(`/products/${product.id}`) } catch (err) { /* ignore */ }
+    }
+  }
+
+  const imageUrl = product.image_url ?? product.product_image ?? product.images?.[0]
+
+  return (
+    <Box
+      cursor="pointer"
+      onClick={handleClick}
+      transition="all 0.3s ease"
+      _hover={{ 
+        transform: 'scale(1.02)',
+        borderColor: hoverBorderColor
+      }}
+      border="1px solid"
+      borderColor={borderColor}
+      borderRadius="none"
+      overflow="hidden"
+      bg="white"
+    >
+      <AspectRatio ratio={3/4}>
+        <Image
+          src={imageUrl}
+          alt={product.title || product.name}
+          objectFit="cover"
+          w="100%"
+          h="100%"
+          fallback={
+            <Center bg="gray.100" w="100%" h="100%">
+              <Icon as={FaRegHeart} boxSize={8} color="gray.400" />
+            </Center>
+          }
+        />
+      </AspectRatio>
+    </Box>
+  )
+}
+
+// Composant Center pour le fallback
+const Center = ({ children, ...props }: any) => (
+  <Flex align="center" justify="center" {...props}>
+    {children}
+  </Flex>
+)
+
 export default function ShopView() {
   const { domain } = useParams()
   const location = useLocation()
+  const navigate = useNavigate()
   const [shop, setShop] = useState<Record<string, any> | null>(null)
   const [products, setProducts] = useState<any[] | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
@@ -66,6 +128,7 @@ export default function ShopView() {
   const [whatsappLoading, setWhatsappLoading] = useState(false)
   const [ownerData, setOwnerData] = useState<User | null>(null)
   const [allUsers, setAllUsers] = useState<User[]>([])
+  const [isPinterestMode, setIsPinterestMode] = useState(false)
   
   // Couleurs style Nike/Zara
   const bgColor = useColorModeValue('white', 'black')
@@ -78,6 +141,74 @@ export default function ShopView() {
   const subtleBg = useColorModeValue('#f8f8f8', 'gray.800')
   
   const cardHeight = useBreakpointValue({ base: '300px', md: '400px' })
+  const isMobile = useBreakpointValue({ base: true, md: false })
+
+  // Configuration de la grille selon le mode
+  const gridColumns = useBreakpointValue({ 
+    base: isPinterestMode ? 'repeat(2, 1fr)' : 'repeat(1, 1fr)', 
+    sm: isPinterestMode ? 'repeat(2, 1fr)' : 'repeat(2, 1fr)', 
+    md: isPinterestMode ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)', 
+    lg: isPinterestMode ? 'repeat(4, 1fr)' : 'repeat(4, 1fr)',
+    xl: isPinterestMode ? 'repeat(4, 1fr)' : 'repeat(5, 1fr)'
+  })
+
+  // Fonction pour déterminer le mode d'affichage initial
+  const getInitialViewMode = (): boolean => {
+    // 1. Vérifier le paramètre d'URL en priorité
+    const urlParams = new URLSearchParams(location.search)
+    const urlView = urlParams.get('view')
+    if (urlView === 'pinterest') return true
+    if (urlView === 'grid') return false
+
+    // 2. Vérifier le localStorage
+    try {
+      const storedView = localStorage.getItem('shop:view')
+      if (storedView === 'pinterest') return true
+      if (storedView === 'grid') return false
+    } catch (e) {
+      console.debug('localStorage not available')
+    }
+
+    // 3. Vérifier l'état de navigation
+    const stateView = (location.state as any)?.viewMode
+    if (stateView === 'pinterest') return true
+    if (stateView === 'grid') return false
+
+    // 4. Défaut : mode grille
+    return false
+  }
+
+  // Fonction pour mettre à jour le mode d'affichage
+  const updateViewMode = (newMode: boolean) => {
+    setIsPinterestMode(newMode)
+    
+    // Mettre à jour l'URL sans recharger la page
+    const urlParams = new URLSearchParams(location.search)
+    if (newMode) {
+      urlParams.set('view', 'pinterest')
+    } else {
+      urlParams.set('view', 'grid')
+    }
+    
+    const newSearch = urlParams.toString()
+    const newUrl = `${location.pathname}${newSearch ? `?${newSearch}` : ''}`
+    
+    // Utiliser replace pour éviter d'ajouter une nouvelle entrée dans l'historique
+    navigate(newUrl, { replace: true })
+    
+    // Sauvegarder dans localStorage
+    try {
+      localStorage.setItem('shop:view', newMode ? 'pinterest' : 'grid')
+    } catch (e) {
+      console.debug('Failed to save view mode to localStorage')
+    }
+  }
+
+  // Initialiser le mode d'affichage
+  useEffect(() => {
+    const initialMode = getInitialViewMode()
+    setIsPinterestMode(initialMode)
+  }, [location.search, location.state])
 
   // Fonction pour récupérer tous les utilisateurs (admin seulement)
   const fetchAllUsers = async () => {
@@ -321,6 +452,11 @@ export default function ShopView() {
     }
   }
 
+  // Toggle du mode Pinterest
+  const togglePinterestMode = () => {
+    updateViewMode(!isPinterestMode)
+  }
+
   if (!domain) return <Container py={8}>Nom de boutique manquant</Container>
 
   return (
@@ -374,6 +510,21 @@ export default function ShopView() {
                   {shop.name}
                 </Heading>
                 <HStack spacing={3}>
+                  {/* Bouton Pinterest Mode */}
+                  <Tooltip label={isPinterestMode ? "Mode détaillé" : "Mode Pinterest"}>
+                    <IconButton
+                      aria-label={isPinterestMode ? "Mode détaillé" : "Mode Pinterest"}
+                      icon={isPinterestMode ? <ViewOffIcon /> : <ViewIcon />}
+                      size="sm"
+                      variant="outline"
+                      borderRadius="md"
+                      borderColor={borderColor}
+                      onClick={togglePinterestMode}
+                      _hover={{ bg: subtleBg }}
+                      color={isPinterestMode ? accentColor : textSecondary}
+                    />
+                  </Tooltip>
+                  
                   <FollowButton id={String(shop.id)} />
                   
                   {/* Bouton WhatsApp - Toujours affiché */}
@@ -608,54 +759,77 @@ export default function ShopView() {
                     if (uncategorized.length === 0) return null
                     return (
                       <Box>
-                        <Heading
-                          size={{ base: 'sm', md: 'md' }}
-                          mb={{ base: 4, md: 6 }}
-                          color={textPrimary}
-                          fontWeight="700"
-                          letterSpacing="tight"
-                          textTransform="uppercase"
-                          borderLeft="4px solid"
-                          borderColor={accentColor}
-                          pl={3}
-                        >
-                          Découvertes
-                        </Heading>
-                        <Grid
-                          templateColumns={{
-                            base: 'repeat(1, 1fr)',
-                            sm: 'repeat(2, 1fr)',
-                            md: 'repeat(3, 1fr)',
-                            lg: 'repeat(4, 1fr)',
-                            xl: 'repeat(5, 1fr)',
-                          }}
-                          gap={{ base: 4, md: 6 }}
-                          w="100%"
-                        >
-                          {uncategorized.map((product) => (
-                            <GridItem key={product.id} minW="0">
-                              <ProductCard
-                                id={String(product.id)}
-                                title={product.title || product.name || ''}
-                                description={product.description || product.details || ''}
-                                price={product.price ?? product.amount}
-                                originalPrice={product.original_price ?? product.originalPrice}
-                                discount={product.discount ?? 0}
-                                image_url={product.image_url ?? product.product_image}
-                                images={product.images}
-                                quantity={
-                                  product.quantity ??
-                                  product.quantite ??
-                                  product.stock ??
-                                  product.amount_available
-                                }
-                                shopName={shop.name}
-                                shopDomain={shop.domain}
-                                height={cardHeight}
+                        <Flex justify="space-between" align="center" mb={{ base: 4, md: 6 }}>
+                          <Heading
+                            size={{ base: 'sm', md: 'md' }}
+                            color={textPrimary}
+                            fontWeight="700"
+                            letterSpacing="tight"
+                            textTransform="uppercase"
+                            borderLeft="4px solid"
+                            borderColor={accentColor}
+                            pl={3}
+                          >
+                            Découvertes
+                          </Heading>
+                          {!isMobile && (
+                            <Text color={textSecondary} fontSize="sm" fontWeight="500">
+                              Mode: {isPinterestMode ? 'Pinterest' : 'Détaillé'}
+                            </Text>
+                          )}
+                        </Flex>
+                        
+                        {isPinterestMode ? (
+                          <SimpleGrid 
+                            columns={{ base: 2, sm: 2, md: 3, lg: 4 }} 
+                            spacing={{ base: 3, md: 4 }}
+                            style={{ gridAutoRows: 'auto' }}
+                          >
+                            {uncategorized.map((product) => (
+                              <PinterestProductCard
+                                key={product.id}
+                                product={product}
+                                shop={shop}
                               />
-                            </GridItem>
-                          ))}
-                        </Grid>
+                            ))}
+                          </SimpleGrid>
+                        ) : (
+                          <Grid
+                            templateColumns={{
+                              base: 'repeat(1, 1fr)',
+                              sm: 'repeat(2, 1fr)',
+                              md: 'repeat(3, 1fr)',
+                              lg: 'repeat(4, 1fr)',
+                              xl: 'repeat(5, 1fr)',
+                            }}
+                            gap={{ base: 4, md: 6 }}
+                            w="100%"
+                          >
+                            {uncategorized.map((product) => (
+                              <GridItem key={product.id} minW="0">
+                                <ProductCard
+                                  id={String(product.id)}
+                                  title={product.title || product.name || ''}
+                                  description={product.description || product.details || ''}
+                                  price={product.price ?? product.amount}
+                                  originalPrice={product.original_price ?? product.originalPrice}
+                                  discount={product.discount ?? 0}
+                                  image_url={product.image_url ?? product.product_image}
+                                  images={product.images}
+                                  quantity={
+                                    product.quantity ??
+                                    product.quantite ??
+                                    product.stock ??
+                                    product.amount_available
+                                  }
+                                  shopName={shop.name}
+                                  shopDomain={shop.domain}
+                                  height={cardHeight}
+                                />
+                              </GridItem>
+                            ))}
+                          </Grid>
+                        )}
                       </Box>
                     )
                   })()}
@@ -678,41 +852,58 @@ export default function ShopView() {
                         >
                           {category.name}
                         </Heading>
-                        <Grid
-                          templateColumns={{
-                            base: 'repeat(1, 1fr)',
-                            sm: 'repeat(2, 1fr)',
-                            md: 'repeat(3, 1fr)',
-                            lg: 'repeat(4, 1fr)',
-                            xl: 'repeat(5, 1fr)',
-                          }}
-                          gap={{ base: 4, md: 6 }}
-                          w="100%"
-                        >
-                          {(categorizedProducts[category.id] || []).map((product) => (
-                            <GridItem key={product.id} minW="0">
-                              <ProductCard
-                                id={String(product.id)}
-                                title={product.title || product.name || ''}
-                                description={product.description || product.details || ''}
-                                price={product.price ?? product.amount}
-                                originalPrice={product.original_price ?? product.originalPrice}
-                                discount={product.discount ?? 0}
-                                image_url={product.image_url ?? product.product_image}
-                                images={product.images}
-                                quantity={
-                                  product.quantity ??
-                                  product.quantite ??
-                                  product.stock ??
-                                  product.amount_available
-                                }
-                                shopName={shop.name}
-                                shopDomain={shop.domain}
-                                height={cardHeight}
+                        
+                        {isPinterestMode ? (
+                          <SimpleGrid 
+                            columns={{ base: 2, sm: 2, md: 3, lg: 4 }} 
+                            spacing={{ base: 3, md: 4 }}
+                            style={{ gridAutoRows: 'auto' }}
+                          >
+                            {(categorizedProducts[category.id] || []).map((product) => (
+                              <PinterestProductCard
+                                key={product.id}
+                                product={product}
+                                shop={shop}
                               />
-                            </GridItem>
-                          ))}
-                        </Grid>
+                            ))}
+                          </SimpleGrid>
+                        ) : (
+                          <Grid
+                            templateColumns={{
+                              base: 'repeat(1, 1fr)',
+                              sm: 'repeat(2, 1fr)',
+                              md: 'repeat(3, 1fr)',
+                              lg: 'repeat(4, 1fr)',
+                              xl: 'repeat(5, 1fr)',
+                            }}
+                            gap={{ base: 4, md: 6 }}
+                            w="100%"
+                          >
+                            {(categorizedProducts[category.id] || []).map((product) => (
+                              <GridItem key={product.id} minW="0">
+                                <ProductCard
+                                  id={String(product.id)}
+                                  title={product.title || product.name || ''}
+                                  description={product.description || product.details || ''}
+                                  price={product.price ?? product.amount}
+                                  originalPrice={product.original_price ?? product.originalPrice}
+                                  discount={product.discount ?? 0}
+                                  image_url={product.image_url ?? product.product_image}
+                                  images={product.images}
+                                  quantity={
+                                    product.quantity ??
+                                    product.quantite ??
+                                    product.stock ??
+                                    product.amount_available
+                                  }
+                                  shopName={shop.name}
+                                  shopDomain={shop.domain}
+                                  height={cardHeight}
+                                />
+                              </GridItem>
+                            ))}
+                          </Grid>
+                        )}
                       </Box>
                     ))}
                 </VStack>
