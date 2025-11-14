@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from 'react'
-import { Box, Container, Heading, FormControl, FormLabel, Input, Button, Stack, Alert, AlertIcon, Text } from '@chakra-ui/react'
+import {
+  Box,
+  Container,
+  Heading,
+  FormControl,
+  FormLabel,
+  Input,
+  Button,
+  Stack,
+  Alert,
+  AlertIcon,
+  Text,
+  useColorModeValue
+} from '@chakra-ui/react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { apiClient } from '../services/api'
 
@@ -12,6 +25,10 @@ export default function ResetPasswordWithCode() {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+
+  const bgColor = useColorModeValue('white', 'black')
+  const boxShadow = useColorModeValue('sm', 'dark-lg')
+  const borderColor = useColorModeValue('gray.200', 'gray.600')
 
   useEffect(() => {
     const e = searchParams.get('email')
@@ -39,7 +56,7 @@ export default function ResetPasswordWithCode() {
   return (
     <Box minH="70vh" display="flex" alignItems="center" justifyContent="center" p={4}>
       <Container maxW="md" py={8}>
-        <Box bg="white" p={8} rounded="md" shadow="sm" borderWidth={1}>
+        <Box bg={bgColor} p={8} rounded="md" shadow={boxShadow} borderWidth={1} borderColor={borderColor}>
           <Heading as="h2" size="lg" mb={6} textAlign="center">Réinitialiser le mot de passe (code)</Heading>
           <form onSubmit={onSubmit}>
             <Stack spacing={4}>
