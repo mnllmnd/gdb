@@ -9,6 +9,8 @@ import Admin from './pages/Admin';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import { ForgotPassword } from './pages/ForgotPassword';
+import ForgotPasswordOtp from './pages/ForgotPasswordOtp';
+import ResetPasswordWithCode from './pages/ResetPasswordWithCode';
 import NavBar from './components/NavBar';
 import BottomNav from './components/BottomNav';
 import MyOrders from './pages/MyOrders';
@@ -88,6 +90,8 @@ function InnerApp() {
           <Route path="/feed" element={<Feed />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/forgot-password-otp" element={<ForgotPasswordOtp />} />
+          <Route path="/reset-password-code" element={<ResetPasswordWithCode />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/products" element={<Products />} />

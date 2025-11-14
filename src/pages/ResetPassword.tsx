@@ -25,13 +25,15 @@ export const ResetPassword = () => {
                 token,
                 newPassword
             });
-            setMessage(response.data.message);
+            // apiClient returns parsed JSON body
+            setMessage(response?.message || 'Mot de passe réinitialisé');
             setTimeout(() => {
                 navigate('/login');
             }, 3000);
         } catch (error: unknown) {
+            // apiClient throws the parsed error body on non-2xx
             const err = error as any;
-            const msg = err?.response?.data?.message || err?.message || 'Une erreur est survenue';
+            const msg = err?.message || err?.error || 'Une erreur est survenue';
             setMessage(msg);
         }
         setIsLoading(false);

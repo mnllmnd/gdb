@@ -67,8 +67,9 @@ export const ForgotPassword: React.FC = () => {
                 setIsError(false);
                 if (res?.debug_link) setDebugLink(res.debug_link as string);
 
-                // Optional: navigate to login after a short delay
-                setTimeout(() => navigate('/login'), 3500);
+                // Navigate to the code entry page so the user can paste the OTP
+                // pass the email in the query so the reset form can prefill it
+                setTimeout(() => navigate(`/reset-password-code?email=${encodeURIComponent(email)}`), 800);
         } catch (err: unknown) {
             const e = err as any;
             const msg = e?.response?.data?.message || e?.message || 'Une erreur est survenue, réessayez plus tard.';
