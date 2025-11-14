@@ -427,6 +427,18 @@ export default function Home() {
       // ignore
     }
   }, [location])
+
+  // Detect Pinterest mode (url or localStorage) so we can adjust layouts
+  const isPinterestMode = React.useMemo(() => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('view') === 'pinterest') return true
+      const saved = typeof window !== 'undefined' ? (localStorage.getItem('home:view') || localStorage.getItem('products:view')) : null
+      return saved === 'pinterest'
+    } catch (e) {
+      return false
+    }
+  }, [location.search])
  
   const sectionBg = useColorModeValue('white', 'gray.800')
   const categoryBg = useColorModeValue('white', 'brand.900')
@@ -794,7 +806,7 @@ export default function Home() {
       {/* Extra promo tiles moved here: render remaining products after the carousel */}
       {(visibleProducts || []).slice(2).length > 0 && (
         <Box as="section" px={{ base: 4, md: 6 }} py={8}>
-          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+          <SimpleGrid columns={{ base: 2, md: 2 }} spacing={4}>
             {(visibleProducts || []).slice(2).map((p) => {
               const imgs = normalizeImages(p as any)
               const img = imgs && imgs.length ? imgs[0] : '/img/b.jfif'
@@ -805,6 +817,9 @@ export default function Home() {
               return (
                 <Box
                   key={(p as any).id}
+                  as={RouterLink}
+                  to={target}
+                  state={{ from: { pathname: location?.pathname || '/', focusProductId: String((p as any).id), isPinterestMode } }}
                   position="relative"
                   borderRadius="xl"
                   overflow="hidden"
@@ -823,52 +838,8 @@ export default function Home() {
                     inset={0}
                     bgGradient="linear(to-b, rgba(0,0,0,0.0), rgba(0,0,0,0.55))"
                   />
-                  
-                  <Box
-                    position="absolute"
-                    left={{ base: 4, md: 12 }}
-                    bottom={{ base: 6, md: 12 }}
-                    color="white"
-                    zIndex={2}
-                    maxW={{ md: 'lg' }}
-                  >
-                    <Text
-                      fontSize="sm"
-                      textTransform="uppercase"
-                      letterSpacing="wider"
-                      color="white"
-                    >
-                      {(p as any).category_name || ''}
-                    </Text>
 
-                    <Heading
-                      size={{ base: 'lg', md: '2xl' }}
-                      mt={2}
-                      color="white"
-                    >
-                      {p.title || (p as any).name}
-                    </Heading>
-
-                    <Button
-                      mt={4}
-                      as={RouterLink}
-                      to={target}
-                      state={{ from: { pathname: location?.pathname || '/', focusProductId: String((p as any).id) } }}
-                      bg={ctaBg}
-                      color={ctaColor}
-                      borderRadius="none"
-                      px={6}
-                      py={4}
-                      fontWeight={600}
-                       size="lg"
-                      textTransform="uppercase"
-                      letterSpacing="0.05em"
-                      fontSize="sm"
-                      _hover={{ bg: 'gray.100' }}
-                    >
-                      Voir la Boutique
-                    </Button>
-                  </Box>
+                  {/* Image is clickable (RouterLink) — removed the 'Voir la Boutique' button as requested */}
                 </Box>
               )
             })}
