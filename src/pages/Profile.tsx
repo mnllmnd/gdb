@@ -59,11 +59,13 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false)
   const [editEmail, setEditEmail] = useState<string | undefined>(user?.email ?? '')
   const [editDisplayName, setEditDisplayName] = useState<string | undefined>(user?.display_name ?? '')
+  const [editPhone, setEditPhone] = useState<string | undefined>(user?.phone ?? '')
   const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
     setEditEmail(user?.email ?? '')
     setEditDisplayName(user?.display_name ?? '')
+    setEditPhone(user?.phone ?? '')
   }, [user])
 
   // Chargement des produits aimés
@@ -91,7 +93,8 @@ export default function ProfilePage() {
       const token = globalThis.localStorage?.getItem('token') ?? undefined
       const res = await api.auth.updateMe({ 
         email: editEmail || null, 
-        displayName: editDisplayName || null 
+        displayName: editDisplayName || null,
+        phone: editPhone || null,
       }, token)
       
       if (res?.user) {
@@ -238,6 +241,19 @@ export default function ProfilePage() {
                         _focus={{ borderColor: accentColor, boxShadow: 'none' }}
                       />
                     </FormControl>
+                    <FormControl>
+                      <FormLabel fontSize="sm" fontWeight="medium" color={subtle}>
+                        Téléphone
+                      </FormLabel>
+                      <Input
+                        value={editPhone}
+                        onChange={(e) => setEditPhone(e.target.value)}
+                        placeholder="+229 6X XX XX XX"
+                        borderRadius="none"
+                        borderColor={borderColor}
+                        _focus={{ borderColor: accentColor, boxShadow: 'none' }}
+                      />
+                    </FormControl>
                     <HStack mt={2} spacing={3}>
                       <Button 
                         colorScheme="black" 
@@ -252,9 +268,10 @@ export default function ProfilePage() {
                       <Button 
                         variant="ghost" 
                         onClick={() => { 
-                          setEditing(false); 
+                          setEditing(false);
                           setEditEmail(user?.email ?? ''); 
-                          setEditDisplayName(user?.display_name ?? '') 
+                          setEditDisplayName(user?.display_name ?? '');
+                          setEditPhone(user?.phone ?? '');
                         }}
                         size="sm"
                       >
