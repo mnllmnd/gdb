@@ -280,8 +280,6 @@ export default function HeroProductGrid({
           })}
         </Box>
       </Box>
-
-      {/* Video moved into the promo grid in Home; removed standalone video here */}
     </>
   )
 }
