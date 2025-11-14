@@ -284,56 +284,7 @@ export default function ProfilePage() {
                 )}
               </CardBody>
             </Card>
-
-            {/* Section Produits aimés */}
-            <Card 
-              variant="outline" 
-              borderColor={borderColor}
-              borderRadius="none"
-              boxShadow="none"
-            >
-              <CardBody p={6}>
-                <Flex align="center" mb={4}>
-                  <StarIcon mr={2} color={subtle} />
-                  <Heading size="md" fontWeight="medium">PRODUITS AIMÉS</Heading>
-                </Flex>
-                
-                {likedProducts === null ? (
-                  <Flex justify="center" py={8}>
-                    <Spinner size="lg" />
-                  </Flex>
-                ) : likedProducts.length === 0 ? (
-                  <VStack py={8} spacing={4}>
-                    <Text color={subtle}>Vous n'avez aimé aucun produit pour le moment.</Text>
-                    <Button 
-                      variant="outline" 
-                      colorScheme="black"
-                      onClick={() => navigate('/')}
-                      size="sm"
-                    >
-                      Découvrir les produits
-                    </Button>
-                  </VStack>
-                ) : (
-                  <SimpleGrid columns={gridColumns} spacing={4}>
-                    {likedProducts.map(p => (
-                      <ProductCard
-                        key={p.id}
-                        id={String(p.id)}
-                        title={p.title || p.name || ''}
-                        price={p.price}
-                        image_url={p.image_url ?? p.product_image}
-                        images={p.images}
-                        quantity={p.quantity ?? p.quantite ?? p.stock ?? p.amount_available}
-                        shopId={p.shop_id || p.seller_id}
-                        shopName={p.shop_name || p.seller_name}
-                        shopDomain={p.shop_domain || p.seller_domain}
-                      />
-                    ))}
-                  </SimpleGrid>
-                )}
-              </CardBody>
-            </Card>
+            
           </VStack>
 
           {/* Sidebar */}
