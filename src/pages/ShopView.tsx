@@ -236,6 +236,7 @@ export default function ShopView() {
                         colorScheme="green"
                         variant="solid"
                         size="sm"
+                        bg="green.500"
                       >
                         WhatsApp
                       </Button>
