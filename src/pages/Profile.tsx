@@ -359,18 +359,6 @@ export default function ProfilePage() {
                   >
                     Mes commandes
                   </Button>
-                  <Divider />
-                  <Button
-                    justifyContent="space-between"
-                    variant="ghost"
-                    rightIcon={<ChevronRightIcon />}
-                    onClick={() => navigate('/addresses')}
-                    py={3}
-                    _hover={{ bg: hoverColor }}
-                  >
-                    Mes adresses
-                  </Button>
-                  <Divider />
                   <Button
                     justifyContent="space-between"
                     variant="ghost"
