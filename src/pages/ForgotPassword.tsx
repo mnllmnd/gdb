@@ -41,7 +41,7 @@ export const ForgotPassword: React.FC = () => {
         const [debugLink, setDebugLink] = useState<string | null>(null);
     const navigate = useNavigate();
 
-    const bgCard = useColorModeValue('white', 'gray.800');
+    const bgCard = useColorModeValue('white', 'black');
 
     const validateEmail = (value: string) => {
         // Simple email validation

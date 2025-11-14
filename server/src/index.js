@@ -1,17 +1,20 @@
-// src/index.js
+// ==========================
+// IMPORTS
+// ==========================
 import express from 'express';
 import nlpManager, { init as initNlp } from '../nlp/index.js';
 import tfidfCache from './tfidf_cache.js';
-import cache from './cache.js'; 
+import cache from './cache.js';
 import detectEmotion from '../nlp/emotions.js';
 import recommend from '../nlp/recommend.js';
 import dotenv from 'dotenv';
-import fs from 'fs'
+import fs from 'fs';
 import helmet from 'helmet';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+// Routes import
 import authRoutes from './routes/auth.js';
 import passwordResetRoutes from './routes/passwordReset.js';
 import productRoutes from './routes/products.js';
@@ -35,36 +38,57 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Middlewares
+// ==========================
+// SECURITY & HEADERS
+// ==========================
 app.use(helmet());
-// Configure CORS to accept the frontend origin provided via env (CLIENT_URL or FRONTEND_URL)
-const CLIENT_URL = process.env.CLIENT_URL || process.env.FRONTEND_URL || null
-if (CLIENT_URL) {
-  app.use(cors({ origin: CLIENT_URL }))
-  console.log(`🔒 CORS configured for: ${CLIENT_URL}`)
-} else {
-  // In development, allow all (or restrict as needed)
-  app.use(cors())
-  console.log('⚠️  CORS not restricted (no CLIENT_URL set).')
-}
+app.set("trust proxy", 1); // Fix Render proxy warnings
+
+// ==========================
+// CORS CONFIG
+// ==========================
+const allowedOrigins = [
+  process.env.FRONTEND_URL,   // ex: https://llmnd.vercel.app
+  process.env.CLIENT_URL,     // ex: http://localhost:3000 (local)
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:5173"
+].filter(Boolean);
+
+console.log("🔒 Allowed CORS origins:", allowedOrigins);
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true); // Postman / direct calls OK
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      console.log("❌ CORS blocked:", origin);
+      return callback(new Error("CORS not allowed"));
+    },
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
-// Disable HTTP caching for all API responses to ensure clients always get fresh data
+// ==========================
+// CACHE-CONTROL middleware
+// ==========================
 app.use('/api', (req, res, next) => {
-  try {
-    // Instruct browsers and intermediate proxies not to cache
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
-    res.set('Pragma', 'no-cache')
-    res.set('Expires', '0')
-    // For some CDNs / reverse proxies
-    res.set('Surrogate-Control', 'no-store')
-  } catch (e) {
-    // ignore
-  }
-  next()
-})
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+});
 
-// Routes
+// ==========================
+// ROUTES
+// ==========================
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', passwordResetRoutes);
 app.use('/api/products', productRoutes);
@@ -81,40 +105,41 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/cache', cacheRoutes);
 
-// Route NLP améliorée
+// ==========================
+// NLP CHAT ENDPOINT
+// ==========================
 app.post('/api/message', async (req, res) => {
   try {
     const { message, userProfile = {} } = req.body;
 
     if (!message || message.trim() === '') {
-      return res.status(400).json({ 
-        error: 'Message is required',
-        understood: false
-      });
+      return res.status(400).json({ error: 'Message is required', understood: false });
     }
 
     const response = await nlpManager.process('fr', message);
     const emotion = detectEmotion(message);
-  const recommendations = await recommend(userProfile, message);
+    const recommendations = await recommend(userProfile, message);
 
-    // Réponse contextuelle basée sur l'intent détecté
     let contextualAnswer = response.answer;
     let additionalData = {};
 
-    if (response.intent === 'recherche_produit' && recommendations.length > 0) {
-      contextualAnswer = `J'ai trouvé ${recommendations.length} produit(s) qui correspondent à votre recherche !`;
-      additionalData.productCount = recommendations.length;
-    } else if (response.intent === 'recherche_produit' && recommendations.length === 0) {
-      contextualAnswer = "Je n'ai pas trouvé de produits correspondant à votre recherche. Pouvez-vous préciser ?";
-    } else if (response.intent === 'prix_promotion') {
-      contextualAnswer = "Voici nos meilleures offres et promotions actuelles !";
+    if (response.intent === 'recherche_produit') {
+      contextualAnswer =
+        recommendations.length > 0
+          ? `J'ai trouvé ${recommendations.length} produit(s) pour vous !`
+          : "Aucun produit trouvé. Pouvez-vous préciser ?";
+    }
+
+    if (response.intent === 'prix_promotion') {
+      contextualAnswer = "Voici nos promotions actuelles !";
       additionalData.hasPromotions = true;
-    } else if (response.intent === 'livraison_info') {
-      contextualAnswer = "Livraison offerte à partir de 50€ d'achat ! Délai moyen : 2-3 jours.";
+    }
+
+    if (response.intent === 'livraison_info') {
+      contextualAnswer = "Livraison 2-3 jours, offerte à partir de 50€.";
       additionalData.deliveryInfo = {
         freeThreshold: 50,
-        averageDelay: '2-3 jours',
-        methods: ['Point relais', 'Domicile', 'Retrait magasin']
+        averageDelay: '2-3 jours'
       };
     }
 
@@ -129,171 +154,95 @@ app.post('/api/message', async (req, res) => {
       timestamp: new Date().toISOString()
     });
 
-  } catch (error) {
-    console.error('Error processing message:', error);
-    res.status(500).json({ 
-      error: 'Désolé, je rencontre un problème technique. Pouvez-vous reformuler votre message ?',
-      understood: false,
-      fallback: true
-    });
+  } catch (err) {
+    console.error("Error:", err);
+    res.status(500).json({ error: 'Technical error', fallback: true });
   }
 });
 
-// Route santé de l'API NLP
+// ==========================
+// NLP HEALTH CHECK
+// ==========================
 app.get('/api/nlp/health', async (req, res) => {
   try {
-    const testResponse = await nlpManager.process('fr', 'bonjour');
-    res.json({
-      status: 'healthy',
-      nlpWorking: true,
-      intentsCount: nlpManager.intents.length,
-      testIntent: testResponse.intent
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: 'unhealthy',
-      nlpWorking: false,
-      error: error.message
-    });
+    const test = await nlpManager.process('fr', 'bonjour');
+    res.json({ status: 'healthy', intent: test.intent });
+  } catch (err) {
+    res.status(500).json({ status: 'down', error: err.message });
   }
 });
 
-// Servir les fichiers uploadés (no cache)
-app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
-  maxAge: 0,
-  setHeaders: (res) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
-    res.setHeader('Pragma', 'no-cache')
-    res.setHeader('Expires', '0')
-  }
-}));
+// ==========================
+// STATIC UPLOADS
+// ==========================
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// If a frontend `dist` folder is present (built app), serve it and fallback to index.html
-const clientDist = path.join(__dirname, '../../dist')
+// ==========================
+// SERVE FRONTEND (if exists)
+// ==========================
+const clientDist = path.join(__dirname, '../../dist');
+
 if (fs.existsSync(clientDist)) {
-  console.log('📦 Serving frontend from', clientDist)
-  // Serve frontend static files with no-cache headers to avoid serving stale assets
-  app.use(express.static(clientDist, {
-    maxAge: 0,
-    setHeaders: (res) => {
-      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
-      res.setHeader('Pragma', 'no-cache')
-      res.setHeader('Expires', '0')
-    }
-  }))
+  console.log("📦 Serving frontend from", clientDist);
 
-  // For any non-API request, send index.html so client-side router can handle the route
-  app.get('*', (req, res, next) => {
-    const url = req.originalUrl || req.url
-    // don't override API or uploads routes
-    if (url.startsWith('/api') || url.startsWith('/uploads')) return next()
-    res.sendFile(path.join(clientDist, 'index.html'), (err) => {
-      if (err) return next(err)
-    })
-  })
+  app.use(express.static(clientDist));
+
+  app.get('*', (req, res) => {
+    if (req.url.startsWith('/api') || req.url.startsWith('/uploads')) return;
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
 }
 
-// Route de base
-app.get('/', (req, res) => res.json({ 
-  ok: true, 
-  message: 'Marketplace backend with NLP capabilities',
-  version: '1.0.0',
-  endpoints: {
-    chat: '/api/message',
-    auth: '/api/auth',
-    products: '/api/products',
-    nlpHealth: '/api/nlp/health'
-  }
-}));
+// ==========================
+// BASIC ROOT
+// ==========================
+app.get('/', (req, res) =>
+  res.json({
+    ok: true,
+    message: 'Marketplace backend running',
+    version: '1.0.0',
+  })
+);
 
-// Gestion des routes non trouvées
+// ==========================
+// 404 HANDLER
+// ==========================
 app.use('*', (req, res) => {
-  res.status(404).json({
-    error: 'Route not found',
-    path: req.originalUrl,
-    availableEndpoints: [
-      'GET /',
-      'POST /api/message',
-      'GET /api/nlp/health',
-      'POST /api/auth/login',
-      'GET /api/products',
-      'POST /api/orders'
-    ]
-  });
+  res.status(404).json({ error: 'Route not found', path: req.originalUrl });
 });
 
-// Gestion globale des erreurs
+// ==========================
+// GLOBAL ERROR HANDLER
+// ==========================
 app.use((error, req, res, next) => {
-  console.error('Global error handler:', error);
-  res.status(500).json({
-    error: 'Internal server error',
-    message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
-  });
+  console.error("GLOBAL ERROR:", error);
+  res.status(500).json({ error: 'Internal server error' });
 });
 
+// ==========================
+// START SERVER
+// ==========================
 const port = process.env.PORT || 4000;
+
 const start = async () => {
-  // Initialize NLP (load saved model or train once)
   try {
-    await initNlp()
+    await initNlp();
   } catch (err) {
-    console.warn('NLP init error:', err.message)
+    console.log("NLP init failed:", err.message);
   }
 
-  // Initialize TF-IDF cache (precompute product vectors)
   try {
-    // import db query helper lazily to avoid circular imports
-    const { query: dbQuery } = await import('./db.js')
-    await tfidfCache.init(dbQuery)
-    // initialize general cache (products/shops/categories)
-    try { await cache.init(dbQuery) } catch (err) { console.warn('General cache init failed', err.message) }
-    // Apply all SQL migrations found in src/migrations (simple, idempotent execution)
-    try {
-      const migrationsDir = path.join(__dirname, 'migrations')
-      if (fs.existsSync(migrationsDir)) {
-        const files = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort()
-        for (const file of files) {
-          try {
-            const full = path.join(migrationsDir, file)
-            const sql = fs.readFileSync(full, 'utf8')
-            if (sql && sql.trim().length > 0) {
-              await dbQuery(sql)
-              console.log(`✅ Applied migration: ${file}`)
-            }
-          } catch (e) {
-            console.warn(`Failed to apply migration ${file}:`, e.message)
-          }
-        }
-      } else {
-        console.log('ℹ️  No migrations directory found at', migrationsDir)
-      }
-    } catch (e) {
-      console.warn('Failed to run migrations:', e.message)
-    }
-    // Ensure likes table exists (for product likes feature)
-    try {
-      await dbQuery(`CREATE TABLE IF NOT EXISTS likes (
-        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-        product_id UUID REFERENCES products(id) ON DELETE CASCADE,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-        PRIMARY KEY (user_id, product_id)
-      )`)
-      console.log('✅ Likes table ensured')
-    } catch (e) {
-      console.warn('Failed to ensure likes table:', e.message)
-    }
+    const { query: dbQuery } = await import('./db.js');
+    await tfidfCache.init(dbQuery);
+    await cache.init(dbQuery);
   } catch (err) {
-    console.warn('TF-IDF cache init error:', err.message)
+    console.log("Cache init error:", err.message);
   }
 
   app.listen(port, () => {
     console.log(`🚀 Server running on port ${port}`);
-    const host = process.env.HOSTNAME || 'localhost'
-    const proto = process.env.PROTOCOL || 'http'
-    const base = process.env.API_ROOT || `${proto}://${host}:${port}`
-    console.log(`📝 NLP Chat endpoint: ${base}/api/message`);
-    console.log(`🏥 Health check: ${base}/api/nlp/health`);
   });
-}
+};
 
-start()
+start();
+

@@ -3,58 +3,61 @@ import nodemailer from 'nodemailer';
 import pool from '../db.js';
 
 // Chargement des variables SMTP depuis le fichier .env
+// SendGrid utilise :
+// HOST = smtp.sendgrid.net
+// USER = "apikey"
+// PASS = ta cle API
 const smtpHost = process.env.SMTP_HOST;
-const smtpPort = process.env.SMTP_PORT ? Number.parseInt(process.env.SMTP_PORT, 10) : 465;
-const smtpUser = process.env.SMTP_USER;
-// Respecter les espaces fournis dans SMTP_PASS (ne pas les supprimer)
-const smtpPass = process.env.SMTP_PASS;
+const smtpPort = process.env.SMTP_PORT ? Number.parseInt(process.env.SMTP_PORT, 10) : 587;
+const smtpUser = process.env.SMTP_USER || "apikey"; 
+const smtpPass = process.env.SMTP_PASS; // DOIT être collée telle quelle
 const smtpFrom = process.env.SMTP_FROM || smtpUser;
 
-// Création du transporteur Nodemailer
+// Transporteur Nodemailer compatible SendGrid
 const transporter = nodemailer.createTransport({
   host: smtpHost,
   port: smtpPort,
-  secure: smtpPort === 465, // true pour 465 (SSL), false pour 587 (TLS)
+  secure: false, // SendGrid = false sur port 587 (TLS)
   auth: {
-    user: smtpUser,
-    pass: smtpPass,
+    user: smtpUser, // DOIT être "apikey"
+    pass: smtpPass, // TA CLE API
   },
 });
 
 class PasswordResetService {
-  // 🔹 Générer un token aléatoire
+  // Générer un token
   static generateToken() {
     return crypto.randomBytes(32).toString('hex');
   }
 
-  // 🔹 Hacher le token (pour ne pas le stocker en clair)
+  // Hasher le token
   static hashToken(token) {
     return crypto.createHash('sha256').update(token).digest('hex');
   }
 
-  // 🔹 Créer et enregistrer un token de réinitialisation
+  // Créer et stocker un token
   static async createResetToken(userId) {
     const token = this.generateToken();
     const tokenHash = this.hashToken(token);
-    const expiresAt = new Date(Date.now() + 3600000); // expire dans 1h
+    const expiresAt = new Date(Date.now() + 3600000);
+
     try {
-      // Retourner l'id inséré pour faciliter le debug serveur
       const result = await pool.query(
         `INSERT INTO password_reset_tokens (user_id, token_hash, expires_at, used)
          VALUES ($1, $2, $3, false)
          RETURNING id`,
         [userId, tokenHash, expiresAt]
       );
-      const insertedId = result?.rows?.[0]?.id;
-      console.log(`passwordReset: created token id=${insertedId} for user=${userId}, expiresAt=${expiresAt.toISOString()}`);
+
+      console.log(`🔐 Token created id=${result.rows[0].id} for user=${userId}`);
       return token;
-    } catch (dbErr) {
-      console.error('passwordReset: failed to create reset token in DB:', dbErr && dbErr.message ? dbErr.message : dbErr);
-      throw dbErr;
+    } catch (err) {
+      console.error("❌ DB ERROR creating reset token:", err.message);
+      throw err;
     }
   }
 
-  // 🔹 Vérifier la validité du token
+  // Vérifier token
   static async verifyToken(token) {
     const tokenHash = this.hashToken(token);
     const result = await pool.query(
@@ -66,56 +69,62 @@ class PasswordResetService {
        AND expires_at > NOW()`,
       [tokenHash]
     );
-
     return result.rows[0];
   }
 
-  // 🔹 Marquer le token comme utilisé
+  // Marquer token utilisé
   static async markTokenUsed(tokenId) {
-    await pool.query(`UPDATE password_reset_tokens SET used = true WHERE id = $1`, [tokenId]);
+    await pool.query(
+      `UPDATE password_reset_tokens SET used = true WHERE id = $1`,
+      [tokenId]
+    );
   }
 
-  // 🔹 Envoyer l'email de réinitialisation via SMTP
+  // Envoi email avec SendGrid
   static async sendResetEmail(email, token, origin) {
-    // Prefer explicit frontend URL when provided via env (deployed frontend)
-    const frontendBase = (process.env.FRONTEND_URL || process.env.CLIENT_URL || process.env.FRONTEND || '').toString().trim() || origin;
-    const base = frontendBase.replace(/\/$/, '')
-    const resetUrl = `${base}/reset-password?token=${token}`;
-    console.log(`passwordReset: using reset link base=${base}`);
 
-    // Vérifier la connexion SMTP (utile pour déboguer)
+    const frontendBase = (
+      process.env.FRONTEND_URL ||
+      process.env.CLIENT_URL ||
+      process.env.FRONTEND ||
+      ''
+    ).toString().trim() || origin;
+
+    const base = frontendBase.replace(/\/$/, '');
+    const resetUrl = `${base}/reset-password?token=${token}`;
+
+    console.log(`🔗 Reset URL: ${resetUrl}`);
+
+    // Vérification SMTP
     try {
       await transporter.verify();
-      console.log('SMTP connection verified');
-    } catch (verifyError) {
-      console.error('⚠️ Échec de vérification SMTP :', verifyError);
-      console.log(`Lien de réinitialisation (dev) pour ${email}: ${resetUrl}`);
-      return { sent: false, link: resetUrl, reason: 'smtp-verify-failed', error: String(verifyError) };
+      console.log("📨 SendGrid SMTP verified.");
+    } catch (error) {
+      console.error("⚠️ SendGrid verify error:", error);
+      return { sent: false, link: resetUrl, reason: "smtp-verify-failed" };
     }
 
+    // Envoi réel
     try {
       const info = await transporter.sendMail({
         from: smtpFrom,
         to: email,
-        subject: 'Réinitialisation de votre mot de passe',
+        subject: "Réinitialisation de votre mot de passe",
         html: `
           <h1>Réinitialisation du mot de passe</h1>
           <p>Bonjour,</p>
           <p>Vous avez demandé une réinitialisation de votre mot de passe.</p>
-          <p>Cliquez sur le lien ci-dessous pour créer un nouveau mot de passe :</p>
-          <p><a href="${resetUrl}" target="_blank">${resetUrl}</a></p>
+          <p><a href="${resetUrl}">${resetUrl}</a></p>
           <p>Ce lien expirera dans 1 heure.</p>
-          <p>Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet e-mail.</p>
         `,
       });
 
-      console.log(`✅ Email de réinitialisation envoyé à ${email} (messageId=${info.messageId})`);
+      console.log(`✅ Email envoyé via SendGrid -> ${email} (messageId: ${info.messageId})`);
       return { sent: true, info };
-    } catch (error) {
-      console.error('❌ Échec de l’envoi SMTP :', error);
-      // Afficher le lien en console pour le dev
-      console.log(`Lien de réinitialisation (dev) pour ${email}: ${resetUrl}`);
-      return { sent: false, link: resetUrl, reason: 'send-failed', error: String(error) };
+
+    } catch (err) {
+      console.error("❌ SendGrid sendMail failed:", err);
+      return { sent: false, link: resetUrl, reason: "send-failed" };
     }
   }
 }
