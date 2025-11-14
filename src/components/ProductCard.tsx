@@ -30,6 +30,7 @@ export default function ProductCard({
   shopDomain = null,
   shopId = null,
   height = { base: '280px', md: '320px' },
+  isPinterestMode = false,
 }: Readonly<{
   id: string
   title?: string
@@ -45,6 +46,7 @@ export default function ProductCard({
   shopDomain?: string | null
   shopId?: string | null
   height?: any
+  isPinterestMode?: boolean
 }>) {
   const [isHovered, setIsHovered] = useState(false)
   const toast = useToast()
@@ -178,7 +180,7 @@ export default function ProductCard({
   const shouldNavigate = path === '/' || path.startsWith('/products') || path.startsWith('/shops') || path.startsWith('/shop') || path.startsWith('/search')
       if (shouldNavigate) {
         // pass a precise 'from' object so BackButton (and the listing) can scroll to the exact product
-        navigate(`/products/${id}`, { state: { from: { pathname: path, focusProductId: id } } })
+        navigate(`/products/${id}`, { state: { from: { pathname: path, focusProductId: id, isPinterestMode: Boolean(isPinterestMode) } } })
         return
       }
     } catch (err) {

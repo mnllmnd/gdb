@@ -64,15 +64,17 @@ import {
   PopoverArrow,
   PopoverCloseButton,
 } from '@chakra-ui/react'
-import { CloseIcon, StarIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from '@chakra-ui/icons'
+import { CloseIcon, StarIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
 import { FiPackage, FiGrid, FiFilter, FiTrendingUp, FiMenu, FiCheck, FiDollarSign } from 'react-icons/fi'
 import ProductCard from '../components/ProductCard'
 import api from '../services/api'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import ScrollTopButton from '../components/ScrollTopButton'
+import { Tooltip } from "@chakra-ui/react";
+
 
 // Composant Carrousel pour les produits
-function ProductsCarousel({ products, title, shopsMap }: { products: any[]; title: string; shopsMap: Record<string, any> }) {
+function ProductsCarousel({ products, title, shopsMap, isPinterestMode }: { products: any[]; title: string; shopsMap: Record<string, any>; isPinterestMode: boolean }) {
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = React.useState(false)
   const [canScrollRight, setCanScrollRight] = React.useState(true)
@@ -97,7 +99,7 @@ function ProductsCarousel({ products, title, shopsMap }: { products: any[]; titl
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
-      const cardWidth = 280
+      const cardWidth = isPinterestMode ? 200 : 280
       const scrollAmount = cardWidth * 2
       scrollRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
@@ -211,29 +213,92 @@ function ProductsCarousel({ products, title, shopsMap }: { products: any[]; titl
               <Box
                 key={p.id}
                 flexShrink={0}
-                width={{ base: '280px', md: '320px' }}
-                minWidth={{ base: '280px', md: '320px' }}
+                width={isPinterestMode ? { base: '160px', md: '200px' } : { base: '280px', md: '320px' }}
+                minWidth={isPinterestMode ? { base: '160px', md: '200px' } : { base: '280px', md: '320px' }}
               >
-                <ProductCard
-                  id={String(p.id)}
-                  title={p.title || p.name}
-                  price={p.price ?? p.amount}
-                  originalPrice={p.original_price ?? p.price ?? p.amount}
-                  discount={p.discount ?? 0}
-                  description={p.description}
-                  image_url={p.image_url ?? p.product_image}
-                  images={p.images}
-                  quantity={p.quantity ?? p.quantite ?? p.stock ?? p.amount_available}
-                  shopId={shop?.id || p.shop_id || p.seller_id}
-                  shopName={shop?.name}
-                  shopDomain={shop?.domain}
-                  height={{ base: '320px', md: '380px' }}
-                />
+                {isPinterestMode ? (
+                  <PinterestProductCard
+                    product={p}
+                    shop={shop}
+                  />
+                ) : (
+                  <ProductCard
+                    id={String(p.id)}
+                    title={p.title || p.name}
+                    price={p.price ?? p.amount}
+                    originalPrice={p.original_price ?? p.price ?? p.amount}
+                    discount={p.discount ?? 0}
+                    description={p.description}
+                    image_url={p.image_url ?? p.product_image}
+                    images={p.images}
+                    quantity={p.quantity ?? p.quantite ?? p.stock ?? p.amount_available}
+                    shopId={shop?.id || p.shop_id || p.seller_id}
+                    shopName={shop?.name}
+                    shopDomain={shop?.domain}
+                    height={{ base: '320px', md: '380px' }}
+                    isPinterestMode={isPinterestMode}
+                  />
+                )}
               </Box>
             )
           })}
         </Box>
       </Box>
+    </Box>
+  )
+}
+
+// Composant Pinterest (images seulement)
+function PinterestProductCard({ product, shop }: { product: any; shop: any }) {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const borderColor = useColorModeValue('#e5e5e5', 'gray.600')
+  const hoverBorderColor = useColorModeValue('#111111', 'white')
+
+  const handleClick = () => {
+    try {
+      const path = location?.pathname || '/products'
+      navigate(`/products/${product.id}`, {
+        state: { from: { pathname: path, focusProductId: String(product.id), isPinterestMode: true } }
+      })
+      return
+    } catch (err) {
+      // fallback
+    }
+    navigate(`/products/${product.id}`)
+  }
+
+  const imageUrl = product.image_url ?? product.product_image ?? product.images?.[0]
+
+  return (
+    <Box
+      cursor="pointer"
+      onClick={handleClick}
+      transition="all 0.3s ease"
+      _hover={{ 
+        transform: 'scale(1.02)',
+        borderColor: hoverBorderColor
+      }}
+      border="1px solid"
+      borderColor={borderColor}
+      borderRadius="none"
+      overflow="hidden"
+      bg="white"
+    >
+      <AspectRatio ratio={3/4}>
+        <Image
+          src={imageUrl}
+          alt={product.title || product.name}
+          objectFit="cover"
+          w="100%"
+          h="100%"
+          fallback={
+            <Center bg="gray.100" w="100%" h="100%">
+              <Icon as={FiPackage} boxSize={8} color="gray.400" />
+            </Center>
+          }
+        />
+      </AspectRatio>
     </Box>
   )
 }
@@ -365,6 +430,7 @@ export default function Products() {
   const [minPrice, setMinPrice] = React.useState(0)
   const [maxPrice, setMaxPrice] = React.useState(1000000)
   const [isPriceFilterActive, setIsPriceFilterActive] = React.useState(false)
+  const [isPinterestMode, setIsPinterestMode] = React.useState(false)
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   const borderColor = useColorModeValue('#e5e5e5', 'gray.600')
@@ -379,11 +445,11 @@ export default function Products() {
   const iconColor = useColorModeValue('#666666', 'gray.300')
 
   const gridColumns = useBreakpointValue({ 
-    base: 'repeat(1, 1fr)', 
-    sm: 'repeat(2, 1fr)', 
-    md: 'repeat(3, 1fr)', 
-    lg: 'repeat(4, 1fr)',
-    xl: 'repeat(5, 1fr)'
+    base: isPinterestMode ? 'repeat(2, 1fr)' : 'repeat(1, 1fr)', 
+    sm: isPinterestMode ? 'repeat(2, 1fr)' : 'repeat(2, 1fr)', 
+    md: isPinterestMode ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)', 
+    lg: isPinterestMode ? 'repeat(4, 1fr)' : 'repeat(4, 1fr)',
+    xl: isPinterestMode ? 'repeat(4, 1fr)' : 'repeat(5, 1fr)'
   })
 
   const isMobile = useBreakpointValue({ base: true, md: false })
@@ -442,6 +508,10 @@ export default function Products() {
   React.useEffect(() => {
     try {
       const state = (location && (location.state as any)) || {}
+      const returnPinterest = state.isPinterestMode || (state.from && state.from.isPinterestMode)
+      if (typeof returnPinterest !== 'undefined' && returnPinterest) {
+        setIsPinterestMode(true)
+      }
       const focusId = state.focusProductId || (state.from && state.from.focusProductId) || null
       if (!focusId) return
 
@@ -582,6 +652,10 @@ export default function Products() {
     clearPriceFilter()
   }
 
+  const togglePinterestMode = () => {
+    setIsPinterestMode(!isPinterestMode)
+  }
+
   if (loading) return (
     <Container maxW="container.xl" py={8}>
       <Center minH="60vh">
@@ -622,18 +696,35 @@ export default function Products() {
             </Text>
           </Box>
           
-          {isMobile && (
-            <IconButton
-              aria-label="Ouvrir les filtres"
-              icon={<FiMenu />}
-              size="lg"
-              variant="outline"
-              borderRadius="md"
-              borderColor={borderColor}
-              onClick={onOpen}
-              _hover={{ bg: subtleBg }}
-            />
-          )}
+          <HStack spacing={2}>
+            {/* Bouton Pinterest Mode */}
+            <Tooltip label={isPinterestMode ? "Mode détaillé" : "Mode Pinterest"}>
+              <IconButton
+                aria-label={isPinterestMode ? "Mode détaillé" : "Mode Pinterest"}
+                icon={isPinterestMode ? <ViewOffIcon /> : <ViewIcon />}
+                size={isMobile ? "md" : "lg"}
+                variant="outline"
+                borderRadius="md"
+                borderColor={borderColor}
+                onClick={togglePinterestMode}
+                _hover={{ bg: subtleBg }}
+                color={isPinterestMode ? accentColor : textSecondary}
+              />
+            </Tooltip>
+            
+            {isMobile && (
+              <IconButton
+                aria-label="Ouvrir les filtres"
+                icon={<FiMenu />}
+                size="md"
+                variant="outline"
+                borderRadius="md"
+                borderColor={borderColor}
+                onClick={onOpen}
+                _hover={{ bg: subtleBg }}
+              />
+            )}
+          </HStack>
         </Flex>
 
         {/* Barre de filtres alignés sur une même ligne - Style Zara */}
@@ -916,9 +1007,16 @@ export default function Products() {
         )}
 
         {/* Compteur de résultats */}
-        <Text color={textSecondary} fontSize="md" fontWeight="500">
-          {products?.length || 0} produit{(products?.length || 0) > 1 ? 's' : ''} {hasActiveFilters ? 'trouvé' + ((products?.length || 0) > 1 ? 's' : '') : ''}
-        </Text>
+        <Flex justify="space-between" align="center">
+          <Text color={textSecondary} fontSize="md" fontWeight="500">
+            {products?.length || 0} produit{(products?.length || 0) > 1 ? 's' : ''} {hasActiveFilters ? 'trouvé' + ((products?.length || 0) > 1 ? 's' : '') : ''}
+          </Text>
+          {!isMobile && (
+            <Text color={textSecondary} fontSize="sm" fontWeight="500">
+              Mode: {isPinterestMode ? 'Pinterest' : 'Détaillé'}
+            </Text>
+          )}
+        </Flex>
       </VStack>
 
       {/* Navigation desktop */}
@@ -1199,6 +1297,29 @@ export default function Products() {
       )
     }
 
+    if (isPinterestMode) {
+      return (
+        <Box className="pinterest-grid">
+          <SimpleGrid 
+            columns={{ base: 2, sm: 2, md: 3, lg: 4 }} 
+            spacing={{ base: 3, md: 4 }}
+            style={{ gridAutoRows: 'auto' }}
+          >
+            {products.map((p) => {
+              const shop = (shopsMap.byId && shopsMap.byId[String(p.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(p.seller_id)])
+              return (
+                <PinterestProductCard
+                  key={p.id}
+                  product={p}
+                  shop={shop}
+                />
+              )
+            })}
+          </SimpleGrid>
+        </Box>
+      )
+    }
+
     return (
       <Grid templateColumns={gridColumns} gap={{ base: 4, md: 6 }}>
         {products.map((p) => {
@@ -1219,6 +1340,7 @@ export default function Products() {
               shopName={shop?.name}
               shopDomain={shop?.domain}
               height={{ base: '320px', md: '380px' }}
+                      isPinterestMode={isPinterestMode}
             />
           )
         })}
@@ -1227,6 +1349,29 @@ export default function Products() {
   }
 
   function renderAllProducts() {
+    if (isPinterestMode) {
+      return (
+        <Box className="pinterest-grid">
+          <SimpleGrid 
+            columns={{ base: 2, sm: 2, md: 3, lg: 4 }} 
+            spacing={{ base: 3, md: 4 }}
+            style={{ gridAutoRows: 'auto' }}
+          >
+            {products?.map((p) => {
+              const shop = (shopsMap.byId && shopsMap.byId[String(p.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(p.seller_id)])
+              return (
+                <PinterestProductCard
+                  key={p.id}
+                  product={p}
+                  shop={shop}
+                />
+              )
+            })}
+          </SimpleGrid>
+        </Box>
+      )
+    }
+
     return (
       <>
         {/* Produits sans catégorie */}
@@ -1237,6 +1382,7 @@ export default function Products() {
                 products={categorizedProducts[0] || []}
                 title="Découvertes"
                 shopsMap={shopsMap}
+                isPinterestMode={isPinterestMode}
               />
             ) : (
               <>
@@ -1292,6 +1438,7 @@ export default function Products() {
                       products={categorizedProducts[c.id] || []}
                       title={c.name}
                       shopsMap={shopsMap}
+                      isPinterestMode={isPinterestMode}
                     />
                   ) : (
                     <>
@@ -1326,6 +1473,7 @@ export default function Products() {
                               shopName={shop?.name}
                               shopDomain={shop?.domain}
                               height={{ base: '320px', md: '380px' }}
+                              isPinterestMode={isPinterestMode}
                             />
                           )
                         })}
@@ -1354,6 +1502,29 @@ export default function Products() {
       )
     }
 
+    if (isPinterestMode) {
+      return (
+        <Box className="pinterest-grid">
+          <SimpleGrid 
+            columns={{ base: 2, sm: 2, md: 3, lg: 4 }} 
+            spacing={{ base: 3, md: 4 }}
+            style={{ gridAutoRows: 'auto' }}
+          >
+            {popularProducts.map((p) => {
+              const shop = (shopsMap.byId && shopsMap.byId[String(p.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(p.seller_id)])
+              return (
+                <PinterestProductCard
+                  key={p.id}
+                  product={p}
+                  shop={shop}
+                />
+              )
+            })}
+          </SimpleGrid>
+        </Box>
+      )
+    }
+
     return (
       <Grid templateColumns={gridColumns} gap={{ base: 4, md: 6 }}>
         {popularProducts.map((p) => {
@@ -1374,6 +1545,7 @@ export default function Products() {
               shopName={shop?.name}
               shopDomain={shop?.domain}
               height={{ base: '320px', md: '380px' }}
+              isPinterestMode={isPinterestMode}
             />
           )
         })}
