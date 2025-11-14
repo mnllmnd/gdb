@@ -289,7 +289,8 @@ router.delete('/:id', authenticate, async (req, res) => {
     // verify owner
     const s = await query('SELECT * FROM shops WHERE id = $1', [id])
     if (s.rowCount === 0) return res.status(404).json({ error: 'Not found' })
-    if (String(s.rows[0].owner_id) !== String(req.user.id)) return res.status(403).json({ error: 'Not allowed' })
+  // allow owner or admin to delete the shop
+  if (String(s.rows[0].owner_id) !== String(req.user.id) && req.user.role !== 'admin') return res.status(403).json({ error: 'Not allowed' })
 
     // delete orders for products of this shop, then products, then shop
     // find product ids owned by this seller (via owner of shop)
