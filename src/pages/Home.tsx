@@ -437,6 +437,13 @@ export default function Home() {
   const ctaColor = useColorModeValue('black', 'white')
   const bgColor = useColorModeValue('gray.50', 'gray.700')
 
+  // Products visible according to selected category filter
+  const visibleProducts = React.useMemo(() => {
+    if (!products) return []
+    if (selectedCategory == null) return products
+    return products.filter((p) => (p.category_id ?? 0) === selectedCategory)
+  }, [products, selectedCategory])
+
   React.useEffect(() => {
     async function loadData() {
       try {
@@ -665,7 +672,7 @@ export default function Home() {
       {/* Two-column promo tiles */}
       <Box as="section" px={{ base: 4, md: 6 }} py={8}>
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-          {(products || []).slice(0, 2).map((p) => {
+          {(visibleProducts || []).slice(0, 2).map((p) => {
             const imgs = normalizeImages(p as any)
             const img = imgs && imgs.length ? imgs[0] : '/img/b.jfif'
             const shop = ((shopsMap.byId && shopsMap.byId[String((p as any).shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String((p as any).seller_id)])) || null
@@ -777,7 +784,7 @@ export default function Home() {
           currentView === 'products' ? (
             <Fade in={!isLoading}>
               <VStack spacing={8} align="stretch">
-                <HeroProductStrip products={products} shopsMap={shopsMap} />
+                <HeroProductStrip products={visibleProducts} shopsMap={shopsMap} />
               </VStack>
             </Fade>
           ) : null
@@ -785,10 +792,10 @@ export default function Home() {
       </Container>
 
       {/* Extra promo tiles moved here: render remaining products after the carousel */}
-      {(products || []).slice(2).length > 0 && (
+      {(visibleProducts || []).slice(2).length > 0 && (
         <Box as="section" px={{ base: 4, md: 6 }} py={8}>
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-            {(products || []).slice(2).map((p) => {
+            {(visibleProducts || []).slice(2).map((p) => {
               const imgs = normalizeImages(p as any)
               const img = imgs && imgs.length ? imgs[0] : '/img/b.jfif'
               const shop = ((shopsMap.byId && shopsMap.byId[String((p as any).shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String((p as any).seller_id)])) || null

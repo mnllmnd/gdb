@@ -309,7 +309,7 @@ const LogoutIcon = () => (
             <HStack spacing={3} align="center" flexShrink={0}>
               <Avatar 
                 size="sm" 
-                name="Woyof" 
+                name="Fifi" 
                 color={textColor} 
                  src="https://res.cloudinary.com/dcs9vkwe0/image/upload/v1762503131/gestion_de_boutique/go7j1ubdayddayswxzmp.jpg"
                 borderRadius="full"
@@ -321,7 +321,7 @@ const LogoutIcon = () => (
                 letterSpacing="wide"
                 fontSize="lg"
               >
-                Woyof
+                Fifi
               </Heading>
             </HStack>
 
@@ -477,7 +477,7 @@ const LogoutIcon = () => (
                     _expanded={{ bg: hoverBg }}
                     px={2}
                     py={1}
-                    borderRadius="none"
+                    borderRadius="full"
                     transition="all 0.2s ease"
                     size="sm"
                   >
@@ -612,7 +612,7 @@ const LogoutIcon = () => (
           <HStack spacing={3}>
             <Avatar
               size="sm"
-              name="Woyof"
+              name="Fifi"
               src="https://res.cloudinary.com/dcs9vkwe0/image/upload/v1762503131/gestion_de_boutique/go7j1ubdayddayswxzmp.jpg"
               bg="transparent"
               borderRadius="full"
@@ -625,7 +625,7 @@ const LogoutIcon = () => (
               letterSpacing="wide"
               fontSize="lg"
             >
-              Woyof
+              Fifi
             </Heading>
           </HStack>
         </DrawerHeader>
@@ -704,7 +704,7 @@ const LogoutIcon = () => (
                     _hover={{ bg: hoverBg }}
                     justifyContent="flex-start"
                     py={3}
-                    borderRadius="none"
+                    borderRadius="full"
                     fontWeight="normal"
                     fontSize="sm"
                     letterSpacing="wide"
@@ -812,7 +812,7 @@ const LogoutIcon = () => (
                 _hover={{ bg: brandColor, color: 'white' }}
                 justifyContent="flex-start"
                 py={3}
-                borderRadius="none"
+                borderRadius="full"
                 fontWeight="500"
                 whiteSpace="nowrap"
                 fontSize="sm"
@@ -852,7 +852,7 @@ const LogoutIcon = () => (
                     _hover={{ bg: 'red.600' }}
                     justifyContent="flex-start"
                     py={3}
-                    borderRadius="none"
+                    borderRadius="full"
                     fontWeight="bold"
                     fontSize="sm"
                     letterSpacing="wide"
