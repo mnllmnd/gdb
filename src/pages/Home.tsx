@@ -745,11 +745,50 @@ export default function Home() {
         </SimpleGrid>
       </Box>
 
-      {/* Additional promo tiles (same style) - show next 4 products */}
-      {(products || []).slice(2, 6).length > 0 && (
+      {/* Additional promo tiles were moved to the end of the page (after the carousel) */}
+
+      <Container id="products-grid" maxW={{ base: '100%', lg: '90%', xl: '85%' }} py={8} px={{ base: 4, md: 6 }}>
+        {isLoading ? (
+          <Center py={12}>
+            <VStack spacing={4}>
+              <Box position="relative">
+                <Spinner 
+                  size="xl" 
+                  color="brand.500" 
+                  thickness="4px"
+                  speed="0.8s"
+                />
+                <Icon 
+                  as={FiPackage} 
+                  position="absolute" 
+                  top="50%" 
+                  left="50%" 
+                  transform="translate(-50%, -50%)"
+                  boxSize={6}
+                  color="brand.500"
+                />
+              </Box>
+              <Text color={textColor} fontSize="lg" fontWeight="500">
+                Chargement en cours...
+              </Text>
+            </VStack>
+          </Center>
+        ) : (
+          currentView === 'products' ? (
+            <Fade in={!isLoading}>
+              <VStack spacing={8} align="stretch">
+                <HeroProductStrip products={products} shopsMap={shopsMap} />
+              </VStack>
+            </Fade>
+          ) : null
+        )}
+      </Container>
+
+      {/* Extra promo tiles moved here: render remaining products after the carousel */}
+      {(products || []).slice(2).length > 0 && (
         <Box as="section" px={{ base: 4, md: 6 }} py={8}>
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-            {(products || []).slice(2, 6).map((p) => {
+            {(products || []).slice(2).map((p) => {
               const imgs = normalizeImages(p as any)
               const img = imgs && imgs.length ? imgs[0] : '/img/b.jfif'
               const shop = ((shopsMap.byId && shopsMap.byId[String((p as any).shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String((p as any).seller_id)])) || null
@@ -829,43 +868,6 @@ export default function Home() {
           </SimpleGrid>
         </Box>
       )}
-
-      <Container id="products-grid" maxW={{ base: '100%', lg: '90%', xl: '85%' }} py={8} px={{ base: 4, md: 6 }}>
-        {isLoading ? (
-          <Center py={12}>
-            <VStack spacing={4}>
-              <Box position="relative">
-                <Spinner 
-                  size="xl" 
-                  color="brand.500" 
-                  thickness="4px"
-                  speed="0.8s"
-                />
-                <Icon 
-                  as={FiPackage} 
-                  position="absolute" 
-                  top="50%" 
-                  left="50%" 
-                  transform="translate(-50%, -50%)"
-                  boxSize={6}
-                  color="brand.500"
-                />
-              </Box>
-              <Text color={textColor} fontSize="lg" fontWeight="500">
-                Chargement en cours...
-              </Text>
-            </VStack>
-          </Center>
-        ) : (
-          currentView === 'products' ? (
-            <Fade in={!isLoading}>
-              <VStack spacing={8} align="stretch">
-                <HeroProductStrip products={products} shopsMap={shopsMap} />
-              </VStack>
-            </Fade>
-          ) : null
-        )}
-      </Container>
 
       {/* Bouton scroll to top */}
       <IconButton
