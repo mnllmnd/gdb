@@ -74,6 +74,17 @@ export default function ShopView() {
   setShop(s)
   // debug: log shop payload so we can confirm owner_phone presence
   try { console.debug('Shop payload:', s) } catch (e) {}
+  // fetch follow status (count) so the UI shows correct followers number
+  try {
+    const followStatus = await api.shops.followStatus(String(s.id))
+    if (followStatus && typeof followStatus.count === 'number') {
+      // merge into shop object so existing UI uses shop.followers_count
+      setShop((prev) => ({ ...(prev || {}), followers_count: followStatus.count }))
+    }
+  } catch (e) {
+    // ignore follow count fetch failures — fallback to 0 already in UI
+    console.warn('Failed to fetch follow status for shop view', e)
+  }
 
         let found: any[] = []
         try {
