@@ -41,7 +41,7 @@ function ProductImageSlideshow({ images = [], alt }: { images?: string[]; alt?: 
   useEffect(() => {
     if (!images || images.length <= 1) return
     if (isHover) return
-    const t = setInterval(() => setIndex((i) => (i + 1) % images.length), 3000)
+    const t = setInterval(() => setIndex((i) => (i + 1) % images.length), 4000)
     return () => clearInterval(t)
   }, [images, isHover])
 
@@ -54,6 +54,7 @@ function ProductImageSlideshow({ images = [], alt }: { images?: string[]; alt?: 
       height="100%"
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
+      overflow="hidden"
     >
       {imgs.map((src, idx) => {
         const visible = idx === index
@@ -68,12 +69,23 @@ function ProductImageSlideshow({ images = [], alt }: { images?: string[]; alt?: 
             position="absolute"
             top={0}
             left={0}
-            transition="opacity 0.8s ease-in-out, transform 0.6s ease"
+            transition="opacity 1s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s cubic-bezier(0.4, 0, 0.2, 1)"
             opacity={visible ? 1 : 0}
-            transform={visible ? 'scale(1.06)' : 'scale(1)'}
+            transform={visible ? 'scale(1.08)' : 'scale(1)'}
+            filter={visible ? 'brightness(1)' : 'brightness(0.95)'}
           />
         )
       })}
+      
+      {/* Overlay gradient subtil au hover */}
+      <Box
+        position="absolute"
+        inset={0}
+        bg="linear-gradient(to top, rgba(0,0,0,0.15) 0%, transparent 50%)"
+        opacity={isHover ? 1 : 0}
+        transition="opacity 0.4s ease"
+        pointerEvents="none"
+      />
     </Box>
   )
 }
@@ -261,9 +273,6 @@ export default function HeroProductGrid({
                     >
                       {p.title || p.name}
                     </Heading>
-                    <Text mt={1} fontSize="xs" color={muted} letterSpacing="wider">
-                      Nouvelle Collection
-                    </Text>
                   </Box>
                 </Box>
               </ChakraLink>
