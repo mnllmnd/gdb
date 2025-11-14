@@ -745,6 +745,91 @@ export default function Home() {
         </SimpleGrid>
       </Box>
 
+      {/* Additional promo tiles (same style) - show next 4 products */}
+      {(products || []).slice(2, 6).length > 0 && (
+        <Box as="section" px={{ base: 4, md: 6 }} py={8}>
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+            {(products || []).slice(2, 6).map((p) => {
+              const imgs = normalizeImages(p as any)
+              const img = imgs && imgs.length ? imgs[0] : '/img/b.jfif'
+              const shop = ((shopsMap.byId && shopsMap.byId[String((p as any).shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String((p as any).seller_id)])) || null
+              const shopDomain = shop?.domain || shop?.name
+              const target = shopDomain ? `/shop/${shopDomain}?product=${(p as any).id}` : `/products/${(p as any).id}`
+
+              return (
+                <Box
+                  key={(p as any).id}
+                  position="relative"
+                  borderRadius="xl"
+                  overflow="hidden"
+                  minH={{ base: '220px', md: '420px' }}
+                >
+                  <Image
+                    src={String(img)}
+                    alt={String(p.title || (p as any).name || 'product')}
+                    objectFit="cover"
+                    w="100%"
+                    h="100%"
+                  />
+                  
+                  <Box
+                    position="absolute"
+                    inset={0}
+                    bgGradient="linear(to-b, rgba(0,0,0,0.0), rgba(0,0,0,0.55))"
+                  />
+                  
+                  <Box
+                    position="absolute"
+                    left={{ base: 4, md: 12 }}
+                    bottom={{ base: 6, md: 12 }}
+                    color="white"
+                    zIndex={2}
+                    maxW={{ md: 'lg' }}
+                  >
+                    <Text
+                      fontSize="sm"
+                      textTransform="uppercase"
+                      letterSpacing="wider"
+                      color="white"
+                    >
+                      {(p as any).category_name || ''}
+                    </Text>
+
+                    <Heading
+                      size={{ base: 'lg', md: '2xl' }}
+                      mt={2}
+                      color="white"
+                    >
+                      {p.title || (p as any).name}
+                    </Heading>
+
+                    <Button
+                      mt={4}
+                      as={RouterLink}
+                      to={target}
+                      state={{ from: { pathname: location?.pathname || '/', focusProductId: String((p as any).id) } }}
+                      bg={ctaBg}
+                      color={ctaColor}
+                      borderRadius="none"
+                      px={6}
+                      py={4}
+                      fontWeight={600}
+                       size="lg"
+                      textTransform="uppercase"
+                      letterSpacing="0.05em"
+                      fontSize="sm"
+                      _hover={{ bg: 'gray.100' }}
+                    >
+                      Voir la Boutique
+                    </Button>
+                  </Box>
+                </Box>
+              )
+            })}
+          </SimpleGrid>
+        </Box>
+      )}
+
       <Container id="products-grid" maxW={{ base: '100%', lg: '90%', xl: '85%' }} py={8} px={{ base: 4, md: 6 }}>
         {isLoading ? (
           <Center py={12}>
