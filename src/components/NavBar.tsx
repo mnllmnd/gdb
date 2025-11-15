@@ -239,6 +239,21 @@ const LogoutIcon = () => (
               _hover={{ bg: hoverBg }}
               size="sm"
             />
+            {/* Mobile quick add product button for authenticated users */}
+            {user && (
+              <IconButton
+                aria-label="Ajouter un produit"
+                title="Ajouter un produit"
+                as={RouterLink}
+                to="/seller/product"
+                icon={<Icon viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></Icon>}
+                variant="solid"
+                size="sm"
+                colorScheme="blue"
+                borderRadius="lg"
+                boxSize={8}
+              />
+            )}
             <Spacer />
             <SearchBar
               value={searchQuery}
