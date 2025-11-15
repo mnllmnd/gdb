@@ -143,19 +143,6 @@ const HeroNike: React.FC = () => {
         justify="center"
         align="center"
       >
-        <Heading
-          as="h1"
-          size={{ base: '2xl', md: '4xl' }}
-          textAlign="center"
-          maxW="container.md"
-          color="white"
-          fontWeight={800}
-          letterSpacing={-1}
-          lineHeight={0.9}
-          fontFamily="Inter, system-ui"
-        >
-          Style
-        </Heading>
         <Text
           color="white"
           maxW="container.md"

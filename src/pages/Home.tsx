@@ -732,7 +732,7 @@ export default function Home() {
                     textTransform="capitalize"
                     letterSpacing="0.5px"
                     color="white"
-                    fontWeight="500"
+                    fontWeight="300"
                   >
                     {(p as any).category_name || ''}
                   </Text>
@@ -741,7 +741,7 @@ export default function Home() {
                     size={{ base: 'md', md: 'lg' }}
                     mt={1}
                     color="white"
-                    fontWeight="600"
+                    fontWeight="300"
                     letterSpacing="-0.3px"
                   >
                     {p.title || (p as any).name}
@@ -867,17 +867,33 @@ export default function Home() {
                     />
                   </Box>
 
-                  {/* Price section minimaliste */}
-                  {formattedPrice && (
-                    <Box 
-                      p={2.5} 
-                      pt={2} 
-                      borderTop="1px solid" 
-                      borderColor={productBorder}
-                      bg={productBg}
+                  {/* Product info section */}
+                  <Box 
+                    p={3} 
+                    borderTop="1px solid" 
+                    borderColor={productBorder}
+                    bg={productBg}
+                  >
+                    {/* Product name */}
+                    <Heading
+                      as="h3"
+                      fontSize={{ base: 'xs', md: 'sm' }}
+                      fontWeight="300"
+                      letterSpacing="0.02em"
+                      color={productTextColor}
+                      textTransform="uppercase"
+                      textAlign="left"
+                      noOfLines={2}
+                      mb={2}
+                      lineHeight="1.3"
                     >
+                      {p.title || (p as any).name}
+                    </Heading>
+                    
+                    {/* Price */}
+                    {formattedPrice && (
                       <Text 
-                         fontSize={{ base: 'md', md: 'lg' }}
+                        fontSize={{ base: 'md', md: 'lg' }}
                         fontWeight="300" 
                         letterSpacing="0.01em"
                         color={productTextColor}
@@ -885,8 +901,8 @@ export default function Home() {
                       >
                         {formattedPrice} FCFA
                       </Text>
-                    </Box>
-                  )}
+                    )}
+                  </Box>
                 </Box>
               )
             })}

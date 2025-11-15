@@ -270,7 +270,7 @@ export default function HeroProductGrid({
                     <Heading
                       as="h3"
                       fontSize={{ base: 'xs', md: 'sm' }}
-                      fontWeight="400"
+                      fontWeight="300"
                       letterSpacing="0.02em"
                       color={textColor}
                       textTransform="uppercase"
