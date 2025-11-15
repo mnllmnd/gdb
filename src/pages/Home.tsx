@@ -78,12 +78,12 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
   const [isHovered, setIsHovered] = React.useState(false)
   
   // Hooks appelés au niveau du composant
-  const shopCardBg = useColorModeValue('white', 'gray.900')
+  const shopCardBg = useColorModeValue('white', 'black')
   const shopCardBorder = useColorModeValue('gray.200', 'gray.800')
   const shopCardHoverBg = useColorModeValue('gray.50', 'gray.800')
   const shopCardHoverBorder = useColorModeValue('gray.300', 'gray.600')
   const shopCardHoverShadow = useColorModeValue('0 8px 16px rgba(0,0,0,0.08)', '0 8px 16px rgba(0,0,0,0.3)')
-  const buttonBg = useColorModeValue('white', 'gray.900')
+  const buttonBg = useColorModeValue('white', 'black')
   const buttonColor = useColorModeValue('black', 'white')
   const buttonBorder = useColorModeValue('gray.200', 'gray.700')
   const imageBg = useColorModeValue('gray.100', 'gray.800')
@@ -462,7 +462,7 @@ export default function Home() {
   const ctaBg = useColorModeValue('white', 'black')
   const ctaColor = useColorModeValue('black', 'white')
   const hoverBgVar = useColorModeValue('gray.100', 'gray.800')
-  const productBgVar = useColorModeValue('white', 'gray.900')
+  const productBgVar = useColorModeValue('white', 'black')
   const productBorderVar = useColorModeValue('gray.200', 'gray.800')
   const productTextColorVar = useColorModeValue('black', 'white')
 
