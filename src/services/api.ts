@@ -118,6 +118,7 @@ export const api = {
     delete: (id: string, token?: string) => request(`/products/${id}`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     like: (id: string, token?: string) => request(`/products/${id}/like`, { method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     unlike: (id: string, token?: string) => request(`/products/${id}/like`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+  similar: (id: string, limit = 8) => request(`/products/${encodeURIComponent(id)}/similar?limit=${encodeURIComponent(String(limit))}`),
   },
   uploads: {
   // uploadFile supports two call signatures for backward compatibility:

@@ -54,11 +54,11 @@ export default function ProductView() {
   const { isOpen: isImageOpen, onOpen: onImageOpen, onClose: onImageClose } = useDisclosure()
 
   // Theme-aware tokens
-  const bgCard = useColorModeValue('white', 'gray.800')
+  const bgCard = useColorModeValue('white', 'black')
   const bgSubtle = useColorModeValue('gray.50', 'gray.700')
   const textSecondary = useColorModeValue('gray.700', 'gray.300')
   const borderColorVar = useColorModeValue('gray.200','gray.700')
-  const arrowBg = useColorModeValue('white','gray.800')
+  const arrowBg = useColorModeValue('white','black')
   const arrowHoverBg = useColorModeValue('gray.100','gray.700')
   const arrowIconColor = useColorModeValue('gray.700','white')
 
@@ -91,6 +91,28 @@ export default function ProductView() {
     load()
     return () => { mounted = false }
   }, [id])
+
+  // Load similar products (vector similarity) after the main product is loaded
+  const [similarProducts, setSimilarProducts] = React.useState<any[]>([])
+  const [similarLoading, setSimilarLoading] = React.useState(false)
+  React.useEffect(() => {
+    let mounted = true
+    const loadSimilar = async () => {
+      if (!product || !product.id) return
+      setSimilarLoading(true)
+      try {
+        const sims = await api.products.similar(String(product.id), 8)
+        if (!mounted) return
+        setSimilarProducts(Array.isArray(sims) ? sims : [])
+      } catch (err) {
+        console.warn('Failed to load similar products', err)
+      } finally {
+        if (mounted) setSimilarLoading(false)
+      }
+    }
+    loadSimilar()
+    return () => { mounted = false }
+  }, [product && product.id])
 
   if (loading) return (
     <Container maxW="container.xl" py={12}>
@@ -174,7 +196,7 @@ export default function ProductView() {
                 position="relative" 
                 overflow="hidden" 
                 height={{ base: '400px', md: '600px' }}
-                bg="gray.50"
+                bg={bgCard}
                 onClick={onImageOpen} 
                 onTouchStart={onTouchStart} 
                 onTouchEnd={onTouchEnd}
@@ -202,7 +224,7 @@ export default function ProductView() {
                                   zIndex={2}
                                 >
                                   <Box 
-                                    bg={arrowBg} 
+                                    bg={bgCard} 
                                     p={3} 
                                     borderRadius="full" 
                                     onClick={(e) => { e.stopPropagation(); prev() }} 
@@ -255,7 +277,7 @@ export default function ProductView() {
                         position="absolute" 
                         bottom={4} 
                         right={4} 
-                        bg="blackAlpha.800" 
+                        bg={bgCard} 
                         color="white" 
                         px={3} 
                         py={1} 
@@ -272,7 +294,7 @@ export default function ProductView() {
 
               {/* Thumbnails */}
               {imgs.length > 1 && (
-                <Box px={6} py={4} bg="white" borderTop="1px solid" borderColor="gray.100">
+                <Box px={6} py={4} bg={bgCard} borderTop="1px solid" borderColor="bgCard">
                   <SimpleGrid columns={{ base: 4, md: 6 }} spacing={3}>
                     {imgs.map((src: string, idx: number) => (
                       <Box 
@@ -308,7 +330,7 @@ export default function ProductView() {
           <VStack spacing={6} align="stretch">
             {/* Description Section */}
             <Box 
-              bg="white" 
+              bg={bgCard} 
               p={6} 
               borderRadius="xl" 
               border="1px solid" 
@@ -316,12 +338,12 @@ export default function ProductView() {
             >
               <HStack spacing={3} mb={4}>
                 <Icon as={FaInfoCircle} color="gray.600" />
-                <Heading size="md" fontWeight="600" color="gray.800">
+                <Heading size="md" fontWeight="600" color="bgCard">
                   Description
                 </Heading>
               </HStack>
               {product.description ? (
-                <Text color="gray.700" lineHeight="tall" fontSize="md">
+                <Text color="bgCard" lineHeight="tall" fontSize="md">
                   {product.description}
                 </Text>
               ) : (
@@ -333,7 +355,7 @@ export default function ProductView() {
 
             {/* Reviews Section */}
             <Box 
-              bg="white" 
+              bg={bgCard} 
               borderRadius="xl" 
               overflow="hidden"
               border="1px solid"
@@ -343,7 +365,7 @@ export default function ProductView() {
                 width="100%"
                 justifyContent="space-between"
                 onClick={() => setReviewsOpen(!reviewsOpen)}
-                bg="white"
+                bg={bgCard}
                 _hover={{ bg: 'gray.50' }}
                 borderRadius="xl"
                 py={6}
@@ -352,12 +374,12 @@ export default function ProductView() {
                 borderBottomRadius={reviewsOpen ? 0 : 'xl'}
               >
                 <HStack spacing={3}>
-                  <Icon as={FaStar} color="gray.600" />
-                  <Text fontSize="lg" fontWeight="600" color="gray.800">
+                  <Icon as={FaStar} color="bgCard" />
+                  <Text fontSize="lg" fontWeight="600" color="bgCard">
                     Avis clients
                   </Text>
                   {reviewCount > 0 && (
-                    <Badge bg="gray.100" color="gray.600" fontSize="sm" px={2} py={1} borderRadius="md">
+                    <Badge bg={bgCard} color="bgCard" fontSize="sm" px={2} py={1} borderRadius="md">
                       {reviewCount}
                     </Badge>
                   )}
@@ -365,11 +387,11 @@ export default function ProductView() {
               </Button>
 
               <Collapse in={reviewsOpen} animateOpacity>
-                <Box p={6} bg="gray.50" borderTop="1px solid" borderColor="gray.200">
+                <Box p={6} bg={bgCard} borderTop="1px solid" borderColor="bgCard">
                   <Tabs variant="line" colorScheme="gray">
                     <TabList mb={6}>
-                      <Tab fontWeight="500" color="gray.700">Voir les avis</Tab>
-                      <Tab fontWeight="500" color="gray.700">Laisser un avis</Tab>
+                      <Tab fontWeight="500" color="bgCard">Voir les avis</Tab>
+                      <Tab fontWeight="500" color="bgCard">Laisser un avis</Tab>
                     </TabList>
 
                     <TabPanels>
@@ -408,7 +430,7 @@ export default function ProductView() {
           <Box 
             position="sticky"
             top={8}
-            bg="white" 
+            bg={bgCard} 
             borderRadius="xl" 
             p={6}
             border="1px solid"
@@ -418,7 +440,7 @@ export default function ProductView() {
             <VStack align="stretch" spacing={6}>
               {/* Product Title */}
               <Box>
-                <Heading size="lg" mb={3} fontWeight="600" color="gray.900" lineHeight="1.2">
+                <Heading size="lg" mb={3} fontWeight="600" color="bgCard" lineHeight="1.2">
                   {product.title || product.name}
                 </Heading>
                 
@@ -429,7 +451,7 @@ export default function ProductView() {
                       <Text
                         fontSize="lg"
                         textDecoration="line-through"
-                        color="gray.500"
+                        color="bgCard"
                       >
                         {Math.floor(product.original_price)} FCFA
                       </Text>
@@ -564,6 +586,31 @@ export default function ProductView() {
         </ModalContent>
       </Modal>
       <ScrollTopButton />
+      {/* Similar products (vector-based) */}
+      <Box mt={10}>
+        <Heading size="md" mb={4} fontWeight={600}>Produits similaires</Heading>
+        {similarLoading ? (
+          <Center><Spinner /></Center>
+        ) : similarProducts && similarProducts.length ? (
+          <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
+            {similarProducts.map((p: any) => (
+              <Box key={p.id} id={`product-${p.id}`}> 
+                <ProductCard
+                  id={String(p.id)}
+                  title={p.title || p.name}
+                  price={p.price ?? p.amount}
+                  originalPrice={p.original_price ?? p.originalPrice}
+                  discount={p.discount ?? 0}
+                  image_url={p.image_url}
+                  images={p.images}
+                />
+              </Box>
+            ))}
+          </SimpleGrid>
+        ) : (
+          <Text color="gray.500">Aucun produit similaire trouvé.</Text>
+        )}
+      </Box>
     </Container>
   )
 }
