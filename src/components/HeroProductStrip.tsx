@@ -256,7 +256,7 @@ export default function HeroProductGrid({
                   overflow="hidden"
                   transition="all 0.4s ease"
                   _hover={{ transform: 'scale(1.02)' }}
-                  w={{ base: '200px', md: '300px' }}
+                  w={{ base: '75vw', sm: '280px', md: '300px' }}
                   borderRadius="md"
                   boxShadow="sm"
                 >
