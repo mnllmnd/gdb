@@ -90,7 +90,11 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
   const imageIconColor = useColorModeValue('gray.300', 'gray.600')
   const badgeBg = useColorModeValue('gray.900', 'gray.100')
   const badgeColor = useColorModeValue('white', 'gray.900')
-  const headingColor = useColorModeValue('black', 'white')
+  // Make the section heading white when this is the "popular" section to ensure contrast on the photo background
+  const isPopularSection = typeof title === 'string' && title.toLowerCase().includes('popul')
+  const headingColor = isPopularSection ? 'white' : useColorModeValue('black', 'white')
+  // Shop names should not inherit the section heading color; keep readable default for both modes
+  const shopNameColor = useColorModeValue('gray.800', 'gray.100')
   const textSecondaryColor = useColorModeValue('gray.600', 'gray.400')
   const textHintColor = useColorModeValue('gray.400', 'gray.500')
 
@@ -128,7 +132,21 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
       my={{ base: 12, md: 16 }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      bgImage="url('https://i.pinimg.com/1200x/c5/1a/53/c51a530043a8406b461ca284c14dc0d6.jpg')"
+      bgSize="cover"
+      bgPosition="center"
+      bgRepeat="no-repeat"
+      borderRadius="md"
+      overflow="hidden"
     >
+      {/* Overlay to ensure text/readability above the image */}
+      <Box
+        position="absolute"
+        inset={0}
+        bgGradient="linear(to-b, rgba(0,0,0,0.36), rgba(0,0,0,0.06))"
+        zIndex={0}
+        pointerEvents="none"
+      />
       {/* En-tête de section minimaliste */}
       <Box px={{ base: 4, md: 8 }} mb={8}>
         <Heading
@@ -136,7 +154,7 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
           fontSize={{ base: '2xl', md: '3xl' }}
           fontWeight="600"
           letterSpacing="-0.4px"
-          color={useColorModeValue('black', 'white')}
+          color={headingColor}
           textTransform="capitalize"
           position="relative"
           display="inline-block"
@@ -226,14 +244,18 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
                 flexDirection="column"
                 alignItems="center"
                 justifyContent="flex-start"
-                transition="transform 0.18s ease"
-                _hover={{ transform: 'translateY(-6px) scale(1.02)', textDecoration: 'none' }}
+                transition="transform 0.18s ease, box-shadow 0.18s ease"
+                _hover={{ transform: 'translateY(-6px) scale(1.02)', textDecoration: 'none', boxShadow: shopCardHoverShadow }}
+                _focus={{ boxShadow: '0 0 0 3px rgba(59,130,246,0.12)', outline: 'none' }}
                 cursor="pointer"
                 flexShrink={0}
                 w={{ base: '120px', md: '160px' }}
                 minW={{ base: '120px', md: '160px' }}
                 p={2}
-                bg="transparent"
+                bg={shopCardBg}
+                border="1px solid"
+                borderColor={shopCardBorder}
+                borderRadius="md"
               >
                 {/* Circular logo container */}
                 <Box
@@ -297,7 +319,7 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
                   textAlign="center"
                   fontSize={{ base: 'sm', md: 'md' }}
                   fontWeight="600"
-                  color={headingColor}
+                  color={shopNameColor}
                   noOfLines={2}
                 >
                   {shop.name}
@@ -561,7 +583,7 @@ export default function Home() {
 
     return (
       <ScaleFade in={!isLoading} initialScale={0.95}>
-        <VStack spacing={0} align="stretch">
+        <VStack spacing={0} align="stretch" bg="white">
           {/* Boutiques populaires */}
           {popularShops && popularShops.length > 0 && (
             <ShopsCarousel shops={popularShops} title="Boutiques populaires" />
@@ -606,29 +628,42 @@ export default function Home() {
           flexDirection={{ base: 'column', md: 'row' }}
           textAlign={{ base: 'center', md: 'left' }}
         >
-          <HStack
-  spacing={3}
-  align="center"
-  justify="center"
-  bgImage="url('https://i.pinimg.com/1200x/c5/1a/53/c51a530043a8406b461ca284c14dc0d6.jpg')"
-  bgSize="cover"
-  bgPosition="center"
-  bgRepeat="no-repeat"
-  p={6}
-  borderRadius="lg"
->
-  <Icon as={FiShoppingBag} boxSize={5} color="white" />
+          <Box
+            position="relative"
+            borderRadius="lg"
+            bgImage="url('https://i.pinimg.com/1200x/c5/1a/53/c51a530043a8406b461ca284c14dc0d6.jpg')"
+            bgSize="cover"
+            bgPosition="center"
+            bgRepeat="no-repeat"
+          >
+            {/* Overlay for better text contrast */}
+            <Box
+              position="absolute"
+              inset={0}
+              bgGradient="linear(to-b, rgba(0,0,0,0.36), rgba(0,0,0,0.12))"
+            />
 
-  <VStack align={{ base: 'center', md: 'start' }} spacing={0}>
-    <Heading as="h2" size="md" fontWeight="600" color="white">
-      Boutiques et Produits
-    </Heading>
+            <HStack
+              spacing={3}
+              align="center"
+              justify="center"
+              p={6}
+              position="relative"
+              zIndex={1}
+            >
+              <Icon as={FiShoppingBag} boxSize={{ base: 5, md: 6 }} color="white" />
 
-    <Text fontSize="xs" color="whiteAlpha.800">
-      Explorez des boutiques et produits autour de vous.
-    </Text>
-  </VStack>
-</HStack>
+              <VStack align={{ base: 'center', md: 'start' }} spacing={0}>
+                <Heading as="h2" size="md" fontWeight="600" color="white">
+                  Boutiques et Produits
+                </Heading>
+
+                <Text fontSize="xs" color="whiteAlpha.900">
+                  Explorez des boutiques et produits autour de vous.
+                </Text>
+              </VStack>
+            </HStack>
+          </Box>
 
 
           <HStack spacing={3} mt={{ base: 3, md: 0 }}>
