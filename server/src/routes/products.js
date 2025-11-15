@@ -4,6 +4,7 @@ import { query } from '../db.js'
 import { authenticate, requireRole } from '../middleware/auth.js'
 import cache from '../cache.js'
 import cleanText from '../utils/clean_text.js'
+import { computeEmbedding } from '../embeddings.js'
 
 const router = express.Router()
 
@@ -123,6 +124,22 @@ router.post('/', authenticate, requireRole('seller'), async (req, res) => {
       params
     )
     const created = r.rows[0]
+    // compute and persist embedding (best-effort). If embedding computation fails
+    // we don't block the response; this is a best-effort enrichment.
+    try {
+      const textForEmbedding = `${created.title || ''}\n\n${created.description || ''}`
+      const emb = await computeEmbedding(textForEmbedding)
+      if (emb && Array.isArray(emb) && emb.length) {
+        const lit = '[' + emb.map(n => Number(n)).join(',') + ']'
+        try {
+          await query('UPDATE products SET embedding = $2::vector WHERE id = $1', [created.id, lit])
+        } catch (ie) {
+          console.warn('Failed to persist embedding to DB', ie && ie.message)
+        }
+      }
+    } catch (ee) {
+      console.warn('Embedding compute error after create', ee && ee.message)
+    }
     // if images array provided, persist into product_images
     if (Array.isArray(images) && images.length) {
       try {
@@ -214,6 +231,21 @@ router.put('/:id', authenticate, async (req, res) => {
     params
     )
     const updatedProduct = updated.rows[0]
+    // Recompute embedding for updated product (best-effort)
+    try {
+      const textForEmbedding = `${updatedProduct.title || ''}\n\n${updatedProduct.description || ''}`
+      const emb = await computeEmbedding(textForEmbedding)
+      if (emb && Array.isArray(emb) && emb.length) {
+        const lit = '[' + emb.map(n => Number(n)).join(',') + ']'
+        try {
+          await query('UPDATE products SET embedding = $2::vector WHERE id = $1', [id, lit])
+        } catch (ie) {
+          console.warn('Failed to persist embedding to DB on update', ie && ie.message)
+        }
+      }
+    } catch (ee) {
+      console.warn('Embedding compute error after update', ee && ee.message)
+    }
     // if images provided, replace them
     if (Array.isArray(images)) {
       try {
@@ -243,6 +275,68 @@ router.put('/:id', authenticate, async (req, res) => {
       return res.status(400).json({ error: `Missing required column: ${err.column}` })
     }
     res.status(500).json({ error: 'Failed to update' })
+  }
+})
+
+// Get similar products using pgvector nearest neighbor search
+router.get('/:id/similar', async (req, res) => {
+  const { id } = req.params
+  const limit = Number.parseInt(req.query.limit || '8', 10)
+  try {
+    const p = await query('SELECT embedding FROM products WHERE id = $1', [id])
+    if (p.rowCount === 0) return res.status(404).json({ error: 'Not found' })
+    const embRow = p.rows[0]
+    let emb = embRow && embRow.embedding
+    if (!emb) {
+      // No stored embedding; try to compute on the fly (best-effort)
+      try {
+        const prod = await query('SELECT title, description FROM products WHERE id = $1', [id])
+        const prodRow = prod.rows[0]
+        const text = `${prodRow?.title || ''}\n\n${prodRow?.description || ''}`
+        const computed = await computeEmbedding(text)
+        if (computed && computed.length) emb = computed
+        // do not persist here to avoid blocking; the create/update paths persist
+      } catch (e) {
+        console.warn('Failed to compute embedding on the fly', e && e.message)
+      }
+    }
+    if (!emb) return res.json([])
+    // emb might be returned as string from PG (like "[0.1,0.2]") or an array
+    let embLit = null
+    if (Array.isArray(emb)) embLit = '[' + emb.map(n => Number(n)).join(',') + ']'
+    else if (typeof emb === 'string') embLit = emb
+    else embLit = String(emb)
+
+    // Query nearest neighbors using pgvector operator <->
+    try {
+      const r = await query(
+        'SELECT * FROM products WHERE id != $1 AND embedding IS NOT NULL ORDER BY embedding <-> $2::vector LIMIT $3',
+        [id, embLit, limit]
+      )
+      const rows = r.rows || []
+      // attach images for those products similar to other endpoints
+      if (rows.length) {
+        try {
+          const ids = rows.map(r => r.id)
+          const imgs = await query('SELECT product_id, url, position FROM product_images WHERE product_id = ANY($1)', [ids])
+          const map = {}
+          ;(imgs.rows || []).forEach(ir => {
+            if (!ir || !ir.product_id) return
+            if (!map[ir.product_id]) map[ir.product_id] = []
+            if (ir.url) map[ir.product_id].push(ir.url)
+          })
+          for (const k of Object.keys(map)) map[k] = Array.from(new Set(map[k].filter(Boolean)))
+          for (const p of rows) p.images = map[p.id] && map[p.id].length ? map[p.id] : (p.image_url ? [p.image_url] : [])
+        } catch (e) { /* ignore image attachment errors */ }
+      }
+      return res.json(rows)
+    } catch (qerr) {
+      console.error('Nearest neighbor query failed', qerr)
+      return res.status(500).json({ error: 'Similarity search failed' })
+    }
+  } catch (err) {
+    console.error('Failed to get similar products', err)
+    res.status(500).json({ error: 'Failed to get similar products' })
   }
 })
 

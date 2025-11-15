@@ -9,6 +9,10 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
+-- pgvector extension is required for vector column type and nearest-neighbor ops
+-- Make sure your Postgres instance has the pgvector extension available.
+CREATE EXTENSION IF NOT EXISTS vector;
+
 -- Products
 CREATE TABLE IF NOT EXISTS products (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -17,6 +21,10 @@ CREATE TABLE IF NOT EXISTS products (
   price NUMERIC NOT NULL,
   image_url TEXT,
   seller_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  -- vector embedding for similarity search (requires pgvector extension)
+  -- dimension must match the model used to compute embeddings. The default
+  -- embedder used by the server (all-miniLM-L6-v2) produces 384-d vectors.
+  embedding vector(384),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
