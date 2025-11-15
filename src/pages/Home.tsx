@@ -877,10 +877,11 @@ export default function Home() {
                       bg={productBg}
                     >
                       <Text 
-                        fontSize="xs" 
-                        fontWeight="600" 
+                         fontSize={{ base: 'md', md: 'lg' }}
+                        fontWeight="300" 
+                        letterSpacing="0.01em"
                         color={productTextColor}
-                        letterSpacing="-0.2px"
+                        textAlign="left"
                       >
                         {formattedPrice} FCFA
                       </Text>

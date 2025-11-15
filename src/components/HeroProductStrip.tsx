@@ -21,6 +21,8 @@ type MinimalProduct = {
   images?: string[]
   image_url?: string
   product_image?: string
+  price?: number
+  currency?: string
 }
 
 function firstImage(p: MinimalProduct) {
@@ -105,7 +107,8 @@ export default function HeroProductGrid({
   const isMobile = useBreakpointValue({ base: true, md: false })
 
   const bg = useColorModeValue('white', '#0e0e0e')
-  const textColor = useColorModeValue('black', 'white')
+  const textColor = useColorModeValue('#2b2b2b', '#e8e8e8')
+  const priceColor = useColorModeValue('#2b2b2b', '#ffffff')
   const muted = useColorModeValue('gray.500', 'gray.400')
   
 
@@ -240,39 +243,60 @@ export default function HeroProductGrid({
 
             return (
               <ChakraLink
-                  as={RouterLink}
-                  key={String(p.id)}
-                  id={`product-${String(p.id)}`}
-                  to={productHref}
-                  state={{ from: { pathname: location?.pathname || '/', focusProductId: String(p.id) } }}
-                  _hover={{ textDecoration: 'none' }}
-                  flexShrink={0}
-                >
+                as={RouterLink}
+                key={String(p.id)}
+                id={`product-${String(p.id)}`}
+                to={productHref}
+                state={{ from: { pathname: location?.pathname || '/', focusProductId: String(p.id) } }}
+                _hover={{ textDecoration: 'none' }}
+                flexShrink={0}
+              >
                 <Box
                   bg={bg}
                   overflow="hidden"
                   transition="all 0.4s ease"
                   _hover={{ transform: 'scale(1.02)' }}
-                  w={{ base: '160px', md: '250px' }}
+                  w={{ base: '200px', md: '300px' }}
+                  borderRadius="md"
+                  boxShadow="sm"
                 >
-                  <Box position="relative" aspectRatio="4/5" overflow="hidden" borderRadius="sm">
+                  <Box position="relative" aspectRatio="4/5" overflow="hidden" borderRadius="md">
                     <ProductImageSlideshow
                       images={finalImages}
                       alt={String(p.title || p.name || 'product')}
                     />
                   </Box>
-                  <Box mt={3} textAlign="center">
+                  <Box p={4} textAlign="left">
                     <Heading
                       as="h3"
-                      fontSize="sm"
-                      fontWeight="500"
-                      letterSpacing="wide"
+                      fontSize={{ base: 'xs', md: 'sm' }}
+                      fontWeight="400"
+                      letterSpacing="0.02em"
                       color={textColor}
                       textTransform="uppercase"
-                      noOfLines={1}
+                      noOfLines={2}
+                      mb={2}
+                      lineHeight="1.4"
                     >
                       {p.title || p.name}
                     </Heading>
+                    {p.price && (
+                      <Text
+                        fontSize={{ base: 'md', md: 'lg' }}
+                        fontWeight="300"
+                        color={priceColor}
+                        letterSpacing="0.01em"
+                        lineHeight="1.2"
+                      >
+                        {Number(p.price).toLocaleString('fr-DZ', {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0,
+                        })}{' '}
+                        <Text as="span" fontSize={{ base: 'xs', md: 'sm' }} fontWeight="300">
+                          {p.currency || 'FCFA'}
+                        </Text>
+                      </Text>
+                    )}
                   </Box>
                 </Box>
               </ChakraLink>
@@ -280,8 +304,6 @@ export default function HeroProductGrid({
           })}
         </Box>
       </Box>
-
-      {/* Video moved into the promo grid in Home; removed standalone video here */}
     </>
   )
 }
