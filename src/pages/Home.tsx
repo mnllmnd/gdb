@@ -113,7 +113,7 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
-      const cardWidth = 320
+      const cardWidth = 180
       const scrollAmount = cardWidth * 2
       scrollRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
@@ -222,31 +222,32 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
                 as={RouterLink}
                 key={shop.id}
                 to={shopHref}
-                position="relative"
-                bg={shopCardBg}
-                borderRadius="md"
-                overflow="hidden"
-                    
-                transition="all 0.2s ease"
-                _hover={{
-                  transform: 'translateY(-4px)',
-                  boxShadow: shopCardHoverShadow,
-                  textDecoration: 'none'
-                }}
+                display="flex"
+                flexDirection="column"
+                alignItems="center"
+                justifyContent="flex-start"
+                transition="transform 0.18s ease"
+                _hover={{ transform: 'translateY(-6px) scale(1.02)', textDecoration: 'none' }}
                 cursor="pointer"
                 flexShrink={0}
-                w={{ base: '280px', md: '320px' }}
-                minW={{ base: '280px', md: '320px' }}
-                border="1px solid"
-                borderColor={shopCardBorder}
+                w={{ base: '120px', md: '160px' }}
+                minW={{ base: '120px', md: '160px' }}
+                p={2}
+                bg="transparent"
               >
-                {/* Container image */}
+                {/* Circular logo container */}
                 <Box
                   position="relative"
-                  w="100%"
-                  h="280px"
+                  w={{ base: '96px', md: '140px' }}
+                  h={{ base: '96px', md: '140px' }}
                   bg={imageBg}
+                  borderRadius="full"
                   overflow="hidden"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  border="1px solid"
+                  borderColor={shopCardBorder}
                 >
                   {shop.logo_url ? (
                     <Image
@@ -255,48 +256,34 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
                       objectFit="cover"
                       w="100%"
                       h="100%"
-                      p={4}
-                      transition="transform 0.3s ease"
-                      _hover={{ transform: 'scale(1.05)' }}
+                      transition="transform 0.25s ease"
+                      _hover={{ transform: 'scale(1.06)' }}
                     />
                   ) : (
-                    <Center h="100%" bg={imageBg}>
-                      <Text
-                        fontSize="5xl"
-                        fontWeight="700"
-                        color={imageIconColor}
-                        textTransform="uppercase"
-                        opacity={0.6}
-                      >
-                        {shop.name?.charAt(0) || '?'}
-                      </Text>
-                    </Center>
+                    <Text
+                      fontSize={{ base: '3xl', md: '5xl' }}
+                      fontWeight="700"
+                      color={imageIconColor}
+                      textTransform="uppercase"
+                      opacity={0.7}
+                    >
+                      {shop.name?.charAt(0) || '?'}
+                    </Text>
                   )}
-                  
-                  {/* Overlay subtil au hover */}
-                  <Box
-                    position="absolute"
-                    inset={0}
-                    bg="black"
-                    opacity={0}
-                    transition="opacity 0.2s ease"
-                    _groupHover={{ opacity: 0.05 }}
-                  />
-                  
-                  {/* Badge followers en overlay */}
+
+                  {/* Badge followers */}
                   {shop.followers && shop.followers > 0 && (
                     <Badge
                       position="absolute"
-                      top={3}
-                      right={3}
+                      top={2}
+                      right={2}
                       bg={badgeBg}
                       color={badgeColor}
-                      px={2.5}
-                      py={1}
+                      px={2}
+                      py={0.5}
                       borderRadius="full"
                       fontSize="xs"
                       fontWeight="600"
-                      letterSpacing="0.5px"
                       zIndex={2}
                     >
                       {shop.followers.toLocaleString()}
@@ -304,44 +291,17 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
                   )}
                 </Box>
 
-                {/* Informations de la boutique */}
-                <Box p={5}>
-                  <VStack spacing={2} align="start">
-                    {/* Nom de la boutique */}
-                    <Heading
-                      as="h3"
-                      fontSize="base"
-                      fontWeight="600"
-                      color={headingColor}
-                      letterSpacing="-0.2px"
-                      textTransform="capitalize"
-                      lineHeight="1.3"
-                      noOfLines={2}
-                    >
-                      {shop.name}
-                    </Heading>
-
-                    {/* Description / CTA */}
-                    <HStack justify="space-between" w="100%" pt={1}>
-                      <Text
-                        fontSize="xs"
-                        fontWeight="500"
-                        color={textSecondaryColor}
-                        textTransform="capitalize"
-                        letterSpacing="0.3px"
-                      >
-                        Visiter
-                      </Text>
-                      <Text
-                        fontSize="sm"
-                        fontWeight="500"
-                        color={textHintColor}
-                      >
-                        →
-                      </Text>
-                    </HStack>
-                  </VStack>
-                </Box>
+                {/* Nom de la boutique */}
+                <Text
+                  mt={3}
+                  textAlign="center"
+                  fontSize={{ base: 'sm', md: 'md' }}
+                  fontWeight="600"
+                  color={headingColor}
+                  noOfLines={2}
+                >
+                  {shop.name}
+                </Text>
               </Box>
             )
           })}
@@ -632,49 +592,64 @@ export default function Home() {
         <Box px={{ base: 0, md: 0 }}>
           {/* CTA: montrer que chaque boutique est indépendante + inciter à créer la sienne */}
           <Box px={{ base: 4, md: 6 }} mb={6}>
-  <Box
-    bg={ctaBg}
-    p={{ base: 4, md: 5 }}
-    borderRadius="md"
-    border="1px solid"
-    borderColor={borderColor}
-  >
-    <HStack
-      spacing={4}
-      align={{ base: 'flex-start', md: 'center' }}
-      justify={{ base: 'center', md: 'space-between' }}
-      flexDirection={{ base: 'column', md: 'row' }}
-      textAlign={{ base: 'center', md: 'left' }}
-    >
-      <HStack spacing={3} align="center" justify="center">
-        <Icon as={FiShoppingBag} boxSize={5} color={secondaryTextColor} />
-        <VStack align={{ base: 'center', md: 'start' }} spacing={0}>
-          <Text fontWeight="500" fontSize="sm">
-            Tous les magasins sont indépendants
-          </Text>
-          <Text fontSize="xs" color={secondaryTextColor}>
-            Créez votre boutique et vendez maintenant.
-          </Text>
-        </VStack>
-      </HStack>
-
-      <Button
-        as={RouterLink}
-        to="/seller"
-        colorScheme="brand"
+      <Box
+        bg={ctaBg}
+        p={{ base: 4, md: 5 }}
         borderRadius="md"
-        px={{ base: 5, md: 5 }}
-        py={{ base: 2.5, md: 3 }}
-        fontWeight="500"
-        mt={{ base: 3, md: 0 }}
-        width={{ base: 'full', md: 'auto' }}
-        fontSize="sm"
+        border="1px solid"
+        borderColor={borderColor}
       >
-        Créer ma boutique
-      </Button>
-    </HStack>
-  </Box>
-</Box>
+        <HStack
+          spacing={4}
+          align={{ base: 'flex-start', md: 'center' }}
+          justify={{ base: 'center', md: 'space-between' }}
+          flexDirection={{ base: 'column', md: 'row' }}
+          textAlign={{ base: 'center', md: 'left' }}
+        >
+          <HStack spacing={3} align="center" justify="center">
+            <Icon as={FiShoppingBag} boxSize={5} color={secondaryTextColor} />
+            <VStack align={{ base: 'center', md: 'start' }} spacing={0}>
+              <Heading as="h2" size="md" fontWeight="600">
+                Découvrez des boutiques et produits
+              </Heading>
+              <Text fontSize="xs" color={secondaryTextColor}>
+                Parcourez des centaines de boutiques indépendantes et trouvez des produits uniques près de chez vous.
+              </Text>
+            </VStack>
+          </HStack>
+
+          <HStack spacing={3} mt={{ base: 3, md: 0 }}>
+            <Button
+              as={RouterLink}
+              to="/products"
+              colorScheme="brand"
+              borderRadius="md"
+              px={{ base: 5, md: 5 }}
+              py={{ base: 2.5, md: 3 }}
+              fontWeight="500"
+              width={{ base: 'full', md: 'auto' }}
+              fontSize="sm"
+            >
+              Parcourir le marché
+            </Button>
+
+            <Button
+              as={RouterLink}
+              to="/seller"
+              variant="ghost"
+              borderRadius="md"
+              px={{ base: 5, md: 5 }}
+              py={{ base: 2.5, md: 3 }}
+              fontWeight="500"
+              width={{ base: 'full', md: 'auto' }}
+              fontSize="sm"
+            >
+              Créer ma boutique
+            </Button>
+          </HStack>
+        </HStack>
+      </Box>
+    </Box>
 
 
           {renderShopsView()}
