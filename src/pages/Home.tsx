@@ -606,17 +606,30 @@ export default function Home() {
           flexDirection={{ base: 'column', md: 'row' }}
           textAlign={{ base: 'center', md: 'left' }}
         >
-          <HStack spacing={3} align="center" justify="center">
-            <Icon as={FiShoppingBag} boxSize={5} color={secondaryTextColor} />
-            <VStack align={{ base: 'center', md: 'start' }} spacing={0}>
-              <Heading as="h2" size="md" fontWeight="600">
-                Découvrez des boutiques et produits
-              </Heading>
-              <Text fontSize="xs" color={secondaryTextColor}>
-                Parcourez des centaines de boutiques indépendantes et trouvez des produits uniques près de chez vous.
-              </Text>
-            </VStack>
-          </HStack>
+          <HStack
+  spacing={3}
+  align="center"
+  justify="center"
+  bgImage="url('https://i.pinimg.com/1200x/c5/1a/53/c51a530043a8406b461ca284c14dc0d6.jpg')"
+  bgSize="cover"
+  bgPosition="center"
+  bgRepeat="no-repeat"
+  p={6}
+  borderRadius="lg"
+>
+  <Icon as={FiShoppingBag} boxSize={5} color="white" />
+
+  <VStack align={{ base: 'center', md: 'start' }} spacing={0}>
+    <Heading as="h2" size="md" fontWeight="600" color="white">
+      Boutiques et Produits
+    </Heading>
+
+    <Text fontSize="xs" color="whiteAlpha.800">
+      Explorez des boutiques et produits autour de vous.
+    </Text>
+  </VStack>
+</HStack>
+
 
           <HStack spacing={3} mt={{ base: 3, md: 0 }}>
             <Button
@@ -653,6 +666,14 @@ export default function Home() {
 
 
           {renderShopsView()}
+          {/* Product carousel inside Shops view to mirror the products layout */}
+          <Container id="shops-products-grid" maxW={{ base: '100%', lg: '90%', xl: '85%' }} py={8} px={{ base: 4, md: 6 }}>
+            <Fade in={!isLoading}>
+              <VStack spacing={8} align="stretch">
+                <HeroProductStrip products={visibleProducts} shopsMap={shopsMap} />
+              </VStack>
+            </Fade>
+          </Container>
         </Box>
       )}
 
