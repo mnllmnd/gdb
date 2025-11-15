@@ -45,7 +45,16 @@ export default function ProductEditor() {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [categories, setCategories] = useState<any[]>([])
+  const [categoriesLoading, setCategoriesLoading] = useState<boolean>(true)
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>()
+
+  const canSubmit = (() => {
+    if (loading) return false
+    if (!title || String(title).trim().length === 0) return false
+    if (!Number.isFinite(Number(price))) return false
+    if (!selectedCategory) return false
+    return true
+  })()
 
   const bgForm = useColorModeValue('white', 'black')
   const bgPage = useColorModeValue('black', 'white')
@@ -61,7 +70,12 @@ export default function ProductEditor() {
   const headingSize = useBreakpointValue({ base: 'xl', md: '2xl' })
 
   useEffect(() => {
-    api.categories.list().then(setCategories).catch(console.error)
+    let mounted = true
+    setCategoriesLoading(true)
+    api.categories.list()
+      .then((cats) => { if (!mounted) return; setCategories(Array.isArray(cats) ? cats : []) })
+      .catch((err) => { console.error('Failed to load categories', err); if (mounted) setCategories([]) })
+      .finally(() => { if (mounted) setCategoriesLoading(false) })
 
     if (!id) return
     api.products.list()
@@ -461,23 +475,27 @@ export default function ProductEditor() {
               <FormLabel color={labelColor} fontWeight="600" fontSize="sm" mb={2}>
                 Catégorie
               </FormLabel>
-              <Select
-                placeholder="Choisissez une catégorie"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(Number(e.target.value))}
-               
-                color="white"
-                borderRadius="lg"
-                border="2px solid"
-                borderColor={borderColor}
-                size="lg"
-              >
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </Select>
+              {categoriesLoading ? (
+                <Box py={3} color="gray.500" fontSize="sm">Chargement des catégories...</Box>
+              ) : categories.length === 0 ? (
+                <Box py={3} color="red.500" fontSize="sm">Aucune catégorie disponible. Veuillez réessayer plus tard.</Box>
+              ) : (
+                <Select
+                  placeholder="Choisissez une catégorie"
+                  value={selectedCategory ? String(selectedCategory) : ''}
+                  onChange={(e) => setSelectedCategory(Number(e.target.value))}
+                  borderRadius="lg"
+                  border="2px solid"
+                  borderColor={borderColor}
+                  size="lg"
+                >
+                  {categories.map((cat) => (
+                    <option key={String(cat.id)} value={String(cat.id)}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </Select>
+              )}
             </FormControl>
           </Flex>
 
@@ -657,6 +675,25 @@ export default function ProductEditor() {
             )}
           </FormControl>
 
+          {/* Live preview */}
+          <Box border="1px solid" borderColor={borderColor} borderRadius="lg" p={3} bg={useColorModeValue('gray.50','gray.900')}
+            boxShadow="sm">
+            <HStack spacing={3} align="center">
+              <Box w="64px" h="64px" borderRadius="md" overflow="hidden" bg="gray.100">
+                {images && images.length > 0 ? (
+                  <Image src={images[0].url} alt="Aperçu" objectFit="cover" w="100%" h="100%" />
+                ) : (
+                  <Box w="100%" h="100%" display="flex" alignItems="center" justifyContent="center" color="gray.400">No image</Box>
+                )}
+              </Box>
+              <Box flex="1">
+                <Text fontWeight="600">{title || 'Titre du produit'}</Text>
+                <Text fontSize="sm" color="gray.500">{selectedCategory ? (categories.find(c=>String(c.id)===String(selectedCategory))?.name || '') : 'Catégorie non sélectionnée'}</Text>
+                <Text mt={1} fontWeight="700">{Number.isFinite(Number(price)) ? `${Number(price).toLocaleString()} FCFA` : 'Prix non défini'}</Text>
+              </Box>
+            </HStack>
+          </Box>
+
           <Button
             type="submit"
             colorScheme="blue"
@@ -675,6 +712,7 @@ export default function ProductEditor() {
             transition="all 0.3s ease"
             leftIcon={loading ? undefined : <FiCheck />}
             width="full"
+            isDisabled={!canSubmit}
           >
             {id ? 'Mettre à jour le produit' : 'Créer le produit'}
           </Button>
