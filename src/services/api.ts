@@ -192,6 +192,7 @@ export const api = {
   },
   shops: {
     list: () => request('/shops'),
+    getByOwner: (ownerId: string) => request(`/shops/owner/${encodeURIComponent(ownerId)}`),
     me: (token?: string) => request('/shops/me', { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     save: (payload: any, token?: string) => request('/shops', { method: 'POST', body: JSON.stringify(payload), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     byDomain: (domain: string) => request(`/shops/domain/${encodeURIComponent(domain)}`),

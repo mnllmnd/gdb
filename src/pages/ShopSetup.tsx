@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import {
   Container,
   Heading,
+  NumberInput,
+  NumberInputField,
   FormControl,
   FormLabel,
   Input,
@@ -24,6 +26,9 @@ export default function ShopSetup() {
   const [name, setName] = useState('')
   const [domain, setDomain] = useState('')
   const [description, setDescription] = useState('')
+  const [deliveryPriceLocal, setDeliveryPriceLocal] = useState<number | null>(null)
+  const [deliveryPriceRegional, setDeliveryPriceRegional] = useState<number | null>(null)
+  const [deliveryPriceExpress, setDeliveryPriceExpress] = useState<number | null>(null)
   const [logo, setLogo] = useState<File | null>(null)
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -59,6 +64,9 @@ export default function ShopSetup() {
           setDomain(s.domain || '')
           setDescription(s.description || '')
           setLogoUrl(s.logo_url || null)
+          setDeliveryPriceLocal(typeof s.delivery_price_local === 'number' ? s.delivery_price_local : (s.delivery_price_local ? Number(s.delivery_price_local) : null))
+          setDeliveryPriceRegional(typeof s.delivery_price_regional === 'number' ? s.delivery_price_regional : (s.delivery_price_regional ? Number(s.delivery_price_regional) : null))
+          setDeliveryPriceExpress(typeof s.delivery_price_express === 'number' ? s.delivery_price_express : (s.delivery_price_express ? Number(s.delivery_price_express) : null))
         }
       } catch (err) {
         console.debug('No shop to prefill', err)
@@ -95,6 +103,9 @@ export default function ShopSetup() {
     setLoading(true)
     try {
       const payload: any = { name, domain, description }
+      if (deliveryPriceLocal !== null) payload.delivery_price_local = deliveryPriceLocal
+      if (deliveryPriceRegional !== null) payload.delivery_price_regional = deliveryPriceRegional
+      if (deliveryPriceExpress !== null) payload.delivery_price_express = deliveryPriceExpress
       if (logoUrl) payload.logo_url = logoUrl
       const res = await api.shops.save(payload, token)
       if (res?.token) {
@@ -228,6 +239,27 @@ export default function ShopSetup() {
                 onError={(e: any) => { e.currentTarget.src = SHOP_PLACEHOLDER }}
               />
             )}
+          </FormControl>
+
+          <FormControl>
+            <FormLabel color={labelColor}>Frais de livraison — Dakar (local)</FormLabel>
+            <NumberInput precision={0} min={0} value={deliveryPriceLocal ?? ''} onChange={(v) => setDeliveryPriceLocal(v === '' ? null : Number(v))}>
+              <NumberInputField bg={inputBg} />
+            </NumberInput>
+          </FormControl>
+
+          <FormControl>
+            <FormLabel color={labelColor}>Frais de livraison — Hors Dakar (regional)</FormLabel>
+            <NumberInput precision={0} min={0} value={deliveryPriceRegional ?? ''} onChange={(v) => setDeliveryPriceRegional(v === '' ? null : Number(v))}>
+              <NumberInputField bg={inputBg} />
+            </NumberInput>
+          </FormControl>
+
+          <FormControl>
+            <FormLabel color={labelColor}>Frais de livraison — Express</FormLabel>
+            <NumberInput precision={0} min={0} value={deliveryPriceExpress ?? ''} onChange={(v) => setDeliveryPriceExpress(v === '' ? null : Number(v))}>
+              <NumberInputField bg={inputBg} />
+            </NumberInput>
           </FormControl>
 
           <Button

@@ -20,6 +20,32 @@ const init = async (dbQuery) => {
         CATEGORIES = parsed.categories || []
         CACHE_VERSION = Date.now()
         console.log('✅ Cache snapshot loaded from disk')
+        // If the snapshot does not include delivery columns (older snapshot), refresh from DB
+        const firstShop = (SHOPS || [])[0]
+        if (!firstShop || typeof firstShop.delivery_price_local === 'undefined' || typeof firstShop.owner_display_name === 'undefined') {
+          try {
+            // attempt to refresh from DB to get up-to-date fields
+            await refresh(dbQuery, true)
+            return
+          } catch (e) {
+            console.warn('Failed to refresh cache after loading snapshot', e && e.message)
+            return
+          }
+        }
+        // Ensure owner_display_name exists on loaded shops; try to attach it if missing
+        try {
+          const ownerIds = Array.from(new Set((SHOPS || []).map(s => s.owner_id).filter(Boolean)))
+          if (ownerIds.length > 0) {
+            const usersRes = await dbQuery('SELECT id, display_name FROM users WHERE id = ANY($1)', [ownerIds])
+            const usersMap = {}
+            for (const u of (usersRes.rows || [])) {
+              usersMap[String(u.id)] = u.display_name || null
+            }
+            SHOPS = (SHOPS || []).map(s => ({ ...s, owner_display_name: usersMap[String(s.owner_id)] || null }))
+          }
+        } catch (e) {
+          console.warn('Could not attach owner_display_name to shops loaded from snapshot', e && e.message)
+        }
         return
       }
     }
@@ -40,13 +66,30 @@ const refresh = async (dbQuery, force = false) => {
   try {
     const [pRes, sRes, cRes, imgsRes] = await Promise.all([
       dbQuery('SELECT * FROM products ORDER BY created_at DESC'),
-      dbQuery('SELECT id, owner_id, name, domain, logo_url, description FROM shops ORDER BY created_at DESC'),
+  dbQuery('SELECT id, owner_id, name, domain, logo_url, description, delivery_price_local, delivery_price_regional, delivery_price_express FROM shops ORDER BY created_at DESC'),
       dbQuery('SELECT * FROM categories ORDER BY name'),
       dbQuery('SELECT product_id, url, position FROM product_images ORDER BY position ASC')
     ])
 
     const rawProducts = pRes.rows || []
     SHOPS = sRes.rows || []
+    // Attach owner display_name to each shop for easier frontend rendering
+    try {
+      const ownerIds = Array.from(new Set((SHOPS || []).map(s => s.owner_id).filter(Boolean)))
+      if (ownerIds.length > 0) {
+        const usersRes = await dbQuery('SELECT id, display_name FROM users WHERE id = ANY($1)', [ownerIds])
+        const usersMap = {}
+        for (const u of (usersRes.rows || [])) {
+          usersMap[String(u.id)] = u.display_name || null
+        }
+        SHOPS = (SHOPS || []).map(s => ({ ...s, owner_display_name: usersMap[String(s.owner_id)] || null }))
+      } else {
+        SHOPS = (SHOPS || []).map(s => ({ ...s, owner_display_name: null }))
+      }
+    } catch (err) {
+      console.warn('Could not attach owner display names to shops cache', err && err.message)
+      SHOPS = (SHOPS || []).map(s => ({ ...s, owner_display_name: null }))
+    }
     CATEGORIES = cRes.rows || []
 
     // Map des images par produit

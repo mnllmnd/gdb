@@ -8,7 +8,7 @@ const router = express.Router()
 
 // Create or update shop for seller
 router.post('/', authenticate, async (req, res) => {
-  const { name, domain, logo_url, description } = req.body
+  const { name, domain, logo_url, description, delivery_price_local, delivery_price_regional, delivery_price_express } = req.body
   try {
     // If user is not a seller yet, promote them to seller
     if (req.user.role !== 'seller') {
@@ -21,8 +21,17 @@ router.post('/', authenticate, async (req, res) => {
     const existing = await query('SELECT * FROM shops WHERE owner_id = $1', [req.user.id])
     if (existing.rowCount > 0) {
       const updated = await query(
-        'UPDATE shops SET name=$1, domain=$2, logo_url=$3, description=$4 WHERE owner_id=$5 RETURNING *',
-        [name || existing.rows[0].name, domain || existing.rows[0].domain, logo_url || existing.rows[0].logo_url, description || existing.rows[0].description, req.user.id]
+        'UPDATE shops SET name=$1, domain=$2, logo_url=$3, description=$4, delivery_price_local=$5, delivery_price_regional=$6, delivery_price_express=$7 WHERE owner_id=$8 RETURNING *',
+        [
+          name ?? existing.rows[0].name,
+          domain ?? existing.rows[0].domain,
+          logo_url ?? existing.rows[0].logo_url,
+          description ?? existing.rows[0].description,
+          delivery_price_local ?? existing.rows[0].delivery_price_local,
+          delivery_price_regional ?? existing.rows[0].delivery_price_regional,
+          delivery_price_express ?? existing.rows[0].delivery_price_express,
+          req.user.id,
+        ]
       )
       const out = updated.rows[0]
       res.json(req.newToken ? { ...out, token: req.newToken } : out)
@@ -30,8 +39,17 @@ router.post('/', authenticate, async (req, res) => {
       return
     }
     const r = await query(
-      'INSERT INTO shops (owner_id, name, domain, logo_url, description) VALUES ($1,$2,$3,$4,$5) RETURNING *',
-      [req.user.id, name || null, domain || null, logo_url || null, description || null]
+      'INSERT INTO shops (owner_id, name, domain, logo_url, description, delivery_price_local, delivery_price_regional, delivery_price_express) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
+      [
+        req.user.id,
+        name ?? null,
+        domain ?? null,
+        logo_url ?? null,
+        description ?? null,
+        delivery_price_local ?? null,
+        delivery_price_regional ?? null,
+        delivery_price_express ?? null,
+      ]
     )
     const out = r.rows[0]
     res.json(req.newToken ? { ...out, token: req.newToken } : out)
@@ -110,6 +128,19 @@ router.get('/domain/:domain', async (req, res) => {
   }
 })
 
+// Public: get shop by owner id
+router.get('/owner/:owner_id', async (req, res) => {
+  try {
+    const { owner_id } = req.params
+    const r = await query('SELECT * FROM shops WHERE owner_id = $1', [owner_id])
+    if (r.rowCount === 0) return res.status(404).json({ error: 'Not found' })
+    res.json(r.rows[0])
+  } catch (err) {
+    console.error('Failed to fetch shop by owner', err)
+    res.status(500).json({ error: 'Failed to fetch shop' })
+  }
+})
+
 // Public: list shops
 router.get('/', async (req, res) => {
   try {
@@ -134,7 +165,7 @@ router.get('/search', async (req, res) => {
   const whereClauses = parts.map((_, idx) => `(s.name ILIKE $${idx + 1} OR p.title ILIKE $${idx + 1})`).join(' OR ')
   const params = parts.map((p) => `%${p}%`)
     const r = await query(
-  `SELECT DISTINCT s.id, s.owner_id, s.name, s.domain, s.logo_url, s.description, s.created_at
+  `SELECT DISTINCT s.id, s.owner_id, s.name, s.domain, s.logo_url, s.description, s.delivery_price_local, s.delivery_price_regional, s.delivery_price_express, s.created_at
    FROM shops s
    LEFT JOIN products p ON p.seller_id = s.owner_id
    WHERE ${whereClauses}
@@ -152,7 +183,7 @@ router.get('/search', async (req, res) => {
 router.get('/popular', async (req, res) => {
   try {
     const r = await query(
-      `SELECT s.id, s.owner_id, s.name, s.domain, s.logo_url, s.description, COALESCE(sf.cnt,0)::int AS followers
+      `SELECT s.id, s.owner_id, s.name, s.domain, s.logo_url, s.description, s.delivery_price_local, s.delivery_price_regional, s.delivery_price_express, COALESCE(sf.cnt,0)::int AS followers
        FROM shops s
        LEFT JOIN (
          SELECT shop_id, COUNT(*) as cnt FROM shop_follows GROUP BY shop_id
