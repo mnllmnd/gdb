@@ -9,27 +9,21 @@ import {
   Box,
   Image,
   Center,
-  useBreakpointValue,
   IconButton,
   useColorModeValue,
   HStack,
   Badge,
-  Avatar,
-  CloseButton,
-  Slide,
-  Fade,
   ScaleFade,
   SimpleGrid,
   Icon,
   Card,
   CardBody,
+  Fade,
 } from '@chakra-ui/react'
 import { CloseIcon, ArrowUpIcon, ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons'
-import { FiPackage, FiTrendingUp, FiShoppingBag } from 'react-icons/fi'
+import { FiPackage, FiShoppingBag } from 'react-icons/fi'
 import FilterNav from '../components/FilterNav'
 import AppTutorial from '../components/AppTutorial'
-import ShopCard from '../components/ShopCard'
-import ProductCard from '../components/ProductCard'
 import HeroNike from '../components/HeroNike'
 import HeroProductStrip from '../components/HeroProductStrip'
 import { Link as RouterLink, useLocation } from 'react-router-dom'
@@ -77,11 +71,28 @@ const normalizeImages = (product: Product): string[] => {
 }
 
 // Composant Carrousel Boutiques Style Zara/Nike
-function ShopsCarousel({ shops, title }: { shops: Shop[]; title: string }) {
+function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly title: string }) {
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = React.useState(false)
   const [canScrollRight, setCanScrollRight] = React.useState(true)
   const [isHovered, setIsHovered] = React.useState(false)
+  
+  // Hooks appelés au niveau du composant
+  const shopCardBg = useColorModeValue('white', 'gray.900')
+  const shopCardBorder = useColorModeValue('gray.200', 'gray.800')
+  const shopCardHoverBg = useColorModeValue('gray.50', 'gray.800')
+  const shopCardHoverBorder = useColorModeValue('gray.300', 'gray.600')
+  const shopCardHoverShadow = useColorModeValue('0 8px 16px rgba(0,0,0,0.08)', '0 8px 16px rgba(0,0,0,0.3)')
+  const buttonBg = useColorModeValue('white', 'gray.900')
+  const buttonColor = useColorModeValue('black', 'white')
+  const buttonBorder = useColorModeValue('gray.200', 'gray.700')
+  const imageBg = useColorModeValue('gray.100', 'gray.800')
+  const imageIconColor = useColorModeValue('gray.300', 'gray.600')
+  const badgeBg = useColorModeValue('gray.900', 'gray.100')
+  const badgeColor = useColorModeValue('white', 'gray.900')
+  const headingColor = useColorModeValue('black', 'white')
+  const textSecondaryColor = useColorModeValue('gray.600', 'gray.400')
+  const textHintColor = useColorModeValue('gray.400', 'gray.500')
 
   const checkScroll = () => {
     if (scrollRef.current) {
@@ -118,26 +129,17 @@ function ShopsCarousel({ shops, title }: { shops: Shop[]; title: string }) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* En-tête de section style Nike */}
+      {/* En-tête de section minimaliste */}
       <Box px={{ base: 4, md: 8 }} mb={8}>
         <Heading
           as="h2"
-          fontSize={{ base: '2xl', md: '4xl' }}
-          fontWeight="700"
-          letterSpacing="tight"
-          color="black"
-          textTransform="uppercase"
+          fontSize={{ base: '2xl', md: '3xl' }}
+          fontWeight="600"
+          letterSpacing="-0.4px"
+          color={useColorModeValue('black', 'white')}
+          textTransform="capitalize"
           position="relative"
           display="inline-block"
-          _after={{
-            content: '""',
-            position: 'absolute',
-            bottom: '-8px',
-            left: '0',
-            width: '60px',
-            height: '3px',
-            bg: 'black',
-          }}
         >
           {title}
         </Heading>
@@ -148,26 +150,26 @@ function ShopsCarousel({ shops, title }: { shops: Shop[]; title: string }) {
         {canScrollLeft && (
           <IconButton
             aria-label="Précédent"
-            icon={<ChevronLeftIcon boxSize={6} />}
+            icon={<ChevronLeftIcon boxSize={5} />}
             position="absolute"
             left={-2}
             top="50%"
             transform="translateY(-50%)"
             zIndex={10}
-            bg="white"
-            color="black"
+            bg={buttonBg}
+            color={buttonColor}
             border="1px solid"
-            borderColor="gray.300"
+            borderColor={buttonBorder}
             size="lg"
-            opacity={isHovered ? 0.9 : 0}
+            opacity={isHovered ? 1 : 0}
             _hover={{ 
-              bg: "black", 
-              color: "white",
-              transform: "translateY(-50%) scale(1.1)" 
+              bg: shopCardHoverBg,
+              borderColor: shopCardHoverBorder,
+              transform: "translateY(-50%)"
             }}
             onClick={() => scroll('left')}
-            transition="all 0.3s ease"
-            boxShadow="lg"
+            transition="all 0.2s ease"
+            boxShadow="sm"
             borderRadius="full"
           />
         )}
@@ -175,26 +177,26 @@ function ShopsCarousel({ shops, title }: { shops: Shop[]; title: string }) {
         {canScrollRight && (
           <IconButton
             aria-label="Suivant"
-            icon={<ChevronRightIcon boxSize={6} />}
+            icon={<ChevronRightIcon boxSize={5} />}
             position="absolute"
             right={-2}
             top="50%"
             transform="translateY(-50%)"
             zIndex={10}
-            bg="white"
-            color="black"
+            bg={buttonBg}
+            color={buttonColor}
             border="1px solid"
-            borderColor="gray.300"
+            borderColor={buttonBorder}
             size="lg"
-            opacity={isHovered ? 0.9 : 0}
+            opacity={isHovered ? 1 : 0}
             _hover={{ 
-              bg: "black", 
-              color: "white",
-              transform: "translateY(-50%) scale(1.1)" 
+              bg: shopCardHoverBg,
+              borderColor: shopCardHoverBorder,
+              transform: "translateY(-50%)"
             }}
             onClick={() => scroll('right')}
-            transition="all 0.3s ease"
-            boxShadow="lg"
+            transition="all 0.2s ease"
+            boxShadow="sm"
             borderRadius="full"
           />
         )}
@@ -221,28 +223,29 @@ function ShopsCarousel({ shops, title }: { shops: Shop[]; title: string }) {
                 key={shop.id}
                 to={shopHref}
                 position="relative"
-                bg="ctaBg"
-                borderRadius="lg"
+                bg={shopCardBg}
+                borderRadius="md"
                 overflow="hidden"
                     
-                transition="all 0.3s ease"
+                transition="all 0.2s ease"
                 _hover={{
-                  transform: 'translateY(-8px)',
-                  boxShadow: 'xl',
-                  borderColor: 'gray.200',
+                  transform: 'translateY(-4px)',
+                  boxShadow: shopCardHoverShadow,
                   textDecoration: 'none'
                 }}
                 cursor="pointer"
                 flexShrink={0}
                 w={{ base: '280px', md: '320px' }}
                 minW={{ base: '280px', md: '320px' }}
+                border="1px solid"
+                borderColor={shopCardBorder}
               >
                 {/* Container image */}
                 <Box
                   position="relative"
                   w="100%"
                   h="280px"
-                  bg="ctabg"
+                  bg={imageBg}
                   overflow="hidden"
                 >
                   {shop.logo_url ? (
@@ -254,46 +257,46 @@ function ShopsCarousel({ shops, title }: { shops: Shop[]; title: string }) {
                       h="100%"
                       p={4}
                       transition="transform 0.3s ease"
-                      _hover={{ transform: 'scale(1.08)' }}
+                      _hover={{ transform: 'scale(1.05)' }}
                     />
                   ) : (
-                    <Center h="100%" bg="gray.100">
+                    <Center h="100%" bg={imageBg}>
                       <Text
-                        fontSize="6xl"
-                        fontWeight="900"
-                        color="gray.400"
+                        fontSize="5xl"
+                        fontWeight="700"
+                        color={imageIconColor}
                         textTransform="uppercase"
-                        opacity={0.5}
+                        opacity={0.6}
                       >
                         {shop.name?.charAt(0) || '?'}
                       </Text>
                     </Center>
                   )}
                   
-                  {/* Overlay au hover */}
+                  {/* Overlay subtil au hover */}
                   <Box
                     position="absolute"
                     inset={0}
                     bg="black"
                     opacity={0}
-                    transition="opacity 0.3s ease"
-                    _hover={{ opacity: 0.1 }}
+                    transition="opacity 0.2s ease"
+                    _groupHover={{ opacity: 0.05 }}
                   />
                   
                   {/* Badge followers en overlay */}
                   {shop.followers && shop.followers > 0 && (
                     <Badge
                       position="absolute"
-                      top={4}
-                      right={4}
-                      bg="black"
-                      color="white"
-                      px={3}
+                      top={3}
+                      right={3}
+                      bg={badgeBg}
+                      color={badgeColor}
+                      px={2.5}
                       py={1}
                       borderRadius="full"
                       fontSize="xs"
                       fontWeight="600"
-                      letterSpacing="wide"
+                      letterSpacing="0.5px"
                       zIndex={2}
                     >
                       {shop.followers.toLocaleString()}
@@ -302,37 +305,37 @@ function ShopsCarousel({ shops, title }: { shops: Shop[]; title: string }) {
                 </Box>
 
                 {/* Informations de la boutique */}
-                <Box p={6}>
-                  <VStack spacing={3} align="start">
+                <Box p={5}>
+                  <VStack spacing={2} align="start">
                     {/* Nom de la boutique */}
                     <Heading
                       as="h3"
-                      fontSize="xl"
-                      fontWeight="700"
-                      color="black"
-                      letterSpacing="tight"
-                      textTransform="uppercase"
-                      lineHeight="1.2"
+                      fontSize="base"
+                      fontWeight="600"
+                      color={headingColor}
+                      letterSpacing="-0.2px"
+                      textTransform="capitalize"
+                      lineHeight="1.3"
                       noOfLines={2}
                     >
                       {shop.name}
                     </Heading>
 
                     {/* Description / CTA */}
-                    <HStack justify="space-between" w="100%" pt={2}>
+                    <HStack justify="space-between" w="100%" pt={1}>
                       <Text
-                        fontSize="sm"
-                        fontWeight="600"
-                        color="gray.600"
-                        textTransform="uppercase"
-                        letterSpacing="wide"
+                        fontSize="xs"
+                        fontWeight="500"
+                        color={textSecondaryColor}
+                        textTransform="capitalize"
+                        letterSpacing="0.3px"
                       >
-                        Visiter la boutique
+                        Visiter
                       </Text>
                       <Text
-                        fontSize="lg"
-                        fontWeight="700"
-                        color="black"
+                        fontSize="sm"
+                        fontWeight="500"
+                        color={textHintColor}
                       >
                         →
                       </Text>
@@ -354,7 +357,6 @@ export default function Home() {
   const [shopsMap, setShopsMap] = React.useState<Record<string, any>>({})
   const [products, setProducts] = React.useState<Product[]>([])
   const [categories, setCategories] = React.useState<Category[]>([])
-  const [categorizedProducts, setCategorizedProducts] = React.useState<Record<number, Product[]>>({})
   
   const [currentView, setCurrentView] = React.useState<'shops' | 'products'>(() => {
     const savedView = localStorage.getItem('homeView')
@@ -370,14 +372,13 @@ export default function Home() {
   const [isLoading, setIsLoading] = React.useState(true)
   const [showScrollTop, setShowScrollTop] = React.useState(false)
 
-  const [showWelcome, setShowWelcome] = React.useState(false)
   const [welcomeDismissed, setWelcomeDismissed] = React.useState(() => {
-    try { return typeof window !== 'undefined' && localStorage.getItem('welcomeDismissed') === '1' } catch { return false }
+    try { return typeof globalThis.window !== 'undefined' && globalThis.localStorage?.getItem('welcomeDismissed') === '1' } catch { return false }
   })
 
   const currentUser = React.useMemo(() => {
     try {
-      const u = typeof window !== 'undefined' ? localStorage.getItem('user') : null
+      const u = typeof globalThis.window !== 'undefined' ? globalThis.localStorage?.getItem('user') : null
       return u ? JSON.parse(u) : null
     } catch {
       return null
@@ -386,16 +387,16 @@ export default function Home() {
 
   React.useEffect(() => {
     const handleBeforeUnload = () => {
-      localStorage.setItem('homeScroll', String(window.scrollY))
+      globalThis.localStorage?.setItem('homeScroll', String(globalThis.scrollY || 0))
     }
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+    globalThis.addEventListener?.('beforeunload', handleBeforeUnload)
+    return () => globalThis.removeEventListener?.('beforeunload', handleBeforeUnload)
   }, [])
 
   React.useEffect(() => {
-    const savedScroll = localStorage.getItem('homeScroll')
+    const savedScroll = globalThis.localStorage?.getItem('homeScroll')
     if (savedScroll) {
-      window.scrollTo(0, Number(savedScroll))
+      globalThis.scrollTo?.(0, Number(savedScroll))
     }
   }, [])
   
@@ -403,8 +404,8 @@ export default function Home() {
   const location = useLocation()
   React.useEffect(() => {
     try {
-      const state = (location && (location.state as any)) || {}
-      const focusId = state.focusProductId || (state.from && state.from.focusProductId) || null
+      const state = (location?.state as any) || {}
+      const focusId = state.focusProductId || state.from?.focusProductId || null
       if (!focusId) return
       // Try to find the element and jump to it immediately (no smooth scroll)
       let attempts = 0
@@ -413,41 +414,57 @@ export default function Home() {
         attempts += 1
         const el = document.getElementById(`product-${String(focusId)}`)
         if (el) {
-            try {
-            el.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' })
-            try { el.setAttribute('tabindex', '-1'); (el as HTMLElement).focus() } catch (e) {}
-            try { el.animate([{ boxShadow: '0 0 0px rgba(0,0,0,0)' }, { boxShadow: '0 0 14px rgba(0,150,136,0.28)' }, { boxShadow: '0 0 0px rgba(0,0,0,0)' }], { duration: 900 }) } catch (e) {}
-          } catch (e) {}
+          el.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
+          try {
+            el.setAttribute('tabindex', '-1');
+            (el as HTMLElement).focus();
+          } catch {
+            // ignore focus error
+          }
+          try { 
+            el.animate(
+              [
+                { boxShadow: '0 0 0px rgba(0,0,0,0)' }, 
+                { boxShadow: '0 0 14px rgba(0,150,136,0.28)' }, 
+                { boxShadow: '0 0 0px rgba(0,0,0,0)' }
+              ], 
+              { duration: 900 }
+            ) 
+          } catch {
+            // ignore animation error
+          }
         } else if (attempts < maxAttempts) {
           setTimeout(tryJump, 60)
         }
       }
       tryJump()
-    } catch (e) {
-      // ignore
+    } catch {
+      // ignore scroll error
     }
   }, [location])
 
   // Detect Pinterest mode (url or localStorage) so we can adjust layouts
   const isPinterestMode = React.useMemo(() => {
     try {
-      const params = new URLSearchParams(window.location.search)
+      const params = new URLSearchParams(globalThis.location?.search || '')
       if (params.get('view') === 'pinterest') return true
-      const saved = typeof window !== 'undefined' ? (localStorage.getItem('home:view') || localStorage.getItem('products:view')) : null
+      const saved = typeof globalThis.window !== 'undefined' ? (globalThis.localStorage?.getItem('home:view') || globalThis.localStorage?.getItem('products:view')) : null
       return saved === 'pinterest'
-    } catch (e) {
+    } catch {
       return false
     }
   }, [location.search])
  
   const sectionBg = useColorModeValue('white', 'gray.800')
-  const categoryBg = useColorModeValue('white', 'brand.900')
   const textColor = useColorModeValue('black', 'white')
   const borderColor = useColorModeValue('gray.200', 'gray.600')
   const secondaryTextColor = useColorModeValue('gray.600', 'gray.400')
   const ctaBg = useColorModeValue('white', 'black')
   const ctaColor = useColorModeValue('black', 'white')
-  const bgColor = useColorModeValue('gray.50', 'gray.700')
+  const hoverBgVar = useColorModeValue('gray.100', 'gray.800')
+  const productBgVar = useColorModeValue('white', 'gray.900')
+  const productBorderVar = useColorModeValue('gray.200', 'gray.800')
+  const productTextColorVar = useColorModeValue('black', 'white')
 
   // Products visible according to selected category filter
   const visibleProducts = React.useMemo(() => {
@@ -477,19 +494,6 @@ export default function Home() {
         setCategories(categoriesData)
         setProducts(productsData)
         setPopularShops(popularData || [])
-        
-        const productsByCategory: Record<number, Product[]> = {}
-        if (productsData) {
-          for (const product of productsData as Product[]) {
-            if (!product?.id) continue
-            const categoryId = product.category_id ?? 0
-            if (!productsByCategory[categoryId]) {
-              productsByCategory[categoryId] = []
-            }
-            productsByCategory[categoryId].push(product)
-          }
-        }
-        setCategorizedProducts(productsByCategory)
       } catch (err) {
         console.error('Failed to load data', err)
         setShops([])
@@ -502,21 +506,21 @@ export default function Home() {
     loadData()
   }, [])
 
-  // Welcome popup: show once for logged-in users unless dismissed
   React.useEffect(() => {
+    // Welcome popup: show once for logged-in users unless dismissed
     if (!currentUser) return
     if (welcomeDismissed) return
-    const t = setTimeout(() => setShowWelcome(true), 800)
-    return () => clearTimeout(t)
+    // Popup removed - minimaliste approach
   }, [currentUser, welcomeDismissed])
 
   React.useEffect(() => {
     const onScroll = () => {
-      setShowScrollTop(window.scrollY > 300)
+      const scrollY = globalThis.scrollY ?? 0
+      setShowScrollTop(scrollY > 300)
     }
-    window.addEventListener('scroll', onScroll)
+    globalThis.addEventListener?.('scroll', onScroll)
     onScroll()
-    return () => window.removeEventListener('scroll', onScroll)
+    return () => globalThis.removeEventListener?.('scroll', onScroll)
   }, [])
 
   const handleSearch = React.useCallback(async (searchQuery: string) => {
@@ -560,7 +564,7 @@ export default function Home() {
       if (!map[cid]) map[cid] = []
       map[cid].push(p)
     }
-    setCategorizedProducts(map)
+    // map is used for categorization but not stored
   }, [products])
 
   React.useEffect(() => {
@@ -631,7 +635,7 @@ export default function Home() {
   <Box
     bg={ctaBg}
     p={{ base: 4, md: 5 }}
-    borderRadius="lg"
+    borderRadius="md"
     border="1px solid"
     borderColor={borderColor}
   >
@@ -642,14 +646,14 @@ export default function Home() {
       flexDirection={{ base: 'column', md: 'row' }}
       textAlign={{ base: 'center', md: 'left' }}
     >
-      <HStack spacing={4} align="center" justify="center">
-        <Icon as={FiShoppingBag} boxSize={6} />
+      <HStack spacing={3} align="center" justify="center">
+        <Icon as={FiShoppingBag} boxSize={5} color={secondaryTextColor} />
         <VStack align={{ base: 'center', md: 'start' }} spacing={0}>
-          <Text fontWeight="500">
-            Toutes les boutiques sont indépendantes
+          <Text fontWeight="500" fontSize="sm">
+            Tous les magasins sont indépendants
           </Text>
-          <Text fontSize="sm" color={secondaryTextColor}>
-            Créez votre boutique et commencez à vendre dès aujourd'hui.
+          <Text fontSize="xs" color={secondaryTextColor}>
+            Créez votre boutique et vendez maintenant.
           </Text>
         </VStack>
       </HStack>
@@ -658,12 +662,13 @@ export default function Home() {
         as={RouterLink}
         to="/seller"
         colorScheme="brand"
-        borderRadius="full"
-        px={{ base: 6, md: 6 }}
-        py={{ base: 3, md: 4 }}
-        fontWeight={400}
-        mt={{ base: 4, md: 0 }}
+        borderRadius="md"
+        px={{ base: 5, md: 5 }}
+        py={{ base: 2.5, md: 3 }}
+        fontWeight="500"
+        mt={{ base: 3, md: 0 }}
         width={{ base: 'full', md: 'auto' }}
+        fontSize="sm"
       >
         Créer ma boutique
       </Button>
@@ -682,22 +687,23 @@ export default function Home() {
   {/* Bande immersive de vrais produits (unique) */}
 
       {/* Two-column promo tiles */}
-      <Box as="section" px={{ base: 4, md: 6 }} py={8}>
-        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+      <Box as="section" px={{ base: 4, md: 6 }} py={6}>
+        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3}>
           {(visibleProducts || []).slice(0, 2).map((p) => {
             const imgs = normalizeImages(p as any)
-            const img = imgs && imgs.length ? imgs[0] : '/img/b.jfif'
-            const shop = ((shopsMap.byId && shopsMap.byId[String((p as any).shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String((p as any).seller_id)])) || null
+            const img = imgs?.length ? imgs[0] : '/img/b.jfif'
+            const shop = (shopsMap?.byId?.[String((p as any).shop_id)] || shopsMap?.byOwner?.[String((p as any).seller_id)]) || null
             const shopDomain = shop?.domain || shop?.name
             const target = shopDomain ? `/shop/${shopDomain}?product=${(p as any).id}` : `/products/${(p as any).id}`
+            const hoverBg = hoverBgVar
 
             return (
               <Box
                 key={(p as any).id}
                 position="relative"
-                borderRadius="xl"
+                borderRadius="md"
                 overflow="hidden"
-                minH={{ base: '220px', md: '420px' }}
+                minH={{ base: '200px', md: '360px' }}
               >
                 <Image
                   src={String(img)}
@@ -710,53 +716,56 @@ export default function Home() {
                 <Box
                   position="absolute"
                   inset={0}
-                  bgGradient="linear(to-b, rgba(0,0,0,0.0), rgba(0,0,0,0.55))"
+                  bgGradient="linear(to-b, rgba(0,0,0,0.0), rgba(0,0,0,0.4))"
                 />
                 
                 <Box
                   position="absolute"
-                  left={{ base: 4, md: 12 }}
-                  bottom={{ base: 6, md: 12 }}
+                  left={{ base: 3, md: 8 }}
+                  bottom={{ base: 4, md: 8 }}
                   color="white"
                   zIndex={2}
                   maxW={{ md: 'lg' }}
                 >
                   <Text
-                    fontSize="sm"
-                    textTransform="uppercase"
-                    letterSpacing="wider"
+                    fontSize="xs"
+                    textTransform="capitalize"
+                    letterSpacing="0.5px"
                     color="white"
+                    fontWeight="500"
                   >
                     {(p as any).category_name || ''}
                   </Text>
 
                   <Heading
-                    size={{ base: 'lg', md: '2xl' }}
-                    mt={2}
+                    size={{ base: 'md', md: 'lg' }}
+                    mt={1}
                     color="white"
+                    fontWeight="600"
+                    letterSpacing="-0.3px"
                   >
                     {p.title || (p as any).name}
                   </Heading>
 
                   <Button
-                          mt={4}
-                          as={RouterLink}
-                          to={target}
-                          state={{ from: { pathname: location?.pathname || '/', focusProductId: String((p as any).id) } }}
-                          bg={ctaBg}
-                          color={ctaColor}
-                          borderRadius="none"
-                          px={6}
-                          py={4}
-                          fontWeight={600}
-                           size="lg"
-                          textTransform="uppercase"
-                          letterSpacing="0.05em"
-                          fontSize="sm"
-                          _hover={{ bg: 'gray.100' }}
-                        >
-                          Voir la Boutique
-                        </Button>
+                    mt={3}
+                    as={RouterLink}
+                    to={target}
+                    state={{ from: { pathname: location?.pathname || '/', focusProductId: String((p as any).id) } }}
+                    bg={ctaBg}
+                    color={ctaColor}
+                    borderRadius="md"
+                    px={5}
+                    py={2}
+                    fontWeight="500"
+                    size="sm"
+                    textTransform="capitalize"
+                    letterSpacing="0.3px"
+                    fontSize="xs"
+                    _hover={{ bg: hoverBg }}
+                  >
+                    Voir
+                  </Button>
                 </Box>
               </Box>
             )
@@ -805,14 +814,23 @@ export default function Home() {
 
       {/* Extra promo tiles moved here: render remaining products after the carousel */}
       {(visibleProducts || []).slice(2).length > 0 && (
-        <Box as="section" px={{ base: 4, md: 6 }} py={8}>
-          <SimpleGrid columns={{ base: 2, md: 2 }} spacing={4}>
+        <Box as="section" px={{ base: 4, md: 6 }} py={6}>
+          <SimpleGrid columns={{ base: 2, md: 4 }} spacing={3}>
             {(visibleProducts || []).slice(2).map((p) => {
               const imgs = normalizeImages(p as any)
-              const img = imgs && imgs.length ? imgs[0] : '/img/b.jfif'
-              const shop = ((shopsMap.byId && shopsMap.byId[String((p as any).shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String((p as any).seller_id)])) || null
+              const img = imgs?.length ? imgs[0] : '/img/b.jfif'
+              const shop = (shopsMap?.byId?.[String((p as any).shop_id)] || shopsMap?.byOwner?.[String((p as any).seller_id)]) || null
               const shopDomain = shop?.domain || shop?.name
               const target = shopDomain ? `/shop/${shopDomain}?product=${(p as any).id}` : `/products/${(p as any).id}`
+              
+              // Format price minimaliste
+              const price = (p as any).price || (p as any).amount
+              const numPrice = typeof price === 'number' ? price : (typeof price === 'string' ? Number(price) : null)
+              const formattedPrice = numPrice ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(numPrice) : null
+              
+              const productBg = productBgVar
+              const productBorder = productBorderVar
+              const productTextColor = productTextColorVar
 
               return (
                 <Box
@@ -821,25 +839,53 @@ export default function Home() {
                   to={target}
                   state={{ from: { pathname: location?.pathname || '/', focusProductId: String((p as any).id), isPinterestMode } }}
                   position="relative"
-                  borderRadius="xl"
                   overflow="hidden"
-                  minH={{ base: '220px', md: '420px' }}
+                  minH={{ base: '180px', md: '280px' }}
+                  display="flex"
+                  flexDirection="column"
+                  borderRadius="md"
+                  bg={productBg}
+                  _hover={{ transform: 'translateY(-2px)', boxShadow: 'sm' }}
+                  role="link"
+                  transition="all 0.2s ease"
+                  border="1px solid"
+                  borderColor={productBorder}
                 >
-                  <Image
-                    src={String(img)}
-                    alt={String(p.title || (p as any).name || 'product')}
-                    objectFit="cover"
-                    w="100%"
-                    h="100%"
-                  />
-                  
-                  <Box
-                    position="absolute"
-                    inset={0}
-                    bgGradient="linear(to-b, rgba(0,0,0,0.0), rgba(0,0,0,0.55))"
-                  />
+                  <Box position="relative" flex="1" overflow="hidden">
+                    <Image
+                      src={String(img)}
+                      alt={String(p.title || (p as any).name || 'product')}
+                      objectFit="cover"
+                      w="100%"
+                      h="100%"
+                    />
+                    
+                    <Box
+                      position="absolute"
+                      inset={0}
+                      bgGradient="linear(to-b, rgba(0,0,0,0.0), rgba(0,0,0,0.1))"
+                    />
+                  </Box>
 
-                  {/* Image is clickable (RouterLink) — removed the 'Voir la Boutique' button as requested */}
+                  {/* Price section minimaliste */}
+                  {formattedPrice && (
+                    <Box 
+                      p={2.5} 
+                      pt={2} 
+                      borderTop="1px solid" 
+                      borderColor={productBorder}
+                      bg={productBg}
+                    >
+                      <Text 
+                        fontSize="xs" 
+                        fontWeight="600" 
+                        color={productTextColor}
+                        letterSpacing="-0.2px"
+                      >
+                        {formattedPrice} FCFA
+                      </Text>
+                    </Box>
+                  )}
                 </Box>
               )
             })}
@@ -856,15 +902,15 @@ export default function Home() {
         bottom={{ base: 80, md: 12 }}
         zIndex={2000}
         borderRadius="full"
-        boxShadow="xl"
+        boxShadow="sm"
         size="lg"
         display={showScrollTop ? 'inline-flex' : 'none'}
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         colorScheme="brand"
-        transition="all 0.3s"
+        transition="all 0.2s"
         _hover={{
-          transform: 'translateY(-4px)',
-          boxShadow: '2xl'
+          transform: 'translateY(-2px)',
+          boxShadow: 'md'
         }}
       />
     </Box>
@@ -872,46 +918,48 @@ export default function Home() {
 }
 
 function NoResults({ message, onClear }: { readonly message: string; readonly onClear: () => void }) {
-  const textColor = useColorModeValue('gray.700', 'gray.400')
-  const bgColor = useColorModeValue('white', 'gray.800')
+  const textColor = useColorModeValue('gray.700', 'gray.300')
+  const bgColor = useColorModeValue('white', 'gray.900')
+  const containerBg = useColorModeValue('gray.100', 'gray.800')
+  const containerBorder = useColorModeValue('gray.300', 'gray.700')
   
   return (
-    <>
-      <Center py={16}>
+    <Center py={16}>
       <Card
         maxW="md"
         bg={bgColor}
-        borderRadius="2xl"
-        boxShadow="xl"
+        borderRadius="md"
+        boxShadow="sm"
         border="1px solid"
-        borderColor={useColorModeValue('gray.200', 'gray.700')}
+        borderColor={useColorModeValue('gray.200', 'gray.800')}
       >
-        <CardBody p={10}>
-          <VStack spacing={5} textAlign="center">
+        <CardBody p={8}>
+          <VStack spacing={4} textAlign="center">
             <Box
-              p={5}
-              bg={useColorModeValue('gray.50', 'gray.700')}
+              p={4}
+              bg={containerBg}
               borderRadius="full"
-              border="2px dashed"
-              borderColor={useColorModeValue('gray.300', 'gray.600')}
+              border="1px solid"
+              borderColor={containerBorder}
             >
-              <Icon as={FiPackage} boxSize={12} color="gray.400" />
+              <Icon as={FiPackage} boxSize={10} color={useColorModeValue('gray.400', 'gray.500')} />
             </Box>
-            <VStack spacing={2}>
-              <Heading size="md" color={textColor}>
+            <VStack spacing={1.5}>
+              <Heading size="md" color={textColor} fontWeight="600">
                 {message}
               </Heading>
-              <Text color={useColorModeValue('gray.600', 'gray.500')} fontSize="sm">
-                Essayez de modifier vos critères de recherche
+              <Text color={useColorModeValue('gray.600', 'gray.400')} fontSize="sm">
+                Modifiez vos critères de recherche
               </Text>
             </VStack>
             <Button
               colorScheme="brand"
-              size="lg"
-              borderRadius="full"
+              size="md"
+              borderRadius="md"
               onClick={onClear}
               rightIcon={<CloseIcon />}
-              fontWeight="600"
+              fontWeight="500"
+              fontSize="sm"
             >
               Réinitialiser
             </Button>
@@ -919,6 +967,5 @@ function NoResults({ message, onClear }: { readonly message: string; readonly on
         </CardBody>
       </Card>
     </Center>
-    </>
   )
 }

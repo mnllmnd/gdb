@@ -12,8 +12,8 @@ const router = express.Router()
 router.get('/', async (req, res) => {
   try {
     // Serve from in-memory cache for speed
-  const offset = Number.parseInt(req.query.offset || '0', 10)
-  const limit = Number.parseInt(req.query.limit || '100', 10)
+    const offset = Number.parseInt(req.query.offset || '0', 10)
+    const limit = Number.parseInt(req.query.limit || '100', 10)
     const list = cache.listProducts({ offset, limit })
     // If cache is empty (e.g. stale snapshot or wasn't initialized), fall back to DB
     if (!list || list.length === 0) {
@@ -25,19 +25,19 @@ router.get('/', async (req, res) => {
           const ids = rows.map(r => r.id)
           if (ids.length) {
             const imgs = await query('SELECT product_id, url, position FROM product_images WHERE product_id = ANY($1)', [ids])
-              const map = {}
-              ;(imgs.rows || []).forEach(ir => {
-                if (!ir || !ir.product_id) return
-                if (!map[ir.product_id]) map[ir.product_id] = []
-                if (ir.url) map[ir.product_id].push(ir.url)
-              })
-              // deduplicate while preserving order
-              for (const k of Object.keys(map)) {
-                map[k] = Array.from(new Set(map[k].filter(Boolean)))
-              }
-              for (const p of rows) {
-                p.images = map[p.id] && map[p.id].length ? map[p.id] : (p.image_url ? [p.image_url] : [])
-              }
+            const map = {}
+            ;(imgs.rows || []).forEach(ir => {
+              if (!ir || !ir.product_id) return
+              if (!map[ir.product_id]) map[ir.product_id] = []
+              if (ir.url) map[ir.product_id].push(ir.url)
+            })
+            // deduplicate while preserving order
+            for (const k of Object.keys(map)) {
+              map[k] = Array.from(new Set(map[k].filter(Boolean)))
+            }
+            for (const p of rows) {
+              p.images = map[p.id] && map[p.id].length ? map[p.id] : (p.image_url ? [p.image_url] : [])
+            }
           }
         } catch (e) {
           // non-fatal
@@ -93,12 +93,12 @@ router.post('/', authenticate, requireRole('seller'), async (req, res) => {
     // ensure the seller has a shop before allowing product creation
     const shopCheck = await query('SELECT id FROM shops WHERE owner_id = $1', [req.user.id])
     if (shopCheck.rowCount === 0) return res.status(400).json({ error: 'You must create a shop before adding products' })
-  // Clean inputs to avoid mojibake and strip control chars, and normalize UTF-8
-  const cleanedTitle = cleanText(title)
-  const cleanedDescription = cleanText(description)
+    // Clean inputs to avoid mojibake and strip control chars, and normalize UTF-8
+    const cleanedTitle = cleanText(title)
+    const cleanedDescription = cleanText(description)
 
-  // Validate required fields before sending to the DB to provide clearer errors and avoid DB NOT NULL failures
-  if (!cleanedTitle) return res.status(400).json({ error: 'title is required' })
+    // Validate required fields before sending to the DB to provide clearer errors and avoid DB NOT NULL failures
+    if (!cleanedTitle) return res.status(400).json({ error: 'title is required' })
     // price must be provided and a finite number
     if (!Number.isFinite(Number(price))) return res.status(400).json({ error: 'price is required and must be a number' })
     const parsedPrice = Number(price)
@@ -186,49 +186,49 @@ router.put('/:id', authenticate, async (req, res) => {
     const p = product.rows[0]
     if (req.user.role !== 'admin' && p.seller_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' })
     // Use nullish coalescing so falsy values like 0 are preserved correctly
-  const qty = typeof quantity !== 'undefined' ? (Number.isFinite(Number(quantity)) ? Math.max(0, parseInt(Number(quantity), 10)) : p.quantity ?? 0) : p.quantity
+    const qty = typeof quantity !== 'undefined' ? (Number.isFinite(Number(quantity)) ? Math.max(0, parseInt(Number(quantity), 10)) : p.quantity ?? 0) : p.quantity
 
-  // Clean any provided title/description before saving
-  const cleanedTitle = typeof title !== 'undefined' ? cleanText(title) : undefined
-  const cleanedDescription = typeof description !== 'undefined' ? cleanText(description) : undefined
+    // Clean any provided title/description before saving
+    const cleanedTitle = typeof title !== 'undefined' ? cleanText(title) : undefined
+    const cleanedDescription = typeof description !== 'undefined' ? cleanText(description) : undefined
 
-  // If the client provided a price, validate it (don't allow explicit null/invalid values to reach the DB)
+    // If the client provided a price, validate it (don't allow explicit null/invalid values to reach the DB)
     let finalPrice = p.price
     if (typeof price !== 'undefined') {
       if (!Number.isFinite(Number(price))) return res.status(400).json({ error: 'price must be a number' })
       finalPrice = Number(price)
     }
 
-  // Traiter le prix original et la réduction
-  let finalOriginalPrice = p.original_price
-  if (typeof original_price !== 'undefined') {
-    if (!Number.isFinite(Number(original_price))) return res.status(400).json({ error: 'original_price must be a number' })
-    finalOriginalPrice = Number(original_price)
-  }
-
-  let finalDiscount = p.discount ?? 0
-  if (typeof discount !== 'undefined') {
-    if (!Number.isFinite(Number(discount)) || Number(discount) < 0 || Number(discount) > 100) {
-      return res.status(400).json({ error: 'discount must be a number between 0 and 100' })
+    // Traiter le prix original et la réduction
+    let finalOriginalPrice = p.original_price
+    if (typeof original_price !== 'undefined') {
+      if (!Number.isFinite(Number(original_price))) return res.status(400).json({ error: 'original_price must be a number' })
+      finalOriginalPrice = Number(original_price)
     }
-    finalDiscount = Number(discount)
-  }
 
-  const params = [
-    cleanedTitle ?? p.title,
-    cleanedDescription ?? p.description,
-    finalPrice,
-    finalOriginalPrice ?? finalPrice,
-    finalDiscount,
-    image_url ?? p.image_url,
-    category_id ?? p.category_id,
-    qty,
-    id
-  ]
-  console.debug('UPDATE params:', params)
-  const updated = await query(
-    'UPDATE products SET title=$1, description=$2, price=$3, original_price=$4, discount=$5, image_url=$6, category_id=$7, quantity=$8 WHERE id=$9 RETURNING *',
-    params
+    let finalDiscount = p.discount ?? 0
+    if (typeof discount !== 'undefined') {
+      if (!Number.isFinite(Number(discount)) || Number(discount) < 0 || Number(discount) > 100) {
+        return res.status(400).json({ error: 'discount must be a number between 0 and 100' })
+      }
+      finalDiscount = Number(discount)
+    }
+
+    const params = [
+      cleanedTitle ?? p.title,
+      cleanedDescription ?? p.description,
+      finalPrice,
+      finalOriginalPrice ?? finalPrice,
+      finalDiscount,
+      image_url ?? p.image_url,
+      category_id ?? p.category_id,
+      qty,
+      id
+    ]
+    console.debug('UPDATE params:', params)
+    const updated = await query(
+      'UPDATE products SET title=$1, description=$2, price=$3, original_price=$4, discount=$5, image_url=$6, category_id=$7, quantity=$8 WHERE id=$9 RETURNING *',
+      params
     )
     const updatedProduct = updated.rows[0]
     // Recompute embedding for updated product (best-effort)
@@ -259,7 +259,7 @@ router.put('/:id', authenticate, async (req, res) => {
       } catch (e) { console.warn('Failed to update product images', e && e.message) }
     } else {
       // attempt to attach existing images
-        try {
+      try {
         const imgs = await query('SELECT url FROM product_images WHERE product_id = $1 ORDER BY position ASC', [id])
         const urls = (imgs.rows || []).map(r => r.url).filter(Boolean)
         updatedProduct.images = Array.from(new Set(urls))
@@ -278,62 +278,94 @@ router.put('/:id', authenticate, async (req, res) => {
   }
 })
 
-// Get similar products using pgvector nearest neighbor search
+// Get similar products using embeddings (pgvector)
 router.get('/:id/similar', async (req, res) => {
   const { id } = req.params
   const limit = Number.parseInt(req.query.limit || '8', 10)
-  try {
-    const p = await query('SELECT embedding FROM products WHERE id = $1', [id])
-    if (p.rowCount === 0) return res.status(404).json({ error: 'Not found' })
-    const embRow = p.rows[0]
-    let emb = embRow && embRow.embedding
-    if (!emb) {
-      // No stored embedding; try to compute on the fly (best-effort)
-      try {
-        const prod = await query('SELECT title, description FROM products WHERE id = $1', [id])
-        const prodRow = prod.rows[0]
-        const text = `${prodRow?.title || ''}\n\n${prodRow?.description || ''}`
-        const computed = await computeEmbedding(text)
-        if (computed && computed.length) emb = computed
-        // do not persist here to avoid blocking; the create/update paths persist
-      } catch (e) {
-        console.warn('Failed to compute embedding on the fly', e && e.message)
-      }
-    }
-    if (!emb) return res.json([])
-    // emb might be returned as string from PG (like "[0.1,0.2]") or an array
-    let embLit = null
-    if (Array.isArray(emb)) embLit = '[' + emb.map(n => Number(n)).join(',') + ']'
-    else if (typeof emb === 'string') embLit = emb
-    else embLit = String(emb)
 
-    // Query nearest neighbors using pgvector operator <->
-    try {
-      const r = await query(
-        'SELECT * FROM products WHERE id != $1 AND embedding IS NOT NULL ORDER BY embedding <-> $2::vector LIMIT $3',
-        [id, embLit, limit]
-      )
-      const rows = r.rows || []
-      // attach images for those products similar to other endpoints
-      if (rows.length) {
-        try {
-          const ids = rows.map(r => r.id)
-          const imgs = await query('SELECT product_id, url, position FROM product_images WHERE product_id = ANY($1)', [ids])
-          const map = {}
-          ;(imgs.rows || []).forEach(ir => {
-            if (!ir || !ir.product_id) return
-            if (!map[ir.product_id]) map[ir.product_id] = []
-            if (ir.url) map[ir.product_id].push(ir.url)
-          })
-          for (const k of Object.keys(map)) map[k] = Array.from(new Set(map[k].filter(Boolean)))
-          for (const p of rows) p.images = map[p.id] && map[p.id].length ? map[p.id] : (p.image_url ? [p.image_url] : [])
-        } catch (e) { /* ignore image attachment errors */ }
+  try {
+    // Récupérer l'embedding du produit courant
+    const prodR = await query('SELECT embedding, category_id FROM products WHERE id = $1', [id])
+    if (prodR.rowCount === 0) return res.status(404).json({ error: 'Not found' })
+    const { embedding, category_id } = prodR.rows[0]
+
+    let results = []
+
+    if (embedding) {
+      // 1️⃣ Rechercher les produits les plus proches via embedding
+      try {
+        const r = await query(
+          `SELECT *, embedding <#> $1 AS distance
+           FROM products
+           WHERE id != $2
+           ORDER BY embedding <#> $1
+           LIMIT $3`,
+          [embedding, id, limit]
+        )
+        results = r.rows || []
+      } catch (e) {
+        console.warn('Vector similarity query failed', e?.message)
       }
-      return res.json(rows)
-    } catch (qerr) {
-      console.error('Nearest neighbor query failed', qerr)
-      return res.status(500).json({ error: 'Similarity search failed' })
     }
+
+    // 2️⃣ Si pas assez de résultats, compléter avec produits de même catégorie
+    if (results.length < limit && category_id) {
+      const remaining = limit - results.length
+      try {
+        const r2 = await query(
+          `SELECT * FROM products
+           WHERE id != $1 AND category_id = $2
+           ORDER BY created_at DESC
+           LIMIT $3`,
+          [id, category_id, remaining]
+        )
+        const newRows = (r2.rows || []).filter(r => !results.find(rr => rr.id === r.id))
+        results = results.concat(newRows)
+      } catch (e) {
+        console.warn('Category fallback query failed', e?.message)
+      }
+    }
+
+    // 3️⃣ Fallback ultime : produits récents
+    if (results.length < limit) {
+      const remaining = limit - results.length
+      try {
+        const r3 = await query(
+          `SELECT * FROM products
+           WHERE id != $1
+           ORDER BY created_at DESC
+           LIMIT $2`,
+          [id, remaining]
+        )
+        const newRows = (r3.rows || []).filter(r => !results.find(rr => rr.id === r.id))
+        results = results.concat(newRows)
+      } catch (e) {
+        console.warn('Recent products fallback failed', e?.message)
+      }
+    }
+
+    // 4️⃣ Attacher les images comme dans ton endpoint actuel
+    if (results.length) {
+      try {
+        const ids = results.map(r => r.id)
+        const imgs = await query(
+          'SELECT product_id, url, position FROM product_images WHERE product_id = ANY($1)',
+          [ids]
+        )
+        const map = {}
+        ;(imgs.rows || []).forEach(ir => {
+          if (!ir || !ir.product_id) return
+          if (!map[ir.product_id]) map[ir.product_id] = []
+          if (ir.url) map[ir.product_id].push(ir.url)
+        })
+        for (const k of Object.keys(map)) map[k] = Array.from(new Set(map[k].filter(Boolean)))
+        for (const p of results) p.images = map[p.id]?.length ? map[p.id] : (p.image_url ? [p.image_url] : [])
+      } catch (e) {
+        console.warn('Failed to attach images', e?.message)
+      }
+    }
+
+    return res.json(results)
   } catch (err) {
     console.error('Failed to get similar products', err)
     res.status(500).json({ error: 'Failed to get similar products' })
@@ -415,4 +447,3 @@ router.delete('/:id/like', authenticate, async (req, res) => {
 })
 
 export default router
-
