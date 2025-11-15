@@ -6,7 +6,7 @@ import {
   useColorModeValue, Modal, ModalOverlay, ModalContent, ModalHeader, 
   ModalBody, ModalFooter, ModalCloseButton, FormControl, FormLabel, 
   Input, Textarea, useDisclosure, VStack, Divider, Flex, RadioGroup, 
-  Radio, List, ListItem 
+  Radio, List, ListItem, Select 
 } from '@chakra-ui/react'
 import { CloseIcon } from '@chakra-ui/icons'
 import cart from '../utils/cart'
@@ -24,14 +24,14 @@ export default function CartPage() {
   const [buyerName, setBuyerName] = useState('')
   const [buyerPhone, setBuyerPhone] = useState('')
   const [buyerAddress, setBuyerAddress] = useState('')
-  const [shippingType, setShippingType] = useState<'auto' | 'local' | 'regional' | 'express'>('auto')
+  const [shippingType, setShippingType] = useState<'pickup' | 'local' | 'regional' | 'express'>('pickup')
   const [deliveryBreakdown, setDeliveryBreakdown] = useState<{ [key: string]: number }>({})
   const [deliveryTotal, setDeliveryTotal] = useState(0)
 
   const cardBg = useColorModeValue('white', 'gray.800')
   const borderColor = useColorModeValue('gray.200', 'gray.700')
   const mutedText = useColorModeValue('gray.600', 'gray.400')
-    const [deliveryShopNames, setDeliveryShopNames] = useState<{ [key: string]: string }>({})
+  const [deliveryShopNames, setDeliveryShopNames] = useState<{ [key: string]: string }>({})
 
   // Charger les articles du panier
   useEffect(() => {
@@ -49,18 +49,17 @@ export default function CartPage() {
     return () => {}
   }, [])
 
-    // Recompute shipping whenever cart items, chosen shipping type or address change
-    useEffect(() => {
-      // loadShippingData is declared below and is a function declaration (hoisted)
-      ;(async () => {
-        try {
-          await loadShippingData(buyerAddress, shippingType)
-        } catch (e) {
-          // ignore errors for background update
-        }
-      })()
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [items, shippingType, buyerAddress])
+  // Recompute shipping whenever cart items, chosen shipping type or address change
+  useEffect(() => {
+    ;(async () => {
+      try {
+        await loadShippingData(buyerAddress, shippingType)
+      } catch (e) {
+        // ignore errors for background update
+      }
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, shippingType, buyerAddress])
 
   // Gestion des quantités
   const setQty = (id: string, q: number) => { 
@@ -101,7 +100,7 @@ export default function CartPage() {
     prefillUserInfo()
     
     try {
-      await loadShippingData(buyerAddress, 'auto')
+      await loadShippingData(buyerAddress, shippingType)
     } catch (e) {
       console.debug('Failed to preload shipping data', e)
     }
@@ -110,7 +109,7 @@ export default function CartPage() {
   }
 
   // Calculer les frais de livraison
-  const loadShippingData = async (address: string, forcedType: 'auto' | 'local' | 'regional' | 'express' = 'auto') => {
+  const loadShippingData = async (address: string, forcedType: 'pickup' | 'local' | 'regional' | 'express' = 'pickup') => {
     try {
       const itemsLocal = cart.list()
       if (itemsLocal.length === 0) {
@@ -131,16 +130,9 @@ export default function CartPage() {
       })
 
       const perShop: { [key: string]: number } = {}
-    const shopNames: { [key: string]: string } = {}
+      const shopNames: { [key: string]: string } = {}
       
-      // Déterminer le type de livraison
-      const determineType = (addr: string) => {
-        if (forcedType !== 'auto') return forcedType
-        if (!addr) return 'regional'
-        return /dakar/i.test(addr) ? 'local' : 'regional'
-      }
-
-      const chosenType = determineType(address)
+      const chosenType = forcedType
       const seenOwners = new Set<string>()
 
       for (let i = 0; i < itemsLocal.length; i++) {
@@ -153,7 +145,7 @@ export default function CartPage() {
         seenOwners.add(ownerId)
         let price = 0
         let shop = shopByOwner[ownerId]
-        // If cached shop looks stale (missing delivery fields), try fetching fresh shop by owner
+        
         if (shop && (typeof shop.delivery_price_local === 'undefined' || typeof shop.delivery_price_regional === 'undefined' || typeof shop.delivery_price_express === 'undefined')) {
           try {
             const fresh = await api.shops.getByOwner(ownerId)
@@ -162,18 +154,21 @@ export default function CartPage() {
             // ignore and fallback to cached shop
           }
         }
+        
         if (shop) {
-          if (chosenType === 'local') price = Number(shop.delivery_price_local || 0)
+          if (chosenType === 'pickup') price = 0
+          else if (chosenType === 'local') price = Number(shop.delivery_price_local || 0)
           else if (chosenType === 'regional') price = Number(shop.delivery_price_regional || 0)
           else if (chosenType === 'express') price = Number(shop.delivery_price_express || 0)
         }
+        
         perShop[ownerId] = price
         shopNames[ownerId] = shop?.owner_display_name || shop?.name || `Vendeur`
       }
 
       const total = Object.values(perShop).reduce((s, v) => s + (Number(v) || 0), 0)
       setDeliveryBreakdown(perShop)
-        setDeliveryShopNames(shopNames)
+      setDeliveryShopNames(shopNames)
       setDeliveryTotal(total)
       setShippingType(chosenType)
     } catch (err) {
@@ -213,23 +208,18 @@ export default function CartPage() {
       })
 
       const sellerCharged: { [key: string]: boolean } = {};
-      // ensure we have shop names available after confirm path too
       const shopNamesConfirm: { [key: string]: string } = {};
-  ;(shopList || []).forEach((s: any) => { shopNamesConfirm[String(s.owner_id)] = s.owner_display_name || s.name || `Vendeur` });
+      ;(shopList || []).forEach((s: any) => { shopNamesConfirm[String(s.owner_id)] = s.owner_display_name || s.name || `Vendeur` });
       setDeliveryShopNames(shopNamesConfirm);
 
+      const breakdown = deliveryBreakdown || {}
       const promises = itemsLocal.map((it, idx) => {
         const prod = products[idx] || {}
         const ownerId = String(prod.seller_id || prod.owner_id || '')
         let deliveryPriceForThisItem = 0
         
         if (ownerId && !sellerCharged[ownerId]) {
-          const shop = shopByOwner[ownerId]
-          if (shop) {
-            if (shippingType === 'local') deliveryPriceForThisItem = Number(shop.delivery_price_local || 0)
-            else if (shippingType === 'regional') deliveryPriceForThisItem = Number(shop.delivery_price_regional || 0)
-            else if (shippingType === 'express') deliveryPriceForThisItem = Number(shop.delivery_price_express || 0)
-          }
+          deliveryPriceForThisItem = Number(breakdown[ownerId] || 0)
           sellerCharged[ownerId] = true
         }
 
@@ -306,6 +296,13 @@ export default function CartPage() {
             onContinueShopping={() => nav(-1)}
             onClearCart={() => { cart.clear(); setItems([]); }}
             deliveryTotal={deliveryTotal}
+            shippingType={shippingType}
+            onShippingTypeChange={(type: string) => {
+              setShippingType(type as any)
+              loadShippingData(buyerAddress, type as any)
+            }}
+            deliveryBreakdown={deliveryBreakdown}
+            deliveryShopNames={deliveryShopNames}
             cardBg={cardBg}
             borderColor={borderColor}
             mutedText={mutedText}
@@ -327,7 +324,7 @@ export default function CartPage() {
         shippingType={shippingType}
         setShippingType={setShippingType}
         deliveryBreakdown={deliveryBreakdown}
-          deliveryShopNames={deliveryShopNames}
+        deliveryShopNames={deliveryShopNames}
         onLoadShippingData={loadShippingData}
         onConfirmCheckout={confirmCheckout}
         loading={loading}
@@ -378,6 +375,10 @@ const CartWithItems = ({
   onContinueShopping,
   onClearCart,
   deliveryTotal,
+  shippingType,
+  onShippingTypeChange,
+  deliveryBreakdown,
+  deliveryShopNames,
   cardBg,
   borderColor,
   mutedText,
@@ -401,6 +402,10 @@ const CartWithItems = ({
     {/* Résumé */}
     <CartSummary
       deliveryTotal={deliveryTotal}
+      shippingType={shippingType}
+      onShippingTypeChange={onShippingTypeChange}
+      deliveryBreakdown={deliveryBreakdown}
+      deliveryShopNames={deliveryShopNames}
       onCheckout={onCheckout}
       onContinueShopping={onContinueShopping}
       onClearCart={onClearCart}
@@ -492,6 +497,10 @@ const CartItem = ({ item, onSetQty, onRemove, borderColor, mutedText }: any) => 
 // Composant pour le résumé du panier
 const CartSummary = ({
   deliveryTotal,
+  shippingType,
+  onShippingTypeChange,
+  deliveryBreakdown,
+  deliveryShopNames,
   onCheckout,
   onContinueShopping,
   onClearCart,
@@ -499,97 +508,150 @@ const CartSummary = ({
   cardBg,
   borderColor,
   mutedText
-}: any) => (
-  <Box w={{ base: 'full', lg: '380px' }} position={{ base: 'relative', lg: 'sticky' }} top={{ lg: '20px' }} flexShrink={0}>
-    <Box bg={cardBg} border="1px solid" borderColor={borderColor} p={6}>
-      <VStack spacing={5} align="stretch">
-        <Text fontSize="lg" fontWeight="400" textTransform="uppercase" letterSpacing="1px">
-          Récapitulatif
-        </Text>
-        
-        <Divider borderColor={borderColor} />
-        
-        <Flex justify="space-between" py={2}>
-          <Text fontSize="sm" color={mutedText} textTransform="uppercase" letterSpacing="0.5px">
-            Sous-total
-          </Text>
-          <Text fontSize="sm" fontWeight="400">
-            {Math.floor(cart.getTotal())} FCFA
-          </Text>
-        </Flex>
+}: any) => {
+  const getShippingLabel = (type: string) => {
+    switch (type) {
+      case 'pickup': return 'Récupération (0 FCFA)'
+      case 'local': return 'Dakar (local)'
+      case 'regional': return 'Hors Dakar'
+      case 'express': return 'Express'
+      default: return 'Sélectionner'
+    }
+  }
 
-        <Flex justify="space-between" py={2}>
-          <Text fontSize="sm" color={mutedText} textTransform="uppercase" letterSpacing="0.5px">
-            Livraison
+  return (
+    <Box w={{ base: 'full', lg: '380px' }} position={{ base: 'relative', lg: 'sticky' }} top={{ lg: '20px' }} flexShrink={0}>
+      <Box bg={cardBg} border="1px solid" borderColor={borderColor} p={6}>
+        <VStack spacing={5} align="stretch">
+          <Text fontSize="lg" fontWeight="400" textTransform="uppercase" letterSpacing="1px">
+            Récapitulatif
           </Text>
-          <Text fontSize="sm" fontWeight="400">
-            {deliveryTotal > 0 ? `${Math.floor(deliveryTotal)} FCFA` : 'À déterminer'}
-          </Text>
-        </Flex>
+          
+          <Divider borderColor={borderColor} />
+          
+          <Flex justify="space-between" py={2}>
+            <Text fontSize="sm" color={mutedText} textTransform="uppercase" letterSpacing="0.5px">
+              Sous-total
+            </Text>
+            <Text fontSize="sm" fontWeight="400">
+              {Math.floor(cart.getTotal())} FCFA
+            </Text>
+          </Flex>
 
-        <Divider borderColor={borderColor} />
+          {/* Sélection du mode de livraison */}
+          <VStack align="stretch" spacing={3} py={2}>
+            <FormControl>
+              <FormLabel fontSize="xs" color={mutedText} textTransform="uppercase" letterSpacing="1px" mb={2}>
+                Mode de livraison
+              </FormLabel>
+              <Select 
+                value={shippingType}
+                onChange={(e) => onShippingTypeChange(e.target.value)}
+                size="md"
+                bg={cardBg}
+                borderColor={borderColor}
+                _focus={{ borderColor: 'black' }}
+                fontWeight="400"
+                fontSize="sm"
+              >
+                <option value="pickup">Récupération à la boutique (0 FCFA)</option>
+                <option value="local">Livraison Dakar (local)</option>
+                <option value="regional">Livraison hors Dakar</option>
+                <option value="express">Livraison Express</option>
+              </Select>
+            </FormControl>
 
-        <Flex justify="space-between" align="center" py={2}>
-          <Text fontSize="md" fontWeight="400" textTransform="uppercase" letterSpacing="1px">
-            Total
-          </Text>
-          <Text fontSize="xl" fontWeight="400">
-            {Math.floor(cart.getTotal() + deliveryTotal)} FCFA
-          </Text>
-        </Flex>
+            {/* Détail des frais par boutique */}
+            {deliveryTotal > 0 && Object.keys(deliveryBreakdown).length > 0 && (
+              <Box bg={useColorModeValue('gray.50', 'gray.700')} p={3} borderRadius="md">
+                <Text fontSize="xs" color={mutedText} textTransform="uppercase" letterSpacing="1px" mb={2}>
+                  Frais par boutique
+                </Text>
+                <VStack spacing={1} align="stretch">
+                  {Object.entries(deliveryBreakdown).map(([owner, amount]) => (
+                    <Flex key={owner} justify="space-between" fontSize="xs">
+                      <Text color={mutedText}>{deliveryShopNames[owner] ?? 'Vendeur'}</Text>
+                      <Text fontWeight="400">{Math.floor(Number(amount || 0))} FCFA</Text>
+                    </Flex>
+                  ))}
+                </VStack>
+              </Box>
+            )}
 
-        <Button
-          w="full"
-          size="lg"
-          bg="black"
-          color="white"
-          _hover={{ bg: 'gray.800' }}
-          onClick={onCheckout}
-          isLoading={loading}
-          fontWeight="400"
-          letterSpacing="1px"
-          h="56px"
-          textTransform="uppercase"
-          fontSize="sm"
-        >
-          Commander
-        </Button>
+            <Flex justify="space-between">
+              <Text fontSize="sm" color={mutedText} textTransform="uppercase" letterSpacing="0.5px">
+                Frais de livraison
+              </Text>
+              <Text fontSize="sm" fontWeight="400">
+                {Math.floor(deliveryTotal)} FCFA
+              </Text>
+            </Flex>
+          </VStack>
 
-        <Button
-          w="full"
-          variant="outline"
-          size="lg"
-          borderColor={borderColor}
-          color="black"
-          _hover={{ bg: 'gray.50' }}
-          onClick={onContinueShopping}
-          fontWeight="400"
-          letterSpacing="1px"
-          h="56px"
-          textTransform="uppercase"
-          fontSize="sm"
-        >
-          Continuer mes achats
-        </Button>
+          <Divider borderColor={borderColor} />
 
-        <Button
-          w="full"
-          variant="ghost"
-          size="sm"
-          color={mutedText}
-          _hover={{ color: 'black' }}
-          onClick={onClearCart}
-          fontWeight="400"
-          letterSpacing="0.5px"
-          textTransform="uppercase"
-          fontSize="xs"
-        >
-          Vider le panier
-        </Button>
-      </VStack>
+          <Flex justify="space-between" align="center" py={2}>
+            <Text fontSize="md" fontWeight="400" textTransform="uppercase" letterSpacing="1px">
+              Total
+            </Text>
+            <Text fontSize="xl" fontWeight="400">
+              {Math.floor(cart.getTotal() + deliveryTotal)} FCFA
+            </Text>
+          </Flex>
+
+          <Button
+            w="full"
+            size="lg"
+            bg="black"
+            color="white"
+            _hover={{ bg: 'gray.800' }}
+            onClick={onCheckout}
+            isLoading={loading}
+            fontWeight="400"
+            letterSpacing="1px"
+            h="56px"
+            textTransform="uppercase"
+            fontSize="sm"
+          >
+            Commander
+          </Button>
+
+          <Button
+            w="full"
+            variant="outline"
+            size="lg"
+            borderColor={borderColor}
+            color="black"
+            _hover={{ bg: 'gray.50' }}
+            onClick={onContinueShopping}
+            fontWeight="400"
+            letterSpacing="1px"
+            h="56px"
+            textTransform="uppercase"
+            fontSize="sm"
+          >
+            Continuer mes achats
+          </Button>
+
+          <Button
+            w="full"
+            variant="ghost"
+            size="sm"
+            color={mutedText}
+            _hover={{ color: 'black' }}
+            onClick={onClearCart}
+            fontWeight="400"
+            letterSpacing="0.5px"
+            textTransform="uppercase"
+            fontSize="xs"
+          >
+            Vider le panier
+          </Button>
+        </VStack>
+      </Box>
     </Box>
-  </Box>
-)
+  )
+}
 
 // Composant pour le modal de checkout
 const CheckoutModal = ({
@@ -701,47 +763,37 @@ const CheckoutModal = ({
             />
           </FormControl>
 
-          {/* Sélection de livraison */}
-          <VStack spacing={3} align="stretch">
-            <FormControl>
-              <FormLabel fontSize="xs" textTransform="uppercase" letterSpacing="1px" color={mutedText} fontWeight="400" mb={2}>
-                Type de livraison
-              </FormLabel>
-              <RadioGroup 
-                onChange={(v) => { 
-                  setShippingType(v as any)
-                  onLoadShippingData(buyerAddress, v as any) 
-                }} 
-                value={shippingType}
-              >
-                <HStack spacing={3}>
-                  <Radio value="auto">Auto</Radio>
-                  <Radio value="local">Dakar (local)</Radio>
-                  <Radio value="regional">Hors Dakar</Radio>
-                  <Radio value="express">Express</Radio>
-                </HStack>
-              </RadioGroup>
-            </FormControl>
-
-            <Box>
-              <Text fontSize="sm" color={mutedText} mb={2} textTransform="uppercase">
-                Frais par boutique
-              </Text>
-              <List spacing={2}>
-                {Object.keys(deliveryBreakdown).length === 0 && (
-                  <ListItem fontSize="sm" color={mutedText}>
-                    Aucun frais calculé
-                  </ListItem>
-                )}
-                    {Object.entries(deliveryBreakdown).map(([owner, amount]) => (
-                      <ListItem key={owner} fontSize="sm" display="flex" justifyContent="space-between">
-                        <Text>{deliveryShopNames[owner] ?? `Vendeur`}</Text>
-                        <Text>{Math.floor(Number(amount || 0))} FCFA</Text>
-                      </ListItem>
-                    ))}
-              </List>
-            </Box>
-          </VStack>
+          {/* Récapitulatif de la livraison choisie */}
+          <Box w="full" bg={useColorModeValue('gray.50', 'gray.700')} p={4} borderRadius="md">
+            <Text fontSize="xs" color={mutedText} textTransform="uppercase" letterSpacing="1px" mb={3}>
+              Livraison sélectionnée
+            </Text>
+            <VStack align="stretch" spacing={2}>
+              <Flex justify="space-between">
+                <Text fontSize="sm" fontWeight="400">
+                  {shippingType === 'pickup' && 'Récupération à la boutique'}
+                  {shippingType === 'local' && 'Livraison Dakar (local)'}
+                  {shippingType === 'regional' && 'Livraison hors Dakar'}
+                  {shippingType === 'express' && 'Livraison Express'}
+                </Text>
+                <Text fontSize="sm" fontWeight="400">
+                  {Math.floor(Object.values(deliveryBreakdown).reduce((s: number, v: any) => s + Number(v || 0), 0))} FCFA
+                </Text>
+              </Flex>
+              
+              {Object.keys(deliveryBreakdown).length > 0 && (
+                <Box pt={2} borderTop="1px solid" borderColor={borderColor}>
+                  <Text fontSize="xs" color={mutedText} mb={1}>Détail par boutique:</Text>
+                  {Object.entries(deliveryBreakdown).map(([owner, amount]) => (
+                    <Flex key={owner} justify="space-between" fontSize="xs" color={mutedText}>
+                      <Text>{deliveryShopNames[owner] ?? 'Vendeur'}</Text>
+                      <Text>{Math.floor(Number(amount || 0))} FCFA</Text>
+                    </Flex>
+                  ))}
+                </Box>
+              )}
+            </VStack>
+          </Box>
         </VStack>
       </ModalBody>
       

@@ -91,7 +91,10 @@ export default function MyOrders() {
         {!loading && orders.length > 0 && (
           <Stack spacing={4}>
             {orders.map((o) => {
-              const total = o.total ?? o.price ?? o.amount ?? '—'
+              const base = o.total ?? o.price ?? o.amount ?? null
+              const displayTotal = (typeof base === 'number')
+                ? Math.floor(base + Number(o.delivery_price || 0))
+                : (base ?? '—')
               const status = o.status ?? o.state ?? '—'
               const image = o.product_image ?? (Array.isArray(o.items) && o.items[0]?.image) ?? null
               return (
@@ -126,7 +129,7 @@ export default function MyOrders() {
                               color="green.700" 
                               fontWeight="bold"
                             >
-                              Montant: {typeof total === 'number' ? Math.floor(total) : total} FCFA
+                              Montant: {typeof displayTotal === 'number' ? displayTotal : displayTotal} FCFA
                             </Text>
                           </Box>
                           {o.created_at && <Text fontSize="xs" color="gray.500">Le {new Date(o.created_at).toLocaleString()}</Text>}

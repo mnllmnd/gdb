@@ -79,7 +79,7 @@ export default function SellerOrders() {
                       color="green.700" 
                       fontWeight="bold"
                     >
-                      Montant: {Math.floor(o.price)} FCFA
+                      Montant: {Math.floor((Number(o.price || 0) + Number(o.delivery_price || 0)))} FCFA
                     </Text>
                   </Box>
                   <Text color="gray.600">Client: {o.buyer_name ?? `#${o.buyer_id ?? '—'}`}</Text>
