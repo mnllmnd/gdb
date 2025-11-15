@@ -86,13 +86,13 @@ router.get('/:id', async (req, res) => {
   }
 })
 
-// Create product (seller)
-router.post('/', authenticate, requireRole('seller'), async (req, res) => {
+// Create product (authenticated user) - allow users to list a product without creating a shop
+router.post('/', authenticate, async (req, res) => {
   const { title, description, price, image_url, category_id, quantity, images, discount, original_price } = req.body
   try {
-    // ensure the seller has a shop before allowing product creation
-    const shopCheck = await query('SELECT id FROM shops WHERE owner_id = $1', [req.user.id])
-    if (shopCheck.rowCount === 0) return res.status(400).json({ error: 'You must create a shop before adding products' })
+    // Allow product creation even if the user doesn't own a shop. The product will
+    // still be associated with the creating user's id (seller_id) so it can be
+    // managed later if they create a shop.
     // Clean inputs to avoid mojibake and strip control chars, and normalize UTF-8
     const cleanedTitle = cleanText(title)
     const cleanedDescription = cleanText(description)

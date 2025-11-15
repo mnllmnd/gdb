@@ -83,16 +83,14 @@ export default function ProductEditor() {
 
   useEffect(() => {
     if (id) return
-    ;(async () => {
-      try {
-        const token = getItem('token')
-        const s = await api.shops.me(token ?? undefined)
-        if (!s) globalThis.location.href = '/seller/setup'
-      } catch (err) {
-        console.error('No shop found', err)
-        globalThis.location.href = '/seller/setup'
-      }
-    })()
+    // Allow any authenticated user to create a product without forcing shop creation.
+    // If user is not logged in redirect to login.
+    const token = getItem('token')
+    if (!token) {
+      // preserve desired destination after login
+      try { localStorage.setItem('afterLogin', '/seller/product') } catch {}
+      window.location.href = '/login'
+    }
   }, [id])
 
   const handleFileSelect = (selectedFiles: File[] | null) => {
@@ -235,7 +233,7 @@ export default function ProductEditor() {
           isClosable: true,
         })
       } else {
-        await api.products.create(payload, token ?? undefined)
+        const created = await api.products.create(payload, token ?? undefined)
         toast({
           title: 'Produit créé',
           description: 'Votre produit a été ajouté avec succès',
@@ -243,9 +241,11 @@ export default function ProductEditor() {
           duration: 3000,
           isClosable: true,
         })
+        try {
+          if (created && created.id) navigate(`/products/${created.id}`)
+          else navigate('/products')
+        } catch (e) { navigate('/products') }
       }
-
-      navigate('/seller/shop')
     } catch (err: any) {
       console.error(err)
       toast({

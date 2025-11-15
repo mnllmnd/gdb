@@ -414,6 +414,20 @@ const LogoutIcon = () => (
                 Vendre
               </Button>
 
+              {/* Quick add product for any logged-in user */}
+              {user && (
+                <IconButton
+                  aria-label="Ajouter un produit"
+                  title="Ajouter un produit"
+                  as={RouterLink}
+                  to="/seller/product"
+                  icon={<Icon viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></Icon>}
+                  variant="solid"
+                  size="sm"
+                  colorScheme="blue"
+                />
+              )}
+
               {/* Wishlist */}
               <Box position="relative">
                 <IconButton
