@@ -52,7 +52,7 @@ export default function ProductCard({
   const toast = useToast()
   
   // Couleurs style Zara premium
-  const cardBg = useColorModeValue('white', 'gray.900')
+  const cardBg = useColorModeValue('white', 'black')
   const borderColor = useColorModeValue('#e5e5e5', 'gray.700')
   const textColor = useColorModeValue('black', 'white')
   const subtleTextColor = useColorModeValue('#666666', 'gray.400')
@@ -515,7 +515,7 @@ export default function ProductCard({
                 size="sm"
                 height="40px"
                 variant="solid"
-                bg={buttonBg}
+                bg={cardBg}
                 color={buttonColor}
                 isDisabled={stock != null && stock <= 0}
                 _hover={{
@@ -530,8 +530,7 @@ export default function ProductCard({
                 transition="all 0.2s ease"
               >
                 <HStack spacing={2}>
-                  <Icon as={FaShoppingCart} boxSize={3} />
-                  <Text>Ajouter</Text>
+                  <Text>+</Text>
                 </HStack>
               </Button>
 
