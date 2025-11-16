@@ -635,7 +635,7 @@ const LogoutIcon = () => (
 
       {/* Mobile drawer - Style Zara */}
       <Drawer placement="left" onClose={onClose} isOpen={isOpen} size="xs">
-        <DrawerOverlay />
+        <DrawerOverlay  bg="transparent"/>
         <DrawerContent bg={menuBg} zIndex={1700} borderRadius="none">
           <DrawerHeader borderBottomWidth="1px" borderColor={menuBorder} py={4}>
           <HStack spacing={3}>
