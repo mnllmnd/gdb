@@ -144,8 +144,20 @@ router.get('/owner/:owner_id', async (req, res) => {
 // Public: list shops
 router.get('/', async (req, res) => {
   try {
-    // Serve cached shops for speed
-    return res.json(cache.getShops())
+    // Serve cached shops for speed; if cache is empty, fall back to DB
+    const cached = cache.getShops()
+    if (cached && Array.isArray(cached) && cached.length > 0) {
+      return res.json(cached)
+    }
+
+    try {
+      const r = await query('SELECT id, owner_id, name, domain, logo_url, description, delivery_price_local, delivery_price_regional, delivery_price_express, created_at FROM shops ORDER BY created_at DESC')
+      return res.json(r.rows || [])
+    } catch (e) {
+      console.warn('DB fallback for shops list failed', e && e.message)
+      // return whatever cache returned (likely empty array)
+      return res.json(cached || [])
+    }
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Failed to list shops' })
