@@ -197,14 +197,6 @@ const HeroNike: React.FC = () => {
         justify="center"
         align="center"
       >
-        <Text
-          color="white"
-          maxW="container.md"
-          textAlign="center"
-          fontSize={{ base: 'md', md: 'lg' }}
-        >
-          African Style
-        </Text>
 
         <Box position="absolute" bottom={{ base: 8, md: 12 }}>
           <Button
