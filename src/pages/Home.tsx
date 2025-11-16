@@ -679,7 +679,7 @@ export default function Home() {
                 </Heading>
 
                 <Text fontSize="xs" color="whiteAlpha.900">
-                  Explore.
+                  Explorezzz
                 </Text>
               </VStack>
             </HStack>
