@@ -31,6 +31,7 @@ export default function ProductCard({
   shopId = null,
   height = { base: '280px', md: '320px' },
   isPinterestMode = false,
+  openFullPage = false,
 }: Readonly<{
   id: string
   title?: string
@@ -47,6 +48,7 @@ export default function ProductCard({
   shopId?: string | null
   height?: any
   isPinterestMode?: boolean
+  openFullPage?: boolean
 }>) {
   const [isHovered, setIsHovered] = useState(false)
   const toast = useToast()
@@ -177,10 +179,22 @@ export default function ProductCard({
     // prefer full page view when clicking from product list / home / shops list
     try {
       const path = location?.pathname || ''
-  const shouldNavigate = path === '/' || path.startsWith('/products') || path.startsWith('/shops') || path.startsWith('/shop') || path.startsWith('/search')
+      const shouldNavigate = path === '/' || path.startsWith('/products') || path.startsWith('/shops') || path.startsWith('/shop') || path.startsWith('/search')
+
+      if (openFullPage) {
+        // Force navigation to the product page (useful in ShopView where we want full product route)
+        try {
+          navigate(`/products/${id}`, { state: { from: { pathname: path, focusProductId: id, isPinterestMode: Boolean(isPinterestMode) } } })
+          return
+        } catch (err) {
+          // fallback to modal if navigation fails
+        }
+      }
+
       if (shouldNavigate) {
-        // pass a precise 'from' object so BackButton (and the listing) can scroll to the exact product
-        navigate(`/products/${id}`, { state: { from: { pathname: path, focusProductId: id, isPinterestMode: Boolean(isPinterestMode) } } })
+        // OPEN IN-MODAL instead of navigating away when we're on a listing page.
+        // This preserves the listing scroll position exactly (mobile-friendly behavior).
+        onDetailOpen()
         return
       }
     } catch (err) {

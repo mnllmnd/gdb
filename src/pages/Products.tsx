@@ -68,7 +68,8 @@ import { CloseIcon, StarIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon
 import { FiPackage, FiGrid, FiFilter, FiTrendingUp, FiMenu, FiCheck, FiDollarSign } from 'react-icons/fi'
 import ProductCard from '../components/ProductCard'
 import api from '../services/api'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
+import { usePageState } from '../components/ScrollRestoration'
 import ScrollTopButton from '../components/ScrollTopButton'
 import { Tooltip } from "@chakra-ui/react";
 
@@ -250,56 +251,24 @@ function ProductsCarousel({ products, title, shopsMap, isPinterestMode }: { prod
 
 // Composant Pinterest (images seulement)
 function PinterestProductCard({ product, shop }: { product: any; shop: any }) {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const borderColor = useColorModeValue('#e5e5e5', 'gray.600')
-  const hoverBorderColor = useColorModeValue('#111111', 'white')
-
-  const handleClick = () => {
-    try {
-      const path = location?.pathname || '/products'
-      navigate(`/products/${product.id}`, {
-        state: { from: { pathname: path, focusProductId: String(product.id), isPinterestMode: true } }
-      })
-      return
-    } catch (err) {
-      // fallback
-    }
-    navigate(`/products/${product.id}`)
-  }
-
-  const imageUrl = product.image_url ?? product.product_image ?? product.images?.[0]
-
+  // Render the full ProductCard (it will open its modal when clicked from listing pages)
   return (
-    <Box
-      cursor="pointer"
-      onClick={handleClick}
-      transition="all 0.3s ease"
-      _hover={{ 
-        transform: 'scale(1.02)',
-        borderColor: hoverBorderColor
-      }}
-      border="1px solid"
-      borderColor={borderColor}
-      borderRadius="none"
-      overflow="hidden"
-      bg="white"
-    >
-      <AspectRatio ratio={3/4}>
-        <Image
-          src={imageUrl}
-          alt={product.title || product.name}
-          objectFit="cover"
-          w="100%"
-          h="100%"
-          fallback={
-            <Center bg="gray.100" w="100%" h="100%">
-              <Icon as={FiPackage} boxSize={8} color="gray.400" />
-            </Center>
-          }
-        />
-      </AspectRatio>
-    </Box>
+    <ProductCard
+      id={String(product.id)}
+      title={product.title || product.name}
+      description={product.description}
+      price={product.price ?? product.amount}
+      discount={product.discount ?? 0}
+      originalPrice={product.original_price ?? product.originalPrice}
+      image_url={product.image_url ?? product.product_image}
+      images={product.images}
+      quantity={product.quantity ?? product.quantite ?? product.stock ?? product.amount_available}
+      shopId={shop?.id || product.shop_id || product.seller_id}
+      shopName={shop?.name}
+      shopDomain={shop?.domain}
+      height={{ base: 'auto', md: 'auto' }}
+      isPinterestMode={true}
+    />
   )
 }
 
@@ -432,6 +401,36 @@ export default function Products() {
   const [isPriceFilterActive, setIsPriceFilterActive] = React.useState(false)
   const [isPinterestMode, setIsPinterestMode] = React.useState(false)
   const { isOpen, onOpen, onClose } = useDisclosure()
+
+  // Persist page state (filters, query, view) per history entry so Back restores filters and view
+  const navigationType = useNavigationType()
+  const { save: savePageState, restore: restorePageState } = usePageState()
+
+  React.useEffect(() => {
+    try {
+      if (navigationType === 'POP') {
+        const saved = restorePageState()
+        if (saved) {
+          if (typeof saved.selectedCategory !== 'undefined') setSelectedCategory(saved.selectedCategory)
+          if (typeof saved.query !== 'undefined') setQuery(saved.query)
+          if (typeof saved.sortBy !== 'undefined') setSortBy(saved.sortBy)
+          if (typeof saved.isPinterestMode !== 'undefined') setIsPinterestMode(saved.isPinterestMode)
+          if (typeof saved.minPrice !== 'undefined') setMinPrice(saved.minPrice)
+          if (typeof saved.maxPrice !== 'undefined') setMaxPrice(saved.maxPrice)
+          if (typeof saved.isPriceFilterActive !== 'undefined') setIsPriceFilterActive(saved.isPriceFilterActive)
+        }
+      }
+    } catch (e) {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  React.useEffect(() => {
+    return () => {
+      try {
+        savePageState({ selectedCategory, query, sortBy, isPinterestMode, minPrice, maxPrice, isPriceFilterActive })
+      } catch (e) {}
+    }
+  }, [selectedCategory, query, sortBy, isPinterestMode, minPrice, maxPrice, isPriceFilterActive, savePageState])
 
   const borderColor = useColorModeValue('#e5e5e5', 'gray.600')
   const cardBg = useColorModeValue('white', 'gray.800')

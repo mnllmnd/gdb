@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useParams, useLocation, useNavigate } from 'react-router-dom'
+import { useParams, useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import {
   Container,
   Heading,
@@ -39,6 +39,7 @@ import ProductCard from '../components/ProductCard'
 import ReviewForm from '../components/ReviewForm'
 import ReviewsList from '../components/ReviewsList'
 import { getCurrentUser } from '../services/auth'
+import { usePageState } from '../components/ScrollRestoration'
 
 interface Category {
   id: number
@@ -52,57 +53,29 @@ interface User {
   email: string
   role: string
 }
+const cardHeight = 250; // px
+
 
 // Composant Pinterest (images seulement)
 function PinterestProductCard({ product, shop }: { product: any; shop: any }) {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const borderColor = useColorModeValue('#e5e5e5', 'gray.600')
-  const hoverBorderColor = useColorModeValue('#111111', 'white')
-
-  const handleClick = () => {
-    // Navigate to the full product view and include a 'from' object so Back can restore state
-    try {
-      const path = location?.pathname || ''
-      navigate(`/products/${product.id}`, { state: { from: { pathname: path, focusProductId: String(product.id), isPinterestMode: true } } })
-    } catch (e) {
-      // fallback to simple navigation
-      try { navigate(`/products/${product.id}`) } catch (err) { /* ignore */ }
-    }
-  }
-
-  const imageUrl = product.image_url ?? product.product_image ?? product.images?.[0]
-
+  // Use ProductCard so the product opens in the modal instead of navigating away
   return (
-    <Box
-      cursor="pointer"
-      onClick={handleClick}
-      transition="all 0.3s ease"
-      _hover={{ 
-        transform: 'scale(1.02)',
-        borderColor: hoverBorderColor
-      }}
-      border="1px solid"
-      borderColor={borderColor}
-      borderRadius="none"
-      overflow="hidden"
-      bg="white"
-    >
-      <AspectRatio ratio={3/4}>
-        <Image
-          src={imageUrl}
-          alt={product.title || product.name}
-          objectFit="cover"
-          w="100%"
-          h="100%"
-          fallback={
-            <Center bg="gray.100" w="100%" h="100%">
-              <Icon as={FaRegHeart} boxSize={8} color="gray.400" />
-            </Center>
-          }
-        />
-      </AspectRatio>
-    </Box>
+    <ProductCard
+      id={String(product.id)}
+      title={product.title || product.name}
+      description={product.description}
+      price={product.price ?? product.amount}
+      discount={product.discount ?? 0}
+      originalPrice={product.original_price ?? product.originalPrice}
+      image_url={product.image_url ?? product.product_image}
+      images={product.images}
+      quantity={product.quantity ?? product.quantite ?? product.stock ?? product.amount_available}
+      shopId={shop?.id || product.shop_id || product.seller_id}
+      shopName={shop?.name}
+      shopDomain={shop?.domain}
+      height={cardHeight}
+      isPinterestMode={true}
+    />
   )
 }
 
@@ -208,6 +181,28 @@ export default function ShopView() {
     const initialMode = getInitialViewMode()
     setIsPinterestMode(initialMode)
   }, [location.search, location.state])
+
+  // Persist simple view state (pinterest mode) per history entry so Back restores view
+  const navigationType = useNavigationType()
+  const { save: savePageState, restore: restorePageState } = usePageState()
+
+  useEffect(() => {
+    try {
+      if (navigationType === 'POP') {
+        const saved = restorePageState()
+        if (saved && typeof saved.isPinterestMode !== 'undefined') {
+          setIsPinterestMode(saved.isPinterestMode)
+        }
+      }
+    } catch (e) {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      try { savePageState({ isPinterestMode }) } catch (e) {}
+    }
+  }, [isPinterestMode, savePageState])
 
   // Fonction pour récupérer tous les utilisateurs (admin seulement)
   const fetchAllUsers = async () => {

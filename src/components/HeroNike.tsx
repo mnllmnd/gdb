@@ -1,21 +1,63 @@
 import React, { useEffect, useState } from 'react'
 import { Box, VStack, Heading, Text, Button, Image, useColorModeValue, HStack } from '@chakra-ui/react'
+import { useNavigate } from 'react-router-dom'
+import api from '../services/api'
 
 const HeroNike: React.FC = () => {
   const overlay = useColorModeValue('rgba(255,255,255,0.02)', 'rgba(0,0,0,0.6)')
 
-  const images: string[] = [
-    'https://i.pinimg.com/1200x/5e/f9/2d/5ef92d7eb931c6f4cbce5568e7d20052.jpg',
-    'https://i.pinimg.com/1200x/f4/88/35/f488355a53b9431cf31a3f8492a77031.jpg',
-    'https://i.pinimg.com/736x/cd/f3/5d/cdf35d0ef6b1e520acc76abcdfe728aa.jpg',
-  ]
-
   const [index, setIndex] = useState(0)
-  const [loaded, setLoaded] = useState<boolean[]>(Array(images.length).fill(false))
+  const [loaded, setLoaded] = useState<boolean[]>([])
   const [desktopSet, setDesktopSet] = useState(0)
+  const [images, setImages] = useState<string[]>([])
+
+  const navigate = useNavigate()
+
+  // Load real product images (use first available image per product)
+  useEffect(() => {
+    let mounted = true
+    const load = async () => {
+      try {
+        const list = await api.products.list()
+        if (!mounted) return
+        const imgs: string[] = []
+        for (const p of (list || []).slice(0, 6)) {
+          const candidate = (Array.isArray(p.images) && p.images.length && p.images[0]) || p.image_url || p.product_image || null
+          if (candidate) imgs.push(String(candidate))
+          if (imgs.length >= 3) break
+        }
+        if (imgs.length > 0) {
+          setImages(imgs)
+          setLoaded(Array(imgs.length).fill(false))
+        } else {
+          // fallback static images
+          const fallback = [
+            'https://i.pinimg.com/1200x/5e/f9/2d/5ef92d7eb931c6f4cbce5568e7d20052.jpg',
+            'https://i.pinimg.com/1200x/f4/88/35/f488355a53b9431cf31a3f8492a77031.jpg',
+            'https://i.pinimg.com/736x/cd/f3/5d/cdf35d0ef6b1e520acc76abcdfe728aa.jpg',
+          ]
+          setImages(fallback)
+          setLoaded(Array(fallback.length).fill(false))
+        }
+      } catch (err) {
+        const fallback = [
+          'https://i.pinimg.com/1200x/5e/f9/2d/5ef92d7eb931c6f4cbce5568e7d20052.jpg',
+          'https://i.pinimg.com/1200x/f4/88/35/f488355a53b9431cf31a3f8492a77031.jpg',
+          'https://i.pinimg.com/736x/cd/f3/5d/cdf35d0ef6b1e520acc76abcdfe728aa.jpg',
+        ]
+        if (mounted) {
+          setImages(fallback)
+          setLoaded(Array(fallback.length).fill(false))
+        }
+      }
+    }
+    load()
+    return () => { mounted = false }
+  }, [])
 
   // Précharger les images
   useEffect(() => {
+    if (!images || !images.length) return
     images.forEach((src, idx) => {
       const img = new window.Image()
       img.src = src
@@ -25,36 +67,49 @@ const HeroNike: React.FC = () => {
           copy[idx] = true
           return copy
         })
+      img.onerror = () =>
+        setLoaded(prev => {
+          const copy = [...prev]
+          copy[idx] = true
+          return copy
+        })
     })
-  }, [])
+  }, [images])
 
   // Changement d'image mobile
   useEffect(() => {
+    if (!images || images.length === 0) return
     const interval = setInterval(() => {
       setIndex(prev => (prev + 1) % images.length)
     }, 3000)
     return () => clearInterval(interval)
-  }, [])
+  }, [images])
 
-  // Changement de set desktop (3 nouvelles images toutes les 6 secondes)
+  // Changement de set desktop (rotate)
   useEffect(() => {
+    if (!images || images.length === 0) return
     const interval = setInterval(() => {
-      setDesktopSet(prev => (prev + 1) % 2) // Alterne entre 2 sets d'images
+      setDesktopSet(prev => (prev + 1) % 2)
     }, 3000)
     return () => clearInterval(interval)
-  }, [])
+  }, [images])
 
-  const scrollToProducts = () => {
-    const el = document.getElementById('products-grid')
-    if (el) el.scrollIntoView({ behavior: 'smooth' })
+  const goToProducts = () => {
+    try {
+      navigate('/products')
+    } catch (e) {
+      const el = document.getElementById('products-grid')
+      if (el) el.scrollIntoView({ behavior: 'smooth' })
+    }
   }
 
+  if (!images.length) return null
   if (!loaded.every(l => l)) return null
 
-  // Deux sets d'images pour desktop
+  // Deux sets d'images pour desktop (safe fallbacks)
   const desktopSets = [
-    [images[0], images[1], images[2]],
-    [images[2], images[0], images[1]], // Rotation des images
+    [images[0], images[1] || images[0], images[2] || images[0]],
+    [images[2] || images[0], images[0], images[1] || images[0]],
   ]
 
   const headingColor = useColorModeValue('black', 'white')
@@ -81,7 +136,6 @@ const HeroNike: React.FC = () => {
             position="absolute"
             top={0}
             left={0}
-           
           >
             {imageSet.map((img, idx) => (
               <Box
@@ -158,7 +212,7 @@ const HeroNike: React.FC = () => {
             bg={ctaBg}
             color={ctaColor}
             borderRadius="999px"
-            onClick={scrollToProducts}
+            onClick={goToProducts}
             px={6}
             py={3}
             fontWeight={800}

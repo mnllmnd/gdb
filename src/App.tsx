@@ -12,6 +12,7 @@ import { ForgotPassword } from './pages/ForgotPassword';
 import ForgotPasswordOtp from './pages/ForgotPasswordOtp';
 import ResetPasswordWithCode from './pages/ResetPasswordWithCode';
 import NavBar from './components/NavBar';
+import ScrollRestoration from './components/ScrollRestoration';
 import BottomNav from './components/BottomNav';
 import MyOrders from './pages/MyOrders';
 import SellerShop from './pages/SellerShop';
@@ -58,7 +59,9 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      {/* Scroll restoration handles saving/restoring positions on back/forward */}
       <InnerApp />
+      {/* mounted inside BrowserRouter so hooks work properly */}
     </BrowserRouter>
   )
 }
@@ -76,6 +79,7 @@ function InnerApp() {
   return (
     <>
       <NavBar />
+      <ScrollRestoration />
       <Box pb={{ base: '96px', md: 0 }}>
         <Routes>
           <Route path="/" element={<Home />} />

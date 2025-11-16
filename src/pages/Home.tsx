@@ -26,7 +26,8 @@ import FilterNav from '../components/FilterNav'
 import AppTutorial from '../components/AppTutorial'
 import HeroNike from '../components/HeroNike'
 import HeroProductStrip from '../components/HeroProductStrip'
-import { Link as RouterLink, useLocation } from 'react-router-dom'
+import { Link as RouterLink, useLocation, useNavigationType } from 'react-router-dom'
+import { usePageState } from '../components/ScrollRestoration'
 import api from '../services/api'
 
 interface Product {
@@ -363,11 +364,39 @@ export default function Home() {
     return savedView === 'products' ? 'products' : 'shops'
   })
 
+  
+
   React.useEffect(() => {
     localStorage.setItem('homeView', currentView)
   }, [currentView])
 
   const [selectedCategory, setSelectedCategory] = React.useState<number | null>(null)
+  // Page state preservation (filters, view) using sessionStorage per history entry
+  const navigationType = useNavigationType()
+  const { save: savePageState, restore: restorePageState } = usePageState()
+
+  // On mount: restore state only when coming back via browser (POP) to avoid side-effects on initial navigation
+  React.useEffect(() => {
+    try {
+      if (navigationType === 'POP') {
+        const saved = restorePageState()
+        if (saved) {
+          if (typeof saved.selectedCategory !== 'undefined') setSelectedCategory(saved.selectedCategory)
+          if (saved.currentView) setCurrentView(saved.currentView)
+        }
+      }
+    } catch (e) {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Save current page state when this component unmounts (i.e. navigation away)
+  React.useEffect(() => {
+    return () => {
+      try {
+        savePageState({ selectedCategory, currentView })
+      } catch (e) {}
+    }
+  }, [selectedCategory, currentView, savePageState])
   const [isLoading, setIsLoading] = React.useState(true)
   const [showScrollTop, setShowScrollTop] = React.useState(false)
 
@@ -791,25 +820,25 @@ export default function Home() {
                     {p.title || (p as any).name}
                   </Heading>
 
-                  <Button
-                    mt={3}
-                    as={RouterLink}
-                    to={target}
-                    state={{ from: { pathname: location?.pathname || '/', focusProductId: String((p as any).id) } }}
-                    bg={ctaBg}
-                    color={ctaColor}
-                    borderRadius="md"
-                    px={5}
-                    py={2}
-                    fontWeight="500"
-                    size="sm"
-                    textTransform="capitalize"
-                    letterSpacing="0.3px"
-                    fontSize="xs"
-                    _hover={{ bg: hoverBg }}
-                  >
-                    Voir
-                  </Button>
+                          <Button
+                            mt={3}
+                            as={RouterLink}
+                            to={`/products/${(p as any).id}`}
+                            state={{ from: { pathname: location?.pathname || '/', focusProductId: String((p as any).id) } }}
+                            bg={ctaBg}
+                            color={ctaColor}
+                            borderRadius="md"
+                            px={5}
+                            py={2}
+                            fontWeight="500"
+                            size="sm"
+                            textTransform="capitalize"
+                            letterSpacing="0.3px"
+                            fontSize="xs"
+                            _hover={{ bg: hoverBg }}
+                          >
+                            Voir
+                          </Button>
                 </Box>
               </Box>
             )
@@ -860,12 +889,13 @@ export default function Home() {
       {(visibleProducts || []).slice(2).length > 0 && (
         <Box as="section" px={{ base: 4, md: 6 }} py={6}>
           <SimpleGrid columns={{ base: 2, md: 4 }} spacing={3}>
-            {(visibleProducts || []).slice(2).map((p) => {
+              {(visibleProducts || []).slice(2).map((p) => {
               const imgs = normalizeImages(p as any)
               const img = imgs?.length ? imgs[0] : '/img/b.jfif'
               const shop = (shopsMap?.byId?.[String((p as any).shop_id)] || shopsMap?.byOwner?.[String((p as any).seller_id)]) || null
               const shopDomain = shop?.domain || shop?.name
-              const target = shopDomain ? `/shop/${shopDomain}?product=${(p as any).id}` : `/products/${(p as any).id}`
+              // Always link to the product page (ProductView) instead of the shop page
+              const target = `/products/${(p as any).id}`
               
               // Format price minimaliste
               const price = (p as any).price || (p as any).amount
@@ -880,7 +910,7 @@ export default function Home() {
                 <Box
                   key={(p as any).id}
                   as={RouterLink}
-                  to={target}
+                  to={`/products/${(p as any).id}`}
                   state={{ from: { pathname: location?.pathname || '/', focusProductId: String((p as any).id), isPinterestMode } }}
                   position="relative"
                   overflow="hidden"
