@@ -34,6 +34,7 @@ import {
 } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
+import cart from '../utils/cart'
 import { highRes, PRODUCT_PLACEHOLDER, SHOP_PLACEHOLDER } from '../utils/image'
 import { getItem } from '../utils/localAuth'
 import { 
@@ -100,6 +101,22 @@ export default function SellerDashboard() {
       const token = getItem('token')
       await api.products.delete(id, token ?? undefined)
       setProducts((prev) => prev.filter((p) => String(p.id) !== String(id)))
+      try {
+        // Ensure removed product is also removed from the user's cart
+        if (cart && typeof cart.remove === 'function') {
+          cart.remove(String(id))
+        }
+      } catch (e) {
+        console.warn('Failed to remove deleted product from cart', e)
+      }
+      try {
+        // notify other parts of the app (product lists, caches) that a product was deleted
+        if (typeof globalThis !== 'undefined' && typeof globalThis.dispatchEvent === 'function') {
+          globalThis.dispatchEvent(new CustomEvent('product:deleted', { detail: { id: String(id) } }))
+        }
+      } catch (e) {
+        /* best-effort */
+      }
       toast({
         title: '✅ Produit supprimé',
         status: 'success',

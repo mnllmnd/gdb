@@ -31,6 +31,7 @@ import {
   Grid,
   GridItem
 } from '@chakra-ui/react'
+import { useToast } from '@chakra-ui/react'
 import { FaChevronLeft, FaChevronRight, FaBox, FaStar, FaInfoCircle } from 'react-icons/fa'
 import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons'
 import { highRes, PRODUCT_PLACEHOLDER } from '../utils/image'
@@ -118,6 +119,31 @@ export default function ProductView() {
     load()
     return () => { mounted = false }
   }, [id])
+
+  const toast = useToast()
+
+  // If the product is deleted elsewhere (admin/seller), handle it gracefully
+  React.useEffect(() => {
+    const handler = (e: any) => {
+      try {
+        const deletedId = e?.detail?.id
+        if (!deletedId) return
+        if (String(deletedId) === String(product?.id)) {
+          toast({ title: 'Produit supprimé', description: 'Ce produit a été supprimé.', status: 'info', duration: 3000 })
+          // navigate back to products list
+          navigate('/products')
+        }
+      } catch (err) {
+        // ignore
+      }
+    }
+    if (typeof globalThis !== 'undefined' && typeof globalThis.addEventListener === 'function') {
+      globalThis.addEventListener('product:deleted', handler as any)
+    }
+    return () => {
+      try { if (typeof globalThis !== 'undefined' && typeof globalThis.removeEventListener === 'function') globalThis.removeEventListener('product:deleted', handler as any) } catch (e) {}
+    }
+  }, [product?.id, navigate, toast])
 
   // Load similar products (vector similarity) after the main product is loaded
   const [similarProducts, setSimilarProducts] = React.useState<any[]>([])

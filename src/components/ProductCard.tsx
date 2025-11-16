@@ -4,7 +4,7 @@ import {
   ModalContent, ModalHeader, ModalBody, ModalFooter, ModalCloseButton, 
   FormControl, FormLabel, Input, Textarea, useDisclosure, useBreakpointValue, 
   Link as ChakraLink, Badge, HStack, VStack, Icon, Flex, ScaleFade, Fade, SimpleGrid,
-  useColorModeValue, AspectRatio
+  useColorModeValue, AspectRatio, IconButton
 } from '@chakra-ui/react'
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'
 import { FaStore, FaShoppingCart, FaEye, FaHeart, FaRegHeart, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
@@ -51,17 +51,16 @@ export default function ProductCard({
   const [isHovered, setIsHovered] = useState(false)
   const toast = useToast()
   
-  // Couleurs style Nike/Zara
-  const cardBg = useColorModeValue('white', 'gray.800')
-  const borderColor = useColorModeValue('#e5e5e5', 'gray.600')
+  // Couleurs style Zara premium
+  const cardBg = useColorModeValue('white', 'gray.900')
+  const borderColor = useColorModeValue('#e5e5e5', 'gray.700')
   const textColor = useColorModeValue('black', 'white')
   const subtleTextColor = useColorModeValue('#666666', 'gray.400')
   const priceText = useColorModeValue('#111111', 'white')
-  const shopBadgeBg = useColorModeValue('#f8f8f8', 'gray.700')
-  const shopBadgeText = useColorModeValue('#111111', 'white')
   const accentColor = useColorModeValue('#111111', 'white')
-  const hoverShadow = useColorModeValue('0 8px 25px rgba(0,0,0,0.15)', '0 8px 25px rgba(0,0,0,0.4)')
-  const ctaBg = useColorModeValue('white', 'black')
+  const hoverShadow = useColorModeValue('0 8px 32px rgba(0,0,0,0.12)', '0 8px 32px rgba(0,0,0,0.4)')
+  const buttonBg = useColorModeValue('black', 'white')
+  const buttonColor = useColorModeValue('white', 'black')
 
   const formatPrice = (value: number | string | null | undefined) => {
     if (typeof value === 'number') return value
@@ -79,18 +78,12 @@ export default function ProductCard({
     return base * (1 - discountPct / 100)
   }
 
-  // Determine final price to display. API may provide price that is already the
-  // discounted price (common), or may provide originalPrice + discount.
-  // Avoid double-applying discount on a price that is already reduced.
   let resolvedFinalPrice: number | null = null
   if (numericPrice != null && numericOriginalPrice != null) {
-    // Both values present: trust numericPrice as the final/current price
     resolvedFinalPrice = numericPrice
   } else if (numericPrice != null && numericOriginalPrice == null) {
-    // Only price present: assume it's the current price
     resolvedFinalPrice = numericPrice
   } else if (numericPrice == null && numericOriginalPrice != null) {
-    // Only original price known: apply discount if available
     resolvedFinalPrice = discount && typeof discount === 'number'
       ? calculateDiscountedPrice(numericOriginalPrice, discount)
       : numericOriginalPrice
@@ -98,25 +91,16 @@ export default function ProductCard({
     resolvedFinalPrice = null
   }
 
-  // If original price is missing but discount is provided, estimate original price
-  // from the final price so we can show the crossed-out value. Only do this when
-  // it makes sense (final price present and discount in (0,100)).
   let resolvedOriginalPrice: number | null = null
   if (numericOriginalPrice != null) {
     resolvedOriginalPrice = numericOriginalPrice
   } else if (resolvedFinalPrice != null && discount > 0 && discount < 100) {
-    // Avoid division by zero for 100% discount
     resolvedOriginalPrice = Math.round(resolvedFinalPrice / (1 - discount / 100))
   }
 
-  // Compute a reliable displayed discount percent. Prefer the provided `discount`
-  // when originalPrice is absent. When both prices exist, compute percent from
-  // those values to avoid inconsistencies.
   let resolvedDiscountPercent = typeof discount === 'number' ? Math.max(0, Math.min(100, Math.round(discount))) : 0
   if (resolvedOriginalPrice != null && resolvedFinalPrice != null && resolvedOriginalPrice > 0) {
     const implied = Math.round((1 - (resolvedFinalPrice / resolvedOriginalPrice)) * 100)
-    // If implied discount differs significantly from provided discount, prefer implied
-    // because it reflects the actual numbers shown to the user.
     if (Math.abs(implied - resolvedDiscountPercent) >= 2) {
       resolvedDiscountPercent = Math.max(0, Math.min(100, implied))
     }
@@ -137,10 +121,8 @@ export default function ProductCard({
 
   const [hasImage, setHasImage] = useState<boolean | null>(null)
   const [liked, setLiked] = useState<boolean | null>(null)
-  const [showHeart, setShowHeart] = useState(false)
   const [likesCount, setLikesCount] = useState<number | null>(null)
   const [stock, setStock] = useState<number | null>(quantity ?? null)
-  const { isOpen: isImageOpen, onOpen: onImageOpen, onClose: onImageClose } = useDisclosure()
   const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure()
 
   const rawImages = Array.isArray(images) ? images : []
@@ -195,7 +177,6 @@ export default function ProductCard({
     return () => clearInterval(t)
   }, [finalImages.length, isHovered])
   
-  // Configuration mobile améliorée
   const isMobile = useBreakpointValue({ base: true, md: false })
   const modalSize = useBreakpointValue({ 
     base: 'full',
@@ -213,13 +194,10 @@ export default function ProductCard({
   const navigate = useNavigate()
 
   const handleOpen = (e?: React.MouseEvent) => {
-    // prefer full page view when clicking from product list / home / shops list
     try {
       const path = location?.pathname || ''
-  const shouldNavigate = path === '/' || path.startsWith('/products') || path.startsWith('/shops') || path.startsWith('/shop') || path.startsWith('/search')
+      const shouldNavigate = path === '/' || path.startsWith('/products') || path.startsWith('/shops') || path.startsWith('/shop') || path.startsWith('/search')
       if (shouldNavigate) {
-        // OPEN IN-MODAL instead of navigating away when we're on a listing page.
-        // This preserves the listing scroll position exactly (mobile-friendly behavior).
         onDetailOpen()
         return
       }
@@ -266,7 +244,6 @@ export default function ProductCard({
     return () => { mounted = false }
   }, [id])
 
-  // Listen to likes updates emitted elsewhere (for example when wishlist toggles a like)
   React.useEffect(() => {
     const handler = (e: any) => {
       try {
@@ -307,7 +284,6 @@ export default function ProductCard({
 
   const handleTouchEnd = () => {
     if (touchStartY - touchEndY > 100) {
-      // Swipe down - fermer la modale
       onDetailClose()
     }
   }
@@ -315,7 +291,13 @@ export default function ProductCard({
   function addToCart() {
     try {
       if (stock != null && stock <= 0) {
-        toast({ title: 'Rupture de stock', description: 'Ce produit est en rupture de stock.', status: 'warning', duration: 2500 })
+        toast({ 
+          title: 'Rupture de stock', 
+          description: 'Ce produit est en rupture de stock.', 
+          status: 'warning', 
+          duration: 2500,
+          position: 'top-right'
+        })
         return
       }
       const numeric = numericPrice
@@ -339,14 +321,14 @@ export default function ProductCard({
   }
 
   return (
-    <ScaleFade in={true} initialScale={0.95}>
+    <>
       <Box
         id={`product-${id}`}
-        borderWidth="0.6px"
-        borderRadius="none"
+        borderWidth="1px"
+        borderRadius="12px"
         overflow="hidden"
-        bg={ctaBg}
-        boxShadow="sm"
+        bg={cardBg}
+        boxShadow="0 2px 8px rgba(0,0,0,0.06)"
         transition="all 0.3s ease"
         position="relative"
         borderColor={borderColor}
@@ -356,102 +338,79 @@ export default function ProductCard({
         display="flex"
         flexDirection="column"
         width="100%"
+        _hover={{
+          transform: 'translateY(-4px)',
+          boxShadow: hoverShadow,
+        }}
       >
         {/* Image Section */}
         <Box 
           position="relative" 
-          height={height} 
-          bg="ctaBg" 
-          display="flex" 
-          alignItems="center" 
-          justifyContent="center" 
-          overflow="hidden"
           cursor="pointer"
           onClick={handleOpen}
+          bg={useColorModeValue('#f8f8f8', 'gray.800')}
         >
-          <Box position="relative" width="100%" height="100%">
+          <AspectRatio ratio={1} width="100%">
             {finalImages && finalImages.length > 0 ? (
-              finalImages.map((src, idx) => {
-                const resolved = (highRes(src, { width: 1200, quality: 90 }) ?? src) as string
-                const visible = idx === imageIndex
-                return (
-                  <Image
-                    key={idx}
-                    src={resolved}
-                    alt={title || `product-${id}-${idx}`}
-                    objectFit="cover"
-                    objectPosition="center center"
-                    width="100%"
-                    height="100%"
-                    position="absolute"
-                    top="0"
-                    left="0"
-                    transition="opacity 0.8s ease, transform 0.3s ease"
-                    opacity={visible ? 1 : 0}
-                    transform={visible ? 'scale(1.05)' : 'scale(1)'}
-                    onLoad={() => setImageLoaded(true)}
-                    onError={(e: any) => { e.currentTarget.src = PRODUCT_PLACEHOLDER }}
-                    aria-hidden={!visible}
-                  />
-                )
-              })
-            ) : (
               <Image
-                src={PRODUCT_PLACEHOLDER}
-                alt={title}
-                objectFit="cover"
+                src={(highRes(finalImages[imageIndex], { width: 1200, quality: 90 }) ?? finalImages[imageIndex]) as string}
+                alt={title || `product-${id}-${imageIndex}`}
+                objectFit="contain"
                 objectPosition="center center"
                 width="100%"
                 height="100%"
+                onLoad={() => setImageLoaded(true)}
                 onError={(e: any) => { e.currentTarget.src = PRODUCT_PLACEHOLDER }}
               />
+            ) : (
+              <Image 
+                src={PRODUCT_PLACEHOLDER} 
+                alt={title} 
+                objectFit="contain" 
+                width="100%"
+                height="100%"
+              />
             )}
-          </Box>
-          
-          {/* Hover Overlay */}
+          </AspectRatio>
+
+          {/* Bouton d'ajout au panier en overlay - Style Zara */}
           <Fade in={isHovered}>
             <Box
               position="absolute"
-              top="0"
-              left="0"
-              right="0"
-              bottom="0"
-              bg="ctaBg"
-              display="flex"
-              alignItems="flex-end"
-              justifyContent="flex-start"
-              p={3}
+              top="12px"
+              right="12px"
+              zIndex={2}
             >
-              <Badge
-                bg="black" 
-                color="ctaBg" 
-                px={3} 
-                py={2}
-                borderRadius="none"
-                fontSize="xs"
-                fontWeight="600"
-                letterSpacing="0.5px"
-              >
-                <HStack spacing={2}>
-                  <Icon as={FaEye} />
-                  <Text>Voir les détails</Text>
-                </HStack>
-              </Badge>
+              <IconButton
+                aria-label="Ajouter au panier"
+                icon={<FaShoppingCart />}
+                size="sm"
+                borderRadius="8px"
+                bg={buttonBg}
+                color={buttonColor}
+                onClick={(e) => { e.stopPropagation(); addToCart(); }}
+                _hover={{
+                  bg: useColorModeValue('gray.800', 'gray.200'),
+                  transform: 'scale(1.1)'
+                }}
+                transition="all 0.2s ease"
+              />
             </Box>
           </Fade>
 
+          {/* Badges d'état */}
           {finalImages && finalImages.length > 1 && (
             <Badge
               position="absolute"
               top="12px"
-              right="12px"
+              left="12px"
               bg="white"
-              color="#111111"
-              px={3}
+              color="black"
+              px={2}
               py={1}
-              borderRadius="none"
+              borderRadius="6px"
               fontSize="xs"
-              fontWeight="700"
+              fontWeight="600"
               border="1px solid"
               borderColor={borderColor}
             >
@@ -462,426 +421,402 @@ export default function ProductCard({
           {stock != null && stock <= 0 && (
             <Badge 
               position="absolute" 
-              top="12px" 
+              bottom="12px" 
               left="12px" 
-              bg="#111111"
+              bg="red.500"
               color="white"
               px={3} 
               py={1} 
-              borderRadius="none" 
+              borderRadius="6px" 
               fontSize="xs"
-              fontWeight="700"
+              fontWeight="600"
               textTransform="uppercase"
             >
               Rupture
             </Badge>
           )}
+
+          {resolvedDiscountPercent > 0 && (
+            <Badge 
+              position="absolute" 
+              bottom="12px" 
+              right="12px" 
+              bg="red.500"
+              color="white"
+              px={2} 
+              py={1} 
+              borderRadius="6px" 
+              fontSize="xs"
+              fontWeight="600"
+            >
+              -{resolvedDiscountPercent}%
+            </Badge>
+          )}
         </Box>
 
-        {/* Content Section */}
+        {/* Content Section - Style Zara */}
         <Box p={4} flex="1" display="flex" flexDirection="column">
           <VStack spacing={3} align="stretch" flex="1">
+            {/* Shop Name */}
             {shopName && (
               <Text 
                 fontSize="xs" 
-                fontWeight="600" 
+                fontWeight="500" 
                 color={subtleTextColor}
-                letterSpacing="0.5px"
-                textTransform="uppercase"
+                letterSpacing="0.3px"
               >
                 {shopName}
               </Text>
             )}
 
+            {/* Product Title */}
             <Heading 
               size="sm" 
               color={textColor} 
-              fontWeight="600" 
+              fontWeight="400" 
               noOfLines={2}
-              lineHeight="1.3"
-              minH="2.6rem"
+              lineHeight="1.4"
               fontSize={{ base: 'sm', md: 'md' }}
               letterSpacing="-0.2px"
             >
               {title || 'Sans titre'}
             </Heading>
 
-            {description && (
-              <Text fontSize="sm" color={subtleTextColor} noOfLines={2} lineHeight="1.4">
-                {description}
-              </Text>
-            )}
-
+            {/* Price Section */}
             {formattedPrice && (
-              <Flex align="center" justify="space-between" mt="auto">
-                <VStack align="flex-start" spacing={1}>
-                  {resolvedDiscountPercent > 0 && formattedOriginalPrice && (
-                    <HStack spacing={2}>
-                      <Text
-                        fontSize="sm"
-                        textDecoration="line-through"
-                        color="gray.500"
-                      >
-                        {formattedOriginalPrice} FCFA
-                      </Text>
-                      <Badge colorScheme="red" variant="solid" borderRadius="full">
-                        -{resolvedDiscountPercent}%
-                      </Badge>
-                    </HStack>
-                  )}
-                  <Text 
-                    fontSize={resolvedDiscountPercent > 0 ? "xl" : "lg"}
-                    fontWeight="700" 
-                    color={resolvedDiscountPercent > 0 ? "red.500" : priceText}
-                    letterSpacing="-0.5px"
+              <VStack align="flex-start" spacing={1} mt="auto">
+                {resolvedDiscountPercent > 0 && formattedOriginalPrice && (
+                  <Text
+                    fontSize="sm"
+                    textDecoration="line-through"
+                    color={subtleTextColor}
+                    fontWeight="300"
                   >
-                    {formattedPrice} FCFA
+                    {formattedOriginalPrice} FCFA
                   </Text>
-                </VStack>
-                
-                {likesCount != null && (
-                  <HStack spacing={1}>
-                    <Icon as={FaHeart} color="red.400" boxSize={3} />
-                    <Text fontSize="sm" color={subtleTextColor} fontWeight="500">
-                      {likesCount}
-                    </Text>
-                  </HStack>
                 )}
-              </Flex>
+                <Text 
+                  fontSize="lg"
+                  fontWeight="500" 
+                  color={textColor}
+                  letterSpacing="-0.3px"
+                >
+                  {formattedPrice} FCFA
+                </Text>
+              </VStack>
             )}
 
-            <VStack spacing={2} mt={3}>
-              <HStack width="100%" spacing={2}>
-                <Button 
-                  onClick={addToCart}
-                  flex="1"
-                  borderRadius="none"
-                  border="1px solid"
-                  size="xs"
-                  height="42px"
-                  variant="solid"
-                  bg={ctaBg}
-                  color="ctaBg"
-                  isDisabled={stock != null && stock <= 0}
-                  _active={{
-                    bg: '#111111',
-                    transform: 'translateY(0)',
-                  }}
-                  fontWeight="600"
-                  fontSize="sm"
-                  transition="all 0.2s ease"
-                >
-                  <HStack spacing={2}>
-                    <Text>+</Text>
-                  </HStack>
-                </Button>
+            {/* Action Buttons */}
+            <HStack spacing={2} mt={3}>
+              <Button 
+                onClick={(e) => { e.stopPropagation(); addToCart(); }}
+                flex="1"
+                borderRadius="8px"
+                size="sm"
+                height="40px"
+                variant="solid"
+                bg={buttonBg}
+                color={buttonColor}
+                isDisabled={stock != null && stock <= 0}
+                _hover={{
+                  bg: useColorModeValue('gray.800', 'gray.200'),
+                  transform: 'translateY(-1px)'
+                }}
+                _active={{
+                  transform: 'translateY(0)'
+                }}
+                fontWeight="500"
+                fontSize="sm"
+                transition="all 0.2s ease"
+              >
+                <HStack spacing={2}>
+                  <Icon as={FaShoppingCart} boxSize={3} />
+                  <Text>Ajouter</Text>
+                </HStack>
+              </Button>
 
-                <WishlistButton productId={id} />
-              </HStack>
-            </VStack>
+              <WishlistButton productId={id} />
+            </HStack>
           </VStack>
         </Box>
+      </Box>
 
-        {/* ✅ Modal détaillée avec fermeture mobile améliorée */}
-        <Modal 
-          isOpen={isDetailOpen} 
-          onClose={onDetailClose} 
-          size={modalSize}
-          isCentered
-          scrollBehavior="inside"
+      {/* Modal détaillée */}
+      <Modal 
+        isOpen={isDetailOpen} 
+        onClose={onDetailClose} 
+        size={modalSize}
+        isCentered
+        scrollBehavior="inside"
+      >
+        <ModalOverlay bg="blackAlpha.800" />
+        <ModalContent 
+          borderRadius="12px"
+          maxW={{ base: '100vw', md: '90vw', lg: '1200px' }}
+          maxH={modalMaxHeight}
+          mx={{ base: 0, md: 0 }}
+          my={{ base: 0, md: 0 }}
+          bg={cardBg}
         >
-          <ModalOverlay bg="blackAlpha.800" />
-          <ModalContent 
-            borderRadius="none"
-            maxW={{ base: '100vw', md: '90vw', lg: '1200px' }}
-            maxH={modalMaxHeight}
-            mx={{ base: 0, md: 0 }}
-            my={{ base: 0, md: 0 }}
-            bg={cardBg}
+          <ModalHeader 
+            pb={4} 
+            borderBottom="1px solid" 
+            borderColor={borderColor}
+            position="relative"
+            pr="70px"
           >
-            {/* Header avec bouton de fermeture mobile amélioré */}
-            <ModalHeader 
-              pb={3} 
-              borderBottom="1px solid" 
-              borderColor={borderColor}
-              position="relative"
-              pr="70px"
-            >
-              <VStack align="start" spacing={1}>
-                <Text fontSize="xl" fontWeight="700" noOfLines={2} color={textColor}>
-                  {title}
+            <VStack align="start" spacing={1}>
+              <Text fontSize="xl" fontWeight="500" noOfLines={2} color={textColor}>
+                {title}
+              </Text>
+              {shopName && (
+                <Text fontSize="sm" color={subtleTextColor} fontWeight="400">
+                  {shopName}
                 </Text>
-                {shopName && (
-                  <Text fontSize="sm" color={subtleTextColor} fontWeight="500">
-                    {shopName}
-                  </Text>
-                )}
-              </VStack>
-            </ModalHeader>
-            
-            {/* Bouton de fermeture mobile très accessible */}
-            <ModalCloseButton 
-              size="lg"
-              position="absolute"
-              top={4}
-              right={4}
-              bg={isMobile ? "blackAlpha.800" : "blackAlpha.700"}
-              color="white"
-              _hover={{ bg: 'blackAlpha.900' }}
-              borderRadius="none"
-              width={isMobile ? "48px" : "40px"}
-              height={isMobile ? "48px" : "40px"}
-              fontSize={isMobile ? "18px" : "16px"}
-              zIndex={10}
-            />
-            
-            {/* Modal Body avec support swipe down sur mobile */}
-            <ModalBody 
-              pb={6} 
-              px={0}
-              onTouchStart={isMobile ? handleTouchStart : undefined}
-              onTouchMove={isMobile ? handleTouchMove : undefined}
-              onTouchEnd={isMobile ? handleTouchEnd : undefined}
-            >
-              <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={0}>
-                {/* Image Gallery */}
+              )}
+            </VStack>
+          </ModalHeader>
+          
+          <ModalCloseButton 
+            size="lg"
+            position="absolute"
+            top={4}
+            right={4}
+            bg="blackAlpha.700"
+            color="white"
+            _hover={{ bg: 'blackAlpha.800' }}
+            borderRadius="8px"
+            width="40px"
+            height="40px"
+            fontSize="16px"
+            zIndex={10}
+          />
+          
+          <ModalBody 
+            pb={6} 
+            px={0}
+            onTouchStart={isMobile ? handleTouchStart : undefined}
+            onTouchMove={isMobile ? handleTouchMove : undefined}
+            onTouchEnd={isMobile ? handleTouchEnd : undefined}
+          >
+            <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={0}>
+              {/* Image Gallery */}
+              <Box 
+                position="relative" 
+                height={{ base: '300px', md: '500px', lg: '600px' }}
+                bg={useColorModeValue('#f8f8f8', 'gray.800')}
+              >
                 <Box 
-                  position="relative" 
-                  height={{ base: '300px', md: '500px', lg: '600px' }}
-                  bg="gray.50"
+                  width="100%" 
+                  height="100%"
+                  position="relative"
+                  onTouchStart={onTouchStart}
+                  onTouchEnd={onTouchEnd}
                 >
-                  <Box 
-                    width="100%" 
+                  <Image 
+                    src={resolvedSrc ?? PRODUCT_PLACEHOLDER} 
+                    alt={title} 
+                    objectFit="contain"
+                    width="100%"
                     height="100%"
-                    position="relative"
-                    onTouchStart={onTouchStart}
-                    onTouchEnd={onTouchEnd}
-                  >
-                    <Image 
-                      src={resolvedSrc ?? PRODUCT_PLACEHOLDER} 
-                      alt={title} 
-                      objectFit="contain"
-                      width="100%"
-                      height="100%"
-                      opacity={imageLoaded ? 1 : 0}
-                      transition="opacity 300ms ease"
-                      onLoad={() => setImageLoaded(true)}
-                      onError={(e:any) => { e.currentTarget.src = PRODUCT_PLACEHOLDER }}
-                    />
-
-                    {finalImages && finalImages.length > 1 && (
-                      <>
-                        <Button
-                          position="absolute"
-                          left={4}
-                          top="50%"
-                          transform="translateY(-50%)"
-                          bg="blackAlpha.600"
-                          color="white"
-                          borderRadius="none"
-                          _hover={{ bg: 'blackAlpha.800' }}
-                          onClick={(e) => { e.stopPropagation(); prevImage() }}
-                          size="sm"
-                        >
-                          <Icon as={FaChevronLeft} />
-                        </Button>
-                        <Button
-                          position="absolute"
-                          right={4}
-                          top="50%"
-                          transform="translateY(-50%)"
-                          bg="blackAlpha.600"
-                          color="white"
-                          borderRadius="none"
-                          _hover={{ bg: 'blackAlpha.800' }}
-                          onClick={(e) => { e.stopPropagation(); nextImage() }}
-                          size="sm"
-                        >
-                          <Icon as={FaChevronRight} />
-                        </Button>
-                      </>
-                    )}
-
-                    {finalImages && finalImages.length > 1 && (
-                      <Badge 
-                        position="absolute" 
-                        bottom={4} 
-                        right={4} 
-                        bg="blackAlpha.800" 
-                        color="white" 
-                        px={3} 
-                        py={2} 
-                        borderRadius="none" 
-                        fontSize="sm"
-                        fontWeight="600"
-                      >
-                        {imageIndex + 1} / {finalImages.length}
-                      </Badge>
-                    )}
-                  </Box>
+                    opacity={imageLoaded ? 1 : 0}
+                    transition="opacity 300ms ease"
+                    onLoad={() => setImageLoaded(true)}
+                    onError={(e:any) => { e.currentTarget.src = PRODUCT_PLACEHOLDER }}
+                  />
 
                   {finalImages && finalImages.length > 1 && (
-                    <Flex 
+                    <>
+                      <IconButton
+                        aria-label="Image précédente"
+                        icon={<FaChevronLeft />}
+                        position="absolute"
+                        left={4}
+                        top="50%"
+                        transform="translateY(-50%)"
+                        bg="blackAlpha.600"
+                        color="white"
+                        borderRadius="8px"
+                        _hover={{ bg: 'blackAlpha.800' }}
+                        onClick={(e) => { e.stopPropagation(); prevImage() }}
+                        size="sm"
+                      />
+                      <IconButton
+                        aria-label="Image suivante"
+                        icon={<FaChevronRight />}
+                        position="absolute"
+                        right={4}
+                        top="50%"
+                        transform="translateY(-50%)"
+                        bg="blackAlpha.600"
+                        color="white"
+                        borderRadius="8px"
+                        _hover={{ bg: 'blackAlpha.800' }}
+                        onClick={(e) => { e.stopPropagation(); nextImage() }}
+                        size="sm"
+                      />
+                    </>
+                  )}
+
+                  {finalImages && finalImages.length > 1 && (
+                    <Badge 
                       position="absolute" 
-                      bottom={0} 
-                      left={0} 
-                      right={0} 
-                      bg="white" 
-                      p={3} 
-                      borderTop="1px solid" 
-                      borderColor={borderColor}
-                      overflowX="auto"
+                      bottom={4} 
+                      right={4} 
+                      bg="blackAlpha.800" 
+                      color="white" 
+                      px={3} 
+                      py={2} 
+                      borderRadius="8px" 
+                      fontSize="sm"
+                      fontWeight="600"
                     >
-                      <HStack spacing={2}>
-                        {finalImages.map((src, idx) => (
-                          <Box 
-                            key={idx} 
-                            border={idx === imageIndex ? '2px solid' : '1px solid'} 
-                            borderColor={idx === imageIndex ? accentColor : borderColor} 
-                            borderRadius="none" 
-                            overflow="hidden" 
-                            cursor="pointer" 
-                            onClick={(e) => { e.stopPropagation(); setImageLoaded(false); setImageIndex(idx) }}
-                            flexShrink={0}
-                            width="60px"
-                            height="60px"
-                          >
-                            <Image 
-                              src={highRes(src, { width: 120 }) ?? src} 
-                              alt={`Vignette ${idx+1}`} 
-                              objectFit="cover" 
-                              width="100%" 
-                              height="100%" 
-                            />
-                          </Box>
-                        ))}
-                      </HStack>
-                    </Flex>
+                      {imageIndex + 1} / {finalImages.length}
+                    </Badge>
                   )}
                 </Box>
 
-                {/* Product Info */}
-                <Box p={{ base: 4, md: 8 }}>
-                  <VStack spacing={6} align="stretch" height="100%">
-                    <VStack spacing={3} align="start">
-                      <Text fontSize="3xl" fontWeight="700" color={textColor}>
-                        {formattedPrice ? (
-                          <HStack spacing={2} align="baseline">
+                {finalImages && finalImages.length > 1 && (
+                  <Flex 
+                    position="absolute" 
+                    bottom={0} 
+                    left={0} 
+                    right={0} 
+                    bg="white" 
+                    p={3} 
+                    borderTop="1px solid" 
+                    borderColor={borderColor}
+                    overflowX="auto"
+                  >
+                    <HStack spacing={2}>
+                      {finalImages.map((src, idx) => (
+                        <Box 
+                          key={idx} 
+                          border={idx === imageIndex ? '2px solid' : '1px solid'} 
+                          borderColor={idx === imageIndex ? accentColor : borderColor} 
+                          borderRadius="8px" 
+                          overflow="hidden" 
+                          cursor="pointer" 
+                          onClick={(e) => { e.stopPropagation(); setImageLoaded(false); setImageIndex(idx) }}
+                          flexShrink={0}
+                          width="60px"
+                          height="60px"
+                        >
+                          <Image 
+                            src={highRes(src, { width: 120 }) ?? src} 
+                            alt={`Vignette ${idx+1}`} 
+                            objectFit="cover" 
+                            width="100%" 
+                            height="100%" 
+                          />
+                        </Box>
+                      ))}
+                    </HStack>
+                  </Flex>
+                )}
+              </Box>
+
+              {/* Product Info */}
+              <Box p={{ base: 4, md: 8 }}>
+                <VStack spacing={6} align="stretch" height="100%">
+                  <VStack spacing={3} align="start">
+                    <Text fontSize="2xl" fontWeight="500" color={textColor}>
+                      {formattedPrice ? (
+                        <VStack align="start" spacing={1}>
+                          {resolvedDiscountPercent > 0 && formattedOriginalPrice && (
                             <Text
                               fontSize="lg"
-                              fontWeight="bold"
-                              color={priceText}
+                              textDecoration="line-through"
+                              color={subtleTextColor}
+                              fontWeight="300"
+                            >
+                              {formattedOriginalPrice} FCFA
+                            </Text>
+                          )}
+                          <HStack spacing={2} align="baseline">
+                            <Text
+                              fontSize="2xl"
+                              fontWeight="500"
+                              color={textColor}
                             >
                               {formattedPrice} FCFA
                             </Text>
-                            {resolvedDiscountPercent > 0 && formattedOriginalPrice && (
-                              <>
-                                <Text
-                                  fontSize="sm"
-                                  textDecoration="line-through"
-                                  color="gray.500"
-                                >
-                                  {formattedOriginalPrice} FCFA
-                                </Text>
-                                <Badge colorScheme="red">-{resolvedDiscountPercent}%</Badge>
-                              </>
+                            {resolvedDiscountPercent > 0 && (
+                              <Badge 
+                                bg="red.500" 
+                                color="white" 
+                                fontSize="sm"
+                                px={2}
+                                py={1}
+                                borderRadius="6px"
+                              >
+                                -{resolvedDiscountPercent}%
+                              </Badge>
                             )}
                           </HStack>
-                        ) : 'Prix indisponible'}
-                      </Text>
-                      
-                      {stock != null && (
-                        <Badge 
-                          bg={stock > 0 ? '#111111' : '#666666'}
-                          color="white"
-                          fontSize="sm" 
-                          px={4} 
-                          py={2}
-                          borderRadius="none"
-                          fontWeight="600"
-                          textTransform="uppercase"
-                        >
-                          {stock > 0 ? `En stock (${stock})` : 'Rupture de stock'}
-                        </Badge>
-                      )}
-                    </VStack>
-
-                    {description && (
-                      <Box>
-                        <Text fontWeight="700" mb={3} color={textColor} fontSize="lg">
-                          Description
-                        </Text>
-                        <Text color={subtleTextColor} lineHeight="1.6" fontSize="md">
-                          {description}
-                        </Text>
-                      </Box>
-                    )}
-
-                    <VStack spacing={3} mt="auto">
-                      <Button 
-                        onClick={() => { addToCart(); onDetailClose(); }}
-                        color="textcolor"
-                        bg={ctaBg}
-                        size="lg"
-                        height="56px"
-                        borderRadius="none"
-                        width="100%"
-                        isDisabled={stock != null && stock <= 0}
-                        fontWeight="600"
-                        fontSize="md"
+                        </VStack>
+                      ) : 'Prix indisponible'}
+                    </Text>
+                    
+                    {stock != null && (
+                      <Badge 
+                        bg={stock > 0 ? 'green.500' : 'red.500'}
+                        color="white"
+                        fontSize="sm" 
+                        px={3} 
+                        py={1}
+                        borderRadius="6px"
+                        fontWeight="500"
                       >
-                        <HStack spacing={3}>
-                          <Icon as={FaCartShopping} boxSize={5} />
-                          <Text>Ajouter au panier</Text>
-                        </HStack>
-                      </Button>
-                      
-                      <HStack spacing={3} width="100%">
-                        <Button
-                          onClick={async () => {
-                            const token = globalThis.localStorage?.getItem('token') ?? undefined
-                            if (!token) { 
-                              toast({ title: 'Connectez-vous', description: 'Veuillez vous connecter pour ajouter aux favoris.', status: 'info' }); 
-                              return 
-                            }
-                            try {
-                              if (liked) {
-                                const res = await api.products.unlike(id, token)
-                                setLiked(false)
-                                if (res && typeof res.count === 'number') setLikesCount(res.count)
-                              } else {
-                                const res = await api.products.like(id, token)
-                                setLiked(true)
-                                if (res && typeof res.count === 'number') setLikesCount(res.count)
-                              }
-                            } catch (err) {
-                              console.error('Like action failed', err)
-                              toast({ title: 'Erreur', description: 'Impossible de mettre à jour les favoris', status: 'error' })
-                            }
-                          }}
-                          variant="outline"
-                          size="lg"
-                          height="56px"
-                          borderRadius="none"
-                          borderColor={borderColor}
-                          flex="1"
-                          _hover={{ borderColor: accentColor }}
-                          fontWeight="600"
-                        >
-                          <HStack spacing={2}>
-                            <Icon as={liked ? FaHeart : FaRegHeart} color={liked ? 'red.400' : undefined} />
-                            <Text>{liked ? 'Retirer des favoris' : 'Ajouter aux favoris'}</Text>
-                          </HStack>
-                        </Button>
-                      </HStack>
-                    </VStack>
+                        {stock > 0 ? `En stock (${stock})` : 'Rupture de stock'}
+                      </Badge>
+                    )}
                   </VStack>
-                </Box>
-              </SimpleGrid>
-            </ModalBody>
-          </ModalContent>
-        </Modal>
-      </Box>
-    </ScaleFade>
-  )
+
+                  {description && (
+                    <Box>
+                      <Text fontWeight="500" mb={3} color={textColor} fontSize="lg">
+                        Description
+                      </Text>
+                      <Text color={subtleTextColor} lineHeight="1.6" fontSize="md">
+                        {description}
+                      </Text>
+                    </Box>
+                  )}
+
+                  <VStack spacing={3} mt="auto">
+                    <Button 
+                      onClick={() => { addToCart(); onDetailClose(); }}
+                      color={buttonColor}
+                      bg={buttonBg}
+                      size="lg"
+                      height="56px"
+                      borderRadius="8px"
+                      width="100%"
+                      isDisabled={stock != null && stock <= 0}
+                      fontWeight="500"
+                      fontSize="md"
+                      _hover={{
+                        bg: useColorModeValue('gray.800', 'gray.200'),
+                        transform: 'translateY(-1px)'
+                      }}
+                      _active={{
+                        transform: 'translateY(0)'
+                      }}
+                      transition="all 0.2s ease"
+                    >
+                      <HStack spacing={3}>
+                        <Icon as={FaCartShopping} boxSize={5} />
+                        <Text>Ajouter au panier</Text>
+                      </HStack>
+                    </Button>
+                  </VStack>
+                </VStack>
+              </Box>
+            </SimpleGrid>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    </>
+  );
 }
