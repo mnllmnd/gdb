@@ -90,71 +90,144 @@ export default function MyOrders() {
       {/* orders: modern card rendering (kept single modern block below) */}
         {!loading && orders.length > 0 && (
           <Stack spacing={4}>
-            {orders.map((o) => {
-              const base = o.total ?? o.price ?? o.amount ?? null
-              const displayTotal = (typeof base === 'number')
-                ? Math.floor(base + Number(o.delivery_price || 0))
-                : (base ?? '—')
-              const status = o.status ?? o.state ?? '—'
-              const image = o.product_image ?? (Array.isArray(o.items) && o.items[0]?.image) ?? null
-              return (
-                <Box key={o.id} bg="white" borderRadius="lg" p={{ base: 3, md: 4 }} boxShadow="sm" borderWidth="1px" overflow="hidden">
-                  <HStack align="start" spacing={{ base: 3, md: 4 }}>
-                        {image && (
-                          <Box flexShrink={0} borderRadius="md" overflow="hidden" boxShadow="xs">
-                            <img src={image} alt="product" style={{ width: 64, height: 64, objectFit: 'cover', display: 'block' }} />
-                          </Box>
-                        )}
-                        <Box flex="1">
-                          <HStack justify="space-between" align="start">
-                            <Box>
-                              <Text fontWeight="700" fontSize="md">Commande</Text>
-                          <Text mt={2} fontSize="sm" color="gray.700" whiteSpace="normal" wordBreak="break-word">
-                            {Array.isArray(o.items) ? (
-                              o.items.map((it:any) => (it.title || it.product_title || it.name)).join(', ')
-                            ) : (
-                              (o.product_title || o.title || '—')
-                            )}
-                          </Text>
-                          <Box 
-                            bg="green.50" 
-                            display="inline-block" 
-                            px={2} 
-                            py={1} 
-                            borderRadius="md"
-                            mt={2}
-                          >
-                            <Text 
-                              fontSize="md" 
-                              color="green.700" 
-                              fontWeight="bold"
-                            >
-                              Montant: {typeof displayTotal === 'number' ? displayTotal : displayTotal} FCFA
-                            </Text>
-                          </Box>
-                          {o.created_at && <Text fontSize="xs" color="gray.500">Le {new Date(o.created_at).toLocaleString()}</Text>}
-                          <VStack align="end" spacing={2} mt={3}>
-                            {status !== 'expedie' && (
-                              <HStack spacing={2}>
-                                <Button size="sm" colorScheme="orange" onClick={() => handleCancel(o.id)}>Annuler</Button>
-                                <Button size="sm" colorScheme="red" onClick={() => handleDelete(o.id)}>Supprimer</Button>
-                              </HStack>
-                            )}
-                          </VStack>
-                        </Box>
-                        <Box textAlign="right">
-                          {(() => {
-                            const mapped = mapOrderStatus(String(status))
-                            return <Badge colorScheme={mapped.color as any} fontSize="sm" py={1} px={3}>{mapped.label}</Badge>
-                          })()}
-                        </Box>
-                      </HStack>
-                    </Box>
-                  </HStack>
-                </Box>
-              )
-            })}
-          </Stack>
+  {orders.map((o) => {
+    const base = o.total ?? o.price ?? o.amount ?? null
+    const displayTotal = (typeof base === 'number')
+      ? Math.floor(base + Number(o.delivery_price || 0))
+      : (base ?? '—')
+
+    const status = o.status ?? o.state ?? '—'
+    const image = o.product_image ?? (Array.isArray(o.items) && o.items[0]?.image) ?? null
+
+    return (
+      <Box
+        key={o.id}
+        bg="white"
+        borderRadius="lg"
+        p={{ base: 3, md: 4 }}
+        boxShadow="sm"
+        borderWidth="1px"
+      >
+        <Stack
+          direction={{ base: "column", md: "row" }}
+          spacing={{ base: 3, md: 4 }}
+        >
+          {/* IMAGE */}
+          {image && (
+            <Box
+              flexShrink={0}
+              borderRadius="md"
+              overflow="hidden"
+              boxShadow="xs"
+              alignSelf={{ base: "center", md: "flex-start" }}
+            >
+              <img
+                src={image}
+                alt="product"
+                style={{
+                  width: 90,
+                  height: 90,
+                  objectFit: "cover",
+                  display: "block",
+                  borderRadius: 8
+                }}
+              />
+            </Box>
+          )}
+
+          {/* INFO PRINCIPALE */}
+          <Box flex="1" width="100%">
+            {/* TITRE + STATUT */}
+            <HStack justify="space-between" align="start" mb={1}>
+              <Text fontWeight="700" fontSize={{ base: "md", md: "lg" }}>
+                Commande
+              </Text>
+
+              <Box textAlign="right">
+                {(() => {
+                  const mapped = mapOrderStatus(String(status))
+                  return (
+                    <Badge
+                      colorScheme={mapped.color}
+                      fontSize="xs"
+                      py={1}
+                      px={3}
+                      borderRadius="md"
+                    >
+                      {mapped.label}
+                    </Badge>
+                  )
+                })()}
+              </Box>
+            </HStack>
+
+            {/* PRODUITS */}
+            <Text
+              mt={2}
+              fontSize="sm"
+              color="gray.700"
+              whiteSpace="normal"
+              wordBreak="break-word"
+            >
+              {Array.isArray(o.items)
+                ? o.items.map((it: any) => it.title || it.product_title || it.name).join(', ')
+                : (o.product_title || o.title || '—')}
+            </Text>
+
+            {/* PRIX */}
+            <Box
+              bg="green.50"
+              display="inline-block"
+              px={2}
+              py={1}
+              borderRadius="md"
+              mt={3}
+            >
+              <Text fontSize="md" color="green.700" fontWeight="bold">
+                Montant : {displayTotal} FCFA
+              </Text>
+            </Box>
+
+            {/* DATE */}
+            {o.created_at && (
+              <Text fontSize="xs" color="gray.500" mt={1}>
+                Le {new Date(o.created_at).toLocaleString()}
+              </Text>
+            )}
+
+            {/* BOUTONS ACTIONS */}
+            {status !== "expedie" && (
+              <Stack
+                mt={4}
+                direction={{ base: "column", md: "row" }}
+                spacing={2}
+                width="100%"
+              >
+                <Button
+                  size="sm"
+                  colorScheme="orange"
+                  width={{ base: "100%", md: "auto" }}
+                  onClick={() => handleCancel(o.id)}
+                >
+                  Annuler
+                </Button>
+                <Button
+                  size="sm"
+                  colorScheme="red"
+                  width={{ base: "100%", md: "auto" }}
+                  onClick={() => handleDelete(o.id)}
+                >
+                  Supprimer
+                </Button>
+              </Stack>
+            )}
+          </Box>
+        </Stack>
+      </Box>
+    )
+  })}
+</Stack>
+
         )}
     </Container>
   )
