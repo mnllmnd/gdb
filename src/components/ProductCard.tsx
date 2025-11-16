@@ -521,16 +521,13 @@ export default function ProductCard({
                   onClick={addToCart}
                   flex="1"
                   borderRadius="none"
-                  size="md"
+                  border="1px solid"
+                  size="xs"
                   height="42px"
                   variant="solid"
                   bg={ctaBg}
                   color="ctaBg"
                   isDisabled={stock != null && stock <= 0}
-                  _hover={{ 
-                    bg: '#333333',
-                    transform: 'translateY(-1px)',
-                  }}
                   _active={{
                     bg: '#111111',
                     transform: 'translateY(0)',
@@ -540,8 +537,7 @@ export default function ProductCard({
                   transition="all 0.2s ease"
                 >
                   <HStack spacing={2}>
-                    <Icon as={FaCartShopping} />
-                    <Text>Ajouter</Text>
+                    <Text>+</Text>
                   </HStack>
                 </Button>
 

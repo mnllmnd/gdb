@@ -731,9 +731,6 @@ export default function Products() {
             >
               Produits
             </Heading>
-            <Text color={textSecondary} fontSize={{ base: "md", md: "lg" }} mt={2} fontWeight="400">
-              Découvrez notre sélection exclusive
-            </Text>
           </Box>
           
           <HStack spacing={2}>
@@ -1048,9 +1045,7 @@ export default function Products() {
 
         {/* Compteur de résultats */}
         <Flex justify="space-between" align="center">
-          <Text color={textSecondary} fontSize="md" fontWeight="500">
-            {products?.length || 0} produit{(products?.length || 0) > 1 ? 's' : ''} {hasActiveFilters ? 'trouvé' + ((products?.length || 0) > 1 ? 's' : '') : ''}
-          </Text>
+         
           {!isMobile && (
             <Text color={textSecondary} fontSize="sm" fontWeight="500">
               Mode: {isPinterestMode ? 'Pinterest' : 'Détaillé'}
@@ -1072,62 +1067,7 @@ export default function Products() {
             borderColor={borderColor}
             gap={8}
           >
-            <Tab 
-              fontWeight="500" 
-              color={textSecondary}
-              _selected={{ 
-                color: textPrimary, 
-                fontWeight: "600",
-                borderBottom: "2px solid",
-                borderColor: accentColor
-              }}
-              py={4}
-              px={0}
-              fontSize="lg"
-              letterSpacing="0.3px"
-            >
-              <HStack spacing={3}>
-                <Icon as={FiGrid} boxSize={5} />
-                <Text>Tous les produits</Text>
-              </HStack>
-            </Tab>
-            <Tab 
-              fontWeight="500" 
-              color={textSecondary}
-              _selected={{ 
-                color: textPrimary, 
-                fontWeight: "600",
-                borderBottom: "2px solid",
-                borderColor: accentColor
-              }}
-              py={4}
-              px={0}
-              fontSize="lg"
-              letterSpacing="0.3px"
-            >
-              <HStack spacing={3}>
-                <Text>Populaires</Text>
-              </HStack>
-            </Tab>
-            <Tab 
-              fontWeight="500" 
-              color={textSecondary}
-              _selected={{ 
-                color: textPrimary, 
-                fontWeight: "600",
-                borderBottom: "2px solid",
-                borderColor: accentColor
-              }}
-              py={4}
-              px={0}
-              fontSize="lg"
-              letterSpacing="0.3px"
-            >
-              <HStack spacing={3}>
-                <Icon as={FiTrendingUp} boxSize={5} />
-                <Text>Nouveautés</Text>
-              </HStack>
-            </Tab>
+            
           </TabList>
 
           <TabPanels>
@@ -1147,59 +1087,6 @@ export default function Products() {
       {/* Navigation mobile */}
       {isMobile && !hasActiveFilters && (
         <Box>
-          <SimpleGrid columns={3} spacing={3} mb={8}>
-            <Button
-              variant={activeTab === 0 ? "solid" : "outline"}
-              size="md"
-              borderRadius="none"
-              bg={activeTab === 0 ? accentColor : "transparent"}
-              color={activeTab === 0 ? "white" : textSecondary}
-              borderColor={activeTab === 0 ? accentColor : borderColor}
-              borderWidth="1.5px"
-              fontWeight="500"
-              onClick={() => setActiveTab(0)}
-              _hover={{
-                bg: activeTab === 0 ? hoverColor : subtleBg,
-                borderColor: activeTab === 0 ? hoverColor : accentColor
-              }}
-            >
-              Tous
-            </Button>
-            <Button
-              variant={activeTab === 1 ? "solid" : "outline"}
-              size="md"
-              borderRadius="none"
-              bg={activeTab === 1 ? accentColor : "transparent"}
-              color={activeTab === 1 ? "white" : textSecondary}
-              borderColor={activeTab === 1 ? accentColor : borderColor}
-              borderWidth="1.5px"
-              fontWeight="500"
-              onClick={() => setActiveTab(1)}
-              _hover={{
-                bg: activeTab === 1 ? hoverColor : subtleBg,
-                borderColor: activeTab === 1 ? hoverColor : accentColor
-              }}
-            >
-              Populaires
-            </Button>
-            <Button
-              variant={activeTab === 2 ? "solid" : "outline"}
-              size="md"
-              borderRadius="none"
-              bg={activeTab === 2 ? accentColor : "transparent"}
-              color={activeTab === 2 ? "white" : textSecondary}
-              borderColor={activeTab === 2 ? accentColor : borderColor}
-              borderWidth="1.5px"
-              fontWeight="500"
-              onClick={() => setActiveTab(2)}
-              _hover={{
-                bg: activeTab === 2 ? hoverColor : subtleBg,
-                borderColor: activeTab === 2 ? hoverColor : accentColor
-              }}
-            >
-              Nouveautés
-            </Button>
-          </SimpleGrid>
 
           {activeTab === 0 && renderAllProducts()}
           {activeTab === 1 && renderPopularProducts()}
