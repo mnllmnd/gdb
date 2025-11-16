@@ -239,10 +239,7 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
                 borderRadius="12px"
                 overflow="hidden"
                 boxShadow={cardShadow}
-                _hover={{
-                  transform: 'translateY(-4px)',
-                  boxShadow: cardHoverShadow,
-                }}
+               
               >
                 {/* Lien principal couvrant toute la carte */}
                 <Box
@@ -334,10 +331,7 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
                     letterSpacing="0.3px"
                     textTransform="capitalize"
                     transition="all 0.2s ease"
-                    _hover={{
-                      bg: useColorModeValue('gray.50', 'gray.700'),
-                      transform: 'translateY(-1px)',
-                    }}
+                     _hover={{ transform: 'scale(1.02)' }}
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
