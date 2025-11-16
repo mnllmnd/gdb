@@ -31,7 +31,6 @@ export default function ProductCard({
   shopId = null,
   height = { base: '280px', md: '320px' },
   isPinterestMode = false,
-  openFullPage = false,
 }: Readonly<{
   id: string
   title?: string
@@ -48,7 +47,6 @@ export default function ProductCard({
   shopId?: string | null
   height?: any
   isPinterestMode?: boolean
-  openFullPage?: boolean
 }>) {
   const [isHovered, setIsHovered] = useState(false)
   const toast = useToast()
@@ -77,13 +75,52 @@ export default function ProductCard({
   const numericPrice = formatPrice(price)
   const numericOriginalPrice = formatPrice(originalPrice)
 
-  const calculateDiscountedPrice = (price: number, discount: number) => {
-    return price * (1 - discount / 100)
+  const calculateDiscountedPrice = (base: number, discountPct: number) => {
+    return base * (1 - discountPct / 100)
   }
 
-  const finalPrice = discount && numericPrice 
-    ? calculateDiscountedPrice(numericPrice, discount)
-    : numericPrice
+  // Determine final price to display. API may provide price that is already the
+  // discounted price (common), or may provide originalPrice + discount.
+  // Avoid double-applying discount on a price that is already reduced.
+  let resolvedFinalPrice: number | null = null
+  if (numericPrice != null && numericOriginalPrice != null) {
+    // Both values present: trust numericPrice as the final/current price
+    resolvedFinalPrice = numericPrice
+  } else if (numericPrice != null && numericOriginalPrice == null) {
+    // Only price present: assume it's the current price
+    resolvedFinalPrice = numericPrice
+  } else if (numericPrice == null && numericOriginalPrice != null) {
+    // Only original price known: apply discount if available
+    resolvedFinalPrice = discount && typeof discount === 'number'
+      ? calculateDiscountedPrice(numericOriginalPrice, discount)
+      : numericOriginalPrice
+  } else {
+    resolvedFinalPrice = null
+  }
+
+  // If original price is missing but discount is provided, estimate original price
+  // from the final price so we can show the crossed-out value. Only do this when
+  // it makes sense (final price present and discount in (0,100)).
+  let resolvedOriginalPrice: number | null = null
+  if (numericOriginalPrice != null) {
+    resolvedOriginalPrice = numericOriginalPrice
+  } else if (resolvedFinalPrice != null && discount > 0 && discount < 100) {
+    // Avoid division by zero for 100% discount
+    resolvedOriginalPrice = Math.round(resolvedFinalPrice / (1 - discount / 100))
+  }
+
+  // Compute a reliable displayed discount percent. Prefer the provided `discount`
+  // when originalPrice is absent. When both prices exist, compute percent from
+  // those values to avoid inconsistencies.
+  let resolvedDiscountPercent = typeof discount === 'number' ? Math.max(0, Math.min(100, Math.round(discount))) : 0
+  if (resolvedOriginalPrice != null && resolvedFinalPrice != null && resolvedOriginalPrice > 0) {
+    const implied = Math.round((1 - (resolvedFinalPrice / resolvedOriginalPrice)) * 100)
+    // If implied discount differs significantly from provided discount, prefer implied
+    // because it reflects the actual numbers shown to the user.
+    if (Math.abs(implied - resolvedDiscountPercent) >= 2) {
+      resolvedDiscountPercent = Math.max(0, Math.min(100, implied))
+    }
+  }
 
   const formatDisplayPrice = (value: number | null) => {
     if (value == null) return null
@@ -95,8 +132,8 @@ export default function ProductCard({
     }
   }
 
-  const formattedOriginalPrice = formatDisplayPrice(numericOriginalPrice)
-  const formattedPrice = formatDisplayPrice(finalPrice)
+  const formattedOriginalPrice = formatDisplayPrice(resolvedOriginalPrice)
+  const formattedPrice = formatDisplayPrice(resolvedFinalPrice)
 
   const [hasImage, setHasImage] = useState<boolean | null>(null)
   const [liked, setLiked] = useState<boolean | null>(null)
@@ -179,18 +216,7 @@ export default function ProductCard({
     // prefer full page view when clicking from product list / home / shops list
     try {
       const path = location?.pathname || ''
-      const shouldNavigate = path === '/' || path.startsWith('/products') || path.startsWith('/shops') || path.startsWith('/shop') || path.startsWith('/search')
-
-      if (openFullPage) {
-        // Force navigation to the product page (useful in ShopView where we want full product route)
-        try {
-          navigate(`/products/${id}`, { state: { from: { pathname: path, focusProductId: id, isPinterestMode: Boolean(isPinterestMode) } } })
-          return
-        } catch (err) {
-          // fallback to modal if navigation fails
-        }
-      }
-
+  const shouldNavigate = path === '/' || path.startsWith('/products') || path.startsWith('/shops') || path.startsWith('/shop') || path.startsWith('/search')
       if (shouldNavigate) {
         // OPEN IN-MODAL instead of navigating away when we're on a listing page.
         // This preserves the listing scroll position exactly (mobile-friendly behavior).
@@ -489,7 +515,7 @@ export default function ProductCard({
             {formattedPrice && (
               <Flex align="center" justify="space-between" mt="auto">
                 <VStack align="flex-start" spacing={1}>
-                  {discount > 0 && formattedOriginalPrice && (
+                  {resolvedDiscountPercent > 0 && formattedOriginalPrice && (
                     <HStack spacing={2}>
                       <Text
                         fontSize="sm"
@@ -499,14 +525,14 @@ export default function ProductCard({
                         {formattedOriginalPrice} FCFA
                       </Text>
                       <Badge colorScheme="red" variant="solid" borderRadius="full">
-                        -{discount}%
+                        -{resolvedDiscountPercent}%
                       </Badge>
                     </HStack>
                   )}
                   <Text 
-                    fontSize={discount > 0 ? "xl" : "lg"}
+                    fontSize={resolvedDiscountPercent > 0 ? "xl" : "lg"}
                     fontWeight="700" 
-                    color={discount > 0 ? "red.500" : priceText}
+                    color={resolvedDiscountPercent > 0 ? "red.500" : priceText}
                     letterSpacing="-0.5px"
                   >
                     {formattedPrice} FCFA
@@ -748,7 +774,7 @@ export default function ProductCard({
                             >
                               {formattedPrice} FCFA
                             </Text>
-                            {discount > 0 && formattedOriginalPrice && (
+                            {resolvedDiscountPercent > 0 && formattedOriginalPrice && (
                               <>
                                 <Text
                                   fontSize="sm"
@@ -757,7 +783,7 @@ export default function ProductCard({
                                 >
                                   {formattedOriginalPrice} FCFA
                                 </Text>
-                                <Badge colorScheme="red">-{discount}%</Badge>
+                                <Badge colorScheme="red">-{resolvedDiscountPercent}%</Badge>
                               </>
                             )}
                           </HStack>
