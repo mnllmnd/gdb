@@ -647,11 +647,8 @@ export default function Home() {
   >
     <Box
       position="relative"
-      borderRadius="lg"
-      bgImage="url('https://i.pinimg.com/1200x/c5/1a/53/c51a530043a8406b461ca284c14dc0d6.jpg')" // Toujours présent
-      bgSize="cover"
-      bgPosition="center"
-      bgRepeat="no-repeat"
+      borderRadius="xl"
+     
     >
       {/* Overlay pour contraste du texte */}
       <Box
