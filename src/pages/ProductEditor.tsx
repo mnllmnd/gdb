@@ -25,7 +25,6 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 import { FiUpload, FiImage, FiX, FiCheck, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
-import BackButton from '../components/BackButton'
 import { useParams, useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import { getItem } from '../utils/localAuth'
@@ -283,7 +282,7 @@ export default function ProductEditor() {
       overflow="visible"
       px={4}
     >
-      <BackButton />
+  {/* BackButton removed: rely on browser navigation */}
       <Heading 
         mb={6} 
         textAlign="center" 

@@ -32,7 +32,6 @@ import {
   Progress,
   Avatar,
 } from '@chakra-ui/react'
-import BackButton from '../components/BackButton'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import { highRes, PRODUCT_PLACEHOLDER, SHOP_PLACEHOLDER } from '../utils/image'
@@ -163,7 +162,6 @@ export default function SellerDashboard() {
   return (
     <Box minH="100vh" bg={navBg}>
       <Container maxW="container.lg" py={4} pb={{ base: '100px', md: 8 }}>
-        <BackButton />
 
         {/* Header simplifié */}
         <Card mb={4} bg={navBg} borderRadius="xl" shadow="sm">

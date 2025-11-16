@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { Container, Heading, Box, Text, useToast, Stack, Spinner, Button, Image, HStack, VStack, Badge, useColorModeValue } from '@chakra-ui/react'
-import BackButton from '../components/BackButton'
 import api from '../services/api'
 import { getItem } from '../utils/localAuth'
 import mapOrderStatus from '../utils/status'
@@ -47,7 +46,7 @@ export default function SellerOrders() {
 
   return (
     <Container maxW="container.md" py={8} pb={{ base: '120px', md: 8 }} overflow="visible">
-      <BackButton />
+  {/* BackButton removed: browser handles navigation/back */}
       <Heading mb={4}>Commandes reçues</Heading>
       {loading && <Spinner />}
       {!loading && orders.length === 0 && <Text>Aucune commande pour le moment.</Text>}

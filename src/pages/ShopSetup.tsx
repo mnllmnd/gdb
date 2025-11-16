@@ -17,7 +17,6 @@ import {
   useToast,
 } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
-import BackButton from '../components/BackButton'
 import api from '../services/api'
 import { highRes, SHOP_PLACEHOLDER } from '../utils/image'
 import FileInput from '../components/FileInput'
@@ -140,7 +139,6 @@ export default function ShopSetup() {
   if (!token || !user) {
     return (
       <Container maxW="container.sm" py={10}>
-        <BackButton />
         <Box
           bg={bgCard}
           p={8}
@@ -171,7 +169,6 @@ export default function ShopSetup() {
 
   return (
     <Container maxW="container.sm" py={10}>
-      <BackButton />
       <Box
         bg={bgCard}
         p={8}

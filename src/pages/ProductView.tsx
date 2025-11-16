@@ -38,7 +38,6 @@ import api from '../services/api'
 import ProductCard from '../components/ProductCard'
 import ReviewForm from '../components/ReviewForm'
 import ReviewsList from '../components/ReviewsList'
-import BackButton from '../components/BackButton'
 import ScrollTopButton from '../components/ScrollTopButton'
 
 export default function ProductView() {
@@ -172,7 +171,7 @@ export default function ProductView() {
 
   return (
     <Container maxW="container.xl" py={8} pb={{ base: '120px', md: 8 }}>
-      <BackButton to={location.state?.from} />
+  {/* BackButton removed: use browser navigation/history instead */}
       
       {/* Main Product Grid */}
       <Grid 

@@ -26,7 +26,6 @@ import {
 import { useColorModeValue } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
 import { FiPackage, FiShoppingCart, FiLink, FiBarChart2, FiUsers, FiDollarSign, FiTrash2 } from 'react-icons/fi'
-import BackButton from '../components/BackButton'
 import api from '../services/api'
 import { getItem } from '../utils/localAuth'
 
@@ -128,7 +127,6 @@ export default function SellerShop() {
   if (!token || !user) {
     return (
       <Container maxW="container.lg" py={8} pb={{ base: '120px', md: 8 }}>
-        <BackButton />
         <Card
           maxW="md"
           mx="auto"
@@ -171,8 +169,7 @@ export default function SellerShop() {
   }
 
   return (
-    <Container maxW="container.lg" py={8} pb={{ base: '120px', md: 8 }}>
-      <BackButton />
+  <Container maxW="container.lg" py={8} pb={{ base: '120px', md: 8 }}>
       
       {/* Hero Header */}
       <Box

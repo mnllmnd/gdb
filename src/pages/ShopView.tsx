@@ -36,7 +36,6 @@ import FollowButton from '../components/FollowButton'
 import { FaWhatsapp } from 'react-icons/fa'
 import { normalizeSenegalPhone } from '../utils/phone'
 import ProductCard from '../components/ProductCard'
-import BackButton from '../components/BackButton'
 import ReviewForm from '../components/ReviewForm'
 import ReviewsList from '../components/ReviewsList'
 import { getCurrentUser } from '../services/auth'
@@ -482,7 +481,7 @@ export default function ShopView() {
       )}
 
       <Container maxW="container.xl" py={{ base: 8, md: 16 }} px={{ base: 4, md: 6 }}>
-        <BackButton to={location.state?.from} />
+  {/* BackButton removed: browser navigation handles history/back */}
 
         {shop === null ? (
           <Flex justify="center" py={20}>
