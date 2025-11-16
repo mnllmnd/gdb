@@ -144,7 +144,7 @@ export default function ShopView() {
 
   // Configuration de la grille selon le mode
   const gridColumns = useBreakpointValue({ 
-    base: isPinterestMode ? 'repeat(2, 1fr)' : 'repeat(1, 1fr)', 
+    base: isPinterestMode ? 'repeat(2, 1fr)' : 'repeat(2, 1fr)', 
     sm: isPinterestMode ? 'repeat(2, 1fr)' : 'repeat(2, 1fr)', 
     md: isPinterestMode ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)', 
     lg: isPinterestMode ? 'repeat(4, 1fr)' : 'repeat(4, 1fr)',
@@ -546,8 +546,8 @@ export default function ShopView() {
                       _hover={{ bg: 'green.600' }}
                       isLoading={whatsappLoading}
                       loadingText="Ouverture..."
+                      borderRadius="full"
                     >
-                      WhatsApp
                     </Button>
                   </Tooltip>
                 </HStack>
