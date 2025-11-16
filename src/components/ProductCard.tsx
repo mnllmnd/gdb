@@ -154,15 +154,43 @@ export default function ProductCard({
     setImageIndex((i) => (i - 1 + finalImages.length) % finalImages.length)
   }
   const touchStartXRef = React.useRef<number | null>(null)
-  const onTouchStart = (e: React.TouchEvent) => { touchStartXRef.current = e.touches?.[0]?.clientX ?? null }
-  const onTouchEnd = (e: React.TouchEvent) => {
-    const start = touchStartXRef.current
-    const end = e.changedTouches?.[0]?.clientX ?? null
-    if (start == null || end == null) return
-    const delta = end - start
-    if (Math.abs(delta) < 30) return
-    if (delta < 0) nextImage()
-    else prevImage()
+  const touchStartYRef = React.useRef<number | null>(null)
+
+  // Unified touch handlers: detect horizontal swipes for image change and
+  // vertical swipe-down (dominant vertical movement) to close the modal.
+  const onUnifiedTouchStart = (e: React.TouchEvent) => {
+    touchStartXRef.current = e.touches?.[0]?.clientX ?? null
+    touchStartYRef.current = e.touches?.[0]?.clientY ?? null
+  }
+
+  const onUnifiedTouchEnd = (e: React.TouchEvent) => {
+    const startX = touchStartXRef.current
+    const startY = touchStartYRef.current
+    const endX = e.changedTouches?.[0]?.clientX ?? null
+    const endY = e.changedTouches?.[0]?.clientY ?? null
+
+    // reset for next interaction
+    touchStartXRef.current = null
+    touchStartYRef.current = null
+
+    if (startX == null || startY == null || endX == null || endY == null) return
+
+    const dx = endX - startX
+    const dy = endY - startY
+
+    // Horizontal swipe -> change image (only if horizontal movement dominates)
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 30) {
+      if (dx < 0) nextImage()
+      else prevImage()
+      return
+    }
+
+    // Vertical swipe-down (dominant vertical movement) -> close modal
+    // Only close on a clear swipe-down gesture to avoid interfering with
+    // diagonal swipes used to change images.
+    if (dy > 100 && Math.abs(dy) > Math.abs(dx) * 1.5) {
+      onDetailClose()
+    }
   }
 
   React.useEffect(() => { setImageIndex(0); setImageLoaded(false) }, [finalImages.length])
@@ -271,22 +299,7 @@ export default function ProductCard({
   React.useEffect(() => { setStock(quantity ?? null) }, [quantity])
 
   // Gestion de la fermeture par swipe down sur mobile
-  const [touchStartY, setTouchStartY] = useState(0)
-  const [touchEndY, setTouchEndY] = useState(0)
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStartY(e.touches[0].clientY)
-  }
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEndY(e.touches[0].clientY)
-  }
-
-  const handleTouchEnd = () => {
-    if (touchStartY - touchEndY > 100) {
-      onDetailClose()
-    }
-  }
+  // (replaced by unified touch handlers above)
 
   function addToCart() {
     try {
@@ -594,9 +607,8 @@ export default function ProductCard({
           <ModalBody 
             pb={6} 
             px={0}
-            onTouchStart={isMobile ? handleTouchStart : undefined}
-            onTouchMove={isMobile ? handleTouchMove : undefined}
-            onTouchEnd={isMobile ? handleTouchEnd : undefined}
+            onTouchStart={isMobile ? onUnifiedTouchStart : undefined}
+            onTouchEnd={isMobile ? onUnifiedTouchEnd : undefined}
           >
             <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={0}>
               {/* Image Gallery */}
@@ -609,8 +621,6 @@ export default function ProductCard({
                   width="100%" 
                   height="100%"
                   position="relative"
-                  onTouchStart={onTouchStart}
-                  onTouchEnd={onTouchEnd}
                 >
                   <Image 
                     src={resolvedSrc ?? PRODUCT_PLACEHOLDER} 
