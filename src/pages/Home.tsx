@@ -643,10 +643,10 @@ export default function Home() {
       >
         <HStack
           spacing={4}
-          align={{ base: 'flex-start', md: 'center' }}
+          align={{ base: 'center', md: 'center' }}
           justify={{ base: 'center', md: 'space-between' }}
           flexDirection={{ base: 'column', md: 'row' }}
-          textAlign={{ base: 'center', md: 'left' }}
+          textAlign={{ base: 'center', md: 'center' }}
         >
           <Box
             position="relative"
@@ -674,7 +674,7 @@ export default function Home() {
               <Icon as={FiShoppingBag} boxSize={{ base: 5, md: 6 }} color="white" />
 
               <VStack align={{ base: 'center', md: 'start' }} spacing={0}>
-                <Heading as="h2" size="md" fontWeight="600" color="white">
+                <Heading as="h2" size="md" fontWeight="400" color="white">
                   Boutiques et Produits
                 </Heading>
 
