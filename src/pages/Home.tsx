@@ -79,7 +79,7 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
   const [isHovered, setIsHovered] = React.useState(false)
   
   // Couleurs et styles
-  const cardBg = useColorModeValue('white', 'gray.900')
+  const cardBg = useColorModeValue('white', 'black')
   const cardBorder = useColorModeValue('gray.100', 'gray.700')
   const cardShadow = useColorModeValue('0 2px 8px rgba(0,0,0,0.06)', '0 2px 8px rgba(0,0,0,0.3)')
   const cardHoverShadow = useColorModeValue('0 8px 24px rgba(0,0,0,0.12)', '0 8px 24px rgba(0,0,0,0.4)')
@@ -88,7 +88,7 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
   const overlayBg = useColorModeValue('linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)', 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)')
   const textColor = useColorModeValue('white', 'whiteAlpha.900')
   const buttonTextColor = useColorModeValue('black', 'white')
-  const buttonBgColor = useColorModeValue('white', 'gray.800')
+  const buttonBgColor = useColorModeValue('white', 'black')
 
   const checkScroll = () => {
     if (scrollRef.current) {
