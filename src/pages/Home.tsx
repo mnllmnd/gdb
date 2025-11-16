@@ -209,10 +209,7 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
         {/* Carrousel des boutiques style produit Zara/Nike */}
         <Box
           ref={scrollRef}
-           bgImage="url('https://i.pinimg.com/1200x/c5/1a/53/c51a530043a8406b461ca284c14dc0d6.jpg')"
-            bgSize="cover"
-            bgPosition="center"
-            bgRepeat="no-repeat"
+           
           display="flex"
           overflowX="auto"
           gap={{ base: 3, md: 4 }}
@@ -634,89 +631,88 @@ export default function Home() {
         <Box px={{ base: 0, md: 0 }}>
           {/* CTA: montrer que chaque boutique est indépendante + inciter à créer la sienne */}
           <Box px={{ base: 4, md: 6 }} mb={6}>
+     <Box
+  bgImage={{ base: "url('https://i.pinimg.com/1200x/c5/1a/53/c51a530043a8406b461ca284c14dc0d6.jpg')", md: 'none' }}
+  bgSize="cover"
+  bgPosition="center"
+  borderRadius="sm"
+  p={{ base: 3, md: 5 }}
+>
+  <HStack
+    spacing={4}
+    align={{ base: 'center', md: 'center' }}
+    justify={{ base: 'center', md: 'space-between' }}
+    flexDirection={{ base: 'column', md: 'row' }}
+    textAlign={{ base: 'center', md: 'center' }}
+  >
+    <Box
+      position="relative"
+      borderRadius="lg"
+      bgImage="url('https://i.pinimg.com/1200x/c5/1a/53/c51a530043a8406b461ca284c14dc0d6.jpg')" // Toujours présent
+      bgSize="cover"
+      bgPosition="center"
+      bgRepeat="no-repeat"
+    >
+      {/* Overlay pour contraste du texte */}
       <Box
-        bg={'transparent'}
-        p={{ base: 4, md: 5 }}
-        borderRadius="md"
-        border="1px solid"
-        borderColor={borderColor}
+        position="absolute"
+        inset={0}
+        bgGradient="linear(to-b, rgba(0,0,0,0.36), rgba(0,0,0,0.12))"
+      />
+
+      <HStack
+        spacing={3}
+        align="center"
+        justify="center"
+        p={6}
+        position="relative"
+        zIndex={1}
       >
-        <HStack
-          spacing={4}
-          align={{ base: 'center', md: 'center' }}
-          justify={{ base: 'center', md: 'space-between' }}
-          flexDirection={{ base: 'column', md: 'row' }}
-          textAlign={{ base: 'center', md: 'center' }}
-        >
-          <Box
-            position="relative"
-            borderRadius="lg"
-            bgImage="url('https://i.pinimg.com/1200x/c5/1a/53/c51a530043a8406b461ca284c14dc0d6.jpg')"
-            bgSize="cover"
-            bgPosition="center"
-            bgRepeat="no-repeat"
-          >
-            {/* Overlay for better text contrast */}
-            <Box
-              position="absolute"
-              inset={0}
-              bgGradient="linear(to-b, rgba(0,0,0,0.36), rgba(0,0,0,0.12))"
-            />
+        <Icon as={FiShoppingBag} boxSize={{ base: 5, md: 6 }} color="white" />
+        <VStack align={{ base: 'center', md: 'start' }} spacing={0}>
+          <Heading as="h2" size="md" fontWeight="400" color="white">
+            Boutiques et Produits
+          </Heading>
+          <Text fontSize="xs" color="whiteAlpha.900">
+            Explorezzz
+          </Text>
+        </VStack>
+      </HStack>
+    </Box>
 
-            <HStack
-              spacing={3}
-              align="center"
-              justify="center"
-              p={6}
-              position="relative"
-              zIndex={1}
-            >
-              <Icon as={FiShoppingBag} boxSize={{ base: 5, md: 6 }} color="white" />
+    <HStack spacing={3} mt={{ base: 3, md: 0 }}>
+      <Button
+        as={RouterLink}
+        to="/products"
+        colorScheme="brand"
+        borderRadius="md"
+        px={{ base: 5, md: 5 }}
+        py={{ base: 2.5, md: 3 }}
+        fontWeight="500"
+        width={{ base: 'full', md: 'auto' }}
+        fontSize="sm"
+      >
+        Parcourir le marché
+      </Button>
 
-              <VStack align={{ base: 'center', md: 'start' }} spacing={0}>
-                <Heading as="h2" size="md" fontWeight="400" color="white">
-                  Boutiques et Produits
-                </Heading>
+      <Button
+        as={RouterLink}
+        to="/seller"
+        variant="ghost"
+        borderRadius="md"
+        px={{ base: 5, md: 5 }}
+        py={{ base: 2.5, md: 3 }}
+        fontWeight="500"
+        width={{ base: 'full', md: 'auto' }}
+        fontSize="sm"
+        bg={ctaBg}
+      >
+        Créer ma boutique
+      </Button>
+    </HStack>
+  </HStack>
+</Box>
 
-                <Text fontSize="xs" color="whiteAlpha.900">
-                  Explorezzz
-                </Text>
-              </VStack>
-            </HStack>
-          </Box>
-
-
-          <HStack spacing={3} mt={{ base: 3, md: 0 }}>
-            <Button
-              as={RouterLink}
-              to="/products"
-              colorScheme="brand"
-              borderRadius="md"
-              px={{ base: 5, md: 5 }}
-              py={{ base: 2.5, md: 3 }}
-              fontWeight="500"
-              width={{ base: 'full', md: 'auto' }}
-              fontSize="sm"
-            >
-              Parcourir le marché
-            </Button>
-
-            <Button
-              as={RouterLink}
-              to="/seller"
-              variant="ghost"
-              borderRadius="md"
-              px={{ base: 5, md: 5 }}
-              py={{ base: 2.5, md: 3 }}
-              fontWeight="500"
-              width={{ base: 'full', md: 'auto' }}
-              fontSize="sm"
-            >
-              Créer ma boutique
-            </Button>
-          </HStack>
-        </HStack>
-      </Box>
     </Box>
 
 
