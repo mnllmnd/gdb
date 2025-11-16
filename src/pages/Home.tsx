@@ -679,7 +679,7 @@ export default function Home() {
                 </Heading>
 
                 <Text fontSize="xs" color="whiteAlpha.900">
-                  Explorez des boutiques et produits autour de vous.
+                  Explore.
                 </Text>
               </VStack>
             </HStack>
