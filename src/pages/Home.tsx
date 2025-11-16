@@ -52,6 +52,7 @@ interface Shop {
   id: number
   name: string
   logo_url?: string
+  cover_url?: string
   domain?: string
   followers?: number
 }
@@ -70,33 +71,24 @@ const normalizeImages = (product: Product): string[] => {
   return []
 }
 
-// Composant Carrousel Boutiques Style Zara/Nike
+// Composant Carrousel Boutiques Style Zara/Nike Premium
 function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly title: string }) {
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = React.useState(false)
   const [canScrollRight, setCanScrollRight] = React.useState(true)
   const [isHovered, setIsHovered] = React.useState(false)
   
-  // Hooks appelés au niveau du composant
-  const shopCardBg = useColorModeValue('white', 'black')
-  const shopCardBorder = useColorModeValue('gray.200', 'gray.800')
-  const shopCardHoverBg = useColorModeValue('gray.50', 'gray.800')
-  const shopCardHoverBorder = useColorModeValue('gray.300', 'gray.600')
-  const shopCardHoverShadow = useColorModeValue('0 8px 16px rgba(0,0,0,0.08)', '0 8px 16px rgba(0,0,0,0.3)')
-  const buttonBg = useColorModeValue('white', 'black')
-  const buttonColor = useColorModeValue('black', 'white')
-  const buttonBorder = useColorModeValue('gray.200', 'gray.700')
-  const imageBg = useColorModeValue('gray.100', 'gray.800')
-  const imageIconColor = useColorModeValue('gray.300', 'gray.600')
-  const badgeBg = useColorModeValue('gray.900', 'gray.100')
-  const badgeColor = useColorModeValue('white', 'gray.900')
-  // Make the section heading white when this is the "popular" section to ensure contrast on the photo background
-  const isPopularSection = typeof title === 'string' && title.toLowerCase().includes('popul')
-  const headingColor = isPopularSection ? 'white' : useColorModeValue('black', 'white')
-  // Shop names should not inherit the section heading color; keep readable default for both modes
-  const shopNameColor = useColorModeValue('gray.800', 'gray.100')
-  const textSecondaryColor = useColorModeValue('gray.600', 'gray.400')
-  const textHintColor = useColorModeValue('gray.400', 'gray.500')
+  // Couleurs et styles
+  const cardBg = useColorModeValue('white', 'gray.900')
+  const cardBorder = useColorModeValue('gray.100', 'gray.700')
+  const cardShadow = useColorModeValue('0 2px 8px rgba(0,0,0,0.06)', '0 2px 8px rgba(0,0,0,0.3)')
+  const cardHoverShadow = useColorModeValue('0 8px 24px rgba(0,0,0,0.12)', '0 8px 24px rgba(0,0,0,0.4)')
+  const buttonBg = useColorModeValue('white', 'gray.800')
+  const buttonBorder = useColorModeValue('gray.200', 'gray.600')
+  const overlayBg = useColorModeValue('linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)', 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)')
+  const textColor = useColorModeValue('white', 'whiteAlpha.900')
+  const buttonTextColor = useColorModeValue('black', 'white')
+  const buttonBgColor = useColorModeValue('white', 'gray.800')
 
   const checkScroll = () => {
     if (scrollRef.current) {
@@ -117,7 +109,7 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
-      const cardWidth = 180
+      const cardWidth = 320 // Largeur approximative d'une carte
       const scrollAmount = cardWidth * 2
       scrollRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
@@ -126,38 +118,35 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
     }
   }
 
+  // Dimensions responsive
+  const cardWidths = {
+    base: 'calc(50% - 12px)', // 2 items sur mobile
+    md: 'calc(33.333% - 16px)', // 3 items sur tablette
+    lg: 'calc(25% - 18px)', // 4 items sur desktop
+  }
+
+  const cardHeights = {
+    base: '280px',
+    md: '320px',
+    lg: '360px',
+  }
+
   return (
     <Box
       position="relative"
-      my={{ base: 12, md: 16 }}
+      my={{ base: 8, md: 12 }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      bgImage="url('https://i.pinimg.com/1200x/c5/1a/53/c51a530043a8406b461ca284c14dc0d6.jpg')"
-      bgSize="cover"
-      bgPosition="center"
-      bgRepeat="no-repeat"
-      borderRadius="md"
-      overflow="hidden"
     >
-      {/* Overlay to ensure text/readability above the image */}
-      <Box
-        position="absolute"
-        inset={0}
-        bgGradient="linear(to-b, rgba(0,0,0,0.36), rgba(0,0,0,0.06))"
-        zIndex={0}
-        pointerEvents="none"
-      />
       {/* En-tête de section minimaliste */}
-      <Box px={{ base: 4, md: 8 }} mb={8}>
+      <Box px={{ base: 4, md: 6 }} mb={6}>
         <Heading
           as="h2"
-          fontSize={{ base: '2xl', md: '3xl' }}
-          fontWeight="600"
+          fontSize={{ base: 'xl', md: '2xl' }}
+          fontWeight="500"
           letterSpacing="-0.4px"
-          color={headingColor}
-          textTransform="capitalize"
-          position="relative"
-          display="inline-block"
+          color={useColorModeValue('black', 'white')}
+          textTransform="uppercase"
         >
           {title}
         </Heading>
@@ -170,24 +159,23 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
             aria-label="Précédent"
             icon={<ChevronLeftIcon boxSize={5} />}
             position="absolute"
-            left={-2}
+            left={2}
             top="50%"
             transform="translateY(-50%)"
             zIndex={10}
             bg={buttonBg}
-            color={buttonColor}
+            color={buttonTextColor}
             border="1px solid"
             borderColor={buttonBorder}
-            size="lg"
+            size="md"
             opacity={isHovered ? 1 : 0}
             _hover={{ 
-              bg: shopCardHoverBg,
-              borderColor: shopCardHoverBorder,
-              transform: "translateY(-50%)"
+              bg: useColorModeValue('gray.50', 'gray.700'),
+              transform: "translateY(-50%) scale(1.05)"
             }}
             onClick={() => scroll('left')}
-            transition="all 0.2s ease"
-            boxShadow="sm"
+            transition="all 0.3s ease"
+            boxShadow="lg"
             borderRadius="full"
           />
         )}
@@ -197,35 +185,38 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
             aria-label="Suivant"
             icon={<ChevronRightIcon boxSize={5} />}
             position="absolute"
-            right={-2}
+            right={2}
             top="50%"
             transform="translateY(-50%)"
             zIndex={10}
             bg={buttonBg}
-            color={buttonColor}
+            color={buttonTextColor}
             border="1px solid"
             borderColor={buttonBorder}
-            size="lg"
+            size="md"
             opacity={isHovered ? 1 : 0}
             _hover={{ 
-              bg: shopCardHoverBg,
-              borderColor: shopCardHoverBorder,
-              transform: "translateY(-50%)"
+              bg: useColorModeValue('gray.50', 'gray.700'),
+              transform: "translateY(-50%) scale(1.05)"
             }}
             onClick={() => scroll('right')}
-            transition="all 0.2s ease"
-            boxShadow="sm"
+            transition="all 0.3s ease"
+            boxShadow="lg"
             borderRadius="full"
           />
         )}
 
-        {/* Carrousel des boutiques style produit */}
+        {/* Carrousel des boutiques style produit Zara/Nike */}
         <Box
           ref={scrollRef}
+           bgImage="url('https://i.pinimg.com/1200x/c5/1a/53/c51a530043a8406b461ca284c14dc0d6.jpg')"
+            bgSize="cover"
+            bgPosition="center"
+            bgRepeat="no-repeat"
           display="flex"
           overflowX="auto"
-          gap={6}
-          px={{ base: 4, md: 8 }}
+          gap={{ base: 3, md: 4 }}
+          px={{ base: 4, md: 6 }}
           py={2}
           css={{
             scrollbarWidth: 'none',
@@ -234,96 +225,134 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
         >
           {shops.map((shop) => {
             const shopHref = shop.domain ? `/shop/${shop.domain}` : `/shop/${shop.id}`
+            const imageUrl = shop.cover_url || shop.logo_url
             
             return (
               <Box
-                as={RouterLink}
                 key={shop.id}
-                to={shopHref}
-                display="flex"
-                flexDirection="column"
-                alignItems="center"
-                justifyContent="flex-start"
-                transition="transform 0.18s ease, box-shadow 0.18s ease"
-                _hover={{ transform: 'translateY(-6px) scale(1.02)', textDecoration: 'none', boxShadow: shopCardHoverShadow }}
-                _focus={{ boxShadow: '0 0 0 3px rgba(59,130,246,0.12)', outline: 'none' }}
-                cursor="pointer"
+                position="relative"
                 flexShrink={0}
-                w={{ base: '120px', md: '160px' }}
-                minW={{ base: '120px', md: '160px' }}
-                p={2}
-                bg={shopCardBg}
+                w={cardWidths}
+                minW={cardWidths}
+                h={cardHeights}
+                bg={cardBg}
+                borderRadius="12px"
+                overflow="hidden"
+                boxShadow={cardShadow}
                 border="1px solid"
-                borderColor={shopCardBorder}
-                borderRadius="md"
+                borderColor={cardBorder}
+                transition="all 0.3s ease"
+                _hover={{
+                  transform: 'translateY(-4px)',
+                  boxShadow: cardHoverShadow,
+                }}
               >
-                {/* Circular logo container */}
+                {/* Lien principal couvrant toute la carte */}
                 <Box
-                  position="relative"
-                  w={{ base: '96px', md: '140px' }}
-                  h={{ base: '96px', md: '140px' }}
-                  bg={imageBg}
-                  borderRadius="full"
-                  overflow="hidden"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  border="1px solid"
-                  borderColor={shopCardBorder}
+                  as={RouterLink}
+                  to={shopHref}
+                  position="absolute"
+                  inset={0}
+                  zIndex={1}
+                  _hover={{ textDecoration: 'none' }}
+                />
+                
+                {/* Image de la boutique */}
+                <Box
+                  position="absolute"
+                  inset={0}
+                  bg={useColorModeValue('gray.100', 'gray.800')}
                 >
-                  {shop.logo_url ? (
+                  {imageUrl ? (
                     <Image
-                      src={shop.logo_url}
+                      src={imageUrl}
                       alt={shop.name}
                       objectFit="cover"
                       w="100%"
                       h="100%"
-                      transition="transform 0.25s ease"
-                      _hover={{ transform: 'scale(1.06)' }}
+                      transition="transform 0.3s ease"
+                      _groupHover={{ transform: 'scale(1.05)' }}
                     />
                   ) : (
-                    <Text
-                      fontSize={{ base: '3xl', md: '5xl' }}
-                      fontWeight="700"
-                      color={imageIconColor}
-                      textTransform="uppercase"
-                      opacity={0.7}
+                    <VStack
+                      spacing={2}
+                      w="100%"
+                      h="100%"
+                      justify="center"
+                      align="center"
+                      color={useColorModeValue('gray.400', 'gray.500')}
                     >
-                      {shop.name?.charAt(0) || '?'}
-                    </Text>
-                  )}
-
-                  {/* Badge followers */}
-                  {shop.followers && shop.followers > 0 && (
-                    <Badge
-                      position="absolute"
-                      top={2}
-                      right={2}
-                      bg={badgeBg}
-                      color={badgeColor}
-                      px={2}
-                      py={0.5}
-                      borderRadius="full"
-                      fontSize="xs"
-                      fontWeight="600"
-                      zIndex={2}
-                    >
-                      {shop.followers.toLocaleString()}
-                    </Badge>
+                      <Text fontSize="4xl" fontWeight="300">
+                        {shop.name?.charAt(0) || '?'}
+                      </Text>
+                      <Text fontSize="sm" textAlign="center" px={4}>
+                        {shop.name}
+                      </Text>
+                    </VStack>
                   )}
                 </Box>
 
-                {/* Nom de la boutique */}
-                <Text
-                  mt={3}
-                  textAlign="center"
-                  fontSize={{ base: 'sm', md: 'md' }}
-                  fontWeight="600"
-                  color={shopNameColor}
-                  noOfLines={2}
+                {/* Overlay gradient pour le texte */}
+                <Box
+                  position="absolute"
+                  bottom={0}
+                  left={0}
+                  right={0}
+                  h="50%"
+                  bg={overlayBg}
+                  zIndex={2}
+                />
+
+                {/* Contenu overlay */}
+                <Box
+                  position="absolute"
+                  bottom={0}
+                  left={0}
+                  right={0}
+                  zIndex={3}
+                  p={4}
                 >
-                  {shop.name}
-                </Text>
+                  {/* Nom de la boutique */}
+                  <Text
+                    fontSize={{ base: 'md', md: 'lg' }}
+                    fontWeight="500"
+                    color={textColor}
+                    mb={3}
+                    noOfLines={1}
+                    textShadow="0 1px 2px rgba(0,0,0,0.5)"
+                  >
+                    {shop.name}
+                  </Text>
+
+                  {/* Bouton "Voir" style Zara */}
+                  <Box
+                    display="inline-flex"
+                    bg={buttonBgColor}
+                    color={buttonTextColor}
+                    px={5}
+                    py={2}
+                    borderRadius="md"
+                    fontSize="xs"
+                    fontWeight="500"
+                    letterSpacing="0.3px"
+                    textTransform="capitalize"
+                    transition="all 0.2s ease"
+                    _hover={{
+                      bg: useColorModeValue('gray.50', 'gray.700'),
+                      transform: 'translateY(-1px)',
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      window.location.href = shopHref
+                    }}
+                    position="relative"
+                    zIndex={4}
+                    cursor="pointer"
+                  >
+                    Voir
+                  </Box>
+                </Box>
               </Box>
             )
           })}
@@ -583,15 +612,15 @@ export default function Home() {
 
     return (
       <ScaleFade in={!isLoading} initialScale={0.95}>
-        <VStack spacing={0} align="stretch" bg="white">
+        <VStack spacing={0} align="stretch">
           {/* Boutiques populaires */}
           {popularShops && popularShops.length > 0 && (
-            <ShopsCarousel shops={popularShops} title="Boutiques populaires" />
+            <ShopsCarousel shops={popularShops} title="Boutiques" />
           )}
 
           {/* Toutes les boutiques */}
           {otherShops.length > 0 && (
-            <ShopsCarousel shops={otherShops} title="Toutes les boutiques" />
+            <ShopsCarousel shops={otherShops} title="Découvrir les Boutiques" />
           )}
         </VStack>
       </ScaleFade>
@@ -615,7 +644,7 @@ export default function Home() {
           {/* CTA: montrer que chaque boutique est indépendante + inciter à créer la sienne */}
           <Box px={{ base: 4, md: 6 }} mb={6}>
       <Box
-        bg={ctaBg}
+        bg={'transparent'}
         p={{ base: 4, md: 5 }}
         borderRadius="md"
         border="1px solid"
@@ -712,8 +741,8 @@ export default function Home() {
         </Box>
       )}
 
-      {/* Hero section (immersive) */}
-      <HeroNike />
+      {/* Hero section (immersive) - NE S'AFFICHE QUE DANS LA VUE PRODUCTS */}
+      {currentView === 'products' && <HeroNike />}
 
   {/* Bande immersive de vrais produits (unique) */}
 
