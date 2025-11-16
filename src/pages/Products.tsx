@@ -445,7 +445,7 @@ export default function Products() {
   const iconColor = useColorModeValue('#666666', 'gray.300')
 
   const gridColumns = useBreakpointValue({ 
-    base: isPinterestMode ? 'repeat(2, 1fr)' : 'repeat(1, 1fr)', 
+    base: isPinterestMode ? 'repeat(2, 1fr)' : 'repeat(2, 1fr)', 
     sm: isPinterestMode ? 'repeat(2, 1fr)' : 'repeat(2, 1fr)', 
     md: isPinterestMode ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)', 
     lg: isPinterestMode ? 'repeat(4, 1fr)' : 'repeat(4, 1fr)',
