@@ -308,11 +308,6 @@ export default function ProductCard({
         bg={ctaBg}
         boxShadow="sm"
         transition="all 0.3s ease"
-        _hover={{ 
-          transform: 'translateY(-8px)',
-          boxShadow: hoverShadow,
-          borderColor: accentColor
-        }}
         position="relative"
         borderColor={borderColor}
         onMouseEnter={() => setIsHovered(true)}
@@ -387,8 +382,8 @@ export default function ProductCard({
               justifyContent="flex-start"
               p={3}
             >
-              <Badge 
-                bg="ctaBg" 
+              <Badge
+                bg="black" 
                 color="ctaBg" 
                 px={3} 
                 py={2}
