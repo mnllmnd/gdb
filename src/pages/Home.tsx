@@ -632,39 +632,18 @@ export default function Home() {
           {/* CTA: montrer que chaque boutique est indépendante + inciter à créer la sienne */}
           <Box px={{ base: 4, md: 6 }} mb={6}>
      <Box
-  position="relative"
+  bgImage={{ base: "url('https://i.pinimg.com/1200x/c5/1a/53/c51a530043a8406b461ca284c14dc0d6.jpg')", md: 'none' }}
+  bgSize="cover"
+  bgPosition="center"
   borderRadius="sm"
   p={{ base: 3, md: 5 }}
-  overflow="hidden"
 >
-  {/* Video background uniquement sur mobile */}
-  <Box
-    as="video"
-    autoPlay
-    loop
-    muted
-    playsInline
-    objectFit="cover"
-    width="100%"
-    height="100%"
-    position="absolute"
-    top={0}
-    left={0}
-    zIndex={0}
-    display={{ base: 'block', md: 'none' }}
-  >
-    <source src="https://res.cloudinary.com/dcs9vkwe0/video/upload/v1762786387/fazftprabcd9j5leq0pv.mp4" type="video/mp4" />
-  </Box>
-
-  {/* Contenu au-dessus de la vidéo */}
   <HStack
     spacing={4}
     align={{ base: 'center', md: 'center' }}
     justify={{ base: 'center', md: 'space-between' }}
     flexDirection={{ base: 'column', md: 'row' }}
     textAlign={{ base: 'center', md: 'center' }}
-    position="relative"
-    zIndex={1}
   >
     <Box
       position="relative"
