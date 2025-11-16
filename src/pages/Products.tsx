@@ -213,8 +213,8 @@ function ProductsCarousel({ products, title, shopsMap, isPinterestMode }: { prod
               <Box
                 key={p.id}
                 flexShrink={0}
-                width={isPinterestMode ? { base: '160px', md: '200px' } : { base: '280px', md: '320px' }}
-                minWidth={isPinterestMode ? { base: '160px', md: '200px' } : { base: '280px', md: '320px' }}
+                width={isPinterestMode ? { base: '160px', md: '200px' } : { base: '160px', md: '320px' }} // Adapté pour mobile
+                minWidth={isPinterestMode ? { base: '160px', md: '200px' } : { base: '160px', md: '320px' }} // Adapté pour mobile
               >
                 {isPinterestMode ? (
                   <PinterestProductCard
@@ -235,7 +235,7 @@ function ProductsCarousel({ products, title, shopsMap, isPinterestMode }: { prod
                     shopId={shop?.id || p.shop_id || p.seller_id}
                     shopName={shop?.name}
                     shopDomain={shop?.domain}
-                    height={{ base: '320px', md: '380px' }}
+                    height={{ base: '280px', md: '380px' }} // Réduit pour mobile
                     isPinterestMode={isPinterestMode}
                   />
                 )}
@@ -444,8 +444,9 @@ export default function Products() {
   const badgeColor = useColorModeValue('white', 'white')
   const iconColor = useColorModeValue('#666666', 'gray.300')
 
+  // MODIFICATION PRINCIPALE ICI : 2 colonnes sur mobile au lieu de 1
   const gridColumns = useBreakpointValue({ 
-    base: isPinterestMode ? 'repeat(2, 1fr)' : 'repeat(2, 1fr)', 
+    base: isPinterestMode ? 'repeat(2, 1fr)' : 'repeat(2, 1fr)', // Changé de 1 à 2
     sm: isPinterestMode ? 'repeat(2, 1fr)' : 'repeat(2, 1fr)', 
     md: isPinterestMode ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)', 
     lg: isPinterestMode ? 'repeat(4, 1fr)' : 'repeat(4, 1fr)',
@@ -1360,7 +1361,7 @@ export default function Products() {
     }
 
     return (
-      <Grid templateColumns={gridColumns} gap={{ base: 4, md: 6 }}>
+      <Grid templateColumns={gridColumns} gap={{ base: 3, md: 6 }}> {/* Espacement réduit sur mobile */}
         {products.map((p) => {
           const shop = (shopsMap.byId && shopsMap.byId[String(p.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(p.seller_id)])
           return (
@@ -1378,8 +1379,8 @@ export default function Products() {
               shopId={shop?.id || p.shop_id || p.seller_id}
               shopName={shop?.name}
               shopDomain={shop?.domain}
-              height={{ base: '320px', md: '380px' }}
-                      isPinterestMode={isPinterestMode}
+              height={{ base: '280px', md: '380px' }} // Réduit pour mobile
+              isPinterestMode={isPinterestMode}
             />
           )
         })}
@@ -1437,7 +1438,7 @@ export default function Products() {
                   </VStack>
                 </HStack>
 
-                <Grid templateColumns={gridColumns} gap={{ base: 4, md: 6 }}>
+                <Grid templateColumns={gridColumns} gap={{ base: 3, md: 6 }}> {/* Espacement réduit sur mobile */}
                   {(categorizedProducts[0] || []).map((p) => {
                     const shop = (shopsMap.byId && shopsMap.byId[String(p.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(p.seller_id)])
                     return (
@@ -1455,7 +1456,7 @@ export default function Products() {
                         shopId={shop?.id || p.shop_id || p.seller_id}
                         shopName={shop?.name}
                         shopDomain={shop?.domain}
-                        height={{ base: '320px', md: '380px' }}
+                        height={{ base: '280px', md: '380px' }} // Réduit pour mobile
                       />
                     )
                   })}
@@ -1493,7 +1494,7 @@ export default function Products() {
                         </VStack>
                       </HStack>
 
-                      <Grid templateColumns={gridColumns} gap={{ base: 4, md: 6 }}>
+                      <Grid templateColumns={gridColumns} gap={{ base: 3, md: 6 }}> {/* Espacement réduit sur mobile */}
                         {(categorizedProducts[c.id] || []).map((p) => {
                           const shop = (shopsMap.byId && shopsMap.byId[String(p.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(p.seller_id)])
                           return (
@@ -1511,7 +1512,7 @@ export default function Products() {
                               shopId={shop?.id || p.shop_id || p.seller_id}
                               shopName={shop?.name}
                               shopDomain={shop?.domain}
-                              height={{ base: '320px', md: '380px' }}
+                              height={{ base: '280px', md: '380px' }} // Réduit pour mobile
                               isPinterestMode={isPinterestMode}
                             />
                           )
@@ -1565,7 +1566,7 @@ export default function Products() {
     }
 
     return (
-      <Grid templateColumns={gridColumns} gap={{ base: 4, md: 6 }}>
+      <Grid templateColumns={gridColumns} gap={{ base: 3, md: 6 }}> {/* Espacement réduit sur mobile */}
         {popularProducts.map((p) => {
           const shop = (shopsMap.byId && shopsMap.byId[String(p.shop_id)]) || (shopsMap.byOwner && shopsMap.byOwner[String(p.seller_id)])
           return (
@@ -1583,7 +1584,7 @@ export default function Products() {
               shopId={shop?.id || p.shop_id || p.seller_id}
               shopName={shop?.name}
               shopDomain={shop?.domain}
-              height={{ base: '320px', md: '380px' }}
+              height={{ base: '280px', md: '380px' }} // Réduit pour mobile
               isPinterestMode={isPinterestMode}
             />
           )

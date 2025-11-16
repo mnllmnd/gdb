@@ -239,9 +239,6 @@ function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly titl
                 borderRadius="12px"
                 overflow="hidden"
                 boxShadow={cardShadow}
-                border="1px solid"
-                borderColor={cardBorder}
-                transition="all 0.3s ease"
                 _hover={{
                   transform: 'translateY(-4px)',
                   boxShadow: cardHoverShadow,
