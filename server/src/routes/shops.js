@@ -338,8 +338,14 @@ router.delete('/:id', authenticate, async (req, res) => {
     // finally delete the shop
     await query('DELETE FROM shops WHERE id = $1', [id])
     await query('COMMIT;')
+    // Invalidate cache BEFORE responding
+    try {
+      const { query: dbQuery } = await import('../db.js')
+      await cache.invalidate(dbQuery)
+    } catch (e) {
+      console.warn('Cache invalidate after shop delete failed', e.message)
+    }
     res.json({ success: true })
-  try { const { query: dbQuery } = await import('../db.js'); cache.refresh(dbQuery) } catch (e) { console.warn('Cache refresh after shop delete failed', e.message) }
     } catch (err) {
     console.error(err)
     try {

@@ -284,6 +284,10 @@ export const api = {
   user: {
     myLikes: (token?: string) => request('/auth/me/likes', { headers: token ? { Authorization: `Bearer ${token}` } : {} })
   },
+  cache: {
+    // Refresh server cache (used after creating/updating/deleting products to ensure data is fresh)
+    refresh: (token?: string) => request('/cache/refresh-user', { method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : {} })
+  },
   admin: {
     users: (token?: string) => request('/admin/users', { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     setRole: (id: string, role: string, token?: string) =>

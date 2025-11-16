@@ -35,4 +35,20 @@ router.get('/status', authenticate, requireRole('admin'), async (req, res) => {
   }
 })
 
+// Route pour forcer le rafraîchissement du cache (accessible à tous les utilisateurs authentifiés)
+// Utilisé par le frontend après création/modification/suppression de produits
+router.post('/refresh-user', authenticate, async (req, res) => {
+  try {
+    await cache.refresh(query, true) // force=true
+    res.json({ success: true, message: 'Cache refreshed successfully' })
+  } catch (error) {
+    console.error('Cache refresh (user) failed:', error)
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error refreshing cache',
+      error: error.message 
+    })
+  }
+})
+
 export default router

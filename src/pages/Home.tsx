@@ -920,7 +920,6 @@ export default function Home() {
                   borderRadius="md"
                   bg={productBg}
                   _hover={{ transform: 'translateY(-2px)', boxShadow: 'sm' }}
-                  role="link"
                   transition="all 0.2s ease"
                   border="1px solid"
                   borderColor={productBorder}

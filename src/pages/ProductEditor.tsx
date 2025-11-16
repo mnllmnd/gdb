@@ -238,6 +238,12 @@ export default function ProductEditor() {
 
       if (id) {
         await api.products.update(id, payload, token ?? undefined)
+        // Refresh server cache so other users see the update immediately
+        try {
+          await api.cache.refresh(token ?? undefined)
+        } catch (e) {
+          console.warn('Cache refresh after update failed', e)
+        }
         toast({
           title: 'Produit modifié',
           description: 'Votre produit a été mis à jour avec succès',
@@ -247,6 +253,12 @@ export default function ProductEditor() {
         })
       } else {
         const created = await api.products.create(payload, token ?? undefined)
+        // Refresh server cache so new product appears immediately in listings
+        try {
+          await api.cache.refresh(token ?? undefined)
+        } catch (e) {
+          console.warn('Cache refresh after create failed', e)
+        }
         toast({
           title: 'Produit créé',
           description: 'Votre produit a été ajouté avec succès',

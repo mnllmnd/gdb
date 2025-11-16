@@ -100,6 +100,12 @@ export default function SellerDashboard() {
     try {
       const token = getItem('token')
       await api.products.delete(id, token ?? undefined)
+      // Refresh server cache so the deleted product disappears immediately from all listings
+      try {
+        await api.cache.refresh(token ?? undefined)
+      } catch (e) {
+        console.warn('Cache refresh after delete failed', e)
+      }
       setProducts((prev) => prev.filter((p) => String(p.id) !== String(id)))
       try {
         // Ensure removed product is also removed from the user's cart

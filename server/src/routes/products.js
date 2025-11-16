@@ -267,8 +267,14 @@ router.put('/:id', authenticate, async (req, res) => {
       } catch (e) { /* ignore */ }
     }
 
+    // Invalidate cache BEFORE responding so next requests see updated data
+    try {
+      const { query: dbQuery } = await import('../db.js')
+      await cache.invalidate(dbQuery)
+    } catch (e) {
+      console.warn('Cache invalidate after update failed', e.message)
+    }
     res.json(updatedProduct)
-    try { const { query: dbQuery } = await import('../db.js'); cache.refresh(dbQuery) } catch (e) { console.warn('Cache refresh after update failed', e.message) }
   } catch (err) {
     console.error('Update product failed', err)
     if (err && err.code === '23502' && err.column) {
@@ -381,8 +387,14 @@ router.delete('/:id', authenticate, async (req, res) => {
     const p = product.rows[0]
     if (req.user.role !== 'admin' && p.seller_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' })
     await query('DELETE FROM products WHERE id = $1', [id])
+    // Invalidate cache BEFORE responding
+    try {
+      const { query: dbQuery } = await import('../db.js')
+      await cache.invalidate(dbQuery)
+    } catch (e) {
+      console.warn('Cache invalidate after delete failed', e.message)
+    }
     res.json({ success: true })
-    try { const { query: dbQuery } = await import('../db.js'); cache.refresh(dbQuery) } catch (e) { console.warn('Cache refresh after delete failed', e.message) }
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Failed to delete' })
