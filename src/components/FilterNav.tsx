@@ -21,16 +21,12 @@ import { ChevronDownIcon } from '@chakra-ui/icons'
 import { FaStore, FaBox, FaFilter } from 'react-icons/fa'
 
 interface FilterNavProps {
-  readonly view: 'shops' | 'products'
-  readonly onViewChange: (view: 'shops' | 'products') => void
   readonly categories?: any[]
   readonly selectedCategory?: number | null
   readonly onCategoryChange?: (categoryId: number | null) => void
 }
 
 export default function FilterNav({
-  view,
-  onViewChange,
   categories = [],
   selectedCategory,
   onCategoryChange,
@@ -56,77 +52,27 @@ export default function FilterNav({
     >
       <Container maxW="container.xl" py={3}>
         <Flex
-          justify="center"
+          justify="space-between"
           align="center"
           position="relative"
           flexWrap="wrap"
           gap={4}
         >
-          {/* Onglets centrés */}
-          <Tabs
-            index={view === 'shops' ? 0 : 1}
-            onChange={(i) => onViewChange(i === 0 ? 'shops' : 'products')}
-            variant="unstyled"
-          >
-            <TabList gap={isMobile ? 4 : 8}>
-              <Tab
-                fontWeight="500"
-                fontSize={isMobile ? 'sm' : 'md'}
-                color={view === 'shops' ? activeColor : inactiveColor}
-                borderBottom={
-                  view === 'shops'
-                    ? '2px solid currentColor'
-                    : '2px solid transparent'
-                }
-                _hover={{ color: activeColor }}
-                transition="all 0.2s ease"
-                px={isMobile ? 3 : 4}
-                py={2}
-              >
-                <HStack spacing={2}>
-                  <Icon
-                    as={FaStore}
-                    boxSize={isMobile ? 3 : 4}
-                    color={view === 'shops' ? activeColor : textSecondary}
-                  />
-                  <Text color={textPrimary}>Les Boutiques</Text>
-                </HStack>
-              </Tab>
-
-              <Tab
-                fontWeight="500"
-                fontSize={isMobile ? 'sm' : 'md'}
-                color={view === 'products' ? activeColor : inactiveColor}
-                borderBottom={
-                  view === 'products'
-                    ? '2px solid currentColor'
-                    : '2px solid transparent'
-                }
-                _hover={{ color: activeColor }}
-                transition="all 0.2s ease"
-                px={isMobile ? 3 : 4}
-                py={2}
-              >
-                <HStack spacing={2}>
-                  <Icon
-                    as={FaBox}
-                    boxSize={isMobile ? 3 : 4}
-                    color={view === 'products' ? activeColor : textSecondary}
-                  />
-                  <Text color={textPrimary}>Les Produits</Text>
-                </HStack>
-              </Tab>
-            </TabList>
-          </Tabs>
+          {/* Titre Les Produits */}
+          <HStack spacing={2}>
+            <Icon
+              as={FaBox}
+              boxSize={isMobile ? 3 : 4}
+              color={activeColor}
+            />
+            <Text color={textPrimary} fontWeight="500" fontSize={isMobile ? 'sm' : 'md'}>
+              Les Produits
+            </Text>
+          </HStack>
 
           {/* Sélecteur de catégories positionné à droite */}
-          {view === 'products' && categories.length > 0 && (
-            <Box
-              position={isMobile ? 'static' : 'absolute'}
-              right={isMobile ? 0 : 4}
-              top={isMobile ? 'auto' : '50%'}
-              transform={isMobile ? 'none' : 'translateY(-50%)'}
-            >
+          {categories.length > 0 && (
+            <Box>
               <Menu>
                 <MenuButton
                   as={Button}

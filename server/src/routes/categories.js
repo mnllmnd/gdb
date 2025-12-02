@@ -34,7 +34,7 @@ router.get('/:id/products', async (req, res) => {
     }
 
     try {
-      const r = await query('SELECT * FROM products WHERE category_id = $1 ORDER BY created_at DESC', [id])
+      const r = await query('SELECT * FROM products WHERE category_id = $1::integer ORDER BY created_at DESC', [id])
       return res.json(r.rows || [])
     } catch (e) {
       console.warn('DB fallback for category products failed', e && e.message)

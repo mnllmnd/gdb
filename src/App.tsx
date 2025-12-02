@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { Box } from '@chakra-ui/react';
+import { clearInvalidTokens } from './services/auth';
 import Home from './pages/Home';
-import SellerDashboard from './pages/SellerDashboard';
-import ShopSetup from './pages/ShopSetup';
 import ProductEditor from './pages/ProductEditor';
 import Admin from './pages/Admin';
 import Login from './pages/Login';
@@ -15,9 +14,6 @@ import NavBar from './components/NavBar';
 import ScrollRestoration from './components/ScrollRestoration';
 import BottomNav from './components/BottomNav';
 import MyOrders from './pages/MyOrders';
-import SellerShop from './pages/SellerShop';
-import SellerOrders from './pages/SellerOrders';
-import ShopView from './pages/ShopView';
 import Feed from './pages/Feed';
 import CartPage from './pages/Cart';
 import Products from './pages/Products';
@@ -28,6 +24,36 @@ import Wishlist from './pages/Wishlist';
 import { ChatPopup } from './components/ChatPopup';
 
 export default function App() {
+  // Clear invalid tokens on initial load (for backward compatibility after auth system changes)
+  useEffect(() => {
+    try {
+      // Log token and user info for debugging
+      const token = localStorage.getItem('token')
+      const user = localStorage.getItem('user')
+      if (token) {
+        console.debug('[App] Token found:', token.substring(0, 20) + '...')
+        const parts = token.split('.')
+        console.debug('[App] Token format valid:', parts.length === 3 ? '✓ JWT' : '✗ Invalid')
+      } else {
+        console.debug('[App] No token in localStorage')
+      }
+      if (user) {
+        try {
+          const parsed = JSON.parse(user)
+          console.debug('[App] User found:', parsed.id, parsed.display_name, parsed.role)
+        } catch (e) {
+          console.warn('[App] User data corrupted:', e)
+        }
+      } else {
+        console.debug('[App] No user in localStorage')
+      }
+      
+      clearInvalidTokens()
+    } catch (e) {
+      console.warn('Failed to clear invalid tokens', e)
+    }
+  }, [])
+
   // Clear client-side caches on initial load to avoid stale content
   useEffect(() => {
     try {
@@ -83,14 +109,8 @@ function InnerApp() {
       <Box pb={{ base: '96px', md: 0 }}>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/seller" element={<SellerDashboard />} />
-          <Route path="/seller/setup" element={<ShopSetup />} />
-          <Route path="/seller/shop" element={<SellerShop />} />
-          <Route path="/seller/orders" element={<SellerOrders />} />
-          <Route path="/seller/product/:id?" element={<ProductEditor />} />
           <Route path="/orders" element={<MyOrders />} />
           <Route path="/cart" element={<CartPage />} />
-          <Route path="/shop/:domain" element={<ShopView />} />
           <Route path="/feed" element={<Feed />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -100,6 +120,7 @@ function InnerApp() {
           <Route path="/admin" element={<Admin />} />
           <Route path="/products" element={<Products />} />
           <Route path="/products/:id" element={<ProductView />} />
+          <Route path="/seller/product/:id?" element={<ProductEditor />} />
           <Route path="/tutoriel" element={<TutorielPage />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/wishlist" element={<Wishlist />} />

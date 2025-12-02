@@ -11,15 +11,19 @@ const router = express.Router()
 // List products
 router.get('/', async (req, res) => {
   try {
+    console.debug('[GET /products] fetching products')
     // Serve from in-memory cache for speed
     const offset = Number.parseInt(req.query.offset || '0', 10)
     const limit = Number.parseInt(req.query.limit || '100', 10)
+    console.debug('[GET /products] offset=', offset, 'limit=', limit)
     const list = cache.listProducts({ offset, limit })
     // If cache is empty (e.g. stale snapshot or wasn't initialized), fall back to DB
     if (!list || list.length === 0) {
       try {
+        console.debug('[GET /products] cache empty, querying database')
         const r = await query('SELECT * FROM products ORDER BY created_at DESC LIMIT $1 OFFSET $2', [limit, offset])
         const rows = r.rows || []
+        console.debug('[GET /products] database returned', rows.length, 'products')
         // attach images for those products
         try {
           const ids = rows.map(r => r.id)
@@ -40,7 +44,7 @@ router.get('/', async (req, res) => {
             }
           }
         } catch (e) {
-          // non-fatal
+          console.warn('[GET /products] non-fatal error loading images:', e && e.message)
         }
         // attempt to refresh cache in background for future requests
         try {
@@ -51,13 +55,14 @@ router.get('/', async (req, res) => {
         }
         return res.json(rows)
       } catch (err) {
-        console.warn('DB fallback for products list failed', err && err.message)
+        console.error('[GET /products] DB fallback error:', err.message, 'stack:', err.stack)
         // continue to return whatever the cache returned (empty array)
       }
     }
+    console.debug('[GET /products] returning', list.length, 'products from cache')
     return res.json(list)
   } catch (err) {
-    console.error(err)
+    console.error('[GET /products] ERROR:', err.message, 'stack:', err.stack)
     res.status(500).json({ error: 'Failed to list products' })
   }
 })
@@ -70,11 +75,11 @@ router.get('/:id', async (req, res) => {
     const cached = cache.getProductById(id)
     if (cached) return res.json(cached)
 
-    const product = await query('SELECT * FROM products WHERE id = $1', [id])
+    const product = await query('SELECT * FROM products WHERE id = $1::uuid', [id])
     if (product.rowCount === 0) return res.status(404).json({ error: 'Not found' })
     const p = product.rows[0]
     try {
-      const imgs = await query('SELECT url FROM product_images WHERE product_id = $1 ORDER BY position ASC', [id])
+      const imgs = await query('SELECT url FROM product_images WHERE product_id = $1::uuid ORDER BY position ASC', [id])
       const urls = (imgs.rows || []).map(r => r.url).filter(Boolean)
       p.images = Array.from(new Set(urls))
       if ((!p.images || p.images.length === 0) && p.image_url) p.images = [p.image_url]
@@ -181,7 +186,7 @@ router.put('/:id', authenticate, async (req, res) => {
   const { title, description, price, image_url, category_id, quantity, images, discount, original_price } = req.body
   try {
     // check owner
-    const product = await query('SELECT * FROM products WHERE id = $1', [id])
+    const product = await query('SELECT * FROM products WHERE id = $1::uuid', [id])
     if (product.rowCount === 0) return res.status(404).json({ error: 'Not found' })
     const p = product.rows[0]
     if (req.user.role !== 'admin' && p.seller_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' })
@@ -405,6 +410,7 @@ router.delete('/:id', authenticate, async (req, res) => {
 router.get('/:id/likes', async (req, res) => {
   const { id } = req.params
   try {
+    console.debug(`[GET /likes] productId=${id}`)
     let userId = null
     const authHeader = req.headers.authorization
     if (authHeader) {
@@ -412,22 +418,25 @@ router.get('/:id/likes', async (req, res) => {
         const token = authHeader.replace('Bearer ', '')
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
         userId = decoded.id
+        console.debug(`[GET /likes] authenticated userId=${userId}`)
       } catch (e) {
-        // ignore invalid token — treat as anonymous
+        console.debug(`[GET /likes] token verification failed: ${e.message}`)
         userId = null
       }
     }
 
     const cnt = await query('SELECT COUNT(*)::int AS count FROM likes WHERE product_id = $1', [id])
     const count = Number(cnt.rows[0]?.count || 0)
+    console.debug(`[GET /likes] count=${count}`)
     let liked = false
     if (userId) {
       const r = await query('SELECT 1 FROM likes WHERE product_id = $1 AND user_id = $2', [id, userId])
       liked = r.rowCount > 0
+      console.debug(`[GET /likes] liked=${liked}`)
     }
     res.json({ count, liked })
   } catch (err) {
-    console.error('Failed to get likes', err)
+    console.error('[GET /likes] ERROR:', err.message, 'productId:', id, 'stack:', err.stack)
     res.status(500).json({ error: 'Failed to get likes' })
   }
 })
@@ -436,11 +445,14 @@ router.get('/:id/likes', async (req, res) => {
 router.post('/:id/like', authenticate, async (req, res) => {
   const { id } = req.params
   try {
+    console.debug(`[POST /like] userId=${req.user.id}, productId=${id}`)
     await query('INSERT INTO likes (user_id, product_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [req.user.id, id])
     const cnt = await query('SELECT COUNT(*)::int AS count FROM likes WHERE product_id = $1', [id])
-    res.json({ liked: true, count: Number(cnt.rows[0]?.count || 0) })
+    const count = Number(cnt.rows[0]?.count || 0)
+    console.debug(`[POST /like] inserted, count=${count}`)
+    res.json({ liked: true, count })
   } catch (err) {
-    console.error('Like failed', err)
+    console.error('[POST /like] ERROR:', err.message, 'userId:', req.user.id, 'productId:', id, 'stack:', err.stack)
     res.status(500).json({ error: 'Like failed' })
   }
 })
@@ -449,11 +461,14 @@ router.post('/:id/like', authenticate, async (req, res) => {
 router.delete('/:id/like', authenticate, async (req, res) => {
   const { id } = req.params
   try {
+    console.debug(`[DELETE /like] userId=${req.user.id}, productId=${id}`)
     await query('DELETE FROM likes WHERE user_id = $1 AND product_id = $2', [req.user.id, id])
     const cnt = await query('SELECT COUNT(*)::int AS count FROM likes WHERE product_id = $1', [id])
-    res.json({ liked: false, count: Number(cnt.rows[0]?.count || 0) })
+    const count = Number(cnt.rows[0]?.count || 0)
+    console.debug(`[DELETE /like] deleted, count=${count}`)
+    res.json({ liked: false, count })
   } catch (err) {
-    console.error('Unlike failed', err)
+    console.error('[DELETE /like] ERROR:', err.message, 'userId:', req.user.id, 'productId:', id, 'stack:', err.stack)
     res.status(500).json({ error: 'Unlike failed' })
   }
 })

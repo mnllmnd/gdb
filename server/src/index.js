@@ -14,7 +14,6 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Routes import
 import authRoutes from './routes/auth.js';
 import passwordResetRoutes from './routes/passwordReset.js';
 import productRoutes from './routes/products.js';
@@ -22,7 +21,7 @@ import orderRoutes from './routes/orders.js';
 import adminRoutes from './routes/admin.js';
 import testEmailRoutes from './routes/testEmail.js';
 import uploadRoutes from './routes/uploads.js';
-import shopRoutes from './routes/shops.js';
+// import shopRoutes from './routes/shops.js'; // REMOVED
 import categoryRoutes from './routes/categories.js';
 import recommendRoutes from './routes/recommend.js';
 import feedRoutes from './routes/feed.js';
@@ -96,7 +95,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/debug', testEmailRoutes);
 app.use('/api/uploads', uploadRoutes);
-app.use('/api/shops', shopRoutes);
+// app.use('/api/shops', shopRoutes); // REMOVED: Shop functionality disabled
 app.use('/api/categories', categoryRoutes);
 app.use('/api/recommend', recommendRoutes);
 app.use('/api/feed', feedRoutes);

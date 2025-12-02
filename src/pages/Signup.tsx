@@ -175,7 +175,7 @@ export default function Signup() {
                   value={phone}
                   onChange={setPhone}
                   placeholder="Ex : +221 77 123 45 67"
-                  countrySelectProps={{ searchable: true }}
+                  countrySelectProps={{ searchable: 'true' }}
                   style={{
                     backgroundColor: 'transparent',
                     width: '100%',

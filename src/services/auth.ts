@@ -45,6 +45,21 @@ export function signOut() {
   try { if (typeof globalThis !== 'undefined' && typeof globalThis.dispatchEvent === 'function') globalThis.dispatchEvent(new Event('cart:changed')) } catch (e) { /* ignore */ }
 }
 
+export function clearInvalidTokens() {
+  // If token exists but is not a valid JWT format (no dots), it's an old token - remove it
+  const token = getItem('token')
+  if (token && typeof token === 'string') {
+    const parts = token.split('.')
+    // JWT should have 3 parts (header.payload.signature)
+    if (parts.length !== 3) {
+      console.warn('⚠️ Invalid token format detected - clearing old tokens')
+      signOut()
+      return true
+    }
+  }
+  return false
+}
+
 export function getCurrentUser() {
   const u = getItem('user')
   if (u) {

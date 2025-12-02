@@ -272,7 +272,7 @@ function PinterestProductCard({ product, shop }: { product: any; shop: any }) {
   )
 }
 
-// Composant pour le filtre de prix en FCFA
+// Composant pour le filtre de prix en F
 function PriceFilter({ minPrice, maxPrice, onPriceChange, onApplyPriceFilter }: { 
   minPrice: number, 
   maxPrice: number, 
@@ -298,17 +298,17 @@ function PriceFilter({ minPrice, maxPrice, onPriceChange, onApplyPriceFilter }: 
     onPriceChange(0, 1000000)
   }
 
-  // Fonction pour formater les prix en FCFA
+  // Fonction pour formater les prix en F
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('fr-FR', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(price) + ' FCFA'
+    }).format(price) + ' F'
   }
 
   return (
     <VStack spacing={4} align="stretch" p={4}>
-      <Text fontWeight="600" fontSize="sm">Filtrer par prix (FCFA)</Text>
+      <Text fontWeight="600" fontSize="sm">Filtrer par prix (F)</Text>
       
       <RangeSlider
         aria-label={['prix min', 'prix max']}
@@ -454,35 +454,29 @@ export default function Products() {
 
   const isMobile = useBreakpointValue({ base: true, md: false })
 
-  // Fonction pour formater les prix en FCFA
+  // Fonction pour formater les prix en F
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('fr-FR', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(price) + ' FCFA'
+    }).format(price) + ' F'
   }
 
   React.useEffect(() => {
     let mounted = true
     async function load() {
       try {
-        const [productsData, categoriesData, shopsData] = await Promise.all([
+        const [productsData, categoriesData] = await Promise.all([
           api.products.list(),
           api.categories.list(),
-          api.shops.list(),
         ])
         if (!mounted) return
         setProducts(productsData || [])
         setAllProducts(productsData || [])
         setCategories(categoriesData || [])
 
-        const byId: Record<string, any> = {}
-        const byOwner: Record<string, any> = {}
-        ;(shopsData || []).forEach((s: any) => {
-          if (s?.id) byId[String(s.id)] = s
-          if (s?.owner_id) byOwner[String(s.owner_id)] = s
-        })
-        setShopsMap({ byId, byOwner })
+        // Shops removed - no longer loading shop data
+        setShopsMap({ byId: {}, byOwner: {} })
 
         const map = {} as Record<number, any[]>
         ;(productsData || []).forEach((p: any) => {
@@ -913,7 +907,7 @@ export default function Products() {
                 <PopoverArrow />
                 <PopoverCloseButton />
                 <PopoverHeader fontWeight="600" borderBottom="1px solid" borderColor={borderColor}>
-                  Filtrer par prix (FCFA)
+                  Filtrer par prix (F)
                 </PopoverHeader>
                 <PopoverBody p={0}>
                   <PriceFilter
@@ -1114,7 +1108,7 @@ export default function Products() {
             <VStack align="stretch" spacing={6}>
               {/* Filtre de prix mobile */}
               <Box>
-                <Text fontWeight="600" mb={4} fontSize="lg">Prix (FCFA)</Text>
+                <Text fontWeight="600" mb={4} fontSize="lg">Prix (F)</Text>
                 <PriceFilter
                   minPrice={minPrice}
                   maxPrice={maxPrice}

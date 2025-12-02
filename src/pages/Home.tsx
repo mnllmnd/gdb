@@ -20,8 +20,8 @@ import {
   CardBody,
   Fade,
 } from '@chakra-ui/react'
-import { CloseIcon, ArrowUpIcon, ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons'
-import { FiPackage, FiShoppingBag } from 'react-icons/fi'
+import { CloseIcon, ArrowUpIcon } from '@chakra-ui/icons'
+import { FiPackage } from 'react-icons/fi'
 import FilterNav from '../components/FilterNav'
 import AppTutorial from '../components/AppTutorial'
 import HeroNike from '../components/HeroNike'
@@ -49,15 +49,6 @@ interface Category {
   name: string
 }
 
-interface Shop {
-  id: number
-  name: string
-  logo_url?: string
-  cover_url?: string
-  domain?: string
-  followers?: number
-}
-
 // ✅ Fonction utilitaire pour normaliser les images
 const normalizeImages = (product: Product): string[] => {
   if (Array.isArray(product.images)) {
@@ -72,942 +63,294 @@ const normalizeImages = (product: Product): string[] => {
   return []
 }
 
-// Composant Carrousel Boutiques Style Zara/Nike Premium
-function ShopsCarousel({ shops, title }: { readonly shops: Shop[]; readonly title: string }) {
-  const scrollRef = React.useRef<HTMLDivElement>(null)
-  const [canScrollLeft, setCanScrollLeft] = React.useState(false)
-  const [canScrollRight, setCanScrollRight] = React.useState(true)
-  const [isHovered, setIsHovered] = React.useState(false)
-  
-  // Couleurs et styles
-  const cardBg = useColorModeValue('white', 'black')
-  const cardBorder = useColorModeValue('gray.100', 'gray.700')
-  const cardShadow = useColorModeValue('0 2px 8px rgba(0,0,0,0.06)', '0 2px 8px rgba(0,0,0,0.3)')
-  const cardHoverShadow = useColorModeValue('0 8px 24px rgba(0,0,0,0.12)', '0 8px 24px rgba(0,0,0,0.4)')
-  const buttonBg = useColorModeValue('white', 'gray.800')
-  const buttonBorder = useColorModeValue('gray.200', 'gray.600')
-  const overlayBg = useColorModeValue('linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)', 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)')
-  const textColor = useColorModeValue('white', 'whiteAlpha.900')
-  const buttonTextColor = useColorModeValue('black', 'white')
-  const buttonBgColor = useColorModeValue('white', 'black')
-
-  const checkScroll = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current
-      setCanScrollLeft(scrollLeft > 0)
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10)
-    }
-  }
-
-  React.useEffect(() => {
-    checkScroll()
-    const el = scrollRef.current
-    if (el) {
-      el.addEventListener('scroll', checkScroll)
-      return () => el.removeEventListener('scroll', checkScroll)
-    }
-  }, [shops])
-
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const cardWidth = 320 // Largeur approximative d'une carte
-      const scrollAmount = cardWidth * 2
-      scrollRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
-      })
-    }
-  }
-
-  // Dimensions responsive
-  const cardWidths = {
-    base: 'calc(50% - 12px)', // 2 items sur mobile
-    md: 'calc(33.333% - 16px)', // 3 items sur tablette
-    lg: 'calc(25% - 18px)', // 4 items sur desktop
-  }
-
-  const cardHeights = {
-    base: '280px',
-    md: '320px',
-    lg: '360px',
-  }
-
-  return (
-    <Box
-      position="relative"
-      my={{ base: 8, md: 12 }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* En-tête de section minimaliste */}
-      <Box px={{ base: 4, md: 6 }} mb={6}>
-        <Heading
-          as="h2"
-          fontSize={{ base: 'xl', md: '2xl' }}
-          fontWeight="500"
-          letterSpacing="-0.4px"
-          color={useColorModeValue('black', 'white')}
-          textTransform="uppercase"
-        >
-          {title}
-        </Heading>
-      </Box>
-
-      {/* Contrôles de navigation */}
-      <Box position="relative">
-        {canScrollLeft && (
-          <IconButton
-            aria-label="Précédent"
-            icon={<ChevronLeftIcon boxSize={5} />}
-            position="absolute"
-            left={2}
-            top="50%"
-            transform="translateY(-50%)"
-            zIndex={10}
-            bg={buttonBg}
-            color={buttonTextColor}
-            border="1px solid"
-            borderColor={buttonBorder}
-            size="md"
-            opacity={isHovered ? 1 : 0}
-            _hover={{ 
-              bg: useColorModeValue('gray.50', 'gray.700'),
-              transform: "translateY(-50%) scale(1.05)"
-            }}
-            onClick={() => scroll('left')}
-            transition="all 0.3s ease"
-            boxShadow="lg"
-            borderRadius="full"
-          />
-        )}
-
-        {canScrollRight && (
-          <IconButton
-            aria-label="Suivant"
-            icon={<ChevronRightIcon boxSize={5} />}
-            position="absolute"
-            right={2}
-            top="50%"
-            transform="translateY(-50%)"
-            zIndex={10}
-            bg={buttonBg}
-            color={buttonTextColor}
-            border="1px solid"
-            borderColor={buttonBorder}
-            size="md"
-            opacity={isHovered ? 1 : 0}
-            _hover={{ 
-              bg: useColorModeValue('gray.50', 'gray.700'),
-              transform: "translateY(-50%) scale(1.05)"
-            }}
-            onClick={() => scroll('right')}
-            transition="all 0.3s ease"
-            boxShadow="lg"
-            borderRadius="full"
-          />
-        )}
-
-        {/* Carrousel des boutiques style produit Zara/Nike */}
-        <Box
-          ref={scrollRef}
-           
-          display="flex"
-          overflowX="auto"
-          gap={{ base: 3, md: 4 }}
-          px={{ base: 4, md: 6 }}
-          py={2}
-          css={{
-            scrollbarWidth: 'none',
-            '&::-webkit-scrollbar': { display: 'none' },
-          }}
-        >
-          {shops.map((shop) => {
-            const shopHref = shop.domain ? `/shop/${shop.domain}` : `/shop/${shop.id}`
-            const imageUrl = shop.cover_url || shop.logo_url
-            
-            return (
-              <Box
-                key={shop.id}
-                position="relative"
-                flexShrink={0}
-                w={cardWidths}
-                minW={cardWidths}
-                h={cardHeights}
-                bg={cardBg}
-                borderRadius="12px"
-                overflow="hidden"
-                boxShadow={cardShadow}
-               
-              >
-                {/* Lien principal couvrant toute la carte */}
-                <Box
-                  as={RouterLink}
-                  to={shopHref}
-                  position="absolute"
-                  inset={0}
-                  zIndex={1}
-                  _hover={{ textDecoration: 'none' }}
-                />
-                
-                {/* Image de la boutique */}
-                <Box
-                  position="absolute"
-                  inset={0}
-                  bg={useColorModeValue('gray.100', 'gray.800')}
-                >
-                  {imageUrl ? (
-                    <Image
-                      src={imageUrl}
-                      alt={shop.name}
-                      objectFit="cover"
-                      w="100%"
-                      h="100%"
-                      transition="transform 0.3s ease"
-                      _groupHover={{ transform: 'scale(1.05)' }}
-                    />
-                  ) : (
-                    <VStack
-                      spacing={2}
-                      w="100%"
-                      h="100%"
-                      justify="center"
-                      align="center"
-                      color={useColorModeValue('gray.400', 'gray.500')}
-                    >
-                      <Text fontSize="4xl" fontWeight="300">
-                        {shop.name?.charAt(0) || '?'}
-                      </Text>
-                      <Text fontSize="sm" textAlign="center" px={4}>
-                        {shop.name}
-                      </Text>
-                    </VStack>
-                  )}
-                </Box>
-
-                {/* Overlay gradient pour le texte */}
-                <Box
-                  position="absolute"
-                  bottom={0}
-                  left={0}
-                  right={0}
-                  h="50%"
-                  bg={overlayBg}
-                  zIndex={2}
-                />
-
-                {/* Contenu overlay */}
-                <Box
-                  position="absolute"
-                  bottom={0}
-                  left={0}
-                  right={0}
-                  zIndex={3}
-                  p={4}
-                >
-                  {/* Nom de la boutique */}
-                  <Text
-                    fontSize={{ base: 'md', md: 'lg' }}
-                    fontWeight="500"
-                    color={textColor}
-                    mb={3}
-                    noOfLines={1}
-                    textShadow="0 1px 2px rgba(0,0,0,0.5)"
-                  >
-                    {shop.name}
-                  </Text>
-
-                  {/* Bouton "Voir" style Zara */}
-                  <Box
-                    display="inline-flex"
-                    bg={buttonBgColor}
-                    color={buttonTextColor}
-                    px={5}
-                    py={2}
-                    borderRadius="md"
-                    fontSize="xs"
-                    fontWeight="500"
-                    letterSpacing="0.3px"
-                    textTransform="capitalize"
-                    transition="all 0.2s ease"
-                     _hover={{ transform: 'scale(1.02)' }}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      window.location.href = shopHref
-                    }}
-                    position="relative"
-                    zIndex={4}
-                    cursor="pointer"
-                  >
-                    Voir
-                  </Box>
-                </Box>
-              </Box>
-            )
-          })}
-        </Box>
-      </Box>
-    </Box>
-  )
+// ✅ Fonction pour formater les prix en F
+const formatPrice = (price: number): string => {
+  return new Intl.NumberFormat('fr-FR', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(price) + ' F'
 }
 
 export default function Home() {
-  const [shops, setShops] = React.useState<Shop[]>([])
-  const [popularShops, setPopularShops] = React.useState<Shop[]>([])
-  const [shopsMap, setShopsMap] = React.useState<Record<string, any>>({})
+  const { save, restore } = usePageState()
   const [products, setProducts] = React.useState<Product[]>([])
   const [categories, setCategories] = React.useState<Category[]>([])
-  
-  const [currentView, setCurrentView] = React.useState<'shops' | 'products'>(() => {
-    const savedView = localStorage.getItem('homeView')
-    // Par défaut, afficher les boutiques pour les nouveaux visiteurs
-    return savedView === 'products' ? 'products' : 'shops'
-  })
-
-  
-
-  React.useEffect(() => {
-    localStorage.setItem('homeView', currentView)
-  }, [currentView])
-
   const [selectedCategory, setSelectedCategory] = React.useState<number | null>(null)
-  // Page state preservation (filters, view) using sessionStorage per history entry
-  const navigationType = useNavigationType()
-  const { save: savePageState, restore: restorePageState } = usePageState()
-
-  // On mount: restore state only when coming back via browser (POP) to avoid side-effects on initial navigation
-  React.useEffect(() => {
-    try {
-      if (navigationType === 'POP') {
-        const saved = restorePageState()
-        if (saved) {
-          if (typeof saved.selectedCategory !== 'undefined') setSelectedCategory(saved.selectedCategory)
-          if (saved.currentView) setCurrentView(saved.currentView)
-        }
-      }
-    } catch (e) {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  // Save current page state when this component unmounts (i.e. navigation away)
-  React.useEffect(() => {
-    return () => {
-      try {
-        savePageState({ selectedCategory, currentView })
-      } catch (e) {}
-    }
-  }, [selectedCategory, currentView, savePageState])
   const [isLoading, setIsLoading] = React.useState(true)
   const [showScrollTop, setShowScrollTop] = React.useState(false)
-
-  const [welcomeDismissed, setWelcomeDismissed] = React.useState(() => {
-    try { return typeof globalThis.window !== 'undefined' && globalThis.localStorage?.getItem('welcomeDismissed') === '1' } catch { return false }
-  })
-
-  const currentUser = React.useMemo(() => {
+  const [currentUser] = React.useState(() => {
     try {
-      const u = typeof globalThis.window !== 'undefined' ? globalThis.localStorage?.getItem('user') : null
+      const u = localStorage.getItem('user')
       return u ? JSON.parse(u) : null
     } catch {
       return null
     }
-  }, [])
-
-  React.useEffect(() => {
-    const handleBeforeUnload = () => {
-      globalThis.localStorage?.setItem('homeScroll', String(globalThis.scrollY || 0))
-    }
-    globalThis.addEventListener?.('beforeunload', handleBeforeUnload)
-    return () => globalThis.removeEventListener?.('beforeunload', handleBeforeUnload)
-  }, [])
-
-  React.useEffect(() => {
-    const savedScroll = globalThis.localStorage?.getItem('homeScroll')
-    if (savedScroll) {
-      globalThis.scrollTo?.(0, Number(savedScroll))
-    }
-  }, [])
-  
-  // If coming back from ProductView we may have a focusProductId to jump to
-  const location = useLocation()
-  React.useEffect(() => {
+  })
+  const [welcomeDismissed] = React.useState(() => {
     try {
-      const state = (location?.state as any) || {}
-      const focusId = state.focusProductId || state.from?.focusProductId || null
-      if (!focusId) return
-      // Try to find the element and jump to it immediately (no smooth scroll)
-      let attempts = 0
-      const maxAttempts = 10
-      const tryJump = () => {
-        attempts += 1
-        const el = document.getElementById(`product-${String(focusId)}`)
-        if (el) {
-          el.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });
-          try {
-            el.setAttribute('tabindex', '-1');
-            (el as HTMLElement).focus();
-          } catch {
-            // ignore focus error
-          }
-          try { 
-            el.animate(
-              [
-                { boxShadow: '0 0 0px rgba(0,0,0,0)' }, 
-                { boxShadow: '0 0 14px rgba(0,150,136,0.28)' }, 
-                { boxShadow: '0 0 0px rgba(0,0,0,0)' }
-              ], 
-              { duration: 900 }
-            ) 
-          } catch {
-            // ignore animation error
-          }
-        } else if (attempts < maxAttempts) {
-          setTimeout(tryJump, 60)
-        }
-      }
-      tryJump()
-    } catch {
-      // ignore scroll error
-    }
-  }, [location])
-
-  // Detect Pinterest mode (url or localStorage) so we can adjust layouts
-  const isPinterestMode = React.useMemo(() => {
-    try {
-      const params = new URLSearchParams(globalThis.location?.search || '')
-      if (params.get('view') === 'pinterest') return true
-      const saved = typeof globalThis.window !== 'undefined' ? (globalThis.localStorage?.getItem('home:view') || globalThis.localStorage?.getItem('products:view')) : null
-      return saved === 'pinterest'
+      return localStorage.getItem('welcomeDismissed') === 'true'
     } catch {
       return false
     }
-  }, [location.search])
- 
-  const sectionBg = useColorModeValue('white', 'gray.800')
-  const textColor = useColorModeValue('black', 'white')
-  const borderColor = useColorModeValue('gray.200', 'gray.600')
-  const secondaryTextColor = useColorModeValue('gray.600', 'gray.400')
-  const ctaBg = useColorModeValue('white', 'black')
-  const ctaColor = useColorModeValue('black', 'white')
-  const hoverBgVar = useColorModeValue('gray.100', 'gray.800')
-  const productBgVar = useColorModeValue('white', 'black')
-  const productBorderVar = useColorModeValue('gray.200', 'gray.800')
-  const productTextColorVar = useColorModeValue('black', 'white')
+  })
 
-  // Products visible according to selected category filter
-  const visibleProducts = React.useMemo(() => {
-    if (!products) return []
-    if (selectedCategory == null) return products
-    return products.filter((p) => (p.category_id ?? 0) === selectedCategory)
-  }, [products, selectedCategory])
+  const location = useLocation()
+  const navigationType = useNavigationType()
+  const bgColor = useColorModeValue('white', 'gray.900')
 
+  // Load data on mount
   React.useEffect(() => {
-    async function loadData() {
+    const loadData = async () => {
       try {
-        const [shopsData, categoriesData, productsData, popularData] = await Promise.all([
-          api.shops.list(),
+        setIsLoading(true)
+        const [categoriesData, productsData] = await Promise.all([
           api.categories.list(),
           api.products.list(),
-          api.shops.popular(),
         ])
-        
-        setShops(shopsData)
-        const byId: Record<string, any> = {}
-        const byOwner: Record<string, any> = {}
-        ;(shopsData || []).forEach((s: any) => {
-          if (s?.id) byId[String(s.id)] = s
-          if (s?.owner_id) byOwner[String(s.owner_id)] = s
-        })
-        setShopsMap({ byId, byOwner })
-        setCategories(categoriesData)
-        setProducts(productsData)
-        setPopularShops(popularData || [])
-      } catch (err) {
-        console.error('Failed to load data', err)
-        setShops([])
-        setProducts([])
-        setCategories([])
+
+        setCategories(categoriesData || [])
+        setProducts(productsData || [])
+      } catch (error) {
+        console.error('[Home] Error loading data:', error)
       } finally {
         setIsLoading(false)
       }
     }
+
     loadData()
   }, [])
 
+  // Handle scroll
   React.useEffect(() => {
-    // Welcome popup: show once for logged-in users unless dismissed
-    if (!currentUser) return
-    if (welcomeDismissed) return
-    // Popup removed - minimaliste approach
-  }, [currentUser, welcomeDismissed])
-
-  React.useEffect(() => {
-    const onScroll = () => {
-      const scrollY = globalThis.scrollY ?? 0
-      setShowScrollTop(scrollY > 300)
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300)
     }
-    globalThis.addEventListener?.('scroll', onScroll)
-    onScroll()
-    return () => globalThis.removeEventListener?.('scroll', onScroll)
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const handleSearch = React.useCallback(async (searchQuery: string) => {
-    if (!searchQuery.trim()) {
-      const productsData = await api.products.list()
-      setProducts(productsData?.slice(0, 12) || [])
-      return
-    }
-
-    setIsLoading(true)
-    try {
-      if (currentView === 'products') {
-        const allProducts = await api.products.list()
-        const searchTerms = searchQuery.trim().toLowerCase().split(/\s+/).filter(Boolean)
-
-        const filteredProducts = allProducts?.filter((product: Product) => {
-          const searchText = `${product.title || product.name || ''} ${product.description || ''}`.toLowerCase()
-          return searchTerms.every(term => searchText.includes(term))
-        }) || []
-        setProducts(filteredProducts)
-      } else {
-        const results = await api.shops.search(searchQuery.trim())
-        setShops(results)
-      }
-    } catch (err) {
-      console.error('Search failed', err)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [currentView])
-
+  // Restore scroll position
   React.useEffect(() => {
-    // @ts-ignore
-    globalThis.handleGlobalSearch = handleSearch
-  }, [handleSearch])
-
-  React.useEffect(() => {
-    const map: Record<number, Product[]> = {}
-    for (const p of products) {
-      const cid = p.category_id ?? 0
-      if (!map[cid]) map[cid] = []
-      map[cid].push(p)
-    }
-    // map is used for categorization but not stored
-  }, [products])
-
-  React.useEffect(() => {
-    let isMounted = true
-
-    const reloadData = async () => {
-      setIsLoading(true)
-      try {
-        if (currentView === 'products') {
-          const productsData = await api.products.list()
-          if (isMounted) setProducts(productsData?.slice(0, 12) || [])
-        } else {
-          const shopsData = await api.shops.list()
-          if (isMounted) setShops(shopsData)
-        }
-      } catch (err) {
-        console.error('Reload failed', err)
-      } finally {
-        if (isMounted) setIsLoading(false)
+    if (navigationType === 'POP') {
+      const savedState = restore()
+      if (savedState?.scrollPosition > 0) {
+        window.scrollTo(0, savedState.scrollPosition)
       }
     }
+  }, [navigationType, restore])
 
-    reloadData()
-    return () => { isMounted = false }
-  }, [currentView])
+  // Filter products by category
+  const filteredProducts = selectedCategory
+    ? products.filter((p) => p.category_id === selectedCategory)
+    : products
 
-  const renderShopsView = () => {
-    if (!shops?.length) {
-      return <NoResults message="Aucune boutique trouvée" onClear={() => handleSearch('')} />
-    }
+  const handleCategoryChange = (categoryId: number | null) => {
+    setSelectedCategory(categoryId)
+    save({ scrollPosition: 0 })
+  }
 
-    const popularIds = new Set((popularShops || []).map(p => String(p.id)))
-    const otherShops = (shops || []).filter(s => !popularIds.has(String(s.id)))
-
-    return (
-      <ScaleFade in={!isLoading} initialScale={0.95}>
-        <VStack spacing={0} align="stretch">
-          {/* Boutiques populaires */}
-          {popularShops && popularShops.length > 0 && (
-            <ShopsCarousel shops={popularShops} title="Boutiques" />
-          )}
-
-          {/* Toutes les boutiques */}
-          {otherShops.length > 0 && (
-            <ShopsCarousel shops={otherShops} title="Découvrir les Boutiques" />
-          )}
-        </VStack>
-      </ScaleFade>
-    )
+  const handleScrollTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    save({ scrollPosition: 0 })
   }
 
   return (
-    <Box minH="100vh">
+    <Box bg={bgColor} minH="100vh">
+      {!welcomeDismissed && <WelcomePopup />}
+      
+      <HeroNike />
+      <HeroProductStrip />
+      
       <AppTutorial />
-      <FilterNav 
-        view={currentView} 
-        onViewChange={setCurrentView}
-        categories={categories}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-      />
 
-      {/* Si l'utilisateur est en vue 'shops', afficher les boutiques dès le haut de page */}
-      {currentView === 'shops' && (
-        <Box px={{ base: 0, md: 0 }}>
-          {/* CTA: montrer que chaque boutique est indépendante + inciter à créer la sienne */}
-          <Box px={{ base: 4, md: 6 }} mb={6}>
-     <Box
-  bgImage={{ base: "url('https://i.pinimg.com/1200x/c5/1a/53/c51a530043a8406b461ca284c14dc0d6.jpg')", md: 'none' }}
-  bgSize="cover"
-  bgPosition="center"
-  borderRadius="sm"
-  p={{ base: 3, md: 5 }}
->
-  <HStack
-    spacing={4}
-    align={{ base: 'center', md: 'center' }}
-    justify={{ base: 'center', md: 'space-between' }}
-    flexDirection={{ base: 'column', md: 'row' }}
-    textAlign={{ base: 'center', md: 'center' }}
-  >
-    <Box
-      position="relative"
-      borderRadius="xl"
-     
-    >
-      {/* Overlay pour contraste du texte */}
-      <Box
-        position="absolute"
-        inset={0}
-        bgGradient="linear(to-b, rgba(0,0,0,0.36), rgba(0,0,0,0.12))"
-      />
+      <Container maxW="container.xl" py={8}>
+        <FilterNav 
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={handleCategoryChange}
+        />
 
-      <HStack
-        spacing={3}
-        align="center"
-        justify="center"
-        p={6}
-        position="relative"
-        zIndex={1}
-      >
-        <Icon as={FiShoppingBag} boxSize={{ base: 5, md: 6 }} color="white" />
-        <VStack align={{ base: 'center', md: 'start' }} spacing={0}>
-          <Heading as="h2" size="md" fontWeight="400" color="white">
-            Boutiques et Produits
-          </Heading>
-          <Text fontSize="xs" color="whiteAlpha.900">
-            Explorezzz
-          </Text>
-        </VStack>
-      </HStack>
-    </Box>
-
-    <HStack spacing={3} mt={{ base: 3, md: 0 }}>
-      <Button
-        as={RouterLink}
-        to="/products"
-        colorScheme="brand"
-        borderRadius="md"
-        px={{ base: 5, md: 5 }}
-        py={{ base: 2.5, md: 3 }}
-        fontWeight="500"
-        width={{ base: 'full', md: 'auto' }}
-        fontSize="sm"
-      >
-        Parcourir le marché
-      </Button>
-
-      <Button
-        as={RouterLink}
-        to="/seller"
-        variant="ghost"
-        borderRadius="md"
-        px={{ base: 5, md: 5 }}
-        py={{ base: 2.5, md: 3 }}
-        fontWeight="500"
-        width={{ base: 'full', md: 'auto' }}
-        fontSize="sm"
-        bg={ctaBg}
-      >
-        Créer ma boutique
-      </Button>
-    </HStack>
-  </HStack>
-</Box>
-
-    </Box>
-
-
-          {renderShopsView()}
-          {/* Product carousel inside Shops view to mirror the products layout */}
-          <Container id="shops-products-grid" maxW={{ base: '100%', lg: '90%', xl: '85%' }} py={8} px={{ base: 4, md: 6 }}>
-            <Fade in={!isLoading}>
-              <VStack spacing={8} align="stretch">
-                <HeroProductStrip products={visibleProducts} shopsMap={shopsMap} />
-              </VStack>
-            </Fade>
-          </Container>
-        </Box>
-      )}
-
-      {/* Hero section (immersive) - NE S'AFFICHE QUE DANS LA VUE PRODUCTS */}
-      {currentView === 'products' && <HeroNike />}
-
-  {/* Bande immersive de vrais produits (unique) */}
-
-      {/* Two-column promo tiles */}
-      <Box as="section" px={{ base: 4, md: 6 }} py={6}>
-        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3}>
-          {(visibleProducts || []).slice(0, 2).map((p) => {
-            const imgs = normalizeImages(p as any)
-            const img = imgs?.length ? imgs[0] : '/img/b.jfif'
-            const shop = (shopsMap?.byId?.[String((p as any).shop_id)] || shopsMap?.byOwner?.[String((p as any).seller_id)]) || null
-            const shopDomain = shop?.domain || shop?.name
-            const target = shopDomain ? `/shop/${shopDomain}?product=${(p as any).id}` : `/products/${(p as any).id}`
-            const hoverBg = hoverBgVar
-
-            return (
-              <Box
-                key={(p as any).id}
-                position="relative"
-                borderRadius="md"
-                overflow="hidden"
-                minH={{ base: '200px', md: '360px' }}
-              >
-                <Image
-                  src={String(img)}
-                  alt={String(p.title || (p as any).name || 'product')}
-                  objectFit="cover"
-                  w="100%"
-                  h="100%"
-                />
-                
-                <Box
-                  position="absolute"
-                  inset={0}
-                  bgGradient="linear(to-b, rgba(0,0,0,0.0), rgba(0,0,0,0.4))"
-                />
-                
-                <Box
-                  position="absolute"
-                  left={{ base: 3, md: 8 }}
-                  bottom={{ base: 4, md: 8 }}
-                  color="white"
-                  zIndex={2}
-                  maxW={{ md: 'lg' }}
-                >
-                  <Text
-                    fontSize="xs"
-                    textTransform="capitalize"
-                    letterSpacing="0.5px"
-                    color="white"
-                    fontWeight="300"
-                  >
-                    {(p as any).category_name || ''}
-                  </Text>
-
-                  <Heading
-                    size={{ base: 'md', md: 'lg' }}
-                    mt={1}
-                    color="white"
-                    fontWeight="300"
-                    letterSpacing="-0.3px"
-                  >
-                    {p.title || (p as any).name}
-                  </Heading>
-
-                          <Button
-                            mt={3}
-                            as={RouterLink}
-                            to={`/products/${(p as any).id}`}
-                            state={{ from: { pathname: location?.pathname || '/', focusProductId: String((p as any).id) } }}
-                            bg={ctaBg}
-                            color={ctaColor}
-                            borderRadius="md"
-                            px={5}
-                            py={2}
-                            fontWeight="500"
-                            size="sm"
-                            textTransform="capitalize"
-                            letterSpacing="0.3px"
-                            fontSize="xs"
-                            _hover={{ bg: hoverBg }}
-                          >
-                            Voir
-                          </Button>
-                </Box>
-              </Box>
-            )
-          })}
-        </SimpleGrid>
-      </Box>
-
-      {/* Additional promo tiles were moved to the end of the page (after the carousel) */}
-
-      <Container id="products-grid" maxW={{ base: '100%', lg: '90%', xl: '85%' }} py={8} px={{ base: 4, md: 6 }}>
         {isLoading ? (
-          <Center py={12}>
-            <VStack spacing={4}>
-              <Box position="relative">
-                <Spinner 
-                  size="xl" 
-                  color="brand.500" 
-                  thickness="4px"
-                  speed="0.8s"
-                />
-                <Icon 
-                  as={FiPackage} 
-                  position="absolute" 
-                  top="50%" 
-                  left="50%" 
-                  transform="translate(-50%, -50%)"
-                  boxSize={6}
-                  color="brand.500"
-                />
-              </Box>
-              <Text color={textColor} fontSize="lg" fontWeight="500">
-                Chargement en cours...
-              </Text>
-            </VStack>
+          <Center py={16}>
+            <Spinner size="lg" color="brand.500" />
           </Center>
+        ) : filteredProducts.length === 0 ? (
+          <EmptyState 
+            message="Aucun produit trouvé"
+            onClear={() => handleCategoryChange(null)}
+          />
         ) : (
-          currentView === 'products' ? (
-            <Fade in={!isLoading}>
-              <VStack spacing={8} align="stretch">
-                <HeroProductStrip products={visibleProducts} shopsMap={shopsMap} />
-              </VStack>
-            </Fade>
-          ) : null
+          <SimpleGrid
+            columns={{ base: 1, sm: 2, md: 3, lg: 4 }}
+            spacing={6}
+            py={8}
+          >
+            {filteredProducts.map((product) => (
+              <ScaleFade key={product.id} initialScale={0.9} in={true}>
+                <RouterLink to={`/product/${product.id}`} style={{ textDecoration: 'none' }}>
+                  <Box
+                    borderRadius="lg"
+                    overflow="hidden"
+                    bg={useColorModeValue('white', 'gray.800')}
+                    boxShadow="sm"
+                    _hover={{ boxShadow: 'md', transform: 'translateY(-2px)' }}
+                    transition="all 0.2s"
+                    cursor="pointer"
+                  >
+                    {/* Product Image */}
+                    <Box position="relative" w="100%" paddingBottom="100%" bg={useColorModeValue('gray.100', 'gray.700')}>
+                      {normalizeImages(product)[0] ? (
+                        <Image
+                          src={normalizeImages(product)[0]}
+                          alt={product.title || product.name || 'Product'}
+                          position="absolute"
+                          top={0}
+                          left={0}
+                          w="100%"
+                          h="100%"
+                          objectFit="cover"
+                        />
+                      ) : (
+                        <Center h="100%">
+                          <Icon as={FiPackage} boxSize={12} color={useColorModeValue('gray.300', 'gray.600')} />
+                        </Center>
+                      )}
+                    </Box>
+
+                    {/* Product Info */}
+                    <Box p={4}>
+                      <Text
+                        fontSize="sm"
+                        fontWeight="500"
+                        noOfLines={2}
+                        mb={2}
+                        color={useColorModeValue('gray.700', 'gray.300')}
+                      >
+                        {product.title || product.name || 'Sans titre'}
+                      </Text>
+
+                      {product.description && (
+                        <Text
+                          fontSize="xs"
+                          color={useColorModeValue('gray.500', 'gray.400')}
+                          noOfLines={1}
+                          mb={3}
+                        >
+                          {product.description}
+                        </Text>
+                      )}
+
+                      <HStack justify="space-between">
+                        <Heading size="sm" color="brand.500">
+                          {product.price ? formatPrice(product.price) : 'N/A'}
+                        </Heading>
+                        {product.amount && product.amount > 0 && (
+                          <Badge colorScheme="green" fontSize="xs">
+                            {product.amount} en stock
+                          </Badge>
+                        )}
+                      </HStack>
+                    </Box>
+                  </Box>
+                </RouterLink>
+              </ScaleFade>
+            ))}
+          </SimpleGrid>
         )}
       </Container>
 
-      {/* Extra promo tiles moved here: render remaining products after the carousel */}
-      {(visibleProducts || []).slice(2).length > 0 && (
-        <Box as="section" px={{ base: 4, md: 6 }} py={6}>
-          <SimpleGrid columns={{ base: 2, md: 4 }} spacing={3}>
-              {(visibleProducts || []).slice(2).map((p) => {
-              const imgs = normalizeImages(p as any)
-              const img = imgs?.length ? imgs[0] : '/img/b.jfif'
-              const shop = (shopsMap?.byId?.[String((p as any).shop_id)] || shopsMap?.byOwner?.[String((p as any).seller_id)]) || null
-              const shopDomain = shop?.domain || shop?.name
-              // Always link to the product page (ProductView) instead of the shop page
-              const target = `/products/${(p as any).id}`
-              
-              // Format price minimaliste
-              const price = (p as any).price || (p as any).amount
-              const numPrice = typeof price === 'number' ? price : (typeof price === 'string' ? Number(price) : null)
-              const formattedPrice = numPrice ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(numPrice) : null
-              
-              const productBg = productBgVar
-              const productBorder = productBorderVar
-              const productTextColor = productTextColorVar
-
-              return (
-                <Box
-                  key={(p as any).id}
-                  as={RouterLink}
-                  to={`/products/${(p as any).id}`}
-                  state={{ from: { pathname: location?.pathname || '/', focusProductId: String((p as any).id), isPinterestMode } }}
-                  position="relative"
-                  overflow="hidden"
-                  minH={{ base: '180px', md: '280px' }}
-                  display="flex"
-                  flexDirection="column"
-                  borderRadius="md"
-                  bg={productBg}
-                  _hover={{ transform: 'translateY(-2px)', boxShadow: 'sm' }}
-                  transition="all 0.2s ease"
-                  border="1px solid"
-                  borderColor={productBorder}
-                >
-                  <Box position="relative" flex="1" overflow="hidden">
-                    <Image
-                      src={String(img)}
-                      alt={String(p.title || (p as any).name || 'product')}
-                      objectFit="cover"
-                      w="100%"
-                      h="100%"
-                    />
-                    
-                    <Box
-                      position="absolute"
-                      inset={0}
-                      bgGradient="linear(to-b, rgba(0,0,0,0.0), rgba(0,0,0,0.1))"
-                    />
-                  </Box>
-
-                  {/* Product info section */}
-                  <Box 
-                    p={3} 
-                    borderTop="1px solid" 
-                    borderColor={productBorder}
-                    bg={productBg}
-                  >
-                    {/* Product name */}
-                    <Heading
-                      as="h3"
-                      fontSize={{ base: 'xs', md: 'sm' }}
-                      fontWeight="300"
-                      letterSpacing="0.02em"
-                      color={productTextColor}
-                      textTransform="uppercase"
-                      textAlign="left"
-                      noOfLines={2}
-                      mb={2}
-                      lineHeight="1.3"
-                    >
-                      {p.title || (p as any).name}
-                    </Heading>
-                    
-                    {/* Price */}
-                    {formattedPrice && (
-                      <Text 
-                        fontSize={{ base: 'md', md: 'lg' }}
-                        fontWeight="300" 
-                        letterSpacing="0.01em"
-                        color={productTextColor}
-                        textAlign="left"
-                      >
-                        {formattedPrice} FCFA
-                      </Text>
-                    )}
-                  </Box>
-                </Box>
-              )
-            })}
-          </SimpleGrid>
-        </Box>
+      {showScrollTop && (
+        <Fade in={showScrollTop}>
+          <IconButton
+            icon={<ArrowUpIcon />}
+            isRound
+            colorScheme="brand"
+            position="fixed"
+            bottom={8}
+            right={8}
+            onClick={handleScrollTop}
+            aria-label="Scroll to top"
+            size="lg"
+            boxShadow="lg"
+          />
+        </Fade>
       )}
-
-      {/* Bouton scroll to top */}
-      <IconButton
-        aria-label="Remonter en haut"
-        icon={<ArrowUpIcon />}
-        position="fixed"
-        right={{ base: 4, md: 8 }}
-        bottom={{ base: 80, md: 12 }}
-        zIndex={2000}
-        borderRadius="full"
-        boxShadow="sm"
-        size="lg"
-        display={showScrollTop ? 'inline-flex' : 'none'}
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        colorScheme="brand"
-        transition="all 0.2s"
-        _hover={{
-          transform: 'translateY(-2px)',
-          boxShadow: 'md'
-        }}
-      />
     </Box>
   )
 }
 
-function NoResults({ message, onClear }: { readonly message: string; readonly onClear: () => void }) {
+// Welcome Popup Component
+function WelcomePopup() {
+  const [isOpen, setIsOpen] = React.useState(true)
+  const bgColor = useColorModeValue('white', 'gray.800')
+  const textColor = useColorModeValue('gray.700', 'gray.300')
+
+  const handleClose = () => {
+    setIsOpen(false)
+    localStorage.setItem('welcomeDismissed', 'true')
+  }
+
+  return (
+    <ScaleFade initialScale={0.9} in={isOpen}>
+      <Box
+        position="fixed"
+        inset={0}
+        bg="blackAlpha.500"
+        display={isOpen ? 'flex' : 'none'}
+        alignItems="center"
+        justifyContent="center"
+        zIndex={1000}
+        onClick={handleClose}
+      >
+        <Card
+          maxW="md"
+          bg={bgColor}
+          onClick={(e) => e.stopPropagation()}
+          borderRadius="lg"
+          boxShadow="2xl"
+        >
+          <CardBody p={8}>
+            <VStack spacing={6} textAlign="center">
+              <Box
+                p={6}
+                bg={useColorModeValue('brand.50', 'gray.700')}
+                borderRadius="full"
+              >
+                <Icon as={FiPackage} boxSize={12} color="brand.500" />
+              </Box>
+              <VStack spacing={2}>
+                <Heading size="lg" color={textColor}>
+                  Bienvenue!
+                </Heading>
+                <Text color={useColorModeValue('gray.600', 'gray.400')}>
+                  Découvrez nos meilleurs produits
+                </Text>
+              </VStack>
+              <Button
+                colorScheme="brand"
+                size="lg"
+                w="full"
+                onClick={handleClose}
+                borderRadius="md"
+              >
+                Commencer
+              </Button>
+            </VStack>
+          </CardBody>
+        </Card>
+      </Box>
+    </ScaleFade>
+  )
+}
+
+// Empty State Component
+interface EmptyStateProps {
+  message: string
+  onClear: () => void
+}
+
+function EmptyState({ message, onClear }: EmptyStateProps) {
   const textColor = useColorModeValue('gray.700', 'gray.300')
   const bgColor = useColorModeValue('white', 'gray.900')
   const containerBg = useColorModeValue('gray.100', 'gray.800')

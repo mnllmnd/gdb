@@ -100,6 +100,8 @@ export const api = {
   auth: {
     register: (payload: any) => request('/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
     login: (payload: any) => request('/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
+    // get public user profile by userId
+    profile: (userId: string) => request(`/auth/profile/${encodeURIComponent(userId)}`),
     // update current user profile
     updateMe: (payload: any, token?: string) => request('/auth/me', { method: 'PATCH', body: JSON.stringify(payload), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
   },
@@ -190,31 +192,7 @@ export const api = {
     cancel: (orderId: string, token?: string) => request(`/orders/${encodeURIComponent(orderId)}/cancel`, { method: 'PATCH', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     delete: (orderId: string, token?: string) => request(`/orders/${encodeURIComponent(orderId)}`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
   },
-  shops: {
-    list: () => request('/shops'),
-    getByOwner: (ownerId: string) => request(`/shops/owner/${encodeURIComponent(ownerId)}`),
-    me: (token?: string) => request('/shops/me', { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
-    save: (payload: any, token?: string) => request('/shops', { method: 'POST', body: JSON.stringify(payload), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
-    byDomain: (domain: string) => request(`/shops/domain/${encodeURIComponent(domain)}`),
-    orders: (token?: string) => request('/shops/me/orders', { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
-    clients: (token?: string) => request('/shops/me/clients', { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
-    debts: {
-      list: (token?: string) => request('/shops/me/debts', { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
-      add: (entry: any, token?: string) => request('/shops/me/debts', { method: 'POST', body: JSON.stringify({ entry }), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
-    },
-    delete: (id: string, token?: string) => request(`/shops/${id}`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
-    // Seller: delete a specific order received for this seller's product
-    deleteOrder: (orderId: string, token?: string) => request(`/shops/me/orders/${encodeURIComponent(orderId)}`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
-    // Public: search shops by query (name or product title)
-    search: (q: string) => request(`/shops/search?q=${encodeURIComponent(q)}`),
-    popular: () => request(`/shops/popular`),
-  // Follow/unfollow and status
-  follow: (id: string, token?: string) => request(`/shops/${id}/follow`, { method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
-  unfollow: (id: string, token?: string) => request(`/shops/${id}/follow`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
-  followStatus: (id: string, token?: string) => request(`/shops/${id}/follow_status`, { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
-  followers: (id: string) => request(`/shops/${id}/followers`),
-  following: (token?: string) => request('/shops/me/following', { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
-  },
+  // REMOVED: Shop functionality - simplified to user profiles only
   recommend: {
     find: (payload: any) => request('/recommend', { method: 'POST', body: JSON.stringify(payload) })
   },
