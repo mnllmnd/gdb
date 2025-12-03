@@ -29,13 +29,16 @@ import {
   TabPanel,
   Collapse,
   Grid,
-  GridItem
+  GridItem,
+  Flex,
+  Input,
+  useToast
 } from '@chakra-ui/react'
-import { useToast } from '@chakra-ui/react'
-import { FaChevronLeft, FaChevronRight, FaBox, FaStar, FaInfoCircle } from 'react-icons/fa'
+import { FaChevronLeft, FaChevronRight, FaBox, FaStar, FaInfoCircle, FaShoppingCart } from 'react-icons/fa'
 import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons'
 import { highRes, PRODUCT_PLACEHOLDER } from '../utils/image'
 import api from '../services/api'
+import cart from '../utils/cart'
 import ProductCard from '../components/ProductCard'
 import ReviewForm from '../components/ReviewForm'
 import ReviewsList from '../components/ReviewsList'
@@ -46,11 +49,14 @@ export default function ProductView() {
   const { id } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
+  const toast = useToast()
   const [product, setProduct] = React.useState<any | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [imageIndex, setImageIndex] = React.useState(0)
   const [reviewsOpen, setReviewsOpen] = React.useState(false)
   const [reviewCount, setReviewCount] = React.useState(0)
+  const [quantity, setQuantity] = React.useState(1)
+  const [addingToCart, setAddingToCart] = React.useState(false)
   const touchStartRef = React.useRef<number | null>(null)
   const { isOpen: isImageOpen, onOpen: onImageOpen, onClose: onImageClose } = useDisclosure()
 
@@ -87,7 +93,7 @@ export default function ProductView() {
   const textSecondary = useColorModeValue('gray.700', 'gray.300')
   const borderColorVar = useColorModeValue('gray.200','gray.700')
   const arrowBg = useColorModeValue('white','gray.900')
-  const arrowHoverBg = useColorModeValue('gray.100','gray.900')
+  const arrowHoverBg = useColorModeValue('gray.100','gray.800')
   const arrowIconColor = useColorModeValue('gray.700','white')
 
   React.useEffect(() => {
@@ -119,8 +125,6 @@ export default function ProductView() {
     load()
     return () => { mounted = false }
   }, [id])
-
-  const toast = useToast()
 
   // If the product is deleted elsewhere (admin/seller), handle it gracefully
   React.useEffect(() => {
@@ -165,7 +169,7 @@ export default function ProductView() {
     }
     loadSimilar()
     return () => { mounted = false }
-  }, [product && product.id])
+  }, [product?.id])
 
   if (loading) return (
     <Container maxW="container.xl" py={12}>
@@ -181,7 +185,7 @@ export default function ProductView() {
         p={16} 
         borderRadius="xl" 
         border="1px solid"
-  borderColor={borderColorVar}
+        borderColor={borderColorVar}
       >
         <Icon as={FaBox} boxSize={20} color="gray.400" mb={6} />
         <Heading size="lg" mb={4} fontWeight="500">Produit introuvable</Heading>
@@ -263,10 +267,53 @@ export default function ProductView() {
   const formattedOriginalPrice = fmt(resolvedOriginalPrice)
   const formattedPrice = fmt(resolvedFinalPrice)
 
-  return (
-    <Container maxW="container.xl" py={8} pb={{ base: '120px', md: 8 }}>
-  {/* BackButton removed: use browser navigation/history instead */}
+  const handleAddToCart = async () => {
+    if (!product || !id) return
+    if (product.quantity <= 0) {
+      toast({ title: 'Produit indisponible', status: 'warning' })
+      return
+    }
+
+    setAddingToCart(true)
+    try {
+      // Adapte l'objet au type attendu par cart.add()
+      const itemToAdd = {
+        id: String(id),
+        title: product.title || product.name,
+        price: resolvedFinalPrice || product.price,
+        image: product.image_url || product.product_image,
+        // Si cart.add() accepte un second paramètre pour quantity, utilise-le
+        // Sinon, étends l'objet selon tes besoins
+      } as any
       
+      // Version avec quantity intégrée (à adapter selon ton implémentation réelle de cart.add())
+      cart.add({
+        ...itemToAdd,
+        quantity,
+        seller_id: product.seller_id
+      })
+      
+      toast({ 
+        title: 'Ajouté au panier', 
+        description: `${quantity} × ${product.title || product.name}`,
+        status: 'success',
+        duration: 2000
+      })
+      setQuantity(1)
+    } catch (err) {
+      console.error(err)
+      toast({ title: 'Erreur', description: 'Impossible d\'ajouter au panier', status: 'error' })
+    } finally {
+      setAddingToCart(false)
+    }
+  }
+
+  const handleGoToCart = () => {
+    navigate('/cart')
+  }
+
+  return (
+    <Container maxW="container.xl" py={8} pb={{ base: '100px', lg: 8 }}>
       {/* Main Product Grid */}
       <Grid 
         templateColumns={{ base: '1fr', lg: '1fr 400px' }} 
@@ -309,26 +356,26 @@ export default function ProductView() {
                     {/* Navigation Arrows */}
                     {imgs.length > 1 && (
                       <>
-                                <Box 
-                                  position="absolute" 
-                                  left={4} 
-                                  top="50%" 
-                                  transform="translateY(-50%)" 
-                                  zIndex={2}
-                                >
-                                  <Box 
-                                    bg={bgCard} 
-                                    p={3} 
-                                    borderRadius="full" 
-                                    onClick={(e) => { e.stopPropagation(); prev() }} 
-                                    cursor="pointer"
-                                    transition="all 0.2s"
-                                    _hover={{ bg: arrowHoverBg, transform: 'scale(1.05)' }}
-                                    boxShadow="md"
-                                  >
-                                    <Icon as={FaChevronLeft} color={arrowIconColor} boxSize={4} />
-                                  </Box>
-                                </Box>
+                        <Box 
+                          position="absolute" 
+                          left={4} 
+                          top="50%" 
+                          transform="translateY(-50%)" 
+                          zIndex={2}
+                        >
+                          <Box 
+                            bg={arrowBg} 
+                            p={3} 
+                            borderRadius="full" 
+                            onClick={(e) => { e.stopPropagation(); prev() }} 
+                            cursor="pointer"
+                            transition="all 0.2s"
+                            _hover={{ bg: arrowHoverBg, transform: 'scale(1.05)' }}
+                            boxShadow="md"
+                          >
+                            <Icon as={FaChevronLeft} color={arrowIconColor} boxSize={4} />
+                          </Box>
+                        </Box>
 
                         <Box 
                           position="absolute" 
@@ -370,7 +417,7 @@ export default function ProductView() {
                         position="absolute" 
                         bottom={4} 
                         right={4} 
-                        bg={bgCard} 
+                        bg="blackAlpha.700" 
                         color="white" 
                         px={3} 
                         py={1} 
@@ -387,20 +434,20 @@ export default function ProductView() {
 
               {/* Thumbnails */}
               {imgs.length > 1 && (
-                <Box px={6} py={4} bg={bgCard} borderTop="1px solid" borderColor="bgCard">
+                <Box px={6} py={4} bg={bgCard} borderTop="1px solid" borderColor={borderColorVar}>
                   <SimpleGrid columns={{ base: 4, md: 6 }} spacing={3}>
                     {imgs.map((src: string, idx: number) => (
                       <Box 
                         key={idx} 
                         border="2px solid" 
-                        borderColor={idx === imageIndex ? 'gray.800' : 'gray.200'} 
+                        borderColor={idx === imageIndex ? 'blue.500' : 'gray.200'} 
                         borderRadius="md" 
                         overflow="hidden" 
                         cursor="pointer" 
                         onClick={() => setImageIndex(idx)}
                         transition="all 0.2s"
                         _hover={{ 
-                          borderColor: 'gray.600',
+                          borderColor: 'blue.300',
                           transform: 'scale(1.02)'
                         }}
                       >
@@ -427,16 +474,16 @@ export default function ProductView() {
               p={6} 
               borderRadius="xl" 
               border="1px solid" 
-              borderColor="gray.200"
+              borderColor={borderColorVar}
             >
               <HStack spacing={3} mb={4}>
-                <Icon as={FaInfoCircle} color="gray.600" />
-                <Heading size="md" fontWeight="600" color="bgCard">
+                <Icon as={FaInfoCircle} color="blue.500" />
+                <Heading size="md" fontWeight="600" color="gray.800">
                   Description
                 </Heading>
               </HStack>
               {product.description ? (
-                <Text color="bgCard" lineHeight="tall" fontSize="md">
+                <Text color={textSecondary} lineHeight="tall" fontSize="md">
                   {product.description}
                 </Text>
               ) : (
@@ -452,14 +499,14 @@ export default function ProductView() {
               borderRadius="xl" 
               overflow="hidden"
               border="1px solid"
-              borderColor="gray.200"
+              borderColor={borderColorVar}
             >
               <Button
                 width="100%"
                 justifyContent="space-between"
                 onClick={() => setReviewsOpen(!reviewsOpen)}
                 bg={bgCard}
-                _hover={{ bg: 'gray.50' }}
+                _hover={{ bg: bgSubtle }}
                 borderRadius="xl"
                 py={6}
                 px={6}
@@ -467,12 +514,12 @@ export default function ProductView() {
                 borderBottomRadius={reviewsOpen ? 0 : 'xl'}
               >
                 <HStack spacing={3}>
-                  <Icon as={FaStar} color="bgCard" />
-                  <Text fontSize="lg" fontWeight="600" color="bgCard">
+                  <Icon as={FaStar} color="yellow.500" />
+                  <Text fontSize="lg" fontWeight="600" color="gray.800">
                     Avis clients
                   </Text>
                   {reviewCount > 0 && (
-                    <Badge bg={bgCard} color="bgCard" fontSize="sm" px={2} py={1} borderRadius="md">
+                    <Badge bg="blue.100" color="blue.700" fontSize="sm" px={2} py={1} borderRadius="md">
                       {reviewCount}
                     </Badge>
                   )}
@@ -480,11 +527,11 @@ export default function ProductView() {
               </Button>
 
               <Collapse in={reviewsOpen} animateOpacity>
-                <Box p={6} bg={bgCard} borderTop="1px solid" borderColor="bgCard">
-                  <Tabs variant="line" colorScheme="gray">
+                <Box p={6} bg={bgCard} borderTop="1px solid" borderColor={borderColorVar}>
+                  <Tabs variant="line" colorScheme="blue">
                     <TabList mb={6}>
-                      <Tab fontWeight="500" color="bgCard">Voir les avis</Tab>
-                      <Tab fontWeight="500" color="bgCard">Laisser un avis</Tab>
+                      <Tab fontWeight="500" color="gray.700">Voir les avis</Tab>
+                      <Tab fontWeight="500" color="gray.700">Laisser un avis</Tab>
                     </TabList>
 
                     <TabPanels>
@@ -518,105 +565,195 @@ export default function ProductView() {
           </VStack>
         </GridItem>
 
-        {/* Right Column - Purchase Card */}
+        {/* Right Column - Purchase Card avec design fixe en mobile */}
         <GridItem>
-          <Box 
-            position="sticky"
-            top={8}
-            bg={bgCard} 
-            borderRadius="xl" 
-            p={6}
+          <Box
+            position={{ base: 'fixed', lg: 'sticky' }}
+            top={{ base: 'auto', lg: 8 }}
+            bottom={{ base: 0, lg: 'auto' }}
+            left={{ base: 0, lg: 'auto' }}
+            right={{ base: 0, lg: 'auto' }}
+            bg={bgCard}
+            borderRadius={{ base: 'xl', lg: 'xl' }}
+            p={{ base: 4, lg: 6 }}
             border="1px solid"
-            borderColor="gray.200"
-            boxShadow="sm"
+            borderColor={borderColorVar}
+            boxShadow={{ base: 'lg', lg: 'sm' }}
+            zIndex={10}
+            width={{ base: '100%', lg: 'auto' }}
+            borderBottomRadius={{ base: 0, lg: 'xl' }}
+            borderTopRadius="xl"
           >
-            <VStack align="stretch" spacing={6}>
-              {/* Product Title */}
-              <Box>
-                <Heading size="lg" mb={3} fontWeight="600" color="bgCard" lineHeight="1.2">
-                  {product.title || product.name}
-                </Heading>
-                
-                {/* Prix et réduction */}
-                <Box mb={4}>
-                  {resolvedDiscount > 0 && formattedOriginalPrice && (
-                    <HStack spacing={3} mb={2}>
-                      <Text
-                        fontSize="lg"
-                        textDecoration="line-through"
-                        color="bgCard"
-                      >
-                        {formattedOriginalPrice} FCFA
-                      </Text>
-                      <Badge colorScheme="red" variant="solid" fontSize="md" borderRadius="full">
-                        -{resolvedDiscount}%
-                      </Badge>
-                    </HStack>
-                  )}
-                  <Text 
-                    fontSize="2xl" 
-                    fontWeight="700" 
-                    color={resolvedDiscount > 0 ? "red.500" : "gray.900"}
-                  >
-                    {formattedPrice ? `${formattedPrice} FCFA` : `${Math.floor(product.price)} FCFA`}
+            {/* Mobile: Version compacte */}
+            <Box display={{ base: 'flex', lg: 'none' }} alignItems="center" gap={4}>
+              {/* Prix mobile */}
+              <Box flex={1}>
+                <Text fontSize="lg" fontWeight="700" color={resolvedDiscount > 0 ? "red.500" : "gray.900"}>
+                  {formattedPrice ? `${formattedPrice} FCFA` : `${Math.floor(product.price)} FCFA`}
+                </Text>
+                {resolvedDiscount > 0 && formattedOriginalPrice && (
+                  <Text fontSize="sm" textDecoration="line-through" color="gray.500">
+                    {formattedOriginalPrice} FCFA
                   </Text>
+                )}
+              </Box>
+              
+              {/* Bouton Ajouter au panier mobile */}
+              <Button
+                size="lg"
+                colorScheme="blue"
+                leftIcon={<Icon as={FaShoppingCart} />}
+                onClick={handleAddToCart}
+                isLoading={addingToCart}
+                fontWeight="700"
+                flexShrink={0}
+                isDisabled={product.quantity <= 0}
+              >
+                {product.quantity > 0 ? 'Ajouter' : 'Indisponible'}
+              </Button>
+            </Box>
+
+            {/* Desktop: Version complète */}
+            <Box display={{ base: 'none', lg: 'block' }}>
+              <VStack align="stretch" spacing={6}>
+                {/* Product Title */}
+                <Box>
+                  <Heading size="lg" mb={3} fontWeight="600" color="gray.900" lineHeight="1.2">
+                    {product.title || product.name}
+                  </Heading>
+                  
+                  {/* Prix et réduction */}
+                  <Box mb={4}>
+                    {resolvedDiscount > 0 && formattedOriginalPrice && (
+                      <HStack spacing={3} mb={2}>
+                        <Text
+                          fontSize="lg"
+                          textDecoration="line-through"
+                          color="gray.600"
+                        >
+                          {formattedOriginalPrice} FCFA
+                        </Text>
+                        <Badge colorScheme="red" variant="solid" fontSize="md" borderRadius="full">
+                          -{resolvedDiscount}%
+                        </Badge>
+                      </HStack>
+                    )}
+                    <Text 
+                      fontSize="2xl" 
+                      fontWeight="700" 
+                      color={resolvedDiscount > 0 ? "red.500" : "gray.900"}
+                    >
+                      {formattedPrice ? `${formattedPrice} FCFA` : `${Math.floor(product.price)} FCFA`}
+                    </Text>
+                  </Box>
+
+                  {/* Badge de stock */}
+                  {product.quantity !== undefined && product.quantity !== null && (
+                    <Badge 
+                      bg={product.quantity > 0 ? 'green.50' : 'red.50'} 
+                      color={product.quantity > 0 ? 'green.700' : 'red.700'}
+                      fontSize="sm" 
+                      px={3} 
+                      py={1} 
+                      borderRadius="md"
+                      border="1px solid"
+                      borderColor={product.quantity > 0 ? 'green.200' : 'red.200'}
+                    >
+                      {product.quantity > 0 
+                        ? `✓ En stock` 
+                        : '✕ Rupture'
+                      }
+                    </Badge>
+                  )}
+
+                  {product.quantity > 0 && (
+                    <Text color="gray.600" fontSize="sm">
+                      {product.quantity} unités disponibles
+                    </Text>
+                  )}
                 </Box>
 
-                {/* Badge de stock */}
-                {product.quantity !== undefined && product.quantity !== null && (
-                  <Badge 
-                    bg={product.quantity > 0 ? 'green.50' : 'red.50'} 
-                    color={product.quantity > 0 ? 'green.700' : 'red.700'}
-                    fontSize="sm" 
-                    px={3} 
-                    py={1} 
-                    borderRadius="md"
-                    border="1px solid"
-                    borderColor={product.quantity > 0 ? 'green.200' : 'red.200'}
-                  >
-                    {product.quantity > 0 
-                      ? `✓ En stock` 
-                      : '✕ Rupture'
-                    }
-                  </Badge>
-                )}
+                <Divider />
 
-                {product.quantity > 0 && (
-                  <Text color="gray.600" fontSize="sm">
-                    {product.quantity} unités disponibles
-                  </Text>
-                )}
-              </Box>
+                {/* Add to Cart Section */}
+                <VStack spacing={4} align="stretch">
+                  <Box>
+                    <Text fontSize="sm" fontWeight="600" mb={2} color={textSecondary}>
+                      Quantité
+                    </Text>
+                    <Flex gap={2} align="center">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        isDisabled={quantity <= 1 || product.quantity <= 0}
+                      >
+                        −
+                      </Button>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={product.quantity || 999}
+                        value={quantity}
+                        onChange={(e) => setQuantity(Math.max(1, Math.min(product.quantity || 999, parseInt(e.target.value) || 1)))}
+                        textAlign="center"
+                        size="sm"
+                        flex={1}
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setQuantity(Math.min(product.quantity || 999, quantity + 1))}
+                        isDisabled={quantity >= (product.quantity || 0) || product.quantity <= 0}
+                      >
+                        +
+                      </Button>
+                    </Flex>
+                  </Box>
 
-              <Divider />
-
-              {/* Add to Cart Component */}
-              <Box>
-                <ProductCard
-                  id={String(product.id)}
-                  title={product.title || product.name}
-            price={product.price ?? product.amount}
-            originalPrice={product.original_price ?? product.originalPrice}
-            discount={product.discount ?? 0}
-            image_url={product.image_url ?? product.product_image}
-            images={product.images}
-            quantity={product.quantity ?? product.quantite ?? product.stock ?? product.amount_available}
-                 
-                />
-              </Box>
-            </VStack>
+                  {product.quantity > 0 ? (
+                    <VStack spacing={3} align="stretch">
+                      <Button
+                        size="lg"
+                        colorScheme="blue"
+                        leftIcon={<Icon as={FaShoppingCart} />}
+                        onClick={handleAddToCart}
+                        isLoading={addingToCart}
+                        fontWeight="700"
+                      >
+                        Ajouter au panier
+                      </Button>
+                      <Button
+                        size="md"
+                        variant="outline"
+                        colorScheme="blue"
+                        onClick={handleGoToCart}
+                      >
+                        Voir le panier
+                      </Button>
+                    </VStack>
+                  ) : (
+                    <Box bg="red.50" p={3} borderRadius="md" textAlign="center">
+                      <Text fontWeight="600" color="red.700">
+                        ✕ Produit actuellement indisponible
+                      </Text>
+                    </Box>
+                  )}
+                </VStack>
+              </VStack>
+            </Box>
           </Box>
         </GridItem>
       </Grid>
 
       {/* Fullscreen Lightbox Modal */}
       <Modal isOpen={isImageOpen} onClose={onImageClose} size="full" isCentered>
-        <ModalOverlay bg="gray.900Alpha.900" />
+        <ModalOverlay bg="blackAlpha.900" />
         <ModalContent bg="transparent" boxShadow="none" maxW="100vw" p={0}>
           <ModalCloseButton 
             color="white" 
-            bg="gray.900Alpha.600" 
-            _hover={{ bg: 'gray.900Alpha.800' }} 
+            bg="blackAlpha.600" 
+            _hover={{ bg: 'blackAlpha.800' }} 
             size="lg" 
             borderRadius="full" 
             zIndex={10} 
