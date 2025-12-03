@@ -55,8 +55,8 @@ export default function ProductEditor() {
     return true
   })()
 
-  const bgForm = useColorModeValue('white', 'black')
-  const bgPage = useColorModeValue('black', 'white')
+  const bgForm = useColorModeValue('white', 'gray.900')
+  const bgPage = useColorModeValue('gray.900', 'white')
   const labelColor = useColorModeValue('gray.700', 'gray.200')
   const borderColor = useColorModeValue('gray.200', 'gray.600')
   const hoverBorderColor = useColorModeValue('blue.400', 'blue.300')
@@ -632,7 +632,7 @@ export default function ProductEditor() {
                             as={FiChevronLeft} 
                             boxSize={3} 
                             color="white" 
-                            bg="blackAlpha.700" 
+                            bg="gray.900Alpha.700" 
                             borderRadius="full" 
                             p={1} 
                             cursor="pointer" 
@@ -643,7 +643,7 @@ export default function ProductEditor() {
                             as={FiChevronRight} 
                             boxSize={3} 
                             color="white" 
-                            bg="blackAlpha.700" 
+                            bg="gray.900Alpha.700" 
                             borderRadius="full" 
                             p={1} 
                             cursor="pointer" 

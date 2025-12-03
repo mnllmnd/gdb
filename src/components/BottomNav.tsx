@@ -44,7 +44,7 @@ export default function BottomNav() {
         icon={<span style={{ fontSize: 24 }}>🏠</span>}
         bg="whiteAlpha.900"
         _hover={{ bg: 'whiteAlpha.800', transform: 'scale(1.05)' }}
-        color="black"
+        color="gray.900"
         borderRadius="full"
         boxShadow="md"
         size="lg"
@@ -58,7 +58,7 @@ export default function BottomNav() {
         icon={<span style={{ fontSize: 22 }}>Feed</span>}
         bg="whiteAlpha.900"
         _hover={{ bg: 'whiteAlpha.800', transform: 'scale(1.05)' }}
-        color="black"
+        color="gray.900"
         borderRadius="full"
         boxShadow="md"
         size="lg"
@@ -72,7 +72,7 @@ export default function BottomNav() {
         icon={<span style={{ fontSize: 24 }}>❤️</span>}
         bg="whiteAlpha.900"
         _hover={{ bg: 'whiteAlpha.800', transform: 'scale(1.05)' }}
-        color="black"
+        color="gray.900"
         borderRadius="full"
         boxShadow="md"
         size="lg"

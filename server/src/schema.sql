@@ -197,3 +197,58 @@ CREATE TABLE IF NOT EXISTS password_reset_otps (
 CREATE INDEX IF NOT EXISTS idx_password_reset_otps_user_id ON password_reset_otps(user_id);
 CREATE INDEX IF NOT EXISTS idx_password_reset_otps_email ON password_reset_otps(email);
 CREATE INDEX IF NOT EXISTS idx_password_reset_otps_expires_at ON password_reset_otps(expires_at);
+
+-- ============================================
+-- ORDERS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id UUID REFERENCES products(id) ON DELETE SET NULL,
+  product_title TEXT,
+  price NUMERIC,
+  delivery_price NUMERIC DEFAULT 0,
+  delivery_type TEXT DEFAULT 'pickup',
+  buyer_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  payment_method TEXT DEFAULT 'cash_on_delivery',
+  buyer_name TEXT,
+  buyer_phone TEXT,
+  address TEXT,
+  product_image TEXT,
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_orders_buyer_id ON orders(buyer_id);
+CREATE INDEX IF NOT EXISTS idx_orders_product_id ON orders(product_id);
+CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at DESC);
+
+-- ============================================
+-- ORDER MESSAGES TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS order_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  sender_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  sender_type TEXT NOT NULL CHECK (sender_type IN ('buyer', 'seller')),
+  message TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_order_messages_order_id ON order_messages(order_id);
+CREATE INDEX IF NOT EXISTS idx_order_messages_created_at ON order_messages(created_at DESC);
+
+-- ============================================
+-- ORDER STATUS HISTORY TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS order_status_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  old_status TEXT,
+  new_status TEXT NOT NULL,
+  changed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  changed_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_order_status_history_order_id ON order_status_history(order_id);
+CREATE INDEX IF NOT EXISTS idx_order_status_history_changed_at ON order_status_history(changed_at DESC);

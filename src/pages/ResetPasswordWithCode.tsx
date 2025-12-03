@@ -26,7 +26,7 @@ export default function ResetPasswordWithCode() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  const bgColor = useColorModeValue('white', 'black')
+  const bgColor = useColorModeValue('white', 'gray.900')
   const boxShadow = useColorModeValue('sm', 'dark-lg')
   const borderColor = useColorModeValue('gray.200', 'gray.600')
 

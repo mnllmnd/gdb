@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Container, Heading, Stack, Box, Text, Spinner, Button, useToast, HStack, Badge, VStack } from '@chakra-ui/react'
+import { Container, Heading, Stack, Box, Text, Spinner, Button, useToast, HStack, Badge, VStack, Icon, useColorModeValue } from '@chakra-ui/react'
+import { FiMessageCircle } from 'react-icons/fi'
 import api from '../services/api'
 import { getItem } from '../utils/localAuth'
 import mapOrderStatus from '../utils/status'
@@ -7,7 +8,14 @@ import mapOrderStatus from '../utils/status'
 export default function MyOrders() {
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [showMessages, setShowMessages] = useState<string | null>(null)
+  const [orderMessages, setOrderMessages] = useState<Record<string, any[]>>({})
+  const [messageInputs, setMessageInputs] = useState<Record<string, string>>({})
+  const [sendingMessage, setSendingMessage] = useState<string | null>(null)
   const toast = useToast()
+  const borderColor = useColorModeValue('gray.200', 'gray.700')
+  const bgLight = useColorModeValue('gray.50', 'gray.800')
+  const textMuted = useColorModeValue('gray.600', 'gray.400')
 
   // use mapOrderStatus to show a French label and a Chakra color
 
@@ -65,6 +73,53 @@ export default function MyOrders() {
     } catch (err: any) {
       console.error('Failed to delete order', err)
       toast({ title: 'Erreur', description: err?.error || 'Impossible de supprimer la commande', status: 'error' })
+    }
+  }
+
+  async function handleToggleMessages(orderId: string) {
+    if (showMessages === orderId) {
+      setShowMessages(null)
+      return
+    }
+    
+    setShowMessages(orderId)
+    
+    // Load messages if not already loaded
+    if (!orderMessages[orderId as string]) {
+      try {
+        const token = getItem('token')
+        if (!token) return
+        const msgs = await api.orders.getMessages(orderId, token)
+        setOrderMessages(prev => ({...prev, [orderId]: msgs || []}))
+      } catch (err) {
+        console.error('Failed to load messages', err)
+        toast({ title: 'Erreur', description: 'Impossible de charger les messages', status: 'error' })
+      }
+    }
+  }
+
+  async function handleSendMessage(orderId: string) {
+    const msg = messageInputs[orderId as string]?.trim()
+    if (!msg) return
+
+    setSendingMessage(orderId)
+    try {
+      const token = getItem('token')
+      if (!token) return
+      
+      await api.orders.sendMessage(orderId, { message: msg }, token)
+      setMessageInputs(prev => ({...prev, [orderId]: ''}))
+      
+      // Reload messages
+      const msgs = await api.orders.getMessages(orderId, token)
+      setOrderMessages(prev => ({...prev, [orderId]: msgs || []}))
+      
+      toast({ title: 'Message envoyé', status: 'success' })
+    } catch (err) {
+      console.error('Failed to send message', err)
+      toast({ title: 'Erreur', description: 'Impossible d\'envoyer le message', status: 'error' })
+    } finally {
+      setSendingMessage(null)
     }
   }
 
@@ -221,6 +276,65 @@ export default function MyOrders() {
                 </Button>
               </Stack>
             )}
+
+            {/* MESSAGING SECTION */}
+            <Box mt={4} borderTopWidth="1px" borderTopColor={borderColor} pt={3}>
+              <Button
+                size="xs"
+                variant="ghost"
+                colorScheme="blue"
+                w="100%"
+                leftIcon={<Icon as={FiMessageCircle} />}
+                onClick={() => handleToggleMessages(o.id)}
+                fontSize="xs"
+              >
+                💬 {showMessages === o.id ? 'Masquer' : 'Afficher'} messages
+              </Button>
+              {showMessages === o.id && (
+                <VStack spacing={2} mt={2} align="stretch">
+                  <Box maxH="250px" overflowY="auto" borderWidth="1px" borderRadius="md" borderColor={borderColor} p={2}>
+                    {orderMessages[o.id as string]?.length === 0 ? (
+                      <Text fontSize="xs" color={textMuted} textAlign="center">Aucun message</Text>
+                    ) : (
+                      <VStack spacing={1} align="stretch">
+                        {orderMessages[o.id as string]?.map((msg: any) => (
+                          <Box key={msg.id} bg={msg.sender_type === 'buyer' ? 'blue.50' : 'gray.100'} p={2} borderRadius="md">
+                            <Text fontSize="xs" fontWeight="600">{msg.sender_type === 'buyer' ? 'Vous' : 'Vendeur'}</Text>
+                            <Text fontSize="xs">{msg.message}</Text>
+                            <Text fontSize="xs" color={textMuted}>
+                              {new Date(msg.created_at).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}
+                            </Text>
+                          </Box>
+                        ))}
+                      </VStack>
+                    )}
+                  </Box>
+                  <HStack spacing={1} align="stretch">
+                    <input
+                      type="text"
+                      placeholder="Votre message..."
+                      style={{
+                        flex: 1,
+                        padding: '6px 8px',
+                        borderRadius: '4px',
+                        border: `1px solid ${borderColor}`,
+                        fontSize: '12px'
+                      }}
+                      value={messageInputs[o.id as string] || ''}
+                      onChange={(e) => setMessageInputs(prev => ({...prev, [o.id as string]: e.target.value}))}
+                    />
+                    <Button
+                      size="xs"
+                      colorScheme="blue"
+                      onClick={() => handleSendMessage(o.id)}
+                      isLoading={sendingMessage === o.id}
+                    >
+                      Envoyer
+                    </Button>
+                  </HStack>
+                </VStack>
+              )}
+            </Box>
           </Box>
         </Stack>
       </Box>

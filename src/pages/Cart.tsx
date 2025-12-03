@@ -212,6 +212,7 @@ export default function CartPage() {
           address: buyerAddress || null,
           product_image: it.image || null,
           delivery_price: deliveryPriceForThisItem || 0,
+          delivery_type: shippingType || 'pickup',
         }
         
         if (buyer_id) payload.buyer_id = buyer_id

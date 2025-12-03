@@ -103,20 +103,21 @@ const HeroNike: React.FC = () => {
     }
   }
 
-  if (!images.length) return null
-  if (!loaded.every(l => l)) return null
-
   // Deux sets d'images pour desktop (safe fallbacks)
   const desktopSets = [
     [images[0], images[1] || images[0], images[2] || images[0]],
     [images[2] || images[0], images[0], images[1] || images[0]],
   ]
 
-  const headingColor = useColorModeValue('black', 'white')
+  const headingColor = useColorModeValue('gray.900', 'white')
   const textColor = useColorModeValue('gray.800', 'gray.200')
-  const ctaBg = useColorModeValue('white', 'black')
-  const ctaColor = useColorModeValue('black', 'white')
+  const ctaBg = useColorModeValue('white', 'gray.900')
+  const ctaColor = useColorModeValue('gray.900', 'white')
   const ctaHover = useColorModeValue('gray.100', 'gray.600')
+
+  // Early returns AFTER all hooks
+  if (!images.length) return null
+  if (!loaded.every(l => l)) return null
 
   return (
     <Box as="section" position="relative" h={{ base: '70vh', md: '90vh' }} w="100%" overflow="hidden">
