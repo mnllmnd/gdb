@@ -53,8 +53,8 @@ export default function Feed() {
         setProducts(res.items || [])
         setTotal(res.total || 0)
 
-        const shops = await api.shops.following(token)
-        if (mounted) setStories(shops || [])
+        // Shops removed - no longer loading followed shops
+        if (mounted) setStories([])
       } catch (err) {
         console.error('Failed to load feed', err)
         if (mounted) {

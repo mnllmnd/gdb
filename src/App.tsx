@@ -21,6 +21,7 @@ import ProductView from './pages/ProductView';
 import TutorielPage from './pages/Tutoriel';
 import Profile from './pages/Profile';
 import Wishlist from './pages/Wishlist';
+import SellerDashboard from './pages/SellerDashboard';
 import { ChatPopup } from './components/ChatPopup';
 
 export default function App() {
@@ -120,6 +121,7 @@ function InnerApp() {
           <Route path="/admin" element={<Admin />} />
           <Route path="/products" element={<Products />} />
           <Route path="/products/:id" element={<ProductView />} />
+          <Route path="/seller" element={<SellerDashboard />} />
           <Route path="/seller/product/:id?" element={<ProductEditor />} />
           <Route path="/tutoriel" element={<TutorielPage />} />
           <Route path="/profile" element={<Profile />} />

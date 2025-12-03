@@ -79,16 +79,8 @@ export default function SellerDashboard() {
       .catch((e) => console.error(e))
       .finally(() => setLoading(false))
 
-    ;(async () => {
-      try {
-        const token = getItem('token')
-        const s = await api.shops.me(token ?? undefined)
-        if (mounted) setShop(s)
-      } catch (err) {
-        console.error('Failed to fetch shop', err)
-        if (mounted) setShop(null)
-      }
-    })()
+    // Shops removed - no longer fetching shop data
+    if (mounted) setShop(null)
 
     return () => {
       mounted = false
@@ -152,27 +144,14 @@ export default function SellerDashboard() {
   }
 
   async function handleDeleteShop() {
-    if (!confirm('Supprimer votre boutique et toutes ses données ? Cette action est irréversible.')) return
-    try {
-      const token = getItem('token')
-      const s = await api.shops.me(token ?? undefined)
-      await api.shops.delete(s.id, token ?? undefined)
-      toast({
-        title: 'Boutique supprimée',
-        status: 'success',
-        duration: 3000,
-      })
-      globalThis.location.href = '/seller/setup'
-    } catch (err) {
-      console.error(err)
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de supprimer la boutique',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      })
-    }
+    // Shops removed - deletion no longer available
+    toast({
+      title: 'Non disponible',
+      description: 'Les boutiques ont été supprimées. Vous vendez maintenant directement vos produits.',
+      status: 'info',
+      duration: 3000,
+      isClosable: true,
+    })
   }
 
   // Statistiques simulées
@@ -332,15 +311,6 @@ export default function SellerDashboard() {
                         >
                           Ajouter produit
                         </Button>
-                        <Button
-                          leftIcon={<Icon as={FiSettings} />}
-                          variant="outline"
-                          onClick={() => nav('/seller/setup')}
-                          w="100%"
-                          size="sm"
-                        >
-                          {shop ? 'Modifier boutique' : 'Créer boutique'}
-                        </Button>
                       </VStack>
                     </VStack>
                   </CardBody>
@@ -428,44 +398,15 @@ export default function SellerDashboard() {
                         <Button
                           leftIcon={<Icon as={FiEdit2} />}
                           colorScheme="blue"
-                          onClick={() => nav('/seller/setup')}
                           size="sm"
                         >
-                          Modifier
-                        </Button>
-                        <Button
-                          leftIcon={<Icon as={FiEye} />}
-                          variant="outline"
-                          onClick={() => nav('/seller/shop')}
-                          size="sm"
-                        >
-                          Voir
+                          Gérer les produits
                         </Button>
                       </SimpleGrid>
                     </VStack>
                   </CardBody>
                 </Card>
-              ) : (
-                <Card bg={cardBg} borderRadius="xl" shadow="sm">
-                  <CardBody p={8} textAlign="center">
-                    <Icon as={FiHome} boxSize={8} color="gray.400" mb={3} />
-                    <Text fontWeight="600" color={textMuted} mb={2}>
-                      Aucune boutique
-                    </Text>
-                    <Text color={textMuted} fontSize="sm" mb={4}>
-                      Créez votre boutique pour commencer
-                    </Text>
-                    <Button
-                      colorScheme="blue"
-                      leftIcon={<Icon as={FiPlus} />}
-                      onClick={() => nav('/seller/setup')}
-                      size="sm"
-                    >
-                      Créer boutique
-                    </Button>
-                  </CardBody>
-                </Card>
-              )}
+              ) : null}
             </TabPanel>
 
             {/* Tab 3: Mes produits mobile */}
@@ -579,31 +520,6 @@ export default function SellerDashboard() {
             {/* Tab 4: Actions mobile */}
             <TabPanel p={0}>
               <VStack spacing={3} align="stretch">
-                {/* Créer/Modifier boutique */}
-                <Card
-                  bg={cardBg}
-                  borderRadius="xl"
-                  shadow="sm"
-                  onClick={() => nav('/seller/setup')}
-                  cursor="pointer"
-                  transition="all 0.2s"
-                  _active={{ transform: 'scale(0.98)' }}
-                >
-                  <CardBody p={4}>
-                    <HStack spacing={3}>
-                      <Icon as={shop ? FiSettings : FiPlus} boxSize={5} color="blue.500" />
-                      <VStack spacing={0} align="start" flex={1}>
-                        <Text fontWeight="600">
-                          {shop ? 'Modifier boutique' : 'Créer boutique'}
-                        </Text>
-                        <Text color={textMuted} fontSize="sm">
-                          {shop ? 'Modifiez vos informations' : 'Commencez à vendre'}
-                        </Text>
-                      </VStack>
-                    </HStack>
-                  </CardBody>
-                </Card>
-
                 {/* Ajouter produit */}
                 <Card
                   bg={cardBg}

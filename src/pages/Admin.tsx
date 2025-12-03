@@ -65,18 +65,14 @@ interface Shop {
 
 export default function Admin() {
   const [users, setUsers] = useState<User[]>([])
-  const [shops, setShops] = useState<Shop[]>([])
-  const [editingShop, setEditingShop] = useState<Shop | null>(null)
   const [newUser, setNewUser] = useState({ email: '', phone: '', display_name: '', password: '' })
-  const [newShop, setNewShop] = useState({ name: '', domain: '', owner_id: '' })
   const [userToDelete, setUserToDelete] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState({ users: false, shops: false })
+  const [isLoading, setIsLoading] = useState({ users: false })
 
   const toast = useToast()
   const tableSize = useBreakpointValue({ base: 'sm', md: 'md' })
 
   const { isOpen: isUserOpen, onOpen: onUserOpen, onClose: onUserClose } = useDisclosure()
-  const { isOpen: isShopOpen, onOpen: onShopOpen, onClose: onShopClose } = useDisclosure()
   const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure()
 
   const cancelRef = useRef<HTMLButtonElement>(null)
@@ -95,12 +91,12 @@ export default function Admin() {
   }, [toast])
 
   const loadInitialData = async () => {
-    setIsLoading(prev => ({ ...prev, users: true, shops: true }))
+    setIsLoading(prev => ({ ...prev, users: true }))
     
     try {
-      await Promise.all([loadUsers(), loadShops()])
+      await loadUsers()
     } finally {
-      setIsLoading(prev => ({ ...prev, users: false, shops: false }))
+      setIsLoading(prev => ({ ...prev, users: false }))
     }
   }
 
@@ -118,16 +114,6 @@ export default function Admin() {
         duration: 5000,
         isClosable: true,
       })
-    }
-  }
-
-  const loadShops = async () => {
-    try {
-      const res = await api.shops.list()
-      setShops(res || [])
-    } catch (e) {
-      console.debug('Admin: failed to load shops', e)
-      setShops([])
     }
   }
 
@@ -203,57 +189,6 @@ export default function Admin() {
         status: 'error',
         duration: 5000,
         isClosable: true
-      })
-    }
-  }
-
-  const saveShop = async () => {
-    const token = getItem('token')
-    try {
-      const payload: any = { ...newShop }
-      if (editingShop?.id) payload.id = editingShop.id
-      await api.shops.save(payload, token ?? undefined)
-      toast({ 
-        title: 'Boutique enregistrée', 
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      })
-      onShopClose()
-      setEditingShop(null)
-      setNewShop({ name: '', domain: '', owner_id: '' })
-      await loadShops()
-    } catch (e) {
-      console.error(e)
-      toast({ 
-        title: 'Erreur', 
-        description: 'Impossible d\'enregistrer la boutique', 
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      })
-    }
-  }
-
-  const removeShop = async (id: string) => {
-    const token = getItem('token')
-    try {
-      await api.shops.delete(id, token ?? undefined)
-      toast({ 
-        title: 'Boutique supprimée', 
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      })
-      setShops(prev => prev.filter(s => s.id !== id))
-    } catch (e) {
-      console.error(e)
-      toast({ 
-        title: 'Erreur', 
-        description: 'Impossible de supprimer la boutique', 
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
       })
     }
   }
@@ -367,105 +302,6 @@ export default function Admin() {
             </CardBody>
           </Card>
 
-          {/* Shops Section */}
-          <Card bg={cardBg} shadow="xl" borderRadius="xl" border="1px solid" borderColor={borderColor}>
-            <CardHeader pb={4}>
-              <Flex justify="space-between" align="center" wrap="wrap" gap={4}>
-                <Box>
-                  <Heading size="md" color={textColor}>Boutiques</Heading>
-                  <Text color={mutedTextColor} fontSize="sm">
-                    {shops.length} boutique(s) enregistrée(s)
-                  </Text>
-                </Box>
-                <Button 
-                  leftIcon={<AddIcon />} 
-                  colorScheme="green" 
-                  onClick={() => { 
-                    setEditingShop(null)
-                    setNewShop({ name: '', domain: '', owner_id: '' })
-                    onShopOpen()
-                  }}
-                  size="md"
-                >
-                  Nouvelle boutique
-                </Button>
-              </Flex>
-            </CardHeader>
-            <CardBody pt={0}>
-              <TableContainer>
-                <Table variant="simple" size={tableSize}>
-                  <Thead>
-                    <Tr>
-                      <Th color={mutedTextColor}>ID</Th>
-                      <Th color={mutedTextColor}>Nom</Th>
-                      <Th color={mutedTextColor}>Domaine</Th>
-                      <Th color={mutedTextColor}>Propriétaire</Th>
-                      <Th textAlign="center" color={mutedTextColor}>Actions</Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {shops.map(shop => (
-                      <Tr key={shop.id} _hover={{ bg: useColorModeValue('gray.50', 'gray.600') }} transition="background 0.2s">
-                        <Td>
-                          <Text fontFamily="mono" fontSize="sm" color={mutedTextColor}>
-                            {shop.id.slice(0, 8)}...
-                          </Text>
-                        </Td>
-                        <Td fontWeight="medium">{shop.name}</Td>
-                        <Td>
-                          <Badge colorScheme="blue" variant="subtle">
-                            {shop.domain}
-                          </Badge>
-                        </Td>
-                        <Td>
-                          {
-                            (() => {
-                              // find owner from loaded users (admin page already loads users)
-                              const owner = users.find(u => String(u.id) === String((shop as any).owner_id))
-                              if (owner) return `${owner.display_name || owner.email || owner.id} — ${owner.phone || ''}`
-                              return (shop as any).owner_id ? String((shop as any).owner_id).slice(0,8) + '...' : '-'
-                            })()
-                          }
-                        </Td>
-                        <Td>
-                          <HStack spacing={2} justify="center">
-                            <Tooltip label="Modifier la boutique" hasArrow>
-                              <IconButton
-                                aria-label="Modifier boutique"
-                                icon={<EditIcon />}
-                                colorScheme="blue"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => { 
-                                  setEditingShop(shop)
-                                  setNewShop({ 
-                                    name: shop.name ?? '', 
-                                    domain: shop.domain ?? '', 
-                                    owner_id: (shop as any).owner_id ?? '' 
-                                  })
-                                  onShopOpen()
-                                }}
-                              />
-                            </Tooltip>
-                            <Tooltip label="Supprimer la boutique" hasArrow>
-                              <IconButton
-                                aria-label="Supprimer boutique"
-                                icon={<DeleteIcon />}
-                                colorScheme="red"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeShop(shop.id)}
-                              />
-                            </Tooltip>
-                          </HStack>
-                        </Td>
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-              </TableContainer>
-            </CardBody>
-          </Card>
         </VStack>
 
         {/* Delete User Dialog */}
@@ -559,59 +395,6 @@ export default function Admin() {
               </Button>
               <Button colorScheme="brand" onClick={createUser}>
                 Créer l'utilisateur
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-
-        {/* Shop Modal */}
-        <Modal isOpen={isShopOpen} onClose={onShopClose} isCentered size="lg">
-          <ModalOverlay />
-          <ModalContent bg={cardBg} borderRadius="xl">
-            <ModalHeader borderBottom="1px solid" borderColor={borderColor} color={textColor}>
-              {editingShop ? 'Modifier la boutique' : 'Créer une nouvelle boutique'}
-            </ModalHeader>
-            <ModalCloseButton />
-            <ModalBody py={6}>
-              <VStack spacing={4} align="stretch">
-                <FormControl>
-                  <FormLabel color={textColor}>Nom de la boutique</FormLabel>
-                  <Input 
-                    value={newShop.name} 
-                    onChange={e => setNewShop(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="Entrez le nom de la boutique"
-                  />
-                </FormControl>
-                <FormControl>
-                  <FormLabel color={textColor}>Domaine</FormLabel>
-                  <Input 
-                    value={newShop.domain} 
-                    onChange={e => setNewShop(prev => ({ ...prev, domain: e.target.value }))}
-                    placeholder="exemple.com"
-                  />
-                </FormControl>
-                <FormControl>
-                  <FormLabel color={textColor}>Propriétaire</FormLabel>
-                  <Select 
-                    value={newShop.owner_id} 
-                    onChange={e => setNewShop(prev => ({ ...prev, owner_id: e.target.value }))}
-                    placeholder="Sélectionnez un propriétaire"
-                  >
-                    {users.map(user => (
-                      <option key={user.id} value={user.id}>
-                        {user.display_name ? `${user.display_name} — ${user.phone || user.email || user.id}` : (user.phone || user.email || user.id)}
-                      </option>
-                    ))}
-                  </Select>
-                </FormControl>
-              </VStack>
-            </ModalBody>
-            <ModalFooter borderTop="1px solid" borderColor={borderColor}>
-              <Button variant="outline" mr={3} onClick={onShopClose}>
-                Annuler
-              </Button>
-              <Button colorScheme="green" onClick={saveShop}>
-                {editingShop ? 'Enregistrer les modifications' : 'Créer la boutique'}
               </Button>
             </ModalFooter>
           </ModalContent>

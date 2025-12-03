@@ -34,25 +34,10 @@ export default function ProfilePage() {
   const gridColumns = useBreakpointValue({ base: 1, md: 2, lg: 3 })
   const stackDirection = useBreakpointValue({ base: 'column', md: 'row' })
 
+  // Shops removed - no longer loading shop data
   React.useEffect(() => {
-    let mounted = true
-    const load = async () => {
-      if (!user) return
-      if (user.role !== 'seller') return
-      setLoading(true)
-      try {
-        const token = globalThis.localStorage?.getItem('token') ?? undefined
-        const s = await api.shops.me(token)
-        if (mounted) setShop(s)
-      } catch (err) {
-        console.error('Failed loading shop', err)
-        if (mounted) setShop(null)
-      } finally {
-        if (mounted) setLoading(false)
-      }
-    }
-    load()
-    return () => { mounted = false }
+    setShop(null)
+    setLoading(false)
   }, [user])
 
   // État d'édition du profil

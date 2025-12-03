@@ -36,7 +36,6 @@ import {
   DrawerCloseButton,
   useDisclosure,
   Image,
-  AspectRatio,
   Menu,
   MenuButton,
   MenuList,
@@ -47,10 +46,6 @@ import {
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
-  Slider,
-  SliderTrack,
-  SliderFilledTrack,
-  SliderThumb,
   RangeSlider,
   RangeSliderTrack,
   RangeSliderFilledTrack,
@@ -60,18 +55,18 @@ import {
   PopoverContent,
   PopoverHeader,
   PopoverBody,
-  PopoverFooter,
   PopoverArrow,
   PopoverCloseButton,
+  Tooltip,
 } from '@chakra-ui/react'
-import { CloseIcon, StarIcon, ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon, ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
-import { FiPackage, FiGrid, FiFilter, FiTrendingUp, FiMenu, FiCheck, FiDollarSign } from 'react-icons/fi'
+import { CloseIcon, StarIcon, ChevronLeftIcon, ChevronRightIcon, ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
+import { FiPackage, FiTrendingUp, FiMenu, FiCheck, FiUsers, FiChevronDown } from 'react-icons/fi'
 import ProductCard from '../components/ProductCard'
+import SellerProfile from '../components/SellerProfile'
 import api from '../services/api'
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import { usePageState } from '../components/ScrollRestoration'
 import ScrollTopButton from '../components/ScrollTopButton'
-import { Tooltip } from "@chakra-ui/react";
 
 
 // Composant Carrousel pour les produits
@@ -390,6 +385,7 @@ export default function Products() {
   const [categories, setCategories] = React.useState<any[] | null>(null)
   const [shopsMap, setShopsMap] = React.useState<Record<string, any>>({})
   const [categorizedProducts, setCategorizedProducts] = React.useState<Record<number, any[]>>({})
+  const [sellersByIdMap, setSellersByIdMap] = React.useState<Record<string, any>>({})
   const [query, setQuery] = React.useState('')
   const [allProducts, setAllProducts] = React.useState<any[] | null>(null)
   const [loading, setLoading] = React.useState(true)
@@ -400,6 +396,7 @@ export default function Products() {
   const [maxPrice, setMaxPrice] = React.useState(1000000)
   const [isPriceFilterActive, setIsPriceFilterActive] = React.useState(false)
   const [isPinterestMode, setIsPinterestMode] = React.useState(false)
+  const [followedSellers, setFollowedSellers] = React.useState<Set<string>>(new Set())
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   // Persist page state (filters, query, view) per history entry so Back restores filters and view
@@ -433,7 +430,6 @@ export default function Products() {
   }, [selectedCategory, query, sortBy, isPinterestMode, minPrice, maxPrice, isPriceFilterActive, savePageState])
 
   const borderColor = useColorModeValue('#e5e5e5', 'gray.600')
-  const cardBg = useColorModeValue('white', 'gray.800')
   const subtleBg = useColorModeValue('#f8f8f8', 'gray.700')
   const textPrimary = useColorModeValue('#111111', 'white')
   const textSecondary = useColorModeValue('#666666', 'gray.300')
@@ -477,6 +473,26 @@ export default function Products() {
 
         // Shops removed - no longer loading shop data
         setShopsMap({ byId: {}, byOwner: {} })
+
+        // Group products by seller_id
+        const sellers: Record<string, any> = {}
+        ;(productsData || []).forEach((p: any) => {
+          const sellerId = String(p.seller_id || p.user_id || 'unknown')
+          if (!sellers[sellerId]) {
+            sellers[sellerId] = {
+              id: sellerId,
+              name: p.seller_name || p.username || 'Vendeur',
+              products: [],
+            }
+          }
+          sellers[sellerId].products.push(p)
+        })
+
+        // Load followed sellers from localStorage
+        const followedList = JSON.parse(localStorage.getItem('followedSellers') || '[]')
+        setFollowedSellers(new Set(followedList))
+
+        setSellersByIdMap(sellers)
 
         const map = {} as Record<number, any[]>
         ;(productsData || []).forEach((p: any) => {
@@ -772,7 +788,7 @@ export default function Products() {
             <Menu>
               <MenuButton
                 as={Button}
-                rightIcon={<ChevronDownIcon />}
+                rightIcon={<Icon as={FiChevronDown} />}
                 variant="outline"
                 borderRadius="none"
                 borderColor={borderColor}
@@ -824,7 +840,7 @@ export default function Products() {
             <Menu>
               <MenuButton
                 as={Button}
-                rightIcon={<ChevronDownIcon />}
+                rightIcon={<Icon as={FiChevronDown} />}
                 variant="outline"
                 borderRadius="none"
                 borderColor={borderColor}
@@ -1060,7 +1076,53 @@ export default function Products() {
             borderColor={borderColor}
             gap={8}
           >
-            
+            <Tab
+              pb={2}
+              borderBottom="3px solid"
+              borderColor={activeTab === 0 ? accentColor : 'transparent'}
+              fontWeight={activeTab === 0 ? '600' : '500'}
+              color={textPrimary}
+              fontSize="md"
+              _hover={{ borderColor: useColorModeValue('#e5e5e5', 'gray.600') }}
+            >
+              Tous les produits
+            </Tab>
+            <Tab
+              pb={2}
+              borderBottom="3px solid"
+              borderColor={activeTab === 1 ? accentColor : 'transparent'}
+              fontWeight={activeTab === 1 ? '600' : '500'}
+              color={textPrimary}
+              fontSize="md"
+              _hover={{ borderColor: useColorModeValue('#e5e5e5', 'gray.600') }}
+            >
+              Populaires
+            </Tab>
+            <Tab
+              pb={2}
+              borderBottom="3px solid"
+              borderColor={activeTab === 2 ? accentColor : 'transparent'}
+              fontWeight={activeTab === 2 ? '600' : '500'}
+              color={textPrimary}
+              fontSize="md"
+              _hover={{ borderColor: useColorModeValue('#e5e5e5', 'gray.600') }}
+            >
+              Nouveautés
+            </Tab>
+            <Tab
+              pb={2}
+              borderBottom="3px solid"
+              borderColor={activeTab === 3 ? accentColor : 'transparent'}
+              fontWeight={activeTab === 3 ? '600' : '500'}
+              color={textPrimary}
+              fontSize="md"
+              _hover={{ borderColor: useColorModeValue('#e5e5e5', 'gray.600') }}
+            >
+              <HStack spacing={2}>
+                <Icon as={FiUsers} />
+                <Text>Vendeurs</Text>
+              </HStack>
+            </Tab>
           </TabList>
 
           <TabPanels>
@@ -1073,6 +1135,9 @@ export default function Products() {
             <TabPanel px={0} pt={8}>
               {renderNewProducts()}
             </TabPanel>
+            <TabPanel px={0} pt={8}>
+              {renderSellers()}
+            </TabPanel>
           </TabPanels>
         </Tabs>
       )}
@@ -1080,10 +1145,68 @@ export default function Products() {
       {/* Navigation mobile */}
       {isMobile && !hasActiveFilters && (
         <Box>
+          <Tabs 
+            variant="unstyled" 
+            mb={10}
+            index={activeTab}
+            onChange={setActiveTab}
+          >
+            <TabList 
+              borderBottom="1px solid" 
+              borderColor={borderColor}
+              overflowX="auto"
+              gap={4}
+            >
+              <Tab
+                pb={2}
+                borderBottom="3px solid"
+                borderColor={activeTab === 0 ? accentColor : 'transparent'}
+                fontWeight={activeTab === 0 ? '600' : '500'}
+                color={textPrimary}
+                fontSize="sm"
+                whiteSpace="nowrap"
+                _hover={{ borderColor: useColorModeValue('#e5e5e5', 'gray.600') }}
+              >
+                Produits
+              </Tab>
+              <Tab
+                pb={2}
+                borderBottom="3px solid"
+                borderColor={activeTab === 1 ? accentColor : 'transparent'}
+                fontWeight={activeTab === 1 ? '600' : '500'}
+                color={textPrimary}
+                fontSize="sm"
+                whiteSpace="nowrap"
+                _hover={{ borderColor: useColorModeValue('#e5e5e5', 'gray.600') }}
+              >
+                Populaires
+              </Tab>
+              <Tab
+                pb={2}
+                borderBottom="3px solid"
+                borderColor={activeTab === 2 ? accentColor : 'transparent'}
+                fontWeight={activeTab === 2 ? '600' : '500'}
+                color={textPrimary}
+                fontSize="sm"
+                whiteSpace="nowrap"
+                _hover={{ borderColor: useColorModeValue('#e5e5e5', 'gray.600') }}
+              >
+                Vendeurs
+              </Tab>
+            </TabList>
 
-          {activeTab === 0 && renderAllProducts()}
-          {activeTab === 1 && renderPopularProducts()}
-          {activeTab === 2 && renderNewProducts()}
+            <TabPanels>
+              <TabPanel px={0} pt={8}>
+                {renderAllProducts()}
+              </TabPanel>
+              <TabPanel px={0} pt={8}>
+                {renderPopularProducts()}
+              </TabPanel>
+              <TabPanel px={0} pt={8}>
+                {renderSellers()}
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
         </Box>
       )}
 
@@ -1186,6 +1309,52 @@ export default function Products() {
       <ScrollTopButton />
     </Container>
   )
+
+  function renderSellers() {
+    const sellers = Object.values(sellersByIdMap)
+    
+    if (sellers.length === 0) {
+      return (
+        <Center py={20} minH="50vh">
+          <VStack spacing={6}>
+            <Icon as={FiUsers} boxSize={16} color={iconColor} />
+            <Text color={textPrimary} fontSize="xl" fontWeight="600" textAlign="center">
+              Aucun vendeur disponible
+            </Text>
+          </VStack>
+        </Center>
+      )
+    }
+
+    return (
+      <SimpleGrid 
+        columns={{ base: 1, sm: 1, md: 2, lg: 3 }} 
+        spacing={6}
+        w="full"
+      >
+        {sellers.map((seller) => (
+          <SellerProfile
+            key={seller.id}
+            sellerId={seller.id}
+            sellerName={seller.name}
+            productCount={seller.products.length}
+            products={seller.products.slice(0, 4)}
+            isFollowing={followedSellers.has(seller.id)}
+            onFollowChange={(isFollowing) => {
+              const newFollowed = new Set(followedSellers)
+              if (isFollowing) {
+                newFollowed.add(seller.id)
+              } else {
+                newFollowed.delete(seller.id)
+              }
+              setFollowedSellers(newFollowed)
+              localStorage.setItem('followedSellers', JSON.stringify(Array.from(newFollowed)))
+            }}
+          />
+        ))}
+      </SimpleGrid>
+    )
+  }
 
   function renderFilteredProducts() {
     if (!products || products.length === 0) {

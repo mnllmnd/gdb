@@ -56,74 +56,9 @@ export default function SellerShop() {
       const mine = u ? p.filter((x: any) => String(x.seller_id) === String(u.id)) : []
       setProducts(mine)
     } catch (e) { console.error(e) }
-    try { const o = await api.shops.orders(token); setOrders(o) } catch (e) { console.error(e) }
-    try { const c = await api.shops.clients(token); setClients(c) } catch (e) { console.error(e) }
-    try { const d = await api.shops.debts.list(token); setDebts(d) } catch (e) { console.error(e) }
   }
 
-  async function addDebt() {
-    if (!newDebtAmount) return alert('Entrez un montant')
-    const entry = { client_id: null, amount: Number(newDebtAmount), note: newDebtNote }
-    try {
-      const updated = await api.shops.debts.add(entry, token)
-      setDebts(updated)
-      setNewDebtAmount('')
-      setNewDebtNote('')
-      toast({
-        title: '✅ Dette ajoutée',
-        status: 'success',
-        duration: 3000,
-        isClosable: true
-      })
-    } catch (e) { 
-      console.error(e)
-      toast({
-        title: 'Erreur',
-        description: 'Impossible d\'ajouter la dette',
-        status: 'error',
-        duration: 3000,
-        isClosable: true
-      })
-    }
-  }
-
-  async function deleteShopConfirm() {
-    if (!confirm('Voulez-vous vraiment supprimer votre boutique ? Cette action est irreversible.')) return
-    try {
-      const me = await api.shops.me(token)
-      await api.shops.delete(me.id, token)
-      toast({ title: 'Boutique supprimée', status: 'success' })
-      globalThis.location.href = '/seller/setup'
-    } catch (e) {
-      console.error(e)
-      toast({ title: 'Erreur', description: 'Impossible de supprimer la boutique', status: 'error' })
-    }
-  }
-
-  async function copyShopLink() {
-    try {
-      const me = await api.shops.me(token)
-      const url = `${globalThis.location.origin}/shop/${me.domain}`
-      await navigator.clipboard.writeText(url)
-      toast({ 
-        title: '🔗 Lien copié !', 
-        description: 'Le lien de votre boutique a été copié', 
-        status: 'success',
-        duration: 3000,
-        isClosable: true
-      })
-    } catch (e) {
-      console.error(e)
-      toast({ 
-        title: 'Erreur', 
-        description: 'Impossible de copier le lien', 
-        status: 'error',
-        duration: 3000,
-        isClosable: true
-      })
-    }
-  }
-
+ 
   if (!token || !user) {
     return (
       <Container maxW="container.lg" py={8} pb={{ base: '120px', md: 8 }}>
@@ -293,7 +228,6 @@ export default function SellerShop() {
           }}
           transition="all 0.3s ease"
           cursor="pointer"
-          onClick={copyShopLink}
           height={{ base: '120px', md: '140px' }}
         >
           <CardBody p={{ base: 4, md: 6 }} display="flex" flexDirection="column" justifyContent="center">
@@ -436,7 +370,6 @@ export default function SellerShop() {
               />
               <Button 
                 colorScheme="orange" 
-                onClick={addDebt} 
                 flexShrink={0}
                 borderRadius="lg"
                 size={{ base: 'md', md: 'lg' }}
@@ -494,7 +427,6 @@ export default function SellerShop() {
               variant="outline" 
               colorScheme="red" 
               size={{ base: 'sm', md: 'md' }}
-              onClick={deleteShopConfirm}
               borderRadius="lg"
               fontWeight="600"
               leftIcon={<Icon as={FiTrash2} />}

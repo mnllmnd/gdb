@@ -122,13 +122,7 @@ export default function CartPage() {
       const productPromises = itemsLocal.map((it) => api.products.get(it.id))
       const products = await Promise.all(productPromises)
 
-      // Récupérer les boutiques
-      const shops = await api.shops.list()
-      const shopByOwner: { [key: string]: any } = {}
-      shops?.forEach((s: any) => { 
-        shopByOwner[String(s.owner_id)] = s 
-      })
-
+      // Shops removed - use default delivery prices
       const perShop: { [key: string]: number } = {}
       const shopNames: { [key: string]: string } = {}
       
@@ -144,26 +138,15 @@ export default function CartPage() {
         
         seenOwners.add(ownerId)
         let price = 0
-        let shop = shopByOwner[ownerId]
         
-        if (shop && (typeof shop.delivery_price_local === 'undefined' || typeof shop.delivery_price_regional === 'undefined' || typeof shop.delivery_price_express === 'undefined')) {
-          try {
-            const fresh = await api.shops.getByOwner(ownerId)
-            if (fresh) shop = fresh
-          } catch (e) {
-            // ignore and fallback to cached shop
-          }
-        }
-        
-        if (shop) {
-          if (chosenType === 'pickup') price = 0
-          else if (chosenType === 'local') price = Number(shop.delivery_price_local || 0)
-          else if (chosenType === 'regional') price = Number(shop.delivery_price_regional || 0)
-          else if (chosenType === 'express') price = Number(shop.delivery_price_express || 0)
-        }
+        // Default delivery prices since shops are removed
+        if (chosenType === 'pickup') price = 0
+        else if (chosenType === 'local') price = 500
+        else if (chosenType === 'regional') price = 2000
+        else if (chosenType === 'express') price = 5000
         
         perShop[ownerId] = price
-        shopNames[ownerId] = shop?.owner_display_name || shop?.name || `Vendeur`
+        shopNames[ownerId] = 'Vendeur'
       }
 
       const total = Object.values(perShop).reduce((s, v) => s + (Number(v) || 0), 0)
@@ -200,16 +183,12 @@ export default function CartPage() {
 
       const itemsLocal = items
       const products = await Promise.all(itemsLocal.map((it) => api.products.get(it.id)))
-      const shopList = await api.shops.list()
       
+      // Shops removed - no longer loading shop list
       const shopByOwner: { [key: string]: any } = {}
-      shopList?.forEach((s: any) => { 
-        shopByOwner[String(s.owner_id)] = s 
-      })
 
       const sellerCharged: { [key: string]: boolean } = {};
       const shopNamesConfirm: { [key: string]: string } = {};
-      ;(shopList || []).forEach((s: any) => { shopNamesConfirm[String(s.owner_id)] = s.owner_display_name || s.name || `Vendeur` });
       setDeliveryShopNames(shopNamesConfirm);
 
       const breakdown = deliveryBreakdown || {}

@@ -188,7 +188,7 @@ export default function Home() {
           >
             {filteredProducts.map((product) => (
               <ScaleFade key={product.id} initialScale={0.9} in={true}>
-                <RouterLink to={`/product/${product.id}`} style={{ textDecoration: 'none' }}>
+                <RouterLink to={`/products/${product.id}`} style={{ textDecoration: 'none' }}>
                   <Box
                     borderRadius="lg"
                     overflow="hidden"
