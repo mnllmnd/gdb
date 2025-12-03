@@ -21,7 +21,10 @@ router.get('/', async (req, res) => {
     if (!list || list.length === 0) {
       try {
         console.debug('[GET /products] cache empty, querying database')
-        const r = await query('SELECT * FROM products ORDER BY created_at DESC LIMIT $1 OFFSET $2', [limit, offset])
+        const r = await query(
+          'SELECT p.*, u.display_name as seller_name FROM products p LEFT JOIN users u ON p.seller_id = u.id ORDER BY p.created_at DESC LIMIT $1 OFFSET $2',
+          [limit, offset]
+        )
         const rows = r.rows || []
         console.debug('[GET /products] database returned', rows.length, 'products')
         // attach images for those products
@@ -75,7 +78,7 @@ router.get('/:id', async (req, res) => {
     const cached = cache.getProductById(id)
     if (cached) return res.json(cached)
 
-    const product = await query('SELECT * FROM products WHERE id = $1::uuid', [id])
+    const product = await query('SELECT p.*, u.display_name as seller_name FROM products p LEFT JOIN users u ON p.seller_id = u.id WHERE p.id = $1::uuid', [id])
     if (product.rowCount === 0) return res.status(404).json({ error: 'Not found' })
     const p = product.rows[0]
     try {
