@@ -698,7 +698,7 @@ const LogoutIcon = () => (
               {user ? (
                 <>
                   <Text fontSize="xs" color={subtleTextColor} px={3} py={2} letterSpacing="wide">
-                    Connecté en tant que <Text as="span" fontWeight="normal" color={textColor}>{user.display_name ?? user.phone}</Text>
+                    Connecté en tant que <Text as="span" fontWeight="normal" color={textColor}>{user.display_name || 'Utilisateur'}</Text>
                   </Text>
                   
                   <Button 

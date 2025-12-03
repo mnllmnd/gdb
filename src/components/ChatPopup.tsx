@@ -264,7 +264,7 @@ export const ChatPopup = () => {
       <Box 
         position="fixed" 
         bottom={isMobile ? "80px" : "24px"}
-        right={isMobile ? "20px" : "24px"}
+        left={isMobile ? "20px" : "24px"}
         zIndex={9999}
       >
         <Box
@@ -298,7 +298,7 @@ export const ChatPopup = () => {
     <Box
       position="fixed"
       bottom={isMobile ? "80px" : "24px"}
-      right={isMobile ? "20px" : "24px"}
+      left={isMobile ? "20px" : "24px"}
       width={isMobile ? "calc(100% - 40px)" : "380px"}
       height={isMobile ? "70vh" : "520px"}
       bg={bgColor}
@@ -311,7 +311,6 @@ export const ChatPopup = () => {
       borderColor={borderColor}
       maxWidth={isMobile ? "400px" : "none"}
       margin={isMobile ? "0 auto" : "0"}
-      left={isMobile ? "20px" : "auto"}
       overflow="hidden"
       fontFamily="'Inter', sans-serif"
     >
