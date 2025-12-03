@@ -18,7 +18,6 @@ import Feed from './pages/Feed';
 import CartPage from './pages/Cart';
 import Products from './pages/Products';
 import ProductView from './pages/ProductView';
-import TutorielPage from './pages/Tutoriel';
 import Profile from './pages/Profile';
 import Wishlist from './pages/Wishlist';
 import SellerDashboard from './pages/SellerDashboard';
@@ -123,7 +122,6 @@ function InnerApp() {
           <Route path="/products/:id" element={<ProductView />} />
           <Route path="/seller" element={<SellerDashboard />} />
           <Route path="/seller/product/:id?" element={<ProductEditor />} />
-          <Route path="/tutoriel" element={<TutorielPage />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/wishlist" element={<Wishlist />} />
         </Routes>

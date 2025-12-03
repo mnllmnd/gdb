@@ -81,7 +81,7 @@ export default function Admin() {
     'linear(to-br, brand.500, brand.600)',
     'linear(to-br, gray.800, gray.900)'
   )
-  const cardBg = useColorModeValue('white', 'gray.700')
+  const cardBg = useColorModeValue('white', 'gray.900')
   const borderColor = useColorModeValue('gray.200', 'gray.600')
   const textColor = useColorModeValue('gray.800', 'white')
   const mutedTextColor = useColorModeValue('gray.600', 'gray.400')

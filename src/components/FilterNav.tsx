@@ -52,25 +52,13 @@ export default function FilterNav({
     >
       <Container maxW="container.xl" py={3}>
         <Flex
-          justify="space-between"
+          justify="center"
           align="center"
           position="relative"
           flexWrap="wrap"
           gap={4}
         >
-          {/* Titre Les Produits */}
-          <HStack spacing={2}>
-            <Icon
-              as={FaBox}
-              boxSize={isMobile ? 3 : 4}
-              color={activeColor}
-            />
-            <Text color={textPrimary} fontWeight="500" fontSize={isMobile ? 'sm' : 'md'}>
-              Les Produits
-            </Text>
-          </HStack>
-
-          {/* Sélecteur de catégories positionné à droite */}
+          {/* Sélecteur de catégories centré */}
           {categories.length > 0 && (
             <Box>
               <Menu>

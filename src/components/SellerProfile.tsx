@@ -40,11 +40,11 @@ export default function SellerProfile({
   const [following, setFollowing] = useState(isFollowing)
   const [loading, setLoading] = useState(false)
   const toast = useToast()
-  const bgColor = useColorModeValue('white', 'gray.800')
+  const bgColor = useColorModeValue('white', 'gray.900')
   const borderColor = useColorModeValue('gray.200', 'gray.700')
   const textColor = useColorModeValue('gray.800', 'white')
   const mutedText = useColorModeValue('gray.600', 'gray.400')
-  const productImageBg = useColorModeValue('gray.100', 'gray.700')
+  const productImageBg = useColorModeValue('gray.100', 'gray.900')
 
   const handleFollowToggle = async () => {
     const token = getItem('token')
@@ -105,7 +105,7 @@ export default function SellerProfile({
   return (
     <Card bg={bgColor} borderRadius="lg" border="1px solid" borderColor={borderColor} overflow="hidden">
       {/* Header section */}
-      <Box bg={useColorModeValue('brand.50', 'gray.700')} h="100px" />
+      <Box bg={useColorModeValue('brand.50', 'gray.900')} h="100px" />
 
       {/* Content section */}
       <CardBody>

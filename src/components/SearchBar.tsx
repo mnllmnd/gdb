@@ -48,7 +48,7 @@ export default function SearchBar({
                 placeholder={placeholder}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                bg={useColorModeValue('white', 'gray.800')}
+                bg={useColorModeValue('white', 'gray.900')}
                 borderRadius="full"
                 boxShadow="lg"
                 _focus={{

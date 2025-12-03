@@ -165,8 +165,8 @@ export default function HeroProductGrid({
             top="50%"
             transform="translateY(-50%)"
             zIndex={10}
-            bg={useColorModeValue('white', 'gray.800')}
-            color={useColorModeValue('black', 'white')}
+            bg={useColorModeValue('white', 'gray.900')}
+            color={useColorModeValue('gray.900', 'white')}
             boxShadow="xl"
             borderRadius="full"
             size={isMobile ? 'sm' : 'lg'}
@@ -174,7 +174,7 @@ export default function HeroProductGrid({
             _hover={{ 
               opacity: 1, 
               transform: 'translateY(-50%) scale(1.1)',
-              bg: useColorModeValue('gray.50', 'gray.700')
+              bg: useColorModeValue('gray.50', 'gray.900')
             }}
             _active={{
               transform: 'translateY(-50%) scale(0.95)'
@@ -196,8 +196,8 @@ export default function HeroProductGrid({
             top="50%"
             transform="translateY(-50%)"
             zIndex={10}
-            bg={useColorModeValue('white', 'gray.800')}
-            color={useColorModeValue('black', 'white')}
+            bg={useColorModeValue('white', 'gray.900')}
+            color={useColorModeValue('gray.900', 'white')}
             boxShadow="xl"
             borderRadius="full"
             size={isMobile ? 'sm' : 'lg'}
@@ -205,7 +205,7 @@ export default function HeroProductGrid({
             _hover={{ 
               opacity: 1, 
               transform: 'translateY(-50%) scale(1.1)',
-              bg: useColorModeValue('gray.50', 'gray.700')
+              bg: useColorModeValue('gray.50', 'gray.900')
             }}
             _active={{
               transform: 'translateY(-50%) scale(0.95)'

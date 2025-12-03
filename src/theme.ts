@@ -34,6 +34,10 @@ const theme = extendTheme({
       800: '#1e293b',
       900: '#0f172a',
     },
+    // Override gray.900 to match our dark background
+    gray: {
+      900: '#111318',
+    },
   },
 
   config: {
@@ -49,7 +53,7 @@ const theme = extendTheme({
         margin: 0,
         padding: 0,
         fontFamily: "'Inter', sans-serif",
-        backgroundColor: mode('#ffffff', '#000000')(props),
+        backgroundColor: mode('#ffffff', '#111318')(props),
         color: mode('#171717', '#ffffff')(props),
         transition: 'background-color 0.3s ease, color 0.3s ease',
       },
@@ -60,13 +64,19 @@ const theme = extendTheme({
         minHeight: '100vh',
         width: '100%',
         lineHeight: '1.6',
+        backgroundColor: mode('#ffffff', '#111318')(props),
+      },
+      
+      '#root': {
+        backgroundColor: mode('#ffffff', '#111318')(props),
+        minHeight: '100vh',
       },
       
       // Header avec style Zara
       header: {
         position: 'relative',
         zIndex: 10,
-        bg: mode('white', 'black')(props),
+        bg: mode('white', 'gray.900')(props),
         backdropFilter: 'blur(8px)',
         borderBottom: '1px solid',
         borderColor: mode('#e5e5e5', '#262626')(props),
@@ -140,13 +150,13 @@ const theme = extendTheme({
       variants: {
         // Style principal Zara - noir et blanc
         solid: (props: any) => ({
-          bg: mode('black', 'white')(props),
-          color: mode('white', 'black')(props),
+          bg: mode('gray.900', 'white')(props),
+          color: mode('white', 'gray.900')(props),
           border: '1px solid',
-          borderColor: mode('black', 'white')(props),
+          borderColor: mode('gray.900', 'white')(props),
           _hover: {
-            bg: mode('white', 'black')(props),
-            color: mode('black', 'white')(props),
+            bg: mode('white', 'gray.900')(props),
+            color: mode('gray.900', 'white')(props),
             transform: 'translateY(-1px)',
           },
           _active: {
@@ -187,7 +197,7 @@ const theme = extendTheme({
         container: {
           borderRadius: 'none', // Angles droits comme Zara
           overflow: 'hidden',
-          bg: mode('white', 'black')(props),
+          bg: mode('white', 'gray.900')(props),
           border: '1px solid',
           borderColor: mode('#e5e5e5', '#262626')(props),
           transition: 'all 0.3s ease',
@@ -206,7 +216,7 @@ const theme = extendTheme({
           borderRadius: 'none',
           border: '1px solid',
           borderColor: mode('#d4d4d4', '#404040')(props),
-          bg: mode('white', 'black')(props),
+          bg: mode('white', 'gray.900')(props),
           color: mode('#171717', '#ffffff')(props),
           _hover: {
             borderColor: mode('#a3a3a3', '#737373')(props),
@@ -227,7 +237,7 @@ const theme = extendTheme({
       baseStyle: (props: any) => ({
         dialog: {
           borderRadius: 'none',
-          bg: mode('white', 'black')(props),
+          bg: mode('white', 'gray.900')(props),
           border: '1px solid',
           borderColor: mode('#e5e5e5', '#262626')(props),
         },
@@ -246,7 +256,7 @@ const theme = extendTheme({
     Drawer: {
       baseStyle: (props: any) => ({
         dialog: {
-          bg: mode('white', 'black')(props),
+          bg: mode('white', 'gray.900')(props),
           border: '1px solid',
           borderColor: mode('#e5e5e5', '#262626')(props),
         },
@@ -258,13 +268,13 @@ const theme = extendTheme({
       baseStyle: (props: any) => ({
         list: {
           borderRadius: 'none',
-          bg: mode('white', 'black')(props),
+          bg: mode('white', 'gray.900')(props),
           border: '1px solid',
           borderColor: mode('#e5e5e5', '#262626')(props),
           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
         },
         item: {
-          bg: mode('white', 'black')(props),
+          bg: mode('white', 'gray.900')(props),
           color: mode('#171717', '#ffffff')(props),
           _hover: {
             bg: mode('#f5f5f5', '#262626')(props),

@@ -1,18 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Box, Button, Input, VStack, Text, 
-  Avatar, Badge, IconButton, Flex,
-  useDisclosure, Card, CardBody,
-  Image, HStack, Tag, CloseButton,
-  Link, useBreakpointValue
+  Flex, useDisclosure, 
+  Image, HStack, useBreakpointValue,
+  useColorModeValue
 } from '@chakra-ui/react';
-import { ChevronUpIcon, ChevronDownIcon } from '@chakra-ui/icons';
+import { CloseIcon, ChevronDownIcon } from '@chakra-ui/icons';
 import axios from 'axios';
 import { API_ROOT } from '../services/api'
 import api from '../services/api'
-import { PRODUCT_PLACEHOLDER } from '../utils/image'
 
-// Définition des types TypeScript
 interface Product {
   id: number;
   name?: string;
@@ -23,8 +20,6 @@ interface Product {
   image?: string;
   image_url?: string;
   product_image?: string;
-  description?: string;
-  shop?: any;
 }
 
 interface ChatMessage {
@@ -34,22 +29,50 @@ interface ChatMessage {
   type: 'text' | 'recommendations' | 'error';
   intent?: string;
   emotion?: string;
-  confidence?: number;
   products?: Product[];
 }
 
 export const ChatPopup = () => {
-  // Load messages from localStorage to persist chat history across reloads
   const STORAGE_KEY = 'chat:messages'
+  
+  // 🔧 COULEURS ADAPTATIVES
+  const bgColor = useColorModeValue('white', 'gray.900');
+  const borderColor = useColorModeValue('gray.100', 'gray.700');
+  const textColor = useColorModeValue('gray.800', 'gray.100');
+  const userMessageTextColor = useColorModeValue('white', 'white');
+  const mutedTextColor = useColorModeValue('gray.500', 'gray.400');
+  const cardBg = useColorModeValue('gray.50', 'gray.800');
+  const mine = useColorModeValue('orange.500', 'gray.900');
+  const inputBg = useColorModeValue('white', 'gray.800');
+  const inputBorder = useColorModeValue('gray.300', 'gray.600');
+  const hoverBg = useColorModeValue('gray.50', 'gray.900');
+  const buttonBg = useColorModeValue('gray.900', 'gray.900');
+  const buttonHover = useColorModeValue('gray.800', 'gray.600');
+  const productCardBg = useColorModeValue('white', 'gray.800');
+  const productCardBorder = useColorModeValue('gray.200', 'gray.600');
+  const productCardHover = useColorModeValue('black', 'gray.900');
+  const productPriceBg = useColorModeValue('gray.50', 'gray.900');
+  const productPriceColor = useColorModeValue('black', 'white');
+  const loadingBg = useColorModeValue('gray.50', 'gray.900');
+  
   const loadInitialMessages = (): ChatMessage[] => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY)
-      if (!raw) return [{ from: 'bot', text: 'Bonjour ! 👋 Je suis votre assistant shopping. Je peux vous aider à trouver des produits sur notre plateforme. Que cherchez-vous ?', timestamp: new Date(), type: 'text' as const } as ChatMessage]
+      if (!raw) return [{ 
+        from: 'bot', 
+        text: 'Bonjour. Je suis votre assistant. Que recherchez-vous ?', 
+        timestamp: new Date(), 
+        type: 'text' as const 
+      } as ChatMessage]
       const parsed = JSON.parse(raw)
       return parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }))
     } catch (err) {
-      console.error('Failed to load chat history', err)
-  return [{ from: 'bot', text: 'Bonjour ! 👋 Je suis votre assistant shopping. Je peux vous aider à trouver des produits sur notre plateforme. Que cherchez-vous ?', timestamp: new Date(), type: 'text' as const } as ChatMessage]
+      return [{ 
+        from: 'bot', 
+        text: 'Bonjour. Je suis votre assistant. Que recherchez-vous ?', 
+        timestamp: new Date(), 
+        type: 'text' as const 
+      } as ChatMessage]
     }
   }
 
@@ -57,17 +80,12 @@ export const ChatPopup = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [recommendations, setRecommendations] = useState<Product[]>([]);
-  const [emotion, setEmotion] = useState('neutral');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   
-  // Changement ici : defaultIsOpen: false au lieu de true
   const { isOpen, onToggle, onClose } = useDisclosure({ defaultIsOpen: false });
-
-  // Utilisation de useBreakpointValue pour détecter les mobiles
   const isMobile = useBreakpointValue({ base: true, md: false });
 
-  // Scroll automatique vers le bas
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -76,7 +94,6 @@ export const ChatPopup = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Persist messages to localStorage whenever they change
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(messages))
@@ -85,35 +102,18 @@ export const ChatPopup = () => {
     }
   }, [messages])
 
-  // Ajuster la hauteur quand le clavier s'ouvre sur mobile
-  useEffect(() => {
-    if (!isMobile) return;
-
-    const handleResize = () => {
-      // Forcer le scroll vers le bas quand la hauteur change
-      setTimeout(scrollToBottom, 100);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [isMobile]);
-
-  // Fonction pour chercher les vrais produits de l'API
   const searchRealProducts = async (searchTerm: string) => {
     try {
-        const response = await axios.get(`${API_ROOT}/api/products?search=${encodeURIComponent(searchTerm)}&limit=4`);
+      const response = await axios.get(`${API_ROOT}/api/products?search=${encodeURIComponent(searchTerm)}&limit=4`);
       return response.data.products || response.data || [];
     } catch (error) {
-      console.error('Erreur recherche produits:', error);
       return [];
     }
   };
 
-  // Client-side cache for recommendation requests to make chat snappier
   const recCache = React.useRef<Record<string, { ts: number; results: Product[] }>>({});
-  const CACHE_TTL = 1000 * 60 * 5 // 5 minutes
+  const CACHE_TTL = 1000 * 60 * 5
 
-  // Use the same recommendation endpoint as Recommendations.tsx
   const fetchRecommendations = async (text: string) => {
     const key = (text || '').trim().toLowerCase();
     if (!key) return [] as Product[];
@@ -129,18 +129,15 @@ export const ChatPopup = () => {
       recCache.current[key] = { ts: Date.now(), results }
       return results
     } catch (err) {
-      console.error('Erreur recommandation:', err)
       return []
     }
   }
 
-  // Fonction pour obtenir les produits populaires
   const getPopularProducts = async () => {
     try {
-        const response = await axios.get(`${API_ROOT}/api/products?sort=popular&limit=4`);
+      const response = await axios.get(`${API_ROOT}/api/products?sort=popular&limit=4`);
       return response.data.products || response.data || [];
     } catch (error) {
-      console.error('Erreur produits populaires:', error);
       return [];
     }
   };
@@ -160,7 +157,7 @@ export const ChatPopup = () => {
     setIsLoading(true);
 
     try {
-  const res = await axios.post(`${API_ROOT}/api/message`, {
+      const res = await axios.post(`${API_ROOT}/api/message`, {
         message: input,
         userProfile: { 
           preferences: ['décoration', 'mobilier'],
@@ -175,23 +172,15 @@ export const ChatPopup = () => {
         timestamp: new Date(),
         type: 'text',
         emotion: res.data.emotion,
-        intent: res.data.intent,
-        confidence: res.data.confidence
+        intent: res.data.intent
       };
 
       setMessages(prev => [...prev, botResponse]);
-      setEmotion(res.data.emotion);
-      
-      // Si c'est une recherche de produit, chercher les VRAIS produits
-      let realProducts: Product[] = [];
       
       if (res.data.intent === 'recherche_produit' || res.data.intent === 'recommandation') {
-        // Use the same recommendation API as the Recommendations modal.
-        // This gives more relevant, cached results quickly.
         const queryText = input.trim()
         let recResults: Product[] = await fetchRecommendations(queryText)
 
-        // Fallback to keyword search or popular products if recommendation endpoint returned nothing
         if (!recResults || recResults.length === 0) {
           const searchKeywords = extractSearchKeywords(input);
           if (searchKeywords.length > 0) {
@@ -203,11 +192,10 @@ export const ChatPopup = () => {
 
         setRecommendations(recResults);
 
-        // Message de recommandations avec les VRAIS produits
         if (recResults.length > 0) {
           const recommendationMessage: ChatMessage = {
             from: 'bot',
-            text: `J'ai trouvé ${recResults.length} produit(s) correspondant à votre recherche :`,
+            text: `J'ai trouvé ${recResults.length} produit(s) :`,
             timestamp: new Date(),
             type: 'recommendations',
             products: recResults
@@ -216,7 +204,7 @@ export const ChatPopup = () => {
         } else {
           const noResultsMessage: ChatMessage = {
             from: 'bot',
-            text: "Je n'ai pas trouvé de produits correspondant à votre recherche. Essayez avec d'autres termes ou parcourez notre catalogue complet !",
+            text: "Aucun produit trouvé. Essayez d'autres termes.",
             timestamp: new Date(),
             type: 'text'
           };
@@ -227,10 +215,9 @@ export const ChatPopup = () => {
       }
 
     } catch (err) {
-      console.error('Erreur chat:', err);
       const errorMessage: ChatMessage = {
         from: 'bot',
-        text: "Désolé, je rencontre des difficultés techniques. Pouvez-vous réessayer ?",
+        text: "Désolé, réessayez.",
         timestamp: new Date(),
         type: 'error'
       };
@@ -240,9 +227,8 @@ export const ChatPopup = () => {
     }
   };
 
-  // Fonction pour extraire les mots-clés de recherche du message
   const extractSearchKeywords = (message: string): string[] => {
-    const stopWords = ['je', 'tu', 'il', 'nous', 'vous', 'ils', 'cherche', 'veux', 'voudrais', 'recherche', 'acheter', 'trouver', 'des', 'un', 'une', 'le', 'la', 'les', 'du', 'de', 'pour', 'dans', 'sur'];
+    const stopWords = ['je', 'tu', 'il', 'nous', 'vous', 'ils', 'cherche', 'veux', 'voudrais', 'recherche', 'acheter', 'trouver'];
     
     const words = message.toLowerCase()
       .split(' ')
@@ -252,249 +238,421 @@ export const ChatPopup = () => {
     return words;
   };
 
-  const getEmotionColor = (emotion?: string) => {
-    const colors: { [key: string]: string } = {
-      happy: 'green.100',
-      excited: 'purple.100',
-      satisfied: 'blue.100',
-      curious: 'yellow.100',
-      confused: 'orange.100',
-      urgent: 'red.100',
-      neutral: 'gray.100'
-    };
-    return colors[emotion || 'neutral'] || 'gray.100';
-  };
-
-  const getIntentBadge = (intent?: string) => {
-    const intents: { [key: string]: { label: string; color: string } } = {
-      salutation: { label: '👋 Salutation', color: 'blue' },
-      recherche_produit: { label: '🛍️ Recherche', color: 'green' },
-      recommandation: { label: '💡 Recommandation', color: 'purple' },
-      prix_promotion: { label: '💰 Prix', color: 'orange' },
-      livraison_info: { label: '🚚 Livraison', color: 'teal' },
-      merci: { label: '🙏 Merci', color: 'pink' }
-    };
-    return intents[intent || ''] || { label: intent || 'Unknown', color: 'gray' };
-  };
-
   const clearChat = () => {
-  const initial = [{ from: 'bot', text: 'Bonjour ! 👋 Comment puis-je vous aider à trouver des produits ?', timestamp: new Date(), type: 'text' as const } as ChatMessage]
-  setMessages(initial);
+    const initial = [{ 
+      from: 'bot', 
+      text: 'Bonjour. Que recherchez-vous ?', 
+      timestamp: new Date(), 
+      type: 'text' as const 
+    } as ChatMessage]
+    setMessages(initial);
     try { localStorage.removeItem(STORAGE_KEY) } catch(e){}
     setRecommendations([]);
-    setEmotion('neutral');
   };
 
-  // Fonction pour obtenir l'URL de l'image du produit
   const getProductImageUrl = (product: Product) => {
     const src = product.image_url || product.product_image || product.image || null
     if (!src) return null
     if (src.startsWith('http')) return src
-    // resolve relative paths against API_ROOT (root without /api)
     const root = API_ROOT.replace(/\/api$/, '')
     return `${root}${src.startsWith('/') ? src : '/' + src}`
   };
 
- if (!isOpen) {
-  return (
-    <Box 
-      position="fixed" 
-      bottom={isMobile ? "80px" : "20px"}  // ← LIGNE 250 - Position verticale
-      right={isMobile ? "20px" : "20px"}   // ← LIGNE 251 - Position horizontale
-      zIndex={9999}
-    >
-      <Button
-        onClick={onToggle}
-        colorScheme="maroon"
-        size={isMobile ? "md" : "lg"}
-        borderRadius="full"
-        boxShadow="2xl"
-        width={isMobile ? "50px" : "60px"}   // ← LIGNE 258 - Largeur
-        height={isMobile ? "50px" : "60px"}  // ← LIGNE 259 - Hauteur
-        fontSize={isMobile ? "xl" : "2xl"}   // ← LIGNE 260 - Taille de l'icône
+  // 🔴 BOUTON FLOTTANT - ADAPTÉ MODE SOMBRE
+  if (!isOpen) {
+    return (
+      <Box 
+        position="fixed" 
+        bottom={isMobile ? "80px" : "24px"}
+        right={isMobile ? "20px" : "24px"}
+        zIndex={9999}
       >
-        💬
-      </Button>
-    </Box>
-  );
-}
+        <Box
+          onClick={onToggle}
+          width="52px"
+          height="52px"
+          bg={buttonBg}
+          borderRadius="full"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          cursor="pointer"
+          boxShadow="0 4px 20px rgba(0,0,0,0.15)"
+          transition="all 0.2s"
+          _hover={{
+            transform: 'translateY(-2px)',
+            boxShadow: '0 6px 25px rgba(0,0,0,0.2)',
+            bg: buttonHover
+          }}
+        >
+          <Text color="white" fontSize="18px" fontWeight="400" fontFamily="'Inter', sans-serif">
+            AI
+          </Text>
+        </Box>
+      </Box>
+    );
+  }
 
+  // 🪟 FENÊTRE DE CHAT - COMPLÈTEMENT ADAPTATIVE
   return (
     <Box
       position="fixed"
-      bottom={isMobile ? "80px" : "20px"} // Changement ici : plus d'espace en bas sur mobile
-      right={isMobile ? "20px" : "20px"}
-      width={isMobile ? "calc(100% - 40px)" : "420px"} // Changement ici : largeur réduite sur mobile
-      height={isMobile ? "70vh" : "600px"} // Changement ici : hauteur réduite à 70% sur mobile
-      bg="white"
-      borderRadius="2xl" // Toujours des bordures arrondies
-      boxShadow="2xl"
+      bottom={isMobile ? "80px" : "24px"}
+      right={isMobile ? "20px" : "24px"}
+      width={isMobile ? "calc(100% - 40px)" : "380px"}
+      height={isMobile ? "70vh" : "520px"}
+      bg={bgColor}
+      borderRadius="0"
+      boxShadow="0 8px 40px rgba(0,0,0,0.12)"
       zIndex={9999}
       display="flex"
       flexDirection="column"
-      border="5px solid"
-      borderColor="gray.200"
-      maxWidth={isMobile ? "400px" : "none"} // Largeur max sur mobile
-      margin={isMobile ? "0 auto" : "0"} // Centrer sur mobile si nécessaire
-      left={isMobile ? "20px" : "auto"} // Positionnement sur mobile
+      border="1px solid"
+      borderColor={borderColor}
+      maxWidth={isMobile ? "400px" : "none"}
+      margin={isMobile ? "0 auto" : "0"}
+      left={isMobile ? "20px" : "auto"}
+      overflow="hidden"
+      fontFamily="'Inter', sans-serif"
     >
-      {/* Header */}
+      {/* Header ultra minimal */}
       <Flex
-        bg="brand.500"
-        color="white"
+        bg={bgColor}
         p={3}
-        borderTopRadius="2xl"
+        borderBottom="1px solid"
+        borderColor={borderColor}
         justify="space-between"
         align="center"
-        flexShrink={0}
+        height="56px"
       >
-        <HStack>
-          <Avatar size="sm" name="Assistant IA" bg="brand.500" />
-          <Box>
-            <Text fontWeight="bold">Assistant Shopping</Text>
-            <Text fontSize="xs" opacity={0.8}>
-              {emotion === 'happy' ? '😊 Disponible' : 
-               emotion === 'excited' ? '🚀 Super motivé' : '💬 En ligne'}
-            </Text>
-          </Box>
-        </HStack>
-        <HStack>
-          <IconButton
-            icon={isOpen ? <ChevronDownIcon /> : <ChevronUpIcon />}
-            onClick={onToggle}
-            size="sm"
-            variant="ghost"
-            color="white"
-            aria-label="Toggle chat"
+        <HStack spacing={3}>
+          <Box 
+            width="8px" 
+            height="8px" 
+            borderRadius="full" 
+            bg="#10b981"
           />
-          <CloseButton onClick={onClose} />
+          <Text 
+            fontSize="14px" 
+            fontWeight="500" 
+            letterSpacing="0.5px"
+            color={textColor}
+          >
+            Assistant
+          </Text>
+        </HStack>
+        
+        <HStack spacing={2}>
+          <Box
+            width="28px"
+            height="28px"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            cursor="pointer"
+            borderRadius="sm"
+            _hover={{ bg: hoverBg }}
+            onClick={clearChat}
+          >
+            <Text fontSize="11px" color={mutedTextColor}>Effacer</Text>
+          </Box>
+          <Box
+            width="28px"
+            height="28px"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            cursor="pointer"
+            borderRadius="sm"
+            _hover={{ bg: hoverBg }}
+            onClick={onToggle}
+          >
+            <ChevronDownIcon color={mutedTextColor} w={3} h={3} />
+          </Box>
+          <Box
+            width="28px"
+            height="28px"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            cursor="pointer"
+            borderRadius="sm"
+            _hover={{ bg: hoverBg }}
+            onClick={onClose}
+          >
+            <CloseIcon color={mutedTextColor} w={2.5} h={2.5} />
+          </Box>
         </HStack>
       </Flex>
 
-      {/* Messages */}
+      {/* Messages - Adaptatif */}
       <Box 
         flex="1" 
-        p={isMobile ? 3 : 4} 
+        p={4} 
         overflowY="auto" 
-        bg="gray.50"
-        pb={isMobile ? "70px" : 4} // Réduction de l'espace en bas sur mobile
-        minHeight={0}
+        bg={bgColor}
+        pb={isMobile ? "80px" : 4}
       >
-        <VStack spacing={2} align="stretch">
+        <VStack spacing={4} align="stretch">
           {messages.map((msg, i) => (
             <Box
               key={i}
               alignSelf={msg.from === 'user' ? 'flex-end' : 'flex-start'}
-              maxWidth={isMobile ? "90%" : "85%"}
+              maxWidth="85%"
             >
-              <Flex align="flex-end" gap={2} direction={msg.from === 'user' ? 'row-reverse' : 'row'}>
-                <Avatar
-                  size="xs"
-                  name={msg.from === 'user' ? 'Vous' : 'Assistant'}
-                  bg={msg.from === 'user' ? 'green.500' : 'brand.500'}
-                />
+              <Flex align="flex-end" gap={3} direction={msg.from === 'user' ? 'row-reverse' : 'row'}>
+                {msg.from === 'bot' && (
+                  <Box 
+                    width="24px" 
+                    height="24px" 
+                    borderRadius="full" 
+                    bg={cardBg}
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    flexShrink={0}
+                    border="1px solid"
+                    borderColor={borderColor}
+                  >
+                    <Text fontSize="10px" color={mutedTextColor}>AI</Text>
+                  </Box>
+                )}
+                
                 <Box
-                  bg={msg.from === 'user' ? 'brand.500' : getEmotionColor(msg.emotion)}
-                  color={msg.from === 'user' ? 'white' : 'gray.800'}
-                  px={3}
-                  py={2}
-                  borderRadius="lg"
-                  borderBottomRightRadius={msg.from === 'user' ? 0 : 'lg'}
-                  borderBottomLeftRadius={msg.from === 'user' ? 'lg' : 0}
+                  bg={msg.from === 'user' ? mine : cardBg}
+                  color={msg.from === 'user' ? userMessageTextColor : 'white'}
+                  px={4}
+                  py={3}
+                  borderRadius="2px"
+                  position="relative"
+                  border={msg.from === 'user' ? 'none' : '1px solid'}
+                  borderColor={msg.from === 'user' ? 'transparent' : borderColor}
+                  _before={msg.from === 'user' ? {
+                    content: '""',
+                    position: 'absolute',
+                    right: '-8px',
+                    bottom: '0',
+                    width: '0',
+                    height: '0',
+                    borderLeft: `8px solid ${buttonBg}`,
+                    borderTop: '8px solid transparent',
+                    borderBottom: '8px solid transparent'
+                  } : {
+                    content: '""',
+                    position: 'absolute',
+                    left: '-8px',
+                    bottom: '0',
+                    width: '0',
+                    height: '0',
+                    borderRight: `8px solid ${cardBg}`,
+                    borderTop: '8px solid transparent',
+                    borderBottom: '8px solid transparent'
+                  }}
+                  _after={msg.from === 'user' ? {
+                    content: '""',
+                    position: 'absolute',
+                    left: '-1px',
+                    top: '-1px',
+                    right: '-1px',
+                    bottom: '-1px',
+                    border: '1px solid',
+                    borderColor: buttonBg,
+                    borderRadius: '2px',
+                    pointerEvents: 'none'
+                  } : {}}
                 >
-                    <Box display="flex" alignItems="start" justifyContent="space-between">
-                      <Text fontSize="sm" flex="1">{msg.text}</Text>
-                      <CloseButton size="sm" ml={2} onClick={() => {
-                        setMessages(prev => prev.filter((_, ii) => ii !== i))
-                      }} aria-label="Supprimer le message" />
-                    </Box>
+                  <Text fontSize="14px" lineHeight="1.5">
+                    {msg.text}
+                  </Text>
+                  
                   {msg.type === 'recommendations' && msg.products && (
-                    <VStack mt={3} spacing={3}>
+                    <VStack spacing={3} mt={4}>
                       {msg.products.map((product, idx) => {
                         const imageUrl = getProductImageUrl(product);
                         return (
-                          <Card key={idx} size="sm" width="100%" variant="outline">
-                            <CardBody p={isMobile ? 2 : 3}>
-                              <HStack spacing={isMobile ? 2 : 3} align="start">
-                                <Box 
-                                  width={isMobile ? "40px" : "50px"} 
-                                  height={isMobile ? "40px" : "50px"} 
-                                  bg="gray.100" 
-                                  borderRadius="md"
-                                  display="flex"
-                                  alignItems="center"
-                                  justifyContent="center"
-                                  flexShrink={0}
-                                >
-                                  {imageUrl ? (
-                                    <Image 
-                                      src={imageUrl} 
-                                      alt={product.name}
-                                      width="100%"
-                                      height="100%"
-                                      objectFit="cover"
-                                      borderRadius="md"
-                                      fallback={
-                                        <Text fontSize="xs" color="gray.500">🛍️</Text>
-                                      }
-                                    />
-                                  ) : (
-                                    <Text fontSize="xs" color="gray.500">🛍️</Text>
-                                  )}
-                                </Box>
-                                <Box flex="1">
-                                  <Text fontSize="sm" fontWeight="bold" noOfLines={2} mb={1}>
-                                    {product.name || product.title || product.product_name || 'Produit'}
-                                  </Text>
-                                  <Box display="flex" alignItems="center" gap={3} mb={1}>
-                                    <Box bg="green.50" px={3} py={1} borderRadius="md">
-                                      <Text fontSize="md" color="green.700" fontWeight="bold">
-                                        {new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.floor(product.price || 0))} FCFA
-                                      </Text>
-                                    </Box>
-                                    <Text fontSize="xs" color="gray.500">{product.category}</Text>
-                                  </Box>
-                                  <Link 
-                                    href={`${typeof window !== 'undefined' ? window.location.origin : ''}/products/${product.id}`} 
-                                    fontSize="xs" 
-                                    color="blue.500"
-                                    onClick={() => window.open(`${typeof window !== 'undefined' ? window.location.origin : ''}/products/${product.id}`, '_blank')}
+                          <Box 
+                            key={idx} 
+                            border="1px solid" 
+                            borderColor={productCardBorder}
+                            p={3}
+                            bg={productCardBg}
+                            cursor="pointer"
+                            transition="all 0.2s"
+                            _hover={{
+                              borderColor: productCardHover,
+                              transform: 'translateX(1px)'
+                            }}
+                            onClick={() => window.open(`${typeof window !== 'undefined' ? window.location.origin : ''}/products/${product.id}`, '_blank')}
+                          >
+                            <HStack spacing={3} align="start">
+                              <Box 
+                                width="60px" 
+                                height="60px" 
+                                bg={cardBg}
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="center"
+                                flexShrink={0}
+                                overflow="hidden"
+                                border="1px solid"
+                                borderColor={borderColor}
+                              >
+                                {imageUrl ? (
+                                  <Image 
+                                    src={imageUrl} 
+                                    alt={product.name}
+                                    width="100%"
+                                    height="100%"
+                                    objectFit="cover"
+                                  />
+                                ) : (
+                                  <Box 
+                                    width="100%" 
+                                    height="100%" 
+                                    bg={cardBg}
+                                    display="flex"
+                                    alignItems="center"
+                                    justifyContent="center"
                                   >
-                                    Voir le produit →
-                                  </Link>
+                                    <Text fontSize="10px" color={mutedTextColor}>PRODUIT</Text>
+                                  </Box>
+                                )}
+                              </Box>
+                              
+                              <Box flex="1" minWidth="0">
+                                <Text 
+                                  fontSize="13px" 
+                                  fontWeight="500" 
+                                  mb={1}
+                                  noOfLines={1}
+                                  color={textColor}
+                                >
+                                  {product.name || product.title || product.product_name || 'Produit'}
+                                </Text>
+                                
+                                <Box 
+                                  bg={productPriceBg}
+                                  display="inline-block"
+                                  px={2}
+                                  py={1}
+                                  mb={1}
+                                  borderRadius="1px"
+                                >
+                                  <Text 
+                                    fontSize="15px" 
+                                    fontWeight="600" 
+                                    color={productPriceColor}
+                                  >
+                                    {new Intl.NumberFormat('fr-FR', { 
+                                      maximumFractionDigits: 0 
+                                    }).format(Math.floor(product.price || 0))} FCFA
+                                  </Text>
                                 </Box>
-                              </HStack>
-                            </CardBody>
-                          </Card>
+                                
+                                <Text 
+                                  fontSize="11px" 
+                                  color={mutedTextColor}
+                                  letterSpacing="0.3px"
+                                  textTransform="uppercase"
+                                >
+                                  {product.category}
+                                </Text>
+                              </Box>
+                            </HStack>
+                          </Box>
                         );
                       })}
                     </VStack>
                   )}
-                  <Text fontSize="xs" opacity={0.7} mt={1}>
-                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  
+                  <Text 
+                    fontSize="11px" 
+                    color={msg.from === 'user' ? 'gray.400' : mutedTextColor}
+                    mt={2}
+                    textAlign={msg.from === 'user' ? 'right' : 'left'}
+                  >
+                    {msg.timestamp.toLocaleTimeString([], { 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}
                   </Text>
                 </Box>
+                
+                {msg.from === 'user' && (
+                  <Box 
+                    width="30px" 
+                    height="30px" 
+                    borderRadius="full" 
+                    bg={mine}
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    flexShrink={0}
+                    border="1px solid"
+                    borderColor={borderColor}
+                  >
+                    <Text fontSize="8px" color="white">VOUS</Text>
+                  </Box>
+                )}
               </Flex>
-              {msg.intent && (
-                <Badge 
-                  colorScheme={getIntentBadge(msg.intent).color} 
-                  size="sm" 
-                  mt={1}
-                  ml={msg.from === 'user' ? 0 : 8}
-                  mr={msg.from === 'user' ? 8 : 0}
-                >
-                  {getIntentBadge(msg.intent).label}
-                </Badge>
-              )}
             </Box>
           ))}
           
           {isLoading && (
-            <Box alignSelf="flex-start" maxWidth="80%">
-              <Flex align="flex-end" gap={2}>
-                <Avatar size="xs" name="Assistant" bg="blue.500" />
-                <Box bg="gray.100" px={3} py={2} borderRadius="lg">
-                  <Text fontSize="sm">🔍 Chargement...</Text>
+            <Box alignSelf="flex-start" maxWidth="85%">
+              <Flex align="flex-end" gap={3}>
+                <Box 
+                  width="24px" 
+                  height="24px" 
+                  borderRadius="full" 
+                  bg={loadingBg}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  flexShrink={0}
+                  border="1px solid"
+                  borderColor={borderColor}
+                >
+                  <Text fontSize="10px" color={mutedTextColor}>AI</Text>
+                </Box>
+                <Box 
+                  bg={loadingBg} 
+                  px={4} 
+                  py={3} 
+                  borderRadius="2px"
+                  position="relative"
+                  border="1px solid"
+                  borderColor={borderColor}
+                  _before={{
+                    content: '""',
+                    position: 'absolute',
+                    left: '-8px',
+                    bottom: '0',
+                    width: '0',
+                    height: '0',
+                    borderRight: `8px solid ${loadingBg}`,
+                    borderTop: '8px solid transparent',
+                    borderBottom: '8px solid transparent'
+                  }}
+                >
+                  <Box display="flex" gap={1}>
+                    {[1, 2, 3].map((dot) => (
+                      <Box
+                        key={dot}
+                        width="4px"
+                        height="4px"
+                        borderRadius="full"
+                        bg={mutedTextColor}
+                        animation={`pulse 1.5s infinite ${dot * 0.2}s`}
+                        sx={{
+                          '@keyframes pulse': {
+                            '0%, 100%': { opacity: 0.4 },
+                            '50%': { opacity: 1 }
+                          }
+                        }}
+                      />
+                    ))}
+                  </Box>
                 </Box>
               </Flex>
             </Box>
@@ -503,65 +661,81 @@ export const ChatPopup = () => {
         </VStack>
       </Box>
 
-      {/* Recommendations en cours */}
-      {recommendations.length > 0 && (
-        <Box 
-          p={3} 
-          borderTop="1px solid" 
-          borderColor="gray.200" 
-          bg="blue.50"
-          flexShrink={0}
-        >
-          <HStack spacing={2} overflowX="auto">
-            {recommendations.slice(0, 3).map((product, idx) => (
-              <Tag key={idx} colorScheme="blue" size="sm" borderRadius="full">
-                {product.name}
-              </Tag>
-            ))}
-          </HStack>
-        </Box>
-      )}
-
-      {/* Zone de saisie */}
+      {/* Zone de saisie - Adaptative */}
       <Box 
-        p={3} 
-        borderTop="1px solid" 
-        borderColor="gray.200" 
-        bg="white"
-        flexShrink={0}
+        p={4}
+        borderTop="1px solid"
+        borderColor={borderColor}
+        bg={bgColor}
       >
-        <HStack>
+        <HStack spacing={3}>
           <Input
             ref={inputRef}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !isLoading && sendMessage()}
-            placeholder="Ex: Je cherche une lampe scandinave..."
+            placeholder="Rechercher un produit..."
             size="sm"
             isDisabled={isLoading}
-            fontSize="16px"
+            fontSize="14px"
+            border="1px solid"
+            borderColor={inputBorder}
+            borderRadius="0"
+            height="40px"
+            bg={inputBg}
+            color={textColor}
+            _focus={{
+              borderColor: useColorModeValue('black', 'white'),
+              boxShadow: 'none'
+            }}
+            _placeholder={{
+              color: mutedTextColor,
+              fontSize: '13px'
+            }}
+            _disabled={{
+              opacity: 0.6,
+              cursor: 'not-allowed'
+            }}
           />
           <Button
             onClick={sendMessage}
-            colorScheme="blue"
-            bg="brand.500"
+            bg={buttonBg}
+            color="white"
             size="sm"
             isLoading={isLoading}
-            loadingText="..."
-            flexShrink={0}
-            minWidth="70px"
+            loadingText=""
+            height="40px"
+            width="80px"
+            borderRadius="0"
+            fontSize="13px"
+            fontWeight="500"
+            letterSpacing="0.5px"
+            _hover={{
+              bg: buttonHover
+            }}
+            _active={{
+              bg: buttonBg
+            }}
+            _loading={{
+              opacity: 0.7
+            }}
+            _disabled={{
+              opacity: 0.7,
+              cursor: 'not-allowed'
+            }}
           >
             Envoyer
           </Button>
         </HStack>
-        <Flex justify="space-between" mt={2}>
-          <Text fontSize="xs" color="gray.500">
-            💡 Essayez: "meuble", "décoration", "électroménager"
-          </Text>
-          <Button size="xs" variant="ghost" onClick={clearChat}>
-            Effacer
-          </Button>
-        </Flex>
+        
+        <Text 
+          fontSize="11px" 
+          color={mutedTextColor} 
+          mt={3}
+          letterSpacing="0.3px"
+        >
+          Exemples: canapé, lampe, table, décoration
+        </Text>
       </Box>
     </Box>
   );

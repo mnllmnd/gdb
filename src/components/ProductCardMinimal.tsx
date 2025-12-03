@@ -60,11 +60,11 @@ const ProductCardMinimal: React.FC<Props> = ({
   onAddToCart,
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure()
-  const bg = useColorModeValue('white', 'gray.800')
+  const bg = useColorModeValue('white', 'gray.900')
   const textColor = useColorModeValue('gray.800', 'white')
   const borderColor = useColorModeValue('gray.100', 'gray.700')
-  const hoverBg = useColorModeValue('gray.50', 'gray.700')
-  const modalBg = useColorModeValue('white', 'gray.800')
+  const hoverBg = useColorModeValue('gray.50', 'gray.900')
+  const modalBg = useColorModeValue('white', 'gray.900')
   
   // Normalisation des images
   const allImages = React.useMemo(() => {

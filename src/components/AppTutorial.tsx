@@ -85,7 +85,7 @@ export default function AppTutorial({ enabled = true }: AppTutorialProps) {
     },
   ]
 
-  const bg = useColorModeValue('white', 'gray.800')
+  const bg = useColorModeValue('white', 'gray.900')
   const textColor = useColorModeValue('gray.800', 'white')
 
   React.useEffect(() => {

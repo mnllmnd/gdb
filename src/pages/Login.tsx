@@ -25,15 +25,15 @@ export default function Login() {
   const nav = useNavigate()
 
   // 🎨 Palette de couleurs style Zara
-  const bgPage = useColorModeValue('white', 'black')
-  const bgCard = useColorModeValue('white', 'blaclk')
+  const bgPage = useColorModeValue('white', 'gray.900')
+  const bgCard = useColorModeValue('white', 'gray.900')
   const labelColor = useColorModeValue('gray.700', 'gray.300')
   const textColor = useColorModeValue('gray.600', 'gray.400')
-  const headingColor = useColorModeValue('black', 'white')
-  const inputBg = useColorModeValue('white', 'black')
+  const headingColor = useColorModeValue('gray.900', 'white')
+  const inputBg = useColorModeValue('white', 'gray.900')
   const inputBorder = useColorModeValue('gray.200', 'gray.600')
-  const buttonBg = useColorModeValue('black', 'white')
-  const buttonColor = useColorModeValue('white', 'black')
+  const buttonBg = useColorModeValue('gray.900', 'white')
+  const buttonColor = useColorModeValue('white', 'gray.900')
   const buttonHoverBg = useColorModeValue('gray.800', 'gray.100')
 
   async function onSignIn(e?: React.FormEvent) {
@@ -106,7 +106,7 @@ export default function Login() {
                 alignItems="center"
                 transition="all 0.2s ease"
                 _focusWithin={{ 
-                  borderColor: 'black', 
+                  borderColor: 'gray.900', 
                   boxShadow: 'none'
                 }}
                 _hover={{ borderColor: 'gray.400' }}
@@ -162,7 +162,7 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 bg={inputBg}
-                focusBorderColor="black"
+                focusBorderColor="gray.900"
                 borderRadius="none"
                 border="1px solid"
                 borderColor={inputBorder}

@@ -189,6 +189,7 @@ export const api = {
   orders: {
     create: (payload: any, token?: string) => request('/orders', { method: 'POST', body: JSON.stringify(payload), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     my: (token?: string) => request('/orders/me', { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+    sellerOrders: (token?: string) => request('/orders/seller/me', { headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     cancel: (orderId: string, token?: string) => request(`/orders/${encodeURIComponent(orderId)}/cancel`, { method: 'PATCH', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
     delete: (orderId: string, token?: string) => request(`/orders/${encodeURIComponent(orderId)}`, { method: 'DELETE', headers: token ? { Authorization: `Bearer ${token}` } : {} }),
   },

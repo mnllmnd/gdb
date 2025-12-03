@@ -55,14 +55,14 @@ export default function NavBar() {
   const [searchQuery, setSearchQuery] = useState('')
   
   // Palette sobre style Zara
-  const navBg = useColorModeValue('white', 'black')
-  const navBorder = useColorModeValue('gray.200', 'gray.800')
+  const navBg = useColorModeValue('white', 'gray.900')
+  const navBorder = useColorModeValue('gray.200', 'gray.700')
   const textColor = useColorModeValue('black', 'white')
   const subtleTextColor = useColorModeValue('gray.600', 'gray.400')
   const brandColor = useColorModeValue('black', 'white')
   const hoverBg = useColorModeValue('gray.50', 'gray.800')
-  const menuBg = useColorModeValue('white', 'black')
-  const menuBorder = useColorModeValue('gray.200', 'gray.800')
+  const menuBg = useColorModeValue('white', 'gray.900')
+  const menuBorder = useColorModeValue('gray.200', 'gray.700')
   const { colorMode, toggleColorMode } = useColorMode()
 
   const handleSearch = (query: string) => {
@@ -593,8 +593,9 @@ const LogoutIcon = () => (
                     to="/signup"
                     variant="solid"
                     size="sm"
-                    
-                    _hover={{ bg: 'gray.700' }}
+                    bg={useColorModeValue('gray.900', 'white')}
+                    color={useColorModeValue('white', 'gray.900')}
+                    _hover={{ bg: useColorModeValue('gray.800', 'gray.100') }}
                     transition="all 0.2s ease"
                     fontWeight="normal"
                     borderRadius="none"

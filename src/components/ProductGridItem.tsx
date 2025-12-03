@@ -11,7 +11,7 @@ interface Props {
 
 const ProductGridItem: React.FC<Props> = ({ id, title, images, height = '260px' }) => {
   const [hovered, setHovered] = React.useState(false)
-  const bg = useColorModeValue('white', 'gray.800')
+  const bg = useColorModeValue('white', 'gray.900')
 
   const primary = images && images.length ? String(images[0]) : '/img/b.jfif'
   const alt = images && images.length > 1 ? String(images[1]) : primary

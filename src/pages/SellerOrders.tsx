@@ -11,19 +11,19 @@ export default function SellerOrders() {
   const [loading, setLoading] = useState(true)
   const toast = useToast()
 
-  const sectionBg = useColorModeValue('white', 'gray.800')
+  const sectionBg = useColorModeValue('white', 'gray.900')
 
   useEffect(() => { load() }, [])
 
   async function load() {
     setLoading(true)
     try {
-      const o = await api.shops.orders(token)
-  setOrders(o || [])
-  // initialize shipped state from server if present
-  const initial: Record<string, boolean> = {}
-  for (const it of (o || [])) { initial[String(it.id)] = !!it.shipped }
-  setShipped(initial)
+      const o = await api.orders.sellerOrders(token)
+      setOrders(o || [])
+      // initialize shipped state from server if present
+      const initial: Record<string, boolean> = {}
+      for (const it of (o || [])) { initial[String(it.id)] = !!it.shipped }
+      setShipped(initial)
     } catch (e) {
       console.error(e)
       toast({ title: 'Erreur', description: 'Impossible de récupérer les commandes', status: 'error' })
@@ -31,11 +31,11 @@ export default function SellerOrders() {
   }
 
   async function handleDelete(orderId: string) {
-  if (!globalThis.confirm('Supprimer cette commande ? Cette action est irréversible.')) {
-    return
-  }
+    if (!globalThis.confirm('Supprimer cette commande ? Cette action est irréversible.')) {
+      return
+    }
     try {
-      await api.shops.deleteOrder(orderId, token)
+      await api.orders.delete(orderId, token)
       setOrders(prev => prev.filter(o => String(o.id) !== String(orderId)))
       toast({ title: 'Commande supprimée', status: 'success' })
     } catch (e) {

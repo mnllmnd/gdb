@@ -148,13 +148,13 @@ function ProductsCarousel({ products, title, shopsMap, isPinterestMode }: { prod
             transform="translateY(-50%)"
             zIndex={10}
             bg="white"
-            color="black"
+            color="gray.900"
             border="1px solid"
             borderColor={borderColor}
             size="lg"
             opacity={isHovered ? 1 : 0}
             _hover={{ 
-              bg: "black", 
+              bg: "gray.900", 
               color: "white",
               transform: "translateY(-50%) scale(1.1)" 
             }}
@@ -175,13 +175,13 @@ function ProductsCarousel({ products, title, shopsMap, isPinterestMode }: { prod
             transform="translateY(-50%)"
             zIndex={10}
             bg="white"
-            color="black"
+            color="gray.900"
             border="1px solid"
             borderColor={borderColor}
             size="lg"
             opacity={isHovered ? 1 : 0}
             _hover={{ 
-              bg: "black", 
+              bg: "gray.900", 
               color: "white",
               transform: "translateY(-50%) scale(1.1)" 
             }}
@@ -314,7 +314,7 @@ function PriceFilter({ minPrice, maxPrice, onPriceChange, onApplyPriceFilter }: 
         onChange={handleSliderChange}
       >
         <RangeSliderTrack bg="gray.200">
-          <RangeSliderFilledTrack bg="black" />
+          <RangeSliderFilledTrack bg="gray.900" />
         </RangeSliderTrack>
         <RangeSliderThumb index={0} />
         <RangeSliderThumb index={1} />
@@ -369,7 +369,7 @@ function PriceFilter({ minPrice, maxPrice, onPriceChange, onApplyPriceFilter }: 
       </Box>
 
       <HStack spacing={2} mt={2}>
-        <Button size="sm" flex="1" onClick={handleApply} bg="black" color="white" _hover={{ bg: "gray.700" }}>
+        <Button size="sm" flex="1" onClick={handleApply} bg="gray.900" color="white" _hover={{ bg: "gray.700" }}>
           Appliquer
         </Button>
         <Button size="sm" flex="1" variant="outline" onClick={handleReset}>
@@ -430,7 +430,7 @@ export default function Products() {
   }, [selectedCategory, query, sortBy, isPinterestMode, minPrice, maxPrice, isPriceFilterActive, savePageState])
 
   const borderColor = useColorModeValue('#e5e5e5', 'gray.600')
-  const subtleBg = useColorModeValue('#f8f8f8', 'gray.700')
+  const subtleBg = useColorModeValue('#f8f8f8', 'gray.900')
   const textPrimary = useColorModeValue('#111111', 'white')
   const textSecondary = useColorModeValue('#666666', 'gray.300')
   const accentColor = useColorModeValue('#111111', 'white')
@@ -713,7 +713,7 @@ export default function Products() {
             size="xl" 
             color={accentColor} 
             thickness="3px" 
-            emptyColor={useColorModeValue('#f0f0f0','gray.700')}
+            emptyColor={useColorModeValue('#f0f0f0','gray.900')}
           />
           <Text color={textSecondary} fontSize="lg" fontWeight="500">
             Chargement...
@@ -868,7 +868,7 @@ export default function Products() {
                   bg={selectedCategory === null ? subtleBg : 'transparent'}
                 >
                   Toutes les catégories
-                  <Badge ml={2} colorScheme="black" variant="solid">
+                  <Badge ml={2} colorScheme="gray.900" variant="solid">
                     {allProducts?.length || 0}
                   </Badge>
                 </MenuItem>
@@ -886,7 +886,7 @@ export default function Products() {
                       bg={selectedCategory === c.id ? subtleBg : 'transparent'}
                     >
                       {c.name}
-                      <Badge ml={2} colorScheme="black" variant="solid">
+                      <Badge ml={2} colorScheme="gray.900" variant="solid">
                         {allCatProducts.length}
                       </Badge>
                     </MenuItem>
@@ -913,7 +913,7 @@ export default function Products() {
                 >
                   Prix
                   {isPriceFilterActive && (
-                    <Badge ml={2} variant="solid" colorScheme="white" color="black">
+                    <Badge ml={2} variant="solid" colorScheme="white" color="gray.900">
                       {formatPrice(minPrice)} - {formatPrice(maxPrice)}
                     </Badge>
                   )}

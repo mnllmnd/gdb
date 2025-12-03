@@ -82,12 +82,12 @@ export default function ProductView() {
   }, [location.key, navigationType, imageIndex, reviewsOpen])
 
   // Theme-aware tokens
-  const bgCard = useColorModeValue('white', 'black')
-  const bgSubtle = useColorModeValue('gray.50', 'gray.700')
+  const bgCard = useColorModeValue('white', 'gray.900')
+  const bgSubtle = useColorModeValue('gray.50', 'gray.900')
   const textSecondary = useColorModeValue('gray.700', 'gray.300')
   const borderColorVar = useColorModeValue('gray.200','gray.700')
-  const arrowBg = useColorModeValue('white','black')
-  const arrowHoverBg = useColorModeValue('gray.100','gray.700')
+  const arrowBg = useColorModeValue('white','gray.900')
+  const arrowHoverBg = useColorModeValue('gray.100','gray.900')
   const arrowIconColor = useColorModeValue('gray.700','white')
 
   React.useEffect(() => {
@@ -611,12 +611,12 @@ export default function ProductView() {
 
       {/* Fullscreen Lightbox Modal */}
       <Modal isOpen={isImageOpen} onClose={onImageClose} size="full" isCentered>
-        <ModalOverlay bg="blackAlpha.900" />
+        <ModalOverlay bg="gray.900Alpha.900" />
         <ModalContent bg="transparent" boxShadow="none" maxW="100vw" p={0}>
           <ModalCloseButton 
             color="white" 
-            bg="blackAlpha.600" 
-            _hover={{ bg: 'blackAlpha.800' }} 
+            bg="gray.900Alpha.600" 
+            _hover={{ bg: 'gray.900Alpha.800' }} 
             size="lg" 
             borderRadius="full" 
             zIndex={10} 

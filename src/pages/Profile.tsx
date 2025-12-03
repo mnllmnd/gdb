@@ -21,10 +21,10 @@ export default function ProfilePage() {
   const toast = useToast()
 
   // Design variables inspirées de ZARA
-  const bgColor = useColorModeValue('white', 'black')
+  const bgColor = useColorModeValue('white', 'gray.900')
   const subtle = useColorModeValue('gray.600', 'gray.400')
   const borderColor = useColorModeValue('gray.200', 'gray.700')
-  const accentColor = 'black'
+  const accentColor = 'gray.900'
   const hoverColor = useColorModeValue('gray.50', 'gray.800')
   const sectionBg = useColorModeValue('gray.50', 'gray.800')
 
@@ -116,11 +116,11 @@ export default function ProfilePage() {
           <Heading size="lg" fontWeight="normal">Profil</Heading>
           <Text color={subtle}>Vous devez être connecté pour voir cette page.</Text>
           <Button 
-            colorScheme="black" 
+            colorScheme="gray.900" 
             variant="outline"
             onClick={() => navigate('/login')}
             size="lg"
-            _hover={{ bg: 'black', color: 'white' }}
+            _hover={{ bg: 'gray.900', color: 'white' }}
           >
             Se connecter
           </Button>
@@ -241,12 +241,12 @@ export default function ProfilePage() {
                     </FormControl>
                     <HStack mt={2} spacing={3}>
                       <Button 
-                        colorScheme="black" 
+                        colorScheme="gray.900" 
                         variant="outline"
                         onClick={handleSaveProfile}
                         isLoading={isSaving}
                         size="sm"
-                        _hover={{ bg: 'black', color: 'white' }}
+                        _hover={{ bg: 'gray.900', color: 'white' }}
                       >
                         Enregistrer
                       </Button>

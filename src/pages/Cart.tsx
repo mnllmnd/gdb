@@ -28,7 +28,7 @@ export default function CartPage() {
   const [deliveryBreakdown, setDeliveryBreakdown] = useState<{ [key: string]: number }>({})
   const [deliveryTotal, setDeliveryTotal] = useState(0)
 
-  const cardBg = useColorModeValue('white', 'gray.800')
+  const cardBg = useColorModeValue('white', 'gray.900')
   const borderColor = useColorModeValue('gray.200', 'gray.700')
   const mutedText = useColorModeValue('gray.600', 'gray.400')
   const [deliveryShopNames, setDeliveryShopNames] = useState<{ [key: string]: string }>({})
@@ -254,7 +254,7 @@ export default function CartPage() {
             size="2xl" 
             fontWeight="300"
             letterSpacing="-0.02em"
-            color={useColorModeValue('black', 'white')}
+            color={useColorModeValue('gray.900', 'white')}
             textTransform="uppercase"
           >
             Panier
@@ -329,9 +329,9 @@ const EmptyCart = ({ onContinueShopping }: { onContinueShopping: () => void }) =
     </Text>
     <Button
       size="lg"
-      bg="black"
+      bg="gray.900"
       color="white"
-      _hover={{ bg: 'gray.800' }}
+      _hover={{ bg: 'gray.900' }}
       onClick={onContinueShopping}
       fontWeight="400"
       letterSpacing="1px"
@@ -416,7 +416,7 @@ const CartItem = ({ item, onSetQty, onRemove, borderColor, mutedText }: any) => 
             <Text 
               fontWeight="400" 
               fontSize="md" 
-              color="black"
+              color="gray.900"
               letterSpacing="0.3px"
               mb={1}
             >
@@ -424,7 +424,7 @@ const CartItem = ({ item, onSetQty, onRemove, borderColor, mutedText }: any) => 
             </Text>
             <Text 
               fontSize="md" 
-              color="black"
+              color="gray.900"
               fontWeight="400"
               mt={2}
             >
@@ -439,7 +439,7 @@ const CartItem = ({ item, onSetQty, onRemove, borderColor, mutedText }: any) => 
             variant="ghost"
             color={mutedText}
             onClick={() => onRemove(item.id)}
-            _hover={{ color: 'black' }}
+            _hover={{ color: 'gray.900' }}
             minW="auto"
           />
         </Flex>
@@ -458,7 +458,7 @@ const CartItem = ({ item, onSetQty, onRemove, borderColor, mutedText }: any) => 
             >
               <NumberInputField 
                 borderColor={borderColor}
-                _focus={{ borderColor: 'black' }}
+                _focus={{ borderColor: 'gray.900' }}
                 fontWeight="400"
               />
               <NumberInputStepper>
@@ -529,7 +529,7 @@ const CartSummary = ({
                 size="md"
                 bg={cardBg}
                 borderColor={borderColor}
-                _focus={{ borderColor: 'black' }}
+                _focus={{ borderColor: 'gray.900' }}
                 fontWeight="400"
                 fontSize="sm"
               >
@@ -542,7 +542,7 @@ const CartSummary = ({
 
             {/* Détail des frais par boutique */}
             {deliveryTotal > 0 && Object.keys(deliveryBreakdown).length > 0 && (
-              <Box bg={useColorModeValue('gray.50', 'gray.700')} p={3} borderRadius="md">
+              <Box bg={useColorModeValue('gray.50', 'gray.900')} p={3} borderRadius="md">
                 <Text fontSize="xs" color={mutedText} textTransform="uppercase" letterSpacing="1px" mb={2}>
                   Frais par boutique
                 </Text>
@@ -581,9 +581,9 @@ const CartSummary = ({
           <Button
             w="full"
             size="lg"
-            bg="black"
+            bg="gray.900"
             color="white"
-            _hover={{ bg: 'gray.800' }}
+            _hover={{ bg: 'gray.900' }}
             onClick={onCheckout}
             isLoading={loading}
             fontWeight="400"
@@ -600,7 +600,7 @@ const CartSummary = ({
             variant="outline"
             size="lg"
             borderColor={borderColor}
-            color="black"
+            color="gray.900"
             _hover={{ bg: 'gray.50' }}
             onClick={onContinueShopping}
             fontWeight="400"
@@ -617,7 +617,7 @@ const CartSummary = ({
             variant="ghost"
             size="sm"
             color={mutedText}
-            _hover={{ color: 'black' }}
+            _hover={{ color: 'gray.900' }}
             onClick={onClearCart}
             fontWeight="400"
             letterSpacing="0.5px"
@@ -654,7 +654,7 @@ const CheckoutModal = ({
   mutedText
 }: any) => (
   <Modal isOpen={isOpen} onClose={onClose} isCentered size="xl">
-    <ModalOverlay bg="blackAlpha.600" />
+    <ModalOverlay bg="gray.900Alpha.600" />
     <ModalContent bg={cardBg} mx={4}>
       <ModalHeader 
         borderBottom="1px solid" 
@@ -686,7 +686,7 @@ const CheckoutModal = ({
               placeholder="Votre nom" 
               size="lg"
               borderColor={borderColor}
-              _focus={{ borderColor: 'black' }}
+              _focus={{ borderColor: 'gray.900' }}
               _placeholder={{ color: mutedText }}
               fontWeight="300"
             />
@@ -709,7 +709,7 @@ const CheckoutModal = ({
               placeholder="Votre numéro" 
               size="lg"
               borderColor={borderColor}
-              _focus={{ borderColor: 'black' }}
+              _focus={{ borderColor: 'gray.900' }}
               _placeholder={{ color: mutedText }}
               fontWeight="300"
             />
@@ -736,14 +736,14 @@ const CheckoutModal = ({
               rows={3}
               size="lg"
               borderColor={borderColor}
-              _focus={{ borderColor: 'black' }}
+              _focus={{ borderColor: 'gray.900' }}
               _placeholder={{ color: mutedText }}
               fontWeight="300"
             />
           </FormControl>
 
           {/* Récapitulatif de la livraison choisie */}
-          <Box w="full" bg={useColorModeValue('gray.50', 'gray.700')} p={4} borderRadius="md">
+          <Box w="full" bg={useColorModeValue('gray.50', 'gray.900')} p={4} borderRadius="md">
             <Text fontSize="xs" color={mutedText} textTransform="uppercase" letterSpacing="1px" mb={3}>
               Livraison sélectionnée
             </Text>
@@ -793,9 +793,9 @@ const CheckoutModal = ({
         </Button>
         <Button 
           flex={1}
-          bg="black"
+          bg="gray.900"
           color="white"
-          _hover={{ bg: 'gray.800' }}
+          _hover={{ bg: 'gray.900' }}
           onClick={onConfirmCheckout} 
           isLoading={loading}
           size="lg"

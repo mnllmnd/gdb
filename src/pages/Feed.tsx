@@ -36,10 +36,10 @@ export default function Feed() {
   const [activeStory, setActiveStory] = React.useState<Record<string, any> | null>(null)
 
   // CORRECTION : Utilisation correcte de useColorModeValue
-  const bgColor = useColorModeValue('white', 'black')
+  const bgColor = useColorModeValue('white', 'gray.900')
   const textColor = useColorModeValue('gray.800', 'white')
-  const borderColor = useColorModeValue('gray.200', 'gray.600')
-  const modalBg = useColorModeValue('white', 'gray.800')
+  const borderColor = useColorModeValue('gray.200', 'gray.700')
+  const modalBg = useColorModeValue('white', 'gray.900')
   const modalTextColor = useColorModeValue('gray.800', 'white')
 
   React.useEffect(() => {

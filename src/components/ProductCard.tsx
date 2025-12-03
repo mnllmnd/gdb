@@ -52,7 +52,7 @@ export default function ProductCard({
   const toast = useToast()
   
   // Couleurs style Zara premium
-  const cardBg = useColorModeValue('white', 'black')
+  const cardBg = useColorModeValue('white', 'gray.900')
   const borderColor = useColorModeValue('#e5e5e5', 'gray.700')
   const textColor = useColorModeValue('black', 'white')
   const subtleTextColor = useColorModeValue('#666666', 'gray.400')
@@ -361,7 +361,7 @@ export default function ProductCard({
           position="relative" 
           cursor="pointer"
           onClick={handleOpen}
-          bg={useColorModeValue('#f8f8f8', 'gray.800')}
+          bg={useColorModeValue('#f8f8f8', 'gray.900')}
         >
           <AspectRatio ratio={1} width="100%">
             {finalImages && finalImages.length > 0 ? (
@@ -615,7 +615,7 @@ export default function ProductCard({
               <Box 
                 position="relative" 
                 height={{ base: '300px', md: '500px', lg: '600px' }}
-                bg={useColorModeValue('#f8f8f8', 'gray.800')}
+                bg={useColorModeValue('#f8f8f8', 'gray.900')}
               >
                 <Box 
                   width="100%" 

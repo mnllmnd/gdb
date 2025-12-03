@@ -164,7 +164,7 @@ export default function Home() {
       
       <AppTutorial />
 
-      <Container maxW="container.xl" py={8}>
+      <Container maxW="container.xl" py={3}>
         <FilterNav 
           categories={categories}
           selectedCategory={selectedCategory}
@@ -192,14 +192,14 @@ export default function Home() {
                   <Box
                     borderRadius="lg"
                     overflow="hidden"
-                    bg={useColorModeValue('white', 'gray.800')}
+                    bg={useColorModeValue('white', 'gray.900')}
                     boxShadow="sm"
                     _hover={{ boxShadow: 'md', transform: 'translateY(-2px)' }}
                     transition="all 0.2s"
                     cursor="pointer"
                   >
                     {/* Product Image */}
-                    <Box position="relative" w="100%" paddingBottom="100%" bg={useColorModeValue('gray.100', 'gray.700')}>
+                    <Box position="relative" w="100%" paddingBottom="100%" bg={useColorModeValue('gray.100', 'gray.900')}>
                       {normalizeImages(product)[0] ? (
                         <Image
                           src={normalizeImages(product)[0]}
@@ -283,7 +283,7 @@ export default function Home() {
 // Welcome Popup Component
 function WelcomePopup() {
   const [isOpen, setIsOpen] = React.useState(true)
-  const bgColor = useColorModeValue('white', 'gray.800')
+  const bgColor = useColorModeValue('white', 'gray.900')
   const textColor = useColorModeValue('gray.700', 'gray.300')
 
   const handleClose = () => {
@@ -296,7 +296,7 @@ function WelcomePopup() {
       <Box
         position="fixed"
         inset={0}
-        bg="blackAlpha.500"
+        bg="gray.900Alpha.500"
         display={isOpen ? 'flex' : 'none'}
         alignItems="center"
         justifyContent="center"
@@ -314,7 +314,7 @@ function WelcomePopup() {
             <VStack spacing={6} textAlign="center">
               <Box
                 p={6}
-                bg={useColorModeValue('brand.50', 'gray.700')}
+                bg={useColorModeValue('brand.50', 'gray.900')}
                 borderRadius="full"
               >
                 <Icon as={FiPackage} boxSize={12} color="brand.500" />
@@ -353,7 +353,7 @@ interface EmptyStateProps {
 function EmptyState({ message, onClear }: EmptyStateProps) {
   const textColor = useColorModeValue('gray.700', 'gray.300')
   const bgColor = useColorModeValue('white', 'gray.900')
-  const containerBg = useColorModeValue('gray.100', 'gray.800')
+  const containerBg = useColorModeValue('gray.100', 'gray.900')
   const containerBorder = useColorModeValue('gray.300', 'gray.700')
   
   return (
@@ -364,7 +364,7 @@ function EmptyState({ message, onClear }: EmptyStateProps) {
         borderRadius="md"
         boxShadow="sm"
         border="1px solid"
-        borderColor={useColorModeValue('gray.200', 'gray.800')}
+        borderColor={useColorModeValue('gray.200', 'gray.900')}
       >
         <CardBody p={8}>
           <VStack spacing={4} textAlign="center">

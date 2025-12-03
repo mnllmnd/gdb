@@ -46,7 +46,7 @@ export default function SellerShop() {
   // Tailles responsives optimisées
   const gridColumns = useBreakpointValue({ base: 2, sm: 2, md: 3 })
   const statsColumns = useBreakpointValue({ base: 2, md: 4 })
-  const sectionBg = useColorModeValue('white', 'gray.800')
+  const sectionBg = useColorModeValue('white', 'gray.900')
   const cardBorderColor = useColorModeValue('gray.200', 'gray.700')
 
   async function loadAll() {
