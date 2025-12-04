@@ -4,7 +4,7 @@ import { query } from '../db.js'
 import { authenticate, requireRole } from '../middleware/auth.js'
 import cache from '../cache.js'
 import cleanText from '../utils/clean_text.js'
-import { computeEmbedding } from '../embeddings.js'
+import { generateEmbedding } from '../services/embeddings.js'
 
 const router = express.Router()
 
@@ -136,11 +136,10 @@ router.post('/', authenticate, async (req, res) => {
     // we don't block the response; this is a best-effort enrichment.
     try {
       const textForEmbedding = `${created.title || ''}\n\n${created.description || ''}`
-      const emb = await computeEmbedding(textForEmbedding)
+      const emb = await generateEmbedding(textForEmbedding)
       if (emb && Array.isArray(emb) && emb.length) {
-        const lit = '[' + emb.map(n => Number(n)).join(',') + ']'
         try {
-          await query('UPDATE products SET embedding = $2::vector WHERE id = $1', [created.id, lit])
+          await query('UPDATE products SET embedding = $2 WHERE id = $1', [created.id, JSON.stringify(emb)])
         } catch (ie) {
           console.warn('Failed to persist embedding to DB', ie && ie.message)
         }
@@ -242,11 +241,10 @@ router.put('/:id', authenticate, async (req, res) => {
     // Recompute embedding for updated product (best-effort)
     try {
       const textForEmbedding = `${updatedProduct.title || ''}\n\n${updatedProduct.description || ''}`
-      const emb = await computeEmbedding(textForEmbedding)
+      const emb = await generateEmbedding(textForEmbedding)
       if (emb && Array.isArray(emb) && emb.length) {
-        const lit = '[' + emb.map(n => Number(n)).join(',') + ']'
         try {
-          await query('UPDATE products SET embedding = $2::vector WHERE id = $1', [id, lit])
+          await query('UPDATE products SET embedding = $2 WHERE id = $1', [id, JSON.stringify(emb)])
         } catch (ie) {
           console.warn('Failed to persist embedding to DB on update', ie && ie.message)
         }

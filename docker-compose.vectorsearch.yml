@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # 🔍 Meilisearch - Moteur de recherche vectoriel
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: meilisearch
+    ports:
+      - "7700:7700"
+    environment:
+      MEILI_ENV: production
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-masterKey}
+      # Active les embeddings vectoriels (nécessite version récente)
+      MEILI_EXPERIMENTAL_ENABLE_METRICS: "true"
+    volumes:
+      - meilisearch_data:/meili_data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7700/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 🧠 Ollama - Pour les embeddings locaux (optionnel, recommandé)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      OLLAMA_HOST: "0.0.0.0:11434"
+    restart: unless-stopped
+    profiles:
+      - "embeddings"
+    # Pour démarrer: docker-compose --profile embeddings up
+
+volumes:
+  meilisearch_data:
+  ollama_data:

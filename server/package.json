@@ -9,9 +9,9 @@
     "migrate": "node src/migrate.js"
   },
   "dependencies": {
-    "@xenova/transformers": "^2.17.2",
     "@sendgrid/mail": "^8.1.6",
-    "axios": "^1.12.2",
+    "@xenova/transformers": "^2.17.2",
+    "axios": "^1.13.2",
     "bcrypt": "^5.1.0",
     "cloudinary": "^2.7.0",
     "cors": "2.8.5",
@@ -23,6 +23,7 @@
     "express-rate-limit": "^8.2.1",
     "helmet": "7.0.0",
     "jsonwebtoken": "9.0.2",
+    "meilisearch": "^0.54.0",
     "multer": "^2.0.2",
     "natural": "^6.2.0",
     "node-nlp": "^5.0.0-alpha.5",

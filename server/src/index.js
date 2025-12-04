@@ -29,8 +29,8 @@ import reelsRoutes from './routes/reels.js';
 import reviewRoutes from './routes/reviews.js';
 import wishlistRoutes from './routes/wishlist.js';
 import cacheRoutes from './routes/cache.js';
-
-dotenv.config();
+import vectorSearchRoutes from './routes/vectorSearch.js';
+import { setupMeilisearchIndex, indexProductsBatch } from './services/embeddings.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -103,6 +103,7 @@ app.use('/api/reels', reelsRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/cache', cacheRoutes);
+app.use('/api', vectorSearchRoutes);
 
 // ==========================
 // NLP CHAT ENDPOINT
@@ -236,6 +237,41 @@ const start = async () => {
     await cache.init(dbQuery);
   } catch (err) {
     console.log("Cache init error:", err.message);
+  }
+
+  // Setup Meilisearch pour recherche vectorielle
+  try {
+    await setupMeilisearchIndex();
+    console.log('✅ Index Meilisearch prêt');
+
+    // Auto-index products from database
+    try {
+      const { query: dbQuery } = await import('./db.js');
+      const result = await dbQuery(
+        `SELECT 
+          p.id, 
+          p.title as name,
+          c.name as category,
+          p.price, 
+          p.description, 
+          p.image_url
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        LIMIT 1000`
+      );
+      const products = result.rows || [];
+      
+      if (products.length > 0) {
+        await indexProductsBatch(products);
+        console.log(`✅ ${products.length} produits indexés dans Meilisearch`);
+      } else {
+        console.warn('⚠️ Aucun produit trouvé dans la base de données');
+      }
+    } catch (indexErr) {
+      console.warn('⚠️ Impossible d\'indexer les produits:', indexErr.message);
+    }
+  } catch (err) {
+    console.warn('⚠️ Meilisearch non disponible:', err.message);
   }
 
   app.listen(port, () => {

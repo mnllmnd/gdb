@@ -114,6 +114,57 @@ export const ChatPopup = () => {
   const recCache = React.useRef<Record<string, { ts: number; results: Product[] }>>({});
   const CACHE_TTL = 1000 * 60 * 5
 
+  /**
+   * Recherche vectorielle avec hard filtering par catégorie
+   */
+  const vectorSearch = async (query: string, detectedCategory?: string | null) => {
+    try {
+      const response = await axios.post(`${API_ROOT}/api/vector-search`, {
+        query: query.trim(),
+        category: detectedCategory || null,
+        limit: 8,
+      });
+
+      return {
+        results: response.data.results || [],
+        hasLowRelevance: response.data.hasLowRelevance || (response.data.bestScore && response.data.bestScore < 0.75),
+        category: response.data.category,
+        isTextFallback: response.data.isTextFallback,
+        bestScore: response.data.bestScore,
+      };
+    } catch (error) {
+      console.error('❌ Erreur recherche vectorielle:', error);
+      return {
+        results: [],
+        hasLowRelevance: true,
+        category: null,
+        isTextFallback: false,
+      };
+    }
+  };
+
+  /**
+   * Détecte la catégorie à partir de la requête utilisateur
+   */
+  const detectCategory = (query: string): string | null => {
+    const categoryKeywords: Record<string, string[]> = {
+      sac: ['sac', 'sacoche', 'cartable', 'besace', 'poche'],
+      lampe: ['lampe', 'luminaire', 'suspension', 'applique', 'éclairage'],
+      table: ['table', 'bureau', 'desk', 'plateau'],
+      canapé: ['canapé', 'sofa', 'divan', 'fauteuil'],
+      décoration: ['décor', 'déco', 'ornement', 'cadre', 'poster'],
+      mobilier: ['meuble', 'chaise', 'tabouret', 'rangement'],
+    };
+
+    const queryLower = query.toLowerCase();
+    for (const [category, keywords] of Object.entries(categoryKeywords)) {
+      if (keywords.some((kw) => queryLower.includes(kw))) {
+        return category;
+      }
+    }
+    return null;
+  };
+
   const fetchRecommendations = async (text: string) => {
     const key = (text || '').trim().toLowerCase();
     if (!key) return [] as Product[];
@@ -123,6 +174,17 @@ export const ChatPopup = () => {
     }
 
     try {
+      // Première tentative: recherche vectorielle
+      const detectedCategory = detectCategory(text);
+      const vectorResult = await vectorSearch(text, detectedCategory);
+
+      if (vectorResult.results.length > 0) {
+        const results = vectorResult.results as Product[];
+        recCache.current[key] = { ts: Date.now(), results };
+        return results;
+      }
+
+      // Fallback: recommandation NLP classique
       const payload: any = { text: key }
       const res: any = await api.recommend.find(payload)
       const results: Product[] = res?.results || []
@@ -175,40 +237,42 @@ export const ChatPopup = () => {
         intent: res.data.intent
       };
 
-      setMessages(prev => [...prev, botResponse]);
+      // Ne pas afficher le message NLP pour les recherches (on va afficher nos propres messages)
+      if (res.data.intent !== 'recherche_produit' && res.data.intent !== 'recommandation') {
+        setMessages(prev => [...prev, botResponse]);
+      }
       
       if (res.data.intent === 'recherche_produit' || res.data.intent === 'recommandation') {
         const queryText = input.trim()
-        let recResults: Product[] = await fetchRecommendations(queryText)
-
-        if (!recResults || recResults.length === 0) {
-          const searchKeywords = extractSearchKeywords(input);
-          if (searchKeywords.length > 0) {
-            recResults = await searchRealProducts(searchKeywords.join(' '));
-          } else {
-            recResults = await getPopularProducts();
-          }
-        }
+        const detectedCategory = detectCategory(queryText);
+        
+        // 🎯 Recherche vectorielle avec détection de catégorie
+        let searchResult = await vectorSearch(queryText, detectedCategory);
+        let recResults = searchResult.results as Product[];
 
         setRecommendations(recResults);
 
-        if (recResults.length > 0) {
+        // ⚠️ Gestion du message "No Match Detection"
+        // Afficher le message d'erreur SEULEMENT si 0 résultats
+        if (recResults.length === 0) {
+          // Aucun résultat du tout
+          const noResultsMessage: ChatMessage = {
+            from: 'bot',
+            text: "Je n'ai rien trouvé de vraiment proche de votre recherche. Essayez de préciser !",
+            timestamp: new Date(),
+            type: 'text'
+          };
+          setMessages(prev => [...prev, noResultsMessage]);
+        } else {
+          // Résultats trouvés ✅ (peu importe le score/relevance)
           const recommendationMessage: ChatMessage = {
             from: 'bot',
-            text: `J'ai trouvé ${recResults.length} produit(s) :`,
+            text: `J'ai trouvé ${recResults.length} produit(s) correspondant à votre recherche :`,
             timestamp: new Date(),
             type: 'recommendations',
             products: recResults
           };
           setMessages(prev => [...prev, recommendationMessage]);
-        } else {
-          const noResultsMessage: ChatMessage = {
-            from: 'bot',
-            text: "Aucun produit trouvé. Essayez d'autres termes.",
-            timestamp: new Date(),
-            type: 'text'
-          };
-          setMessages(prev => [...prev, noResultsMessage]);
         }
       } else {
         setRecommendations([]);
