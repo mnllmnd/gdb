@@ -24,6 +24,8 @@ const CACHE_MAX_SIZE = 1000;
 const CACHE_TTL_MS = 3600000; // 1 heure
 const RETRY_MAX_ATTEMPTS = 3;
 const RETRY_INITIAL_DELAY_MS = 100;
+const USE_PGVECTOR = process.env.USE_PGVECTOR === 'true' || false;
+const EMBED_SEARCH_CANDIDATES = Number(process.env.EMBED_SEARCH_CANDIDATES || 200);
 
 let meiliClient = null;
 
@@ -619,34 +621,60 @@ export async function semanticSearch(query, detectedCategories = null, limit = 8
 
     // 2: Récupérer produits PRÉ-INDEXÉS
     const { query: dbQuery } = await import('../db.js');
-    
-    let sqlQuery = `SELECT 
-      p.id, 
-      p.title as name,
-      c.name as category,
-      p.price, 
-      p.description, 
-      p.image_url,
-      p.embedding
-    FROM products p
-    LEFT JOIN categories c ON p.category_id = c.id
-    WHERE p.embedding IS NOT NULL`;
-    
-    const params = [];
-    // IMPORTANT: Si catégories détectées, filtrer STRICTEMENT
-    // Sinon, rechercher dans TOUS les produits
-    if (detectedCategories && Array.isArray(detectedCategories) && detectedCategories.length > 0) {
-      sqlQuery += ` AND c.name IN (${detectedCategories.map((_, i) => `$${i + 1}`).join(', ')})`;
-      params.push(...detectedCategories);
-      logger.debug('Filtering by detected categories', { categories: detectedCategories });
-    } else {
-      logger.debug('No category filter - searching all products');
-    }
-    
-    sqlQuery += ` LIMIT 1000`;
+    let products = [];
+    if (USE_PGVECTOR && queryEmbedding && Array.isArray(queryEmbedding)) {
+      // Use Postgres pgvector index/ops to get top candidates
+      try {
+        const vecParam = JSON.stringify(queryEmbedding);
+        let sql = `SELECT 
+          p.id, p.title as name, c.name as category, p.price, p.description, p.image_url, p.embedding
+          FROM products p
+          LEFT JOIN categories c ON p.category_id = c.id
+          WHERE p.embedding IS NOT NULL`;
 
-    const result = await dbQuery(sqlQuery, params);
-    const products = result.rows || [];
+        const params = [vecParam];
+        if (detectedCategories && Array.isArray(detectedCategories) && detectedCategories.length > 0) {
+          sql += ` AND c.name IN (${detectedCategories.map((_, i) => `$${i + 2}`).join(', ')})`;
+          params.push(...detectedCategories);
+        }
+
+        sql += ` ORDER BY p.embedding <-> $1::vector LIMIT ${EMBED_SEARCH_CANDIDATES}`;
+        const r = await dbQuery(sql, params);
+        products = r.rows || [];
+        logger.debug('PGVector search candidates', { count: products.length });
+      } catch (err) {
+        logger.debug('PGVector search failed, falling back to full scan', { error: err.message });
+      }
+    }
+
+    if (!products || products.length === 0) {
+      let sqlQuery = `SELECT 
+        p.id, 
+        p.title as name,
+        c.name as category,
+        p.price, 
+        p.description, 
+        p.image_url,
+        p.embedding
+      FROM products p
+      LEFT JOIN categories c ON p.category_id = c.id
+      WHERE p.embedding IS NOT NULL`;
+
+      const params = [];
+      // IMPORTANT: Si catégories détectées, filtrer STRICTEMENT
+      if (detectedCategories && Array.isArray(detectedCategories) && detectedCategories.length > 0) {
+        sqlQuery += ` AND c.name IN (${detectedCategories.map((_, i) => `$${i + 1}`).join(', ')})`;
+        params.push(...detectedCategories);
+        logger.debug('Filtering by detected categories', { categories: detectedCategories });
+      } else {
+        logger.debug('No category filter - searching all products');
+      }
+
+      sqlQuery += ` LIMIT ${EMBED_SEARCH_CANDIDATES}`;
+
+      const result = await dbQuery(sqlQuery, params);
+      products = result.rows || [];
+    }
     logger.debug('Products loaded', { count: products.length, filtered: detectedCategories?.length > 0 });
 
     if (products.length === 0) {

@@ -740,7 +740,7 @@ export const ChatPopup = () => {
             placeholder="Rechercher un produit..."
             size="sm"
             isDisabled={isLoading}
-            fontSize="14px"
+            fontSize="16px"
             border="1px solid"
             borderColor={inputBorder}
             borderRadius="0"
