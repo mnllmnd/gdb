@@ -23,7 +23,7 @@ const router = express.Router();
  */
 router.post('/vector-search', async (req, res) => {
   try {
-    const { query, category, limit = 8 } = req.body;
+    const { query, category, limit = 8, budget = null, min_price = null, max_price = null } = req.body;
 
     if (!query || query.trim().length < 2) {
       return res.status(400).json({
@@ -33,10 +33,17 @@ router.post('/vector-search', async (req, res) => {
     }
 
     const targetCategory = category || extractCategoryFromQuery(query);
+    const filters = {
+      budget: budget || null,
+      minPrice: min_price || null,
+      maxPrice: max_price || null,
+    };
+
     const searchResult = await smartSearch(
       query.trim(),
       targetCategory,
-      Number.parseInt(limit)
+      Number.parseInt(limit),
+      filters
     );
 
     res.json({
@@ -45,6 +52,7 @@ router.post('/vector-search', async (req, res) => {
       category: targetCategory,
       results: searchResult.results,
       hasLowRelevance: searchResult.hasLowRelevance,
+      filters: filters,
       source: searchResult.source,
       message: searchResult.results.length > 0
         ? `Résultats trouvés (${searchResult.source})`

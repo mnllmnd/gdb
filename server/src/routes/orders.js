@@ -1,6 +1,11 @@
 import express from 'express'
 import { query } from '../db.js'
 import { authenticate } from '../middleware/auth.js'
+import crypto from 'crypto'
+import sgMail from '@sendgrid/mail'
+import pool from '../db.js'
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
 const router = express.Router()
 
@@ -166,6 +171,144 @@ router.get('/:id/messages', authenticate, async (req, res) => {
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Failed to fetch messages' })
+  }
+})
+
+// Public or authenticated order status lookup
+// GET /api/orders/:id/status
+// If authenticated, require buyer/seller/admin; otherwise allow lookup with buyer_phone query param for guests
+router.get('/:id/status', async (req, res) => {
+  const id = req.params.id
+  const buyerPhone = req.query.buyer_phone || null
+
+  try {
+    const r = await query('SELECT id, status, buyer_id, buyer_phone, created_at, updated_at FROM orders WHERE id = $1 LIMIT 1', [id])
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Order not found' })
+    const order = r.rows[0]
+
+    // If the request has authentication, enforce role checks
+    if (req.headers && req.headers.authorization) {
+      try {
+        // Try to authenticate using middleware style
+        const { authenticate } = await import('../middleware/auth.js')
+        // Create a fake req/res to call authenticate? Simpler: require header token parsing here
+      } catch (e) {
+        // fallthrough
+      }
+    }
+
+    // If buyer_phone provided, allow access for guest matching phone
+    if (buyerPhone && String(buyerPhone) === String(order.buyer_phone)) {
+      return res.json({ id: order.id, status: order.status, created_at: order.created_at, updated_at: order.updated_at })
+    }
+
+    // Otherwise require authentication and ownership/admin
+    if (!req.user) return res.status(401).json({ error: 'Unauthorized - provide buyer_phone for public lookup or authenticate' })
+
+    if (String(order.buyer_id) === String(req.user.id) || req.user.role === 'admin') {
+      return res.json({ id: order.id, status: order.status, created_at: order.created_at, updated_at: order.updated_at })
+    }
+
+    // Check if user is seller of product
+    const prod = await query('SELECT seller_id FROM products WHERE id = (SELECT product_id FROM orders WHERE id = $1)', [id])
+    if (prod.rows.length > 0 && String(prod.rows[0].seller_id) === String(req.user.id)) {
+      return res.json({ id: order.id, status: order.status, created_at: order.created_at, updated_at: order.updated_at })
+    }
+
+    return res.status(403).json({ error: 'Forbidden' })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to fetch order status' })
+  }
+})
+
+// Ensure tracking table exists
+async function ensureTrackingTable() {
+  try {
+    await query(`CREATE TABLE IF NOT EXISTS order_tracking_tokens (
+      id SERIAL PRIMARY KEY,
+      order_id bigint NOT NULL,
+      token_hash text NOT NULL,
+      expires_at timestamptz,
+      used boolean DEFAULT false,
+      created_at timestamptz DEFAULT now()
+    )`)
+  } catch (e) {
+    console.warn('ensureTrackingTable failed', e.message)
+  }
+}
+
+// POST /api/orders/:id/send-tracking-token
+// Body: { email, origin }
+router.post('/:id/send-tracking-token', async (req, res) => {
+  const id = req.params.id
+  const { email, origin } = req.body || {}
+  try {
+    const r = await query('SELECT * FROM orders WHERE id = $1 LIMIT 1', [id])
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Order not found' })
+    const order = r.rows[0]
+
+    // Determine recipient email
+    let recipientEmail = email || null
+    if (!recipientEmail && order.buyer_id) {
+      const u = await query('SELECT email FROM users WHERE id = $1 LIMIT 1', [order.buyer_id])
+      if (u.rows.length > 0) recipientEmail = u.rows[0].email
+    }
+    if (!recipientEmail) return res.status(400).json({ error: 'Recipient email required' })
+
+    await ensureTrackingTable()
+    const token = crypto.randomBytes(24).toString('hex')
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24) // 24h
+
+    await query('INSERT INTO order_tracking_tokens (order_id, token_hash, expires_at, used) VALUES ($1,$2,$3,false)', [id, tokenHash, expiresAt])
+
+    const frontendBase = (process.env.FRONTEND_URL || process.env.CLIENT_URL || '').replace(/\/$/, '') || origin || `http://localhost:3000`
+    const trackingUrl = `${frontendBase}/track-order?token=${token}`
+
+    // send email
+    try {
+      await sgMail.send({
+        to: recipientEmail,
+        from: process.env.SMTP_FROM,
+        subject: `Suivi de votre commande #${id}`,
+        html: `<p>Bonjour,</p><p>Vous pouvez suivre votre commande en cliquant sur le lien suivant (valable 24h) :</p><p><a href="${trackingUrl}">${trackingUrl}</a></p>`
+      })
+    } catch (err) {
+      console.error('SendGrid failed', err)
+      return res.status(500).json({ error: 'Failed to send email' })
+    }
+
+    return res.json({ success: true, sent: true })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to create/send token' })
+  }
+})
+
+// GET /api/orders/track/:token -> lookup order by token and mark token used
+router.get('/track/:token', async (req, res) => {
+  const token = req.params.token
+  try {
+    if (!token) return res.status(400).json({ error: 'Token required' })
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
+    await ensureTrackingTable()
+    const r = await query('SELECT * FROM order_tracking_tokens WHERE token_hash = $1 LIMIT 1', [tokenHash])
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Invalid token' })
+    const rec = r.rows[0]
+    if (rec.used) return res.status(410).json({ error: 'Token already used' })
+    if (rec.expires_at && new Date(rec.expires_at) < new Date()) return res.status(410).json({ error: 'Token expired' })
+
+    const order = await query('SELECT id, status, buyer_id, buyer_phone, created_at, updated_at FROM orders WHERE id = $1 LIMIT 1', [rec.order_id])
+    if (order.rows.length === 0) return res.status(404).json({ error: 'Order not found' })
+
+    // mark token used
+    await query('UPDATE order_tracking_tokens SET used = true WHERE id = $1', [rec.id])
+
+    return res.json({ order: order.rows[0], message: `Statut de la commande #${order.rows[0].id}` })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to lookup token' })
   }
 })
 

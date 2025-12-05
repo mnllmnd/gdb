@@ -41,6 +41,8 @@ const intents = [
       'vous avez des canapés', 'je veux du mobilier', 'trouve moi une armoire',
       'je recherche des meubles salon', 'donne moi des lampes', 'montre tout',
       'qu est ce que vous vendez', 'catalogue produits', 'liste des articles'
+      // Single-word product searches (help NLP catch short queries)
+      , 'fleur', 'fleurs', 'vetement', 'vêtements', 'vêtement', 'vetements', 'chaussure', 'chaussures'
     ],
     answers: [
       'Je cherche les produits correspondants dans notre catalogue...',

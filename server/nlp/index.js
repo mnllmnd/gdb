@@ -15,7 +15,8 @@ const modelPath = path.resolve(process.cwd(), 'server', 'model.nlp')
 const init = async () => {
   // If a saved model exists, load it once. Otherwise train and save.
   try {
-    if (fs.existsSync(modelPath)) {
+    const forceRetrain = process.env.FORCE_NLP_RETRAIN === 'true' || process.env.FORCE_NLP_RETRAIN === '1';
+    if (fs.existsSync(modelPath) && !forceRetrain) {
       await manager.load(modelPath)
       console.log('✅ NLP model loaded from disk')
       return manager

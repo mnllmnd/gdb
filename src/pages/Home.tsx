@@ -122,7 +122,7 @@ function WelcomePopup() {
                   Bienvenue!
                 </Heading>
                 <Text color={subTextColor}>
-                  Découvrez nos meilleurs produits
+                 Vendre ou acheter, yay choisir
                 </Text>
               </VStack>
               <Button

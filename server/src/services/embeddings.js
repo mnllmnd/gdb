@@ -295,7 +295,7 @@ function extractKeywords(query) {
 /**
  * Valide si une requête est valide (pas juste des stop words)
  */
-function isValidQuery(query) {
+export function isValidQuery(query) {
   if (!query || query.trim().length < 2) return false;
   
   const keywords = extractKeywords(query);
@@ -310,7 +310,8 @@ function isValidQuery(query) {
   }
   
   // Rejeter les requêtes qui sont juste du bruit (répétitions, non-mots)
-  const hasVowels = /[aeiouy]/i.test(query);
+  // Accept accented vowels common in French to avoid rejecting inputs like "vêtement"
+  const hasVowels = /[aeiouyàâäéèêëîïôöùûüÿæœ]/i.test(query);
   const hasRepeatingChars = /(.)\1{2,}/.test(query); // Plus de 2 caractères identiques
   
   if (!hasVowels || hasRepeatingChars) {
@@ -612,14 +613,19 @@ export async function semanticSearch(query, detectedCategories = null, limit = 8
       return cached;
     }
 
-    // 1: Générer embedding query
-    const queryEmbedding = await generateEmbedding(query);
+    // 1: Extraire les mots-clés pertinents
+    const queryKeywords = extractKeywords(query);
+    const queryForEmbedding = queryKeywords.length > 0 ? queryKeywords.join(' ') : query;
+    logger.debug('Keywords extracted', { original: query, keywords: queryKeywords, queryForEmbedding });
+
+    // 2: Générer embedding à partir des mots-clés
+    const queryEmbedding = await generateEmbedding(queryForEmbedding);
     if (!queryEmbedding || queryEmbedding.length === 0) {
       logger.warn('Failed to generate query embedding');
       return { results: [], source: 'none' };
     }
 
-    // 2: Récupérer produits PRÉ-INDEXÉS
+    // 3: Récupérer produits PRÉ-INDEXÉS
     const { query: dbQuery } = await import('../db.js');
     let products = [];
     if (USE_PGVECTOR && queryEmbedding && Array.isArray(queryEmbedding)) {
@@ -627,7 +633,7 @@ export async function semanticSearch(query, detectedCategories = null, limit = 8
       try {
         const vecParam = JSON.stringify(queryEmbedding);
         let sql = `SELECT 
-          p.id, p.title as name, c.name as category, p.price, p.description, p.image_url, p.embedding
+          p.id, p.title as name, c.name as category, p.price, p.description, p.image_url, p.embedding, p.quantity
           FROM products p
           LEFT JOIN categories c ON p.category_id = c.id
           WHERE p.embedding IS NOT NULL`;
@@ -655,7 +661,8 @@ export async function semanticSearch(query, detectedCategories = null, limit = 8
         p.price, 
         p.description, 
         p.image_url,
-        p.embedding
+        p.embedding,
+        p.quantity
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
       WHERE p.embedding IS NOT NULL`;
@@ -682,7 +689,7 @@ export async function semanticSearch(query, detectedCategories = null, limit = 8
       return { results: [], source: 'none' };
     }
 
-    // 3: Calculer similarité (OPTIMISÉ)
+    // 4: Calculer similarité (OPTIMISÉ)
     const keywords = extractKeywords(query);
 
     const scored = products
@@ -810,6 +817,44 @@ function prioritizeAndLimit(results, query, detectedCategories, limit) {
   return annotated.slice(0, limit).map(({ _matchCount, _categoryMatch, _exactMatch, ...rest }) => rest);
 }
 
+// Apply budget/min/max price filters to a results array
+function applyPriceFilters(results = [], filters = {}, limit = 8) {
+  if (!results || results.length === 0) return [];
+  const { budget = null, minPrice = null, maxPrice = null, inStockOnly = false } = filters || {};
+  // If no filters provided, just return first N
+  if (!budget && !minPrice && !maxPrice) return results.slice(0, limit);
+
+  let filtered = results.filter(p => {
+    const price = Number(p.price || 0);
+    if (budget && !isNaN(Number(budget))) {
+      if (price > Number(budget)) return false;
+    }
+    if (inStockOnly) {
+      const qty = Number(p.quantity || 0);
+      if (qty <= 0) return false;
+    }
+    if (minPrice && !isNaN(Number(minPrice))) {
+      if (price < Number(minPrice)) return false;
+    }
+    if (maxPrice && !isNaN(Number(maxPrice))) {
+      if (price > Number(maxPrice)) return false;
+    }
+    return true;
+  });
+
+  // If budget provided, sort by proximity to budget (closest first)
+  if (budget && !isNaN(Number(budget))) {
+    const b = Number(budget);
+    filtered = filtered.sort((a, b_) => {
+      const pa = Math.abs((Number(a.price || 0) || 0) - b);
+      const pb = Math.abs((Number(b_.price || 0) || 0) - b);
+      return pa - pb;
+    });
+  }
+
+  return filtered.slice(0, limit);
+}
+
 // === RECHERCHE MEILISEARCH ===
 export async function vectorSearch(query, category = null, limit = 8) {
   try {
@@ -872,7 +917,7 @@ export async function keywordSearch(query, category = null, limit = 8) {
 }
 
 // === RECHERCHE INTELLIGENTE CASCADE ===
-export async function smartSearch(query, category = null, limit = 8) {
+export async function smartSearch(query, category = null, limit = 8, filters = {}) {
   const startTime = Date.now();
   
   // Valider la requête
@@ -897,7 +942,7 @@ export async function smartSearch(query, category = null, limit = 8) {
     metrics.recordSearch('semantic', elapsed);
     logger.info('Smart search result', { source: 'semantic', results: semanticResult.results.length, elapsed });
     return {
-      results: semanticResult.results.slice(0, limit),
+      results: applyPriceFilters(semanticResult.results, filters, limit),
       source: 'semantic',
       hasLowRelevance: !!semanticResult.hasLowRelevance,
     };
@@ -912,7 +957,7 @@ export async function smartSearch(query, category = null, limit = 8) {
     metrics.recordSearch('meilisearch', elapsed);
     logger.info('Smart search result (meilisearch)', { results: meiliResult.results.length, elapsed });
     return {
-      results: meiliResult.results.slice(0, limit),
+      results: applyPriceFilters(meiliResult.results, filters, limit),
       source: 'meilisearch',
       hasLowRelevance: !!meiliResult.hasLowRelevance,
     };
@@ -926,7 +971,7 @@ export async function smartSearch(query, category = null, limit = 8) {
     metrics.recordSearch('meilisearch_keyword', elapsed);
     logger.info('Smart search result (keyword SQL)', { results: keywordResult.results.length, elapsed });
     return {
-      results: keywordResult.results.slice(0, limit),
+      results: applyPriceFilters(keywordResult.results, filters, limit),
       source: 'keyword',
       hasLowRelevance: false,
     };

@@ -30,7 +30,9 @@ import reviewRoutes from './routes/reviews.js';
 import wishlistRoutes from './routes/wishlist.js';
 import cacheRoutes from './routes/cache.js';
 import vectorSearchRoutes from './routes/vectorSearch.js';
-import { setupMeilisearchIndex, indexProductsBatch } from './services/embeddings.js';
+import nlpAdminRoutes from './routes/nlpAdmin.js';
+import userMemoryRoutes from './routes/userMemory.js';
+import { setupMeilisearchIndex, indexProductsBatch, extractCategoryFromQuery, smartSearch } from './services/embeddings.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -104,6 +106,8 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/cache', cacheRoutes);
 app.use('/api', vectorSearchRoutes);
+app.use('/api/nlp', nlpAdminRoutes);
+app.use('/api/user', userMemoryRoutes);
 
 // ==========================
 // NLP CHAT ENDPOINT
@@ -116,12 +120,84 @@ app.post('/api/message', async (req, res) => {
       return res.status(400).json({ error: 'Message is required', understood: false });
     }
 
+    // Quick order-status detection: "où est ma commande 1234" or "commande 1234"
+    const orderMatch = (message || '').toLowerCase().match(/commande\s*(?:n(?:°|o|om)?\s*)?#?(\d+)/i);
+    if (orderMatch) {
+      const orderId = orderMatch[1];
+      try {
+        const { query: dbQuery } = await import('./db.js');
+        const r = await dbQuery('SELECT id, status, buyer_id, buyer_phone, created_at, updated_at FROM orders WHERE id = $1 LIMIT 1', [orderId]);
+        if (r.rows.length === 0) {
+          return res.json({ intent: 'order_lookup', answer: `Je n'ai trouvé aucune commande avec l'id ${orderId}.`, understood: true });
+        }
+        const order = r.rows[0];
+        // Allow lookup if userProfile includes buyerId or buyerPhone matching the order
+        const allowedByProfile = (userProfile && ((userProfile.buyerId && String(userProfile.buyerId) === String(order.buyer_id)) || (userProfile.buyerPhone && String(userProfile.buyerPhone) === String(order.buyer_phone))));
+        if (!allowedByProfile) {
+          // If not allowed via profile, require buyer_phone provided in body for guest lookup
+          const bodyBuyerPhone = req.body.buyer_phone || null;
+          if (!bodyBuyerPhone || String(bodyBuyerPhone) !== String(order.buyer_phone)) {
+            return res.status(401).json({ intent: 'order_lookup', answer: 'Pour consulter une commande, fournissez votre numéro de téléphone associé à la commande (paramètre `buyer_phone`) ou authentifiez-vous.', understood: false });
+          }
+        }
+
+        const answer = `Statut de la commande #${order.id} : ${order.status}. Commandée le ${new Date(order.created_at).toLocaleString()}.`;
+        return res.json({ intent: 'order_lookup', answer, order: { id: order.id, status: order.status, created_at: order.created_at, updated_at: order.updated_at }, understood: true });
+      } catch (err) {
+        console.error('Order lookup error:', err.message);
+        return res.status(500).json({ intent: 'order_lookup', answer: 'Erreur lors de la recherche de la commande.', understood: false });
+      }
+    }
+
     const response = await nlpManager.process('fr', message);
     const emotion = detectEmotion(message);
     const recommendations = await recommend(userProfile, message);
 
     let contextualAnswer = response.answer;
     let additionalData = {};
+
+    // Development logging: print NLP response structure to help debug empty answers
+    if (process.env.NODE_ENV === 'development' || process.env.DEBUG_NLP === 'true') {
+      console.log('--- /api/message NLP response ---');
+      try { console.log(JSON.stringify({ intent: response.intent, score: response.score, answer: response.answer || null }, null, 2)); } catch(e) { console.log('NLP response log failed', e.message); }
+      console.log('recommendations length:', Array.isArray(recommendations) ? recommendations.length : 0);
+    }
+
+      // Heuristique: si le NLP ne retourne pas d'intent produit mais que la requête
+      // est courte (ex: "fleur") ou contient un mot-clé de catégorie, forcer
+      // l'intent "recherche_produit" pour déclencher la recherche vectorielle
+      try {
+        const detectedCats = extractCategoryFromQuery(message || '');
+        const isShortQuery = (message || '').trim().split(/\s+/).length <= 2 && (message || '').trim().length <= 40;
+        if (response.intent !== 'recherche_produit' && response.intent !== 'recommandation') {
+          if ((Array.isArray(detectedCats) && detectedCats.length > 0) || isShortQuery) {
+            response.intent = 'recherche_produit';
+            contextualAnswer = `Je cherche des produits correspondant à "${(message || '').trim()}"...`;
+          }
+        }
+      } catch (err) {
+        console.warn('Category heuristic failed:', err.message);
+      }
+
+      // If intent is recherche_produit, run the semantic search pipeline and include results
+      if (response.intent === 'recherche_produit') {
+        try {
+          const targetCategory = extractCategoryFromQuery(message) || null;
+          const limitResults = 6;
+          // Accept budget and price filters from userProfile (if provided)
+          const budget = userProfile?.budget || null;
+          const minPrice = userProfile?.minPrice || null;
+          const maxPrice = userProfile?.maxPrice || null;
+
+          const filters = { budget, minPrice, maxPrice };
+          const searchRes = await smartSearch((message || '').trim(), targetCategory, limitResults, filters);
+          additionalData.searchResults = searchRes.results || [];
+          additionalData.searchSource = searchRes.source || 'none';
+          additionalData.searchLowRelevance = !!searchRes.hasLowRelevance;
+        } catch (err) {
+          console.warn('search pipeline failed in /api/message:', err.message);
+        }
+      }
 
     if (response.intent === 'recherche_produit') {
       contextualAnswer =
@@ -143,9 +219,12 @@ app.post('/api/message', async (req, res) => {
       };
     }
 
+    // Ensure we always return a non-empty answer to the frontend
+    const safeAnswer = (contextualAnswer || '').toString().trim() || (response.intent === 'recherche_produit' ? `Je cherche des produits pour "${(message||'').trim()}"...` : 'Bonjour. Que recherchez-vous ?');
+
     res.json({
       intent: response.intent,
-      answer: contextualAnswer,
+      answer: safeAnswer,
       emotion,
       recommendations,
       confidence: response.score,

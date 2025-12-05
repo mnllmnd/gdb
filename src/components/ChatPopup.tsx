@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { 
   Box, Button, Input, VStack, Text, 
   Flex, useDisclosure, 
   Image, HStack, useBreakpointValue,
-  useColorModeValue
+  useColorModeValue, Switch
 } from '@chakra-ui/react';
 import { CloseIcon, ChevronDownIcon } from '@chakra-ui/icons';
 import axios from 'axios';
@@ -32,8 +32,108 @@ interface ChatMessage {
   products?: Product[];
 }
 
+// Sous-composant FilterPanel - Extrait pour éviter les re-renders
+const FilterPanel = React.memo(({ 
+  mobile = false,
+  budgetFilter,
+  setBudgetFilter,
+  inStockOnly,
+  setInStockOnly,
+  clearChat,
+  colors
+}: { 
+  mobile?: boolean;
+  budgetFilter: number | null;
+  setBudgetFilter: (val: number | null) => void;
+  inStockOnly: boolean;
+  setInStockOnly: (val: boolean) => void;
+  clearChat: () => void;
+  colors: {
+    textColor: string;
+    mutedTextColor: string;
+    inputBorder: string;
+    hoverBg: string;
+    borderColor: string;
+  };
+}) => (
+  <Box>
+    <Text fontSize={mobile ? "13px" : "12px"} fontWeight="600" textTransform="uppercase" letterSpacing="0.5px" color={colors.textColor} mb={3}>
+      Filtres
+    </Text>
+
+    {/* Budget Filter */}
+    <Box mb={4}>
+      <Text fontSize={mobile ? "12px" : "11px"} fontWeight="500" color={colors.mutedTextColor} mb={2}>Budget FCFA</Text>
+      <Input
+        value={budgetFilter ?? ''}
+        onChange={e => {
+          if (e.target.value === '') {
+            setBudgetFilter(null);
+          } else {
+            const num = Number(e.target.value);
+            if (!Number.isNaN(num) && num > 0) {
+              setBudgetFilter(num);
+            }
+          }
+        }}
+        placeholder="Ex: 20000"
+        size={mobile ? "sm" : "xs"}
+        fontSize={mobile ? "12px" : "11px"}
+        borderRadius="2px"
+        border="1px solid"
+        borderColor={colors.inputBorder}
+        _focus={{
+          borderColor: '#10b981',
+          boxShadow: '0 0 0 1px #10b981',
+          outlineOffset: '0'
+        }}
+      />
+      {budgetFilter && (
+        <Text fontSize={mobile ? "11px" : "10px"} color="#10b981" fontWeight="500" mt={2}>
+          ≤ {new Intl.NumberFormat('fr-FR').format(budgetFilter)} FCFA
+        </Text>
+      )}
+    </Box>
+
+    {/* Stock Filter */}
+    <Box mb={4}>
+      <Text fontSize={mobile ? "12px" : "11px"} fontWeight="500" color={colors.mutedTextColor} mb={2}>Stock</Text>
+      <HStack spacing={2} alignItems="center">
+        <Switch 
+          isChecked={inStockOnly} 
+          onChange={e => setInStockOnly(e.target.checked)}
+          size="md"
+        />
+        <Text fontSize={mobile ? "11px" : "10px"} color={inStockOnly ? "#10b981" : colors.mutedTextColor}>
+          {inStockOnly ? 'En stock' : 'Tous'}
+        </Text>
+      </HStack>
+    </Box>
+
+    {/* Clear Button */}
+    <Box>
+      <Button
+        size={mobile ? "sm" : "xs"}
+        width="100%"
+        bg={colors.hoverBg}
+        border="1px solid"
+        borderColor={colors.borderColor}
+        color={colors.textColor}
+        fontSize={mobile ? "12px" : "10px"}
+        onClick={clearChat}
+        _hover={{ bg: colors.borderColor }}
+      >
+        Effacer
+      </Button>
+    </Box>
+  </Box>
+));
+
+FilterPanel.displayName = 'FilterPanel';
+
 export const ChatPopup = () => {
   const STORAGE_KEY = 'chat:messages'
+  const PREF_KEY = 'chat:preferences'
   
   // 🔧 COULEURS ADAPTATIVES
   const bgColor = useColorModeValue('white', 'gray.900');
@@ -79,6 +179,25 @@ export const ChatPopup = () => {
   const [messages, setMessages] = useState<ChatMessage[]>(loadInitialMessages);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [budgetFilter, setBudgetFilter] = useState<number | null>(null);
+  const [inStockOnly, setInStockOnly] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(PREF_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setBudgetFilter(parsed.budget ?? null);
+        setInStockOnly(parsed.inStockOnly ?? false);
+      }
+    } catch (e) {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(PREF_KEY, JSON.stringify({ budget: budgetFilter, inStockOnly }));
+    } catch (e) {}
+  }, [budgetFilter, inStockOnly]);
   const [recommendations, setRecommendations] = useState<Product[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -205,11 +324,13 @@ export const ChatPopup = () => {
   };
 
   const sendMessage = async () => {
-    if (!input.trim()) return;
+    const raw = input;
+    const text = raw ? raw.trim() : '';
+    if (!text) return;
 
     const userMessage: ChatMessage = {
       from: 'user',
-      text: input,
+      text: raw,
       timestamp: new Date(),
       type: 'text'
     };
@@ -220,17 +341,20 @@ export const ChatPopup = () => {
 
     try {
       const res = await axios.post(`${API_ROOT}/api/message`, {
-        message: input,
+        message: text,
         userProfile: { 
           preferences: ['décoration', 'mobilier'],
-          budget: 200,
+          budget: budgetFilter ?? undefined,
+          minPrice: undefined,
+          maxPrice: undefined,
+          inStockOnly: inStockOnly,
           history: []
         }
       });
 
       const botResponse: ChatMessage = {
         from: 'bot',
-        text: res.data.answer,
+        text: (res.data.answer || '').toString().trim() || 'Je cherche...',
         timestamp: new Date(),
         type: 'text',
         emotion: res.data.emotion,
@@ -243,7 +367,7 @@ export const ChatPopup = () => {
       }
       
       if (res.data.intent === 'recherche_produit' || res.data.intent === 'recommandation') {
-        const queryText = input.trim()
+        const queryText = text;
         const detectedCategory = detectCategory(queryText);
         
         // 🎯 Recherche vectorielle avec détection de catégorie
@@ -302,7 +426,24 @@ export const ChatPopup = () => {
     return words;
   };
 
-  const clearChat = () => {
+  const getProductImageUrl = (product: Product) => {
+    const src = product.image_url || product.product_image || product.image || null
+    if (!src) return null
+    if (src.startsWith('http')) return src
+    const root = API_ROOT.replace(/\/api$/, '')
+    return `${root}${src.startsWith('/') ? src : '/' + src}`
+  };
+
+  // Memoize callbacks pour FilterPanel
+  const handleSetBudgetFilter = useCallback((val: number | null) => {
+    setBudgetFilter(val);
+  }, []);
+
+  const handleSetInStockOnly = useCallback((val: boolean) => {
+    setInStockOnly(val);
+  }, []);
+
+  const handleClearChat = useCallback(() => {
     const initial = [{ 
       from: 'bot', 
       text: 'Bonjour. Que recherchez-vous ?', 
@@ -312,15 +453,16 @@ export const ChatPopup = () => {
     setMessages(initial);
     try { localStorage.removeItem(STORAGE_KEY) } catch(e){}
     setRecommendations([]);
-  };
+  }, []);
 
-  const getProductImageUrl = (product: Product) => {
-    const src = product.image_url || product.product_image || product.image || null
-    if (!src) return null
-    if (src.startsWith('http')) return src
-    const root = API_ROOT.replace(/\/api$/, '')
-    return `${root}${src.startsWith('/') ? src : '/' + src}`
-  };
+  // Memoize colors object
+  const filterPanelColors = useMemo(() => ({
+    textColor,
+    mutedTextColor,
+    inputBorder,
+    hoverBg,
+    borderColor
+  }), [textColor, mutedTextColor, inputBorder, hoverBg, borderColor]);
 
   // 🔴 BOUTON FLOTTANT - ADAPTÉ MODE SOMBRE
   if (!isOpen) {
@@ -357,112 +499,129 @@ export const ChatPopup = () => {
     );
   }
 
-  // 🪟 FENÊTRE DE CHAT - COMPLÈTEMENT ADAPTATIVE
+  // 🪟 FENÊTRE DE CHAT - AVEC SIDEBAR POUR FILTRES
   return (
     <Box
       position="fixed"
       bottom={isMobile ? "80px" : "24px"}
-      left={isMobile ? "20px" : "24px"}
-      width={isMobile ? "calc(100% - 40px)" : "380px"}
-      height={isMobile ? "70vh" : "520px"}
+      left={isMobile ? "10px" : "24px"}
+      right={isMobile ? "10px" : "auto"}
+      width={isMobile ? "auto" : "600px"}
+      height={isMobile ? "75vh" : "600px"}
       bg={bgColor}
       borderRadius="0"
       boxShadow="0 8px 40px rgba(0,0,0,0.12)"
       zIndex={9999}
       display="flex"
-      flexDirection="column"
+      flexDirection="row"
       border="1px solid"
       borderColor={borderColor}
-      maxWidth={isMobile ? "400px" : "none"}
-      margin={isMobile ? "0 auto" : "0"}
       overflow="hidden"
       fontFamily="'Inter', sans-serif"
     >
-      {/* Header ultra minimal */}
-      <Flex
-        bg={bgColor}
-        p={3}
-        borderBottom="1px solid"
+      {/* SIDEBAR FILTRES - Côté gauche (toujours visible) */}
+      <Box
+        width={isMobile ? "110px" : "140px"}
+        bg={cardBg}
+        borderRight="1px solid"
         borderColor={borderColor}
-        justify="space-between"
-        align="center"
-        height="56px"
+        display="flex"
+        flexDirection="column"
+        overflowY="auto"
+        p={isMobile ? 2 : 3}
+        gap={isMobile ? 2 : 4}
       >
-        <HStack spacing={3}>
-          <Box 
-            width="8px" 
-            height="8px" 
-            borderRadius="full" 
-            bg="#10b981"
-          />
-          <Text 
-            fontSize="14px" 
-            fontWeight="500" 
-            letterSpacing="0.5px"
-            color={textColor}
-          >
-            Assistant
-          </Text>
-        </HStack>
-        
-        <HStack spacing={2}>
-          <Box
-            width="28px"
-            height="28px"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            cursor="pointer"
-            borderRadius="sm"
-            _hover={{ bg: hoverBg }}
-            onClick={clearChat}
-          >
-            <Text fontSize="11px" color={mutedTextColor}>Effacer</Text>
-          </Box>
-          <Box
-            width="28px"
-            height="28px"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            cursor="pointer"
-            borderRadius="sm"
-            _hover={{ bg: hoverBg }}
-            onClick={onToggle}
-          >
-            <ChevronDownIcon color={mutedTextColor} w={3} h={3} />
-          </Box>
-          <Box
-            width="28px"
-            height="28px"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            cursor="pointer"
-            borderRadius="sm"
-            _hover={{ bg: hoverBg }}
-            onClick={onClose}
-          >
-            <CloseIcon color={mutedTextColor} w={2.5} h={2.5} />
-          </Box>
-        </HStack>
-      </Flex>
+        <FilterPanel 
+          mobile={isMobile}
+          budgetFilter={budgetFilter}
+          setBudgetFilter={handleSetBudgetFilter}
+          inStockOnly={inStockOnly}
+          setInStockOnly={handleSetInStockOnly}
+          clearChat={handleClearChat}
+          colors={filterPanelColors}
+        />
+      </Box>
 
-      {/* Messages - Adaptatif */}
-      <Box 
-        flex="1" 
-        p={4} 
-        overflowY="auto" 
-        bg={bgColor}
-        pb={isMobile ? "80px" : 4}
+      {/* ZONE CHAT - Côté droit */}
+      <Box
+        flex="1"
+        display="flex"
+        flexDirection="column"
+        overflow="hidden"
       >
-        <VStack spacing={4} align="stretch">
-          {messages.map((msg, i) => (
-            <Box
-              key={i}
-              alignSelf={msg.from === 'user' ? 'flex-end' : 'flex-start'}
-              maxWidth="85%"
+        {/* Header */}
+        <Flex
+          bg={bgColor}
+          p={3}
+          borderBottom="1px solid"
+          borderColor={borderColor}
+          justify="space-between"
+          align="center"
+          height="56px"
+          width="100%"
+        >
+          <HStack spacing={3}>
+            <Box 
+              width="8px" 
+              height="8px" 
+              borderRadius="full" 
+              bg="#10b981"
+            />
+            <Text 
+              fontSize="14px" 
+              fontWeight="500" 
+              letterSpacing="0.5px"
+              color={textColor}
             >
+              Assistant
+            </Text>
+          </HStack>
+          
+          <HStack spacing={2}>
+            <Box
+              width="28px"
+              height="28px"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              cursor="pointer"
+              borderRadius="sm"
+              _hover={{ bg: hoverBg }}
+              onClick={onToggle}
+            >
+              <ChevronDownIcon color={mutedTextColor} w={3} h={3} />
+            </Box>
+            <Box
+              width="28px"
+              height="28px"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              cursor="pointer"
+              borderRadius="sm"
+              _hover={{ bg: hoverBg }}
+              onClick={onClose}
+            >
+              <CloseIcon color={mutedTextColor} w={2.5} h={2.5} />
+            </Box>
+          </HStack>
+        </Flex>
+
+        {/* Messages - Area */}
+        <Box 
+          flex="1" 
+          p={3} 
+          overflowY="auto" 
+          bg={bgColor}
+          width="100%"
+        >
+          <VStack spacing={4} align="stretch">
+            {messages.map((msg, i) => (
+              <Box
+                key={i}
+                alignSelf={msg.from === 'user' ? 'flex-end' : 'flex-start'}
+                maxWidth="90%"
+              >
               <Flex align="flex-end" gap={3} direction={msg.from === 'user' ? 'row-reverse' : 'row'}>
                 {msg.from === 'bot' && (
                   <Box 
@@ -530,6 +689,8 @@ export const ChatPopup = () => {
                   
                   {msg.type === 'recommendations' && msg.products && (
                     <VStack spacing={3} mt={4}>
+                      {/* Applied filters summary */}
+                      {/* Filters summary moved to persistent bar above the input (see below) */}
                       {msg.products.map((product, idx) => {
                         const imageUrl = getProductImageUrl(product);
                         return (
@@ -662,7 +823,7 @@ export const ChatPopup = () => {
           ))}
           
           {isLoading && (
-            <Box alignSelf="flex-start" maxWidth="85%">
+            <Box alignSelf="flex-start" maxWidth="90%">
               <Flex align="flex-end" gap={3}>
                 <Box 
                   width="24px" 
@@ -724,82 +885,63 @@ export const ChatPopup = () => {
         </VStack>
       </Box>
 
-      {/* Zone de saisie - Adaptative */}
-      <Box 
-        p={4}
+      {/* Input Area - Bottom */}
+      <Box
+        p={3}
         borderTop="1px solid"
         borderColor={borderColor}
         bg={bgColor}
+        width="100%"
       >
-        <HStack spacing={3}>
-          <Input
-            ref={inputRef}
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && !isLoading && sendMessage()}
-            placeholder="Rechercher un produit..."
-            size="sm"
-            isDisabled={isLoading}
-            fontSize="16px"
-            border="1px solid"
-            borderColor={inputBorder}
-            borderRadius="0"
-            height="40px"
-            bg={inputBg}
-            color={textColor}
-            _focus={{
-              borderColor: useColorModeValue('black', 'white'),
-              boxShadow: 'none'
-            }}
-            _placeholder={{
-              color: mutedTextColor,
-              fontSize: '13px'
-            }}
-            _disabled={{
-              opacity: 0.6,
-              cursor: 'not-allowed'
-            }}
-          />
-          <Button
-            onClick={sendMessage}
-            bg={buttonBg}
-            color="white"
-            size="sm"
-            isLoading={isLoading}
-            loadingText=""
-            height="40px"
-            width="80px"
-            borderRadius="0"
-            fontSize="13px"
-            fontWeight="500"
-            letterSpacing="0.5px"
-            _hover={{
-              bg: buttonHover
-            }}
-            _active={{
-              bg: buttonBg
-            }}
-            _loading={{
-              opacity: 0.7
-            }}
-            _disabled={{
-              opacity: 0.7,
-              cursor: 'not-allowed'
-            }}
-          >
-            Envoyer
-          </Button>
-        </HStack>
-        
-        <Text 
-          fontSize="11px" 
-          color={mutedTextColor} 
-          mt={3}
-          letterSpacing="0.3px"
-        >
-          Exemples: canapé, lampe, table, décoration
-        </Text>
+        <VStack spacing={2}>
+          <HStack spacing={2} width="100%">
+            <Input
+              ref={inputRef}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && !isLoading && sendMessage()}
+              autoFocus
+              placeholder="Votre message..."
+              size="sm"
+              isDisabled={isLoading}
+              fontSize="13px"
+              border="1px solid"
+              borderColor={inputBorder}
+              borderRadius="2px"
+              height="36px"
+              bg={inputBg}
+              color={textColor}
+              _focus={{
+                borderColor: '#10b981',
+                boxShadow: 'none'
+              }}
+              _placeholder={{
+                color: mutedTextColor,
+                fontSize: '13px'
+              }}
+            />
+            <Button
+              onClick={sendMessage}
+              bg={buttonBg}
+              color="white"
+              size="sm"
+              isLoading={isLoading}
+              loadingText=""
+              height="36px"
+              minWidth="70px"
+              borderRadius="2px"
+              fontSize="12px"
+              fontWeight="500"
+              _hover={{
+                bg: buttonHover
+              }}
+            >
+              Envoyer
+            </Button>
+          </HStack>
+        </VStack>
       </Box>
+    </Box>
     </Box>
   );
 };
