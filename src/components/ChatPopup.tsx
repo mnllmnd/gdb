@@ -904,7 +904,7 @@ export const ChatPopup = () => {
               placeholder="Votre message..."
               size="sm"
               isDisabled={isLoading}
-              fontSize="13px"
+              fontSize={isMobile ? "16px" : "13px"}
               border="1px solid"
               borderColor={inputBorder}
               borderRadius="2px"
@@ -917,7 +917,7 @@ export const ChatPopup = () => {
               }}
               _placeholder={{
                 color: mutedTextColor,
-                fontSize: '13px'
+                fontSize: isMobile ? "16px" : "13px"
               }}
             />
             <Button
