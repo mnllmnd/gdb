@@ -438,6 +438,8 @@ export default function Products() {
   const badgeBg = useColorModeValue('#111111', 'gray.600')
   const badgeColor = useColorModeValue('white', 'white')
   const iconColor = useColorModeValue('#666666', 'gray.300')
+  const tabHoverBorderColor = useColorModeValue('#e5e5e5', 'gray.600')
+  const spinnerEmptyColor = useColorModeValue('#f0f0f0', 'gray.900')
 
   // MODIFICATION PRINCIPALE ICI : 2 colonnes sur mobile au lieu de 1
   const gridColumns = useBreakpointValue({ 
@@ -713,7 +715,7 @@ export default function Products() {
             size="xl" 
             color={accentColor} 
             thickness="3px" 
-            emptyColor={useColorModeValue('#f0f0f0','gray.900')}
+            emptyColor={spinnerEmptyColor}
           />
           <Text color={textSecondary} fontSize="lg" fontWeight="500">
             Chargement...
@@ -1083,7 +1085,7 @@ export default function Products() {
               fontWeight={activeTab === 0 ? '600' : '500'}
               color={textPrimary}
               fontSize="md"
-              _hover={{ borderColor: useColorModeValue('#e5e5e5', 'gray.600') }}
+              _hover={{ borderColor: tabHoverBorderColor }}
             >
               Tous les produits
             </Tab>
@@ -1094,7 +1096,7 @@ export default function Products() {
               fontWeight={activeTab === 1 ? '600' : '500'}
               color={textPrimary}
               fontSize="md"
-              _hover={{ borderColor: useColorModeValue('#e5e5e5', 'gray.600') }}
+              _hover={{ borderColor: tabHoverBorderColor }}
             >
               Populaires
             </Tab>
@@ -1105,7 +1107,7 @@ export default function Products() {
               fontWeight={activeTab === 2 ? '600' : '500'}
               color={textPrimary}
               fontSize="md"
-              _hover={{ borderColor: useColorModeValue('#e5e5e5', 'gray.600') }}
+              _hover={{ borderColor: tabHoverBorderColor }}
             >
               Nouveautés
             </Tab>
@@ -1116,7 +1118,7 @@ export default function Products() {
               fontWeight={activeTab === 3 ? '600' : '500'}
               color={textPrimary}
               fontSize="md"
-              _hover={{ borderColor: useColorModeValue('#e5e5e5', 'gray.600') }}
+              _hover={{ borderColor: tabHoverBorderColor }}
             >
               <HStack spacing={2}>
                 <Icon as={FiUsers} />
@@ -1165,7 +1167,7 @@ export default function Products() {
                 color={textPrimary}
                 fontSize="sm"
                 whiteSpace="nowrap"
-                _hover={{ borderColor: useColorModeValue('#e5e5e5', 'gray.600') }}
+                _hover={{ borderColor: tabHoverBorderColor }}
               >
                 Produits
               </Tab>
@@ -1177,7 +1179,7 @@ export default function Products() {
                 color={textPrimary}
                 fontSize="sm"
                 whiteSpace="nowrap"
-                _hover={{ borderColor: useColorModeValue('#e5e5e5', 'gray.600') }}
+                _hover={{ borderColor: tabHoverBorderColor }}
               >
                 Populaires
               </Tab>
@@ -1189,7 +1191,7 @@ export default function Products() {
                 color={textPrimary}
                 fontSize="sm"
                 whiteSpace="nowrap"
-                _hover={{ borderColor: useColorModeValue('#e5e5e5', 'gray.600') }}
+                _hover={{ borderColor: tabHoverBorderColor }}
               >
                 Vendeurs
               </Tab>

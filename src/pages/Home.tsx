@@ -29,7 +29,6 @@ import HeroProductStrip from '../components/HeroProductStrip'
 import { Link as RouterLink, useLocation, useNavigationType } from 'react-router-dom'
 import { usePageState } from '../components/ScrollRestoration'
 import api from '../services/api'
-import ProductCardsSection from '../components/ProductCardsSection';
 
 interface Product {
   id: number
@@ -50,7 +49,7 @@ interface Category {
   name: string
 }
 
-// ✅ Fonction utilitaire pour normaliser les images
+// Fonction utilitaire pour normaliser les images
 const normalizeImages = (product: Product): string[] => {
   if (Array.isArray(product.images)) {
     return product.images.filter((img): img is string => typeof img === 'string' && img.trim() !== '')
@@ -64,7 +63,7 @@ const normalizeImages = (product: Product): string[] => {
   return []
 }
 
-// ✅ Fonction pour formater les prix en F
+// Fonction pour formater les prix en F
 const formatPrice = (price: number): string => {
   return new Intl.NumberFormat('fr-FR', {
     minimumFractionDigits: 0,
@@ -74,20 +73,17 @@ const formatPrice = (price: number): string => {
 
 // Welcome Popup Component
 function WelcomePopup() {
-  // 1. Tous les hooks au début, avant toute condition
   const [isOpen, setIsOpen] = React.useState(true)
   const bgColor = useColorModeValue('white', 'gray.900')
   const textColor = useColorModeValue('gray.700', 'gray.300')
   const brandBg = useColorModeValue('brand.50', 'gray.900')
   const subTextColor = useColorModeValue('gray.600', 'gray.400')
   
-  // 2. Ensuite seulement, la logique conditionnelle
   const handleClose = () => {
     setIsOpen(false)
     localStorage.setItem('welcomeDismissed', 'true')
   }
 
-  // 3. Retour conditionnel APRÈS tous les hooks
   if (!isOpen) return null
 
   return (
@@ -95,7 +91,7 @@ function WelcomePopup() {
       <Box
         position="fixed"
         inset={0}
-        bg="gray.900Alpha.500"
+        bg="blackAlpha.600"
         display="flex"
         alignItems="center"
         justifyContent="center"
@@ -123,7 +119,7 @@ function WelcomePopup() {
                   Bienvenue!
                 </Heading>
                 <Text color={subTextColor}>
-                 Vendre ou acheter, yay choisir
+                  Vendre ou acheter, yay choisir
                 </Text>
               </VStack>
               <Button
@@ -150,7 +146,6 @@ interface EmptyStateProps {
 }
 
 function EmptyState({ message, onClear }: EmptyStateProps) {
-  // Tous les hooks au début
   const textColor = useColorModeValue('gray.700', 'gray.300')
   const bgColor = useColorModeValue('white', 'gray.900')
   const containerBg = useColorModeValue('gray.100', 'gray.900')
@@ -159,7 +154,6 @@ function EmptyState({ message, onClear }: EmptyStateProps) {
   const iconColor = useColorModeValue('gray.400', 'gray.500')
   const subTextColor = useColorModeValue('gray.600', 'gray.400')
   
-  // Pas de hooks après ce point
   return (
     <Center py={16}>
       <Card
@@ -207,33 +201,154 @@ function EmptyState({ message, onClear }: EmptyStateProps) {
   )
 }
 
+// Pinterest-style Product Card (sans carte blanche)
+function PinterestProductCard({ product }: { product: Product }) {
+  const [isHovered, setIsHovered] = React.useState(false)
+  const textColor = useColorModeValue('#111', '#fff')
+  const images = normalizeImages(product)
+
+  return (
+    <RouterLink to={`/products/${product.id}`} style={{ textDecoration: 'none' }}>
+      <Box
+        transition="all 0.2s ease"
+        _hover={{ transform: 'translateY(-2px)' }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        mb={4}
+        cursor="pointer"
+      >
+        {/* Image seule avec coins arrondis */}
+        <Box 
+          position="relative" 
+          overflow="hidden"
+          borderRadius="16px"
+          boxShadow={isHovered ? 'lg' : 'sm'}
+          transition="box-shadow 0.2s ease"
+        >
+          {images[0] ? (
+            <Image
+              src={images[0]}
+              alt={String(product.title || product.name)}
+              w="100%"
+              h="auto"
+              objectFit="cover"
+              transition="transform 0.3s ease"
+              transform={isHovered ? 'scale(1.02)' : 'scale(1)'}
+            />
+          ) : (
+            <Box
+              w="100%"
+              paddingBottom="120%"
+              bg={useColorModeValue('gray.200', 'gray.800')}
+              position="relative"
+            >
+              <Center position="absolute" inset={0}>
+                <Icon as={FiPackage} boxSize={12} color="gray.400" />
+              </Center>
+            </Box>
+          )}
+          
+          {/* Overlay "VOIR DÉTAILS" au hover */}
+          <Box
+            position="absolute"
+            inset={0}
+            bg="blackAlpha.700"
+            opacity={isHovered ? 1 : 0}
+            transition="opacity 0.25s ease"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Text 
+              color="white" 
+              fontSize="sm" 
+              fontWeight="600" 
+              letterSpacing="wide"
+              textTransform="uppercase"
+            >
+              Voir détails
+            </Text>
+          </Box>
+
+          {/* Badge stock */}
+          {product.amount && product.amount > 0 && (
+            <Badge
+              position="absolute"
+              top={2}
+              left={2}
+              colorScheme="green"
+              fontSize="2xs"
+              borderRadius="md"
+              px={2}
+              py={0.5}
+            >
+              {product.amount}
+            </Badge>
+          )}
+
+          {/* Bouton trois points au hover */}
+          {isHovered && (
+            <IconButton
+              aria-label="Options"
+              icon={<Text fontSize="lg" fontWeight="bold">•••</Text>}
+              position="absolute"
+              top={2}
+              right={2}
+              size="sm"
+              borderRadius="full"
+              bg="white"
+              color="black"
+              _hover={{ bg: 'gray.100' }}
+              boxShadow="sm"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+              }}
+            />
+          )}
+        </Box>
+
+        {/* Texte en dessous (centré) */}
+        <Box pt={2} px={1} textAlign="center">
+          <Heading
+            as="h3"
+            fontSize="sm"
+            fontWeight="600"
+            color={textColor}
+            noOfLines={2}
+            mb={1}
+            lineHeight="1.3"
+          >
+            {product.title || product.name || 'Sans titre'}
+          </Heading>
+          
+          {product.price && (
+            <Text
+              fontSize="md"
+              fontWeight="700"
+              color={textColor}
+            >
+              {formatPrice(product.price)}
+            </Text>
+          )}
+        </Box>
+      </Box>
+    </RouterLink>
+  )
+}
+
 export default function Home() {
-  // 1. Tous les hooks au début, dans un ordre fixe
   const { save, restore } = usePageState()
   const location = useLocation()
   const navigationType = useNavigationType()
   
-  const bgColor = useColorModeValue('white', 'gray.900')
-  const cardBgColor = useColorModeValue('white', 'gray.900')
-  const productCardBg = useColorModeValue('gray.100', 'gray.900')
-  const titleColor = useColorModeValue('gray.700', 'gray.300')
-  const descriptionColor = useColorModeValue('gray.500', 'gray.400')
-  const iconColor = useColorModeValue('gray.300', 'gray.600')
+  const bgColor = useColorModeValue('#f5f5f5', '#0a0a0a')
   
   const [products, setProducts] = React.useState<Product[]>([])
   const [categories, setCategories] = React.useState<Category[]>([])
   const [selectedCategory, setSelectedCategory] = React.useState<number | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
   const [showScrollTop, setShowScrollTop] = React.useState(false)
-  
-  const [currentUser] = React.useState(() => {
-    try {
-      const u = localStorage.getItem('user')
-      return u ? JSON.parse(u) : null
-    } catch {
-      return null
-    }
-  })
   
   const [welcomeDismissed] = React.useState(() => {
     try {
@@ -243,7 +358,6 @@ export default function Home() {
     }
   })
   
-  // 2. Les useEffect viennent APRÈS tous les useState/useContext
   // Load data on mount
   React.useEffect(() => {
     const loadData = async () => {
@@ -301,7 +415,6 @@ export default function Home() {
     save({ scrollPosition: 0 })
   }
 
-  // 3. Maintenant seulement le JSX conditionnel
   return (
     <Box bg={bgColor} minH="100vh">
       {!welcomeDismissed && <WelcomePopup />}
@@ -328,82 +441,18 @@ export default function Home() {
             onClear={() => handleCategoryChange(null)}
           />
         ) : (
-          <SimpleGrid
-            columns={{ base: 1, sm: 2, md: 3, lg: 4 }}
-            spacing={6}
-            py={8}
-          >
-            {filteredProducts.map((product) => (
-              <ScaleFade key={product.id} initialScale={0.9} in={true}>
-                <RouterLink to={`/products/${product.id}`} style={{ textDecoration: 'none' }}>
-                  <Box
-                    borderRadius="lg"
-                    overflow="hidden"
-                    bg={cardBgColor}
-                    boxShadow="sm"
-                    _hover={{ boxShadow: 'md', transform: 'translateY(-2px)' }}
-                    transition="all 0.2s"
-                    cursor="pointer"
-                  >
-                    {/* Product Image */}
-                    <Box position="relative" w="100%" paddingBottom="100%" bg={productCardBg}>
-                      {normalizeImages(product)[0] ? (
-                        <Image
-                          src={normalizeImages(product)[0]}
-                          alt={product.title || product.name || 'Product'}
-                          position="absolute"
-                          top={0}
-                          left={0}
-                          w="100%"
-                          h="100%"
-                          objectFit="cover"
-                        />
-                      ) : (
-                        <Center h="100%">
-                          <Icon as={FiPackage} boxSize={12} color={iconColor} />
-                        </Center>
-                      )}
-                    </Box>
-
-                    {/* Product Info */}
-                    <Box p={4}>
-                      <Text
-                        fontSize="sm"
-                        fontWeight="500"
-                        noOfLines={2}
-                        mb={2}
-                        color={titleColor}
-                      >
-                        {product.title || product.name || 'Sans titre'}
-                      </Text>
-
-                      {product.description && (
-                        <Text
-                          fontSize="xs"
-                          color={descriptionColor}
-                          noOfLines={1}
-                          mb={3}
-                        >
-                          {product.description}
-                        </Text>
-                      )}
-
-                      <HStack justify="space-between">
-                        <Heading size="sm" color="brand.500">
-                          {product.price ? formatPrice(product.price) : 'N/A'}
-                        </Heading>
-                        {product.amount && product.amount > 0 && (
-                          <Badge colorScheme="green" fontSize="xs">
-                            {product.amount} en stock
-                          </Badge>
-                        )}
-                      </HStack>
-                    </Box>
-                  </Box>
-                </RouterLink>
-              </ScaleFade>
-            ))}
-          </SimpleGrid>
+          <Box px={{ base: 2, md: 0 }} py={6}>
+            <SimpleGrid
+              columns={{ base: 2, md: 3, lg: 4, xl: 5 }}
+              spacing={{ base: 3, md: 4 }}
+            >
+              {filteredProducts.map((product) => (
+                <ScaleFade key={product.id} initialScale={0.9} in={true}>
+                  <PinterestProductCard product={product} />
+                </ScaleFade>
+              ))}
+            </SimpleGrid>
+          </Box>
         )}
       </Container>
 
@@ -420,6 +469,7 @@ export default function Home() {
             aria-label="Scroll to top"
             size="lg"
             boxShadow="lg"
+            zIndex={100}
           />
         </Fade>
       )}
