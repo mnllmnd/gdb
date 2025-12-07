@@ -263,6 +263,75 @@ export const ChatPopup = () => {
   };
 
   /**
+   * Combine la recherche vectorielle avec l'extraction de mots-clés
+   * Pour améliorer la relevance et éviter les dilutions d'embeddings
+   */
+  const hybridSearch = async (query: string, detectedCategory?: string | null) => {
+    try {
+      // 1️⃣ Extraction des mots-clés importants
+      const keywords = extractSearchKeywords(query);
+      console.log('🔑 Mots-clés extraits:', keywords);
+
+      // 2️⃣ Recherche vectorielle standard
+      const vectorResult = await vectorSearch(query, detectedCategory);
+      let results = vectorResult.results as Product[];
+
+      // 3️⃣ Si résultats faibles, essayer avec chaque mot-clé individuellement
+      if (results.length === 0 && keywords.length > 0) {
+        console.log('⚠️ Pas de résultats, essai avec mots-clés individuels...');
+        
+        for (const keyword of keywords) {
+          const keywordResult = await vectorSearch(keyword, detectedCategory);
+          if (keywordResult.results.length > 0) {
+            results = keywordResult.results as Product[];
+            console.log(`✅ Résultats trouvés avec le mot-clé: "${keyword}"`);
+            break;
+          }
+        }
+      }
+
+      // 4️⃣ Booster la relevance des produits qui contiennent des mots-clés exacts
+      if (results.length > 0) {
+        const boostedResults = results.map((product: Product) => {
+          const productName = (product.name || product.title || product.product_name || '').toLowerCase();
+          const productCategory = (product.category || '').toLowerCase();
+          const productText = `${productName} ${productCategory}`;
+          
+          // Compter les mots-clés qui matchent dans le produit
+          const matchCount = keywords.filter(kw => productText.includes(kw)).length;
+          
+          return {
+            ...product,
+            _matchScore: matchCount // Score de match par mots-clés
+          };
+        });
+
+        // Trier par score de match (descending)
+        boostedResults.sort((a: any, b: any) => (b._matchScore || 0) - (a._matchScore || 0));
+        results = boostedResults as Product[];
+      }
+
+      return {
+        results,
+        hasLowRelevance: results.length === 0,
+        category: vectorResult.category,
+        isTextFallback: vectorResult.isTextFallback,
+        bestScore: vectorResult.bestScore,
+        keywords
+      };
+    } catch (error) {
+      console.error('❌ Erreur recherche hybride:', error);
+      return {
+        results: [],
+        hasLowRelevance: true,
+        category: null,
+        isTextFallback: false,
+        keywords: []
+      };
+    }
+  };
+
+  /**
    * Détecte la catégorie à partir de la requête utilisateur
    */
   const detectCategory = (query: string): string | null => {
@@ -370,8 +439,8 @@ export const ChatPopup = () => {
         const queryText = text;
         const detectedCategory = detectCategory(queryText);
         
-        // 🎯 Recherche vectorielle avec détection de catégorie
-        let searchResult = await vectorSearch(queryText, detectedCategory);
+        // 🎯 Recherche hybride: vectorielle + extraction de mots-clés
+        let searchResult = await hybridSearch(queryText, detectedCategory);
         let recResults = searchResult.results as Product[];
 
         setRecommendations(recResults);
@@ -416,14 +485,19 @@ export const ChatPopup = () => {
   };
 
   const extractSearchKeywords = (message: string): string[] => {
-    const stopWords = ['je', 'tu', 'il', 'nous', 'vous', 'ils', 'cherche', 'veux', 'voudrais', 'recherche', 'acheter', 'trouver'];
+    const stopWords = ['je', 'tu', 'il', 'nous', 'vous', 'ils', 'cherche', 'veux', 'voudrais', 'recherche', 'acheter', 'trouver', 'un', 'une', 'des', 'le', 'la', 'les', 'et', 'ou', 'mais', 'pour', 'par', 'avec', 'sans', 'dans', 'sur', 'de', 'à', 'en', 'par', 'exemple', 'je', 'c\'est', 'est', 'ça', 'c', 'ce', 'cet', 'cette', 'ces', 'va', 'vais', 'avoir', 'ai', 'sois', 'soit', 'être'];
     
     const words = message.toLowerCase()
-      .split(' ')
-      .filter(word => word.length > 2 && !stopWords.includes(word))
-      .map(word => word.replace(/[^\w]/g, ''));
+      .split(/[\s,;:\.!\?]+/)
+      .filter(word => {
+        // Garder les mots de plus de 2 caractères et pas dans stopWords
+        return word.length > 2 && !stopWords.includes(word);
+      })
+      .map(word => word.replace(/[^\w]/g, ''))
+      .filter(word => word.length > 0);
     
-    return words;
+    // Retourner les mots uniques
+    return [...new Set(words)];
   };
 
   const getProductImageUrl = (product: Product) => {

@@ -44,6 +44,7 @@ export default function NavBar() {
   type User = { display_name?: string; phone?: string; role?: string; id?: string }
   type Shop = { name?: string; logo_url?: string; domain?: string }
 
+  // All hooks FIRST (in consistent order)
   const [isScrolled, setIsScrolled] = useState(false)
   const [user, setUser] = useState<User | null>(() => {
     const currentUser = getCurrentUser() as User | null;
@@ -54,7 +55,7 @@ export default function NavBar() {
   const [cartCount, setCartCount] = useState<number>(0)
   const [searchQuery, setSearchQuery] = useState('')
   
-  // Palette sobre style Zara
+  // Chakra UI hooks (all together in consistent order)
   const navBg = useColorModeValue('white', 'gray.900')
   const navBorder = useColorModeValue('gray.200', 'gray.700')
   const textColor = useColorModeValue('black', 'white')
@@ -64,17 +65,16 @@ export default function NavBar() {
   const menuBg = useColorModeValue('white', 'gray.900')
   const menuBorder = useColorModeValue('gray.200', 'gray.700')
   const { colorMode, toggleColorMode } = useColorMode()
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query)
-    ;(globalThis as any).handleGlobalSearch?.(query)
-  }
-  
   const navigate = useNavigate()
   const toast = useToast()
   const showMobileMenu = useBreakpointValue({ base: true, md: false })
   const { isOpen, onOpen, onClose } = useDisclosure()
   const recRef = React.useRef<any>(null)
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query)
+    ;(globalThis as any).handleGlobalSearch?.(query)
+  }
 
   // Helper to detect admin role in different possible shapes
   const isAdmin = (u: User | null | undefined) => {

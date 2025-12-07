@@ -32,6 +32,7 @@ import {
   Progress,
   Avatar,
   Center,
+  Input,
 } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
@@ -52,7 +53,9 @@ import {
   FiLayers,
   FiHome,
   FiUsers,
-  FiDownload
+  FiDownload,
+  FiMessageCircle,
+  FiSend
 } from 'react-icons/fi'
 
 export default function SellerDashboard() {
@@ -66,6 +69,7 @@ export default function SellerDashboard() {
   const [orderMessages, setOrderMessages] = useState<Record<string, any[]>>({})
   const [messageInputs, setMessageInputs] = useState<Record<string, string>>({})
   const [sendingMessage, setSendingMessage] = useState<string | null>(null)
+  const messagesEndRefs = React.useRef<Record<string, HTMLDivElement | null>>({})
   const user = getItem('user') ? JSON.parse(getItem('user') as string) : null
  
   const cardBg = useColorModeValue('white', 'gray.900')
@@ -74,6 +78,15 @@ export default function SellerDashboard() {
   const navBg = useColorModeValue('white', 'gray.900')
   const borderColor = useColorModeValue('gray.200', 'gray.700')
   const bgLight = useColorModeValue('gray.50', 'gray.800')
+  
+  // Messaging colors
+  const msgBgSeller = useColorModeValue('blue.500', 'blue.600')
+  const msgBgBuyer = useColorModeValue('gray.200', 'gray.600')
+  const msgTextSeller = useColorModeValue('white', 'white')
+  const msgTextBuyer = useColorModeValue('gray.900', 'gray.100')
+  const inputBg = useColorModeValue('white', 'gray.700')
+  const messagingBg = useColorModeValue('gray.50', 'gray.900')
+  const messageContainerBg = useColorModeValue('white', 'gray.800')
 
   useEffect(() => {
     let mounted = true
@@ -106,6 +119,13 @@ export default function SellerDashboard() {
       mounted = false
     }
   }, [])
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    Object.values(messagesEndRefs.current).forEach((el) => {
+      if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 0)
+    })
+  }, [orderMessages])
 
   async function handleDelete(id: string) {
     if (!confirm('Supprimer ce produit ?')) return
@@ -732,60 +752,132 @@ export default function SellerDashboard() {
                             </Box>
 
                             {/* MESSAGING SECTION */}
-                            <Box borderTopWidth="1px" borderTopColor={borderColor} pt={3}>
+                            <Box mt={4} pt={3}>
                               <Button
-                                size="xs"
+                                size="sm"
                                 variant="ghost"
                                 colorScheme="blue"
                                 w="100%"
+                                leftIcon={<Icon as={FiMessageCircle} />}
                                 onClick={() => handleToggleMessages(o.id)}
-                                fontSize="xs"
+                                fontSize="sm"
+                                fontWeight="600"
+                                justifyContent="flex-start"
                               >
-                                💬 {showMessages === o.id ? 'Masquer' : 'Afficher'} messages
+                                💬 {showMessages === o.id ? 'Masquer les messages' : 'Afficher les messages'}
                               </Button>
+                              
                               {showMessages === o.id && (
-                                <VStack spacing={2} mt={2} align="stretch">
-                                  <Box maxH="200px" overflowY="auto" borderWidth="1px" borderRadius="md" borderColor={borderColor} p={2}>
+                                <Box mt={3} borderRadius="lg" bg={messagingBg} p={3} boxShadow="inset 0 2px 4px rgba(0,0,0,0.05)">
+                                  {/* Messages Container */}
+                                  <Box 
+                                    maxH="300px" 
+                                    overflowY="auto" 
+                                    mb={3}
+                                    borderRadius="md"
+                                    bg={messageContainerBg}
+                                    p={3}
+                                    borderWidth="1px"
+                                    borderColor={borderColor}
+                                    css={{
+                                      '&::-webkit-scrollbar': {
+                                        width: '6px',
+                                      },
+                                      '&::-webkit-scrollbar-track': {
+                                        background: 'transparent',
+                                      },
+                                      '&::-webkit-scrollbar-thumb': {
+                                        background: '#cbd5e0',
+                                        borderRadius: '3px',
+                                      },
+                                      '&::-webkit-scrollbar-thumb:hover': {
+                                        background: '#a0aec0',
+                                      },
+                                    }}
+                                  >
                                     {orderMessages[o.id as string]?.length === 0 ? (
-                                      <Text fontSize="xs" color={textMuted} textAlign="center">Aucun message</Text>
+                                      <Box textAlign="center" py={8}>
+                                        <Text fontSize="sm" color={textMuted}>
+                                          📭 Aucun message pour le moment
+                                        </Text>
+                                      </Box>
                                     ) : (
-                                      <VStack spacing={1} align="stretch">
-                                        {orderMessages[o.id as string]?.map((msg: any) => (
-                                          <Box key={msg.id} bg={msg.sender_type === 'seller' ? 'blue.50' : 'gray.100'} p={2} borderRadius="md">
-                                            <Text fontSize="xs" fontWeight="600">{msg.sender_type === 'seller' ? 'Vous' : 'Client'}</Text>
-                                            <Text fontSize="xs">{msg.message}</Text>
-                                            <Text fontSize="xs" color={textMuted}>
-                                              {new Date(msg.created_at).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}
-                                            </Text>
-                                          </Box>
-                                        ))}
+                                      <VStack spacing={2} align="stretch">
+                                        {orderMessages[o.id as string]?.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()).map((msg: any, idx: number) => {
+                                          const isSeller = msg.sender_type === 'seller'
+                                          const isLast = idx === (orderMessages[o.id as string]?.length ?? 0) - 1
+                                          return (
+                                            <Box
+                                              key={msg.id}
+                                              ref={(el) => {
+                                                if (isLast && el) messagesEndRefs.current[o.id] = el
+                                              }}
+                                              display="flex"
+                                              justifyContent={isSeller ? 'flex-end' : 'flex-start'}
+                                            >
+                                              <Box
+                                                maxW="85%"
+                                                bg={isSeller ? msgBgSeller : msgBgBuyer}
+                                                color={isSeller ? msgTextSeller : msgTextBuyer}
+                                                px={3}
+                                                py={2}
+                                                borderRadius={isSeller ? "lg 0 lg lg" : "0 lg lg lg"}
+                                                boxShadow="sm"
+                                              >
+                                                <Text fontSize="xs" fontWeight="600" opacity="0.8" mb={1}>
+                                                  {isSeller ? '🏪 Vous' : '👤 Client'}
+                                                </Text>
+                                                <Text fontSize="sm" wordBreak="break-word">
+                                                  {msg.message}
+                                                </Text>
+                                                <Text 
+                                                  fontSize="xs" 
+                                                  opacity="0.7" 
+                                                  mt={1}
+                                                >
+                                                  {new Date(msg.created_at).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}
+                                                </Text>
+                                              </Box>
+                                            </Box>
+                                          )
+                                        })}
                                       </VStack>
                                     )}
                                   </Box>
-                                  <HStack spacing={1} align="stretch">
-                                    <input
-                                      type="text"
-                                      placeholder="Votre message..."
-                                      style={{
-                                        flex: 1,
-                                        padding: '6px 8px',
-                                        borderRadius: '4px',
-                                        border: `1px solid ${borderColor}`,
-                                        fontSize: '12px'
+                                  
+                                  {/* Input Area */}
+                                  <HStack spacing={2} align="stretch">
+                                    <Input
+                                      placeholder="Écrivez un message..."
+                                      size="sm"
+                                      bg={inputBg}
+                                      borderColor={borderColor}
+                                      borderWidth="1px"
+                                      _focus={{
+                                        borderColor: 'blue.500',
+                                        boxShadow: '0 0 0 1px blue.500',
                                       }}
                                       value={messageInputs[o.id as string] || ''}
                                       onChange={(e) => setMessageInputs(prev => ({...prev, [o.id as string]: e.target.value}))}
+                                      onKeyPress={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                          e.preventDefault()
+                                          handleSendMessage(o.id)
+                                        }
+                                      }}
                                     />
                                     <Button
-                                      size="xs"
+                                      size="sm"
                                       colorScheme="blue"
                                       onClick={() => handleSendMessage(o.id)}
                                       isLoading={sendingMessage === o.id}
+                                      leftIcon={<Icon as={FiSend} />}
+                                      borderRadius="md"
                                     >
                                       Envoyer
                                     </Button>
                                   </HStack>
-                                </VStack>
+                                </Box>
                               )}
                             </Box>
 

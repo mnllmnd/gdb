@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Container, Heading, Stack, Box, Text, Spinner, Button, useToast, HStack, Badge, VStack, Icon, useColorModeValue } from '@chakra-ui/react'
-import { FiMessageCircle } from 'react-icons/fi'
+import { Container, Heading, Stack, Box, Text, Spinner, Button, useToast, HStack, Badge, VStack, Icon, useColorModeValue, Input, Divider } from '@chakra-ui/react'
+import { FiMessageCircle, FiSend } from 'react-icons/fi'
 import api from '../services/api'
 import { getItem } from '../utils/localAuth'
 import mapOrderStatus from '../utils/status'
@@ -12,10 +12,25 @@ export default function MyOrders() {
   const [orderMessages, setOrderMessages] = useState<Record<string, any[]>>({})
   const [messageInputs, setMessageInputs] = useState<Record<string, string>>({})
   const [sendingMessage, setSendingMessage] = useState<string | null>(null)
+  const messagesEndRefs = React.useRef<Record<string, HTMLDivElement | null>>({})
   const toast = useToast()
+  
+  // Color scheme for messaging
   const borderColor = useColorModeValue('gray.200', 'gray.700')
   const bgLight = useColorModeValue('gray.50', 'gray.800')
   const textMuted = useColorModeValue('gray.600', 'gray.400')
+  const msgBgUser = useColorModeValue('blue.500', 'blue.600')
+  const msgBgVendor = useColorModeValue('gray.200', 'gray.600')
+  const msgTextUser = useColorModeValue('white', 'white')
+  const msgTextVendor = useColorModeValue('gray.900', 'gray.100')
+  const inputBg = useColorModeValue('white', 'gray.700')
+  const messagingBg = useColorModeValue('gray.50', 'gray.900')
+  const messageContainerBg = useColorModeValue('white', 'gray.800')
+  const cardBg = useColorModeValue('white', 'gray.800')
+  const cardBorder = useColorModeValue('gray.200', 'gray.700')
+  const titleColor = useColorModeValue('black', 'white')
+  const productColor = useColorModeValue('gray.700', 'gray.300')
+  const dateColor = useColorModeValue('gray.500', 'gray.400')
 
   // use mapOrderStatus to show a French label and a Chakra color
 
@@ -29,6 +44,13 @@ export default function MyOrders() {
     }
     return () => {}
   }, [])
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    Object.values(messagesEndRefs.current).forEach((el) => {
+      if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 0)
+    })
+  }, [orderMessages])
 
   async function loadOrders() {
     setLoading(true)
@@ -157,11 +179,12 @@ export default function MyOrders() {
     return (
       <Box
         key={o.id}
-        bg="white"
+        bg={cardBg}
         borderRadius="lg"
         p={{ base: 3, md: 4 }}
         boxShadow="sm"
         borderWidth="1px"
+        borderColor={cardBorder}
       >
         <Stack
           direction={{ base: "column", md: "row" }}
@@ -194,7 +217,7 @@ export default function MyOrders() {
           <Box flex="1" width="100%">
             {/* TITRE + STATUT */}
             <HStack justify="space-between" align="start" mb={1}>
-              <Text fontWeight="700" fontSize={{ base: "md", md: "lg" }}>
+              <Text fontWeight="700" fontSize={{ base: "md", md: "lg" }} color={titleColor}>
                 Commande
               </Text>
 
@@ -220,7 +243,7 @@ export default function MyOrders() {
             <Text
               mt={2}
               fontSize="sm"
-              color="gray.700"
+              color={productColor}
               whiteSpace="normal"
               wordBreak="break-word"
             >
@@ -245,7 +268,7 @@ export default function MyOrders() {
 
             {/* DATE */}
             {o.created_at && (
-              <Text fontSize="xs" color="gray.500" mt={1}>
+              <Text fontSize="xs" color={dateColor} mt={1}>
                 Le {new Date(o.created_at).toLocaleString()}
               </Text>
             )}
@@ -278,61 +301,132 @@ export default function MyOrders() {
             )}
 
             {/* MESSAGING SECTION */}
-            <Box mt={4} borderTopWidth="1px" borderTopColor={borderColor} pt={3}>
+            <Box mt={4} pt={3}>
               <Button
-                size="xs"
+                size="sm"
                 variant="ghost"
                 colorScheme="blue"
                 w="100%"
                 leftIcon={<Icon as={FiMessageCircle} />}
                 onClick={() => handleToggleMessages(o.id)}
-                fontSize="xs"
+                fontSize="sm"
+                fontWeight="600"
+                justifyContent="flex-start"
               >
-                💬 {showMessages === o.id ? 'Masquer' : 'Afficher'} messages
+                💬 {showMessages === o.id ? 'Masquer les messages' : 'Afficher les messages'}
               </Button>
+              
               {showMessages === o.id && (
-                <VStack spacing={2} mt={2} align="stretch">
-                  <Box maxH="250px" overflowY="auto" borderWidth="1px" borderRadius="md" borderColor={borderColor} p={2}>
+                <Box mt={3} borderRadius="lg" bg={messagingBg} p={3} boxShadow="inset 0 2px 4px rgba(0,0,0,0.05)">
+                  {/* Messages Container */}
+                  <Box 
+                    maxH="300px" 
+                    overflowY="auto" 
+                    mb={3}
+                    borderRadius="md"
+                    bg={messageContainerBg}
+                    p={3}
+                    borderWidth="1px"
+                    borderColor={borderColor}
+                    css={{
+                      '&::-webkit-scrollbar': {
+                        width: '6px',
+                      },
+                      '&::-webkit-scrollbar-track': {
+                        background: 'transparent',
+                      },
+                      '&::-webkit-scrollbar-thumb': {
+                        background: '#cbd5e0',
+                        borderRadius: '3px',
+                      },
+                      '&::-webkit-scrollbar-thumb:hover': {
+                        background: '#a0aec0',
+                      },
+                    }}
+                  >
                     {orderMessages[o.id as string]?.length === 0 ? (
-                      <Text fontSize="xs" color={textMuted} textAlign="center">Aucun message</Text>
+                      <Box textAlign="center" py={8}>
+                        <Text fontSize="sm" color={textMuted}>
+                          📭 Aucun message pour le moment
+                        </Text>
+                      </Box>
                     ) : (
-                      <VStack spacing={1} align="stretch">
-                        {orderMessages[o.id as string]?.map((msg: any) => (
-                          <Box key={msg.id} bg={msg.sender_type === 'buyer' ? 'blue.50' : 'gray.100'} p={2} borderRadius="md">
-                            <Text fontSize="xs" fontWeight="600">{msg.sender_type === 'buyer' ? 'Vous' : 'Vendeur'}</Text>
-                            <Text fontSize="xs">{msg.message}</Text>
-                            <Text fontSize="xs" color={textMuted}>
-                              {new Date(msg.created_at).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}
-                            </Text>
-                          </Box>
-                        ))}
+                      <VStack spacing={2} align="stretch">
+                        {orderMessages[o.id as string]?.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()).map((msg: any, idx: number) => {
+                          const isUser = msg.sender_type === 'buyer'
+                          const isLast = idx === (orderMessages[o.id as string]?.length ?? 0) - 1
+                          return (
+                            <Box
+                              key={msg.id}
+                              ref={(el) => {
+                                if (isLast && el) messagesEndRefs.current[o.id] = el
+                              }}
+                              display="flex"
+                              justifyContent={isUser ? 'flex-end' : 'flex-start'}
+                            >
+                              <Box
+                                maxW="85%"
+                                bg={isUser ? msgBgUser : msgBgVendor}
+                                color={isUser ? msgTextUser : msgTextVendor}
+                                px={3}
+                                py={2}
+                                borderRadius={isUser ? "lg 0 lg lg" : "0 lg lg lg"}
+                                boxShadow="sm"
+                              >
+                                <Text fontSize="xs" fontWeight="600" opacity="0.8" mb={1}>
+                                  {isUser ? '👤 Vous' : '🏪 Vendeur'}
+                                </Text>
+                                <Text fontSize="sm" wordBreak="break-word">
+                                  {msg.message}
+                                </Text>
+                                <Text 
+                                  fontSize="xs" 
+                                  opacity="0.7" 
+                                  mt={1}
+                                >
+                                  {new Date(msg.created_at).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}
+                                </Text>
+                              </Box>
+                            </Box>
+                          )
+                        })}
                       </VStack>
                     )}
                   </Box>
-                  <HStack spacing={1} align="stretch">
-                    <input
-                      type="text"
-                      placeholder="Votre message..."
-                      style={{
-                        flex: 1,
-                        padding: '6px 8px',
-                        borderRadius: '4px',
-                        border: `1px solid ${borderColor}`,
-                        fontSize: '12px'
+                  
+                  {/* Input Area */}
+                  <HStack spacing={2} align="stretch">
+                    <Input
+                      placeholder="Écrivez un message..."
+                      size="sm"
+                      bg={inputBg}
+                      borderColor={borderColor}
+                      borderWidth="1px"
+                      _focus={{
+                        borderColor: 'blue.500',
+                        boxShadow: '0 0 0 1px blue.500',
                       }}
                       value={messageInputs[o.id as string] || ''}
                       onChange={(e) => setMessageInputs(prev => ({...prev, [o.id as string]: e.target.value}))}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault()
+                          handleSendMessage(o.id)
+                        }
+                      }}
                     />
                     <Button
-                      size="xs"
+                      size="sm"
                       colorScheme="blue"
                       onClick={() => handleSendMessage(o.id)}
                       isLoading={sendingMessage === o.id}
+                      leftIcon={<Icon as={FiSend} />}
+                      borderRadius="md"
                     >
                       Envoyer
                     </Button>
                   </HStack>
-                </VStack>
+                </Box>
               )}
             </Box>
           </Box>

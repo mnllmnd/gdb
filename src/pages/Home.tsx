@@ -29,6 +29,7 @@ import HeroProductStrip from '../components/HeroProductStrip'
 import { Link as RouterLink, useLocation, useNavigationType } from 'react-router-dom'
 import { usePageState } from '../components/ScrollRestoration'
 import api from '../services/api'
+import ProductCardsSection from '../components/ProductCardsSection';
 
 interface Product {
   id: number

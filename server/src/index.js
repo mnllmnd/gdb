@@ -53,8 +53,10 @@ const allowedOrigins = [
   process.env.CLIENT_URL,     // ex: http://localhost:3000 (local)
   "http://localhost:3000",
   "http://localhost:5173",
+  "http://localhost:5174",
   "http://127.0.0.1:3000",
-  "http://127.0.0.1:5173"
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174"
 ].filter(Boolean);
 
 console.log("🔒 Allowed CORS origins:", allowedOrigins);
