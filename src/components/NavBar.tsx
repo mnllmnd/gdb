@@ -64,6 +64,9 @@ export default function NavBar() {
   const hoverBg = useColorModeValue('gray.50', 'gray.800')
   const menuBg = useColorModeValue('white', 'gray.900')
   const menuBorder = useColorModeValue('gray.200', 'gray.700')
+  const signupBgLight = useColorModeValue('gray.900', 'white')
+  const signupBgDark = useColorModeValue('white', 'gray.900')
+  const signupBgHoverLight = useColorModeValue('gray.800', 'gray.100')
   const { colorMode, toggleColorMode } = useColorMode()
   const navigate = useNavigate()
   const toast = useToast()
@@ -593,9 +596,9 @@ const LogoutIcon = () => (
                     to="/signup"
                     variant="solid"
                     size="sm"
-                    bg={useColorModeValue('gray.900', 'white')}
-                    color={useColorModeValue('white', 'gray.900')}
-                    _hover={{ bg: useColorModeValue('gray.800', 'gray.100') }}
+                    bg={signupBgLight}
+                    color={signupBgDark}
+                    _hover={{ bg: signupBgHoverLight }}
                     transition="all 0.2s ease"
                     fontWeight="normal"
                     borderRadius="none"
@@ -780,8 +783,9 @@ const LogoutIcon = () => (
                     onClick={onClose} 
                     size="sm" 
                     variant="solid"
-                   
-                    _hover={{ bg: 'gray.700' }}
+                    bg={signupBgLight}
+                    color={signupBgDark}
+                    _hover={{ bg: signupBgHoverLight }}
                     justifyContent="flex-start"
                     py={3}
                     borderRadius="none"

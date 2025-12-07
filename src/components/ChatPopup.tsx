@@ -142,7 +142,7 @@ export const ChatPopup = () => {
   const userMessageTextColor = useColorModeValue('white', 'white');
   const mutedTextColor = useColorModeValue('gray.500', 'gray.400');
   const cardBg = useColorModeValue('gray.50', 'gray.800');
-  const mine = useColorModeValue('orange.500', 'gray.900');
+  const mine = useColorModeValue('maroon.500', 'gray.900');
   const inputBg = useColorModeValue('white', 'gray.800');
   const inputBorder = useColorModeValue('gray.300', 'gray.600');
   const hoverBg = useColorModeValue('gray.50', 'gray.900');
@@ -151,8 +151,8 @@ export const ChatPopup = () => {
   const productCardBg = useColorModeValue('white', 'gray.800');
   const productCardBorder = useColorModeValue('gray.200', 'gray.600');
   const productCardHover = useColorModeValue('black', 'gray.900');
-  const productPriceBg = useColorModeValue('gray.50', 'gray.900');
-  const productPriceColor = useColorModeValue('black', 'white');
+  const msgsBgGradient1 = useColorModeValue('rgba(255,255,255,0.95)', 'rgba(31,41,55,0.95)');
+  const msgsBgGradient2 = useColorModeValue('rgba(249,250,251,0.95)', 'rgba(17,24,39,0.95)');
   const loadingBg = useColorModeValue('gray.50', 'gray.900');
   
   const loadInitialMessages = (): ChatMessage[] => {
@@ -167,6 +167,7 @@ export const ChatPopup = () => {
       const parsed = JSON.parse(raw)
       return parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }))
     } catch (err) {
+      console.error('Failed to load chat history:', err);
       return [{ 
         from: 'bot', 
         text: 'Bonjour. Je suis votre assistant. Que recherchez-vous ?', 
@@ -196,7 +197,10 @@ export const ChatPopup = () => {
   useEffect(() => {
     try {
       localStorage.setItem(PREF_KEY, JSON.stringify({ budget: budgetFilter, inStockOnly }));
-    } catch (e) {}
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to save preferences:', e);
+    }
   }, [budgetFilter, inStockOnly]);
   const [recommendations, setRecommendations] = useState<Product[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -472,6 +476,8 @@ export const ChatPopup = () => {
       }
 
     } catch (err) {
+      console.error('Search error:', err);
+      void 0; // Handle error gracefully
       const errorMessage: ChatMessage = {
         from: 'bot',
         text: "Désolé, réessayez.",
@@ -488,7 +494,7 @@ export const ChatPopup = () => {
     const stopWords = ['je', 'tu', 'il', 'nous', 'vous', 'ils', 'cherche', 'veux', 'voudrais', 'recherche', 'acheter', 'trouver', 'un', 'une', 'des', 'le', 'la', 'les', 'et', 'ou', 'mais', 'pour', 'par', 'avec', 'sans', 'dans', 'sur', 'de', 'à', 'en', 'par', 'exemple', 'je', 'c\'est', 'est', 'ça', 'c', 'ce', 'cet', 'cette', 'ces', 'va', 'vais', 'avoir', 'ai', 'sois', 'soit', 'être'];
     
     const words = message.toLowerCase()
-      .split(/[\s,;:\.!\?]+/)
+      .split(/[\s,;:!?]+/)
       .filter(word => {
         // Garder les mots de plus de 2 caractères et pas dans stopWords
         return word.length > 2 && !stopWords.includes(word);
@@ -525,7 +531,12 @@ export const ChatPopup = () => {
       type: 'text' as const 
     } as ChatMessage]
     setMessages(initial);
-    try { localStorage.removeItem(STORAGE_KEY) } catch(e){}
+    try { 
+      localStorage.removeItem(STORAGE_KEY) 
+    } catch(e){
+      // eslint-disable-next-line no-console
+      console.error('Failed to clear chat storage:', e);
+    }
     setRecommendations([]);
   }, []);
 
@@ -681,15 +692,32 @@ export const ChatPopup = () => {
           </HStack>
         </Flex>
 
-        {/* Messages - Area */}
+        {/* Messages - Area with Background */}
         <Box 
           flex="1" 
           p={3} 
           overflowY="auto" 
-          bg={bgColor}
+          bgImage={`linear-gradient(135deg, ${msgsBgGradient1} 0%, ${msgsBgGradient2} 100%), url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><rect fill="%23f3f4f6" width="60" height="60"/><circle cx="30" cy="30" r="20" fill="%23e5e7eb" opacity="0.3"/></svg>')`}
+          bgSize="cover"
+          bgPosition="center"
           width="100%"
+          css={{
+            '&::-webkit-scrollbar': {
+              width: '6px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: 'transparent',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: '#cbd5e0',
+              borderRadius: '3px',
+            },
+            '&::-webkit-scrollbar-thumb:hover': {
+              background: '#a0aec0',
+            },
+          }}
         >
-          <VStack spacing={4} align="stretch">
+          <VStack spacing={3} align="stretch">
             {messages.map((msg, i) => (
               <Box
                 key={i}
@@ -699,63 +727,32 @@ export const ChatPopup = () => {
               <Flex align="flex-end" gap={3} direction={msg.from === 'user' ? 'row-reverse' : 'row'}>
                 {msg.from === 'bot' && (
                   <Box 
-                    width="24px" 
-                    height="24px" 
+                    width="32px" 
+                    height="32px" 
                     borderRadius="full" 
-                    bg={cardBg}
+                    bgGradient="linear(135deg, #10b981 0%, #059669 100%)"
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
                     flexShrink={0}
-                    border="1px solid"
-                    borderColor={borderColor}
+                    boxShadow="0 2px 8px rgba(16, 185, 129, 0.3)"
+                    border="2px solid white"
                   >
-                    <Text fontSize="10px" color={mutedTextColor}>AI</Text>
+                    <Text fontSize="14px" color="white" fontWeight="bold"></Text>
                   </Box>
                 )}
                 
                 <Box
                   bg={msg.from === 'user' ? mine : cardBg}
-                  color={msg.from === 'user' ? userMessageTextColor : 'white'}
+                  color={msg.from === 'user' ? userMessageTextColor : 'inherit'}
                   px={4}
                   py={3}
-                  borderRadius="2px"
+                  borderRadius="16px"
                   position="relative"
                   border={msg.from === 'user' ? 'none' : '1px solid'}
                   borderColor={msg.from === 'user' ? 'transparent' : borderColor}
-                  _before={msg.from === 'user' ? {
-                    content: '""',
-                    position: 'absolute',
-                    right: '-8px',
-                    bottom: '0',
-                    width: '0',
-                    height: '0',
-                    borderLeft: `8px solid ${buttonBg}`,
-                    borderTop: '8px solid transparent',
-                    borderBottom: '8px solid transparent'
-                  } : {
-                    content: '""',
-                    position: 'absolute',
-                    left: '-8px',
-                    bottom: '0',
-                    width: '0',
-                    height: '0',
-                    borderRight: `8px solid ${cardBg}`,
-                    borderTop: '8px solid transparent',
-                    borderBottom: '8px solid transparent'
-                  }}
-                  _after={msg.from === 'user' ? {
-                    content: '""',
-                    position: 'absolute',
-                    left: '-1px',
-                    top: '-1px',
-                    right: '-1px',
-                    bottom: '-1px',
-                    border: '1px solid',
-                    borderColor: buttonBg,
-                    borderRadius: '2px',
-                    pointerEvents: 'none'
-                  } : {}}
+                  boxShadow={msg.from === 'user' ? '0 2px 8px rgba(249, 115, 22, 0.2)' : '0 2px 8px rgba(0,0,0,0.1)'}
+                  maxWidth="80%"
                 >
                   <Text fontSize="14px" lineHeight="1.5">
                     {msg.text}
@@ -763,8 +760,6 @@ export const ChatPopup = () => {
                   
                   {msg.type === 'recommendations' && msg.products && (
                     <VStack spacing={3} mt={4}>
-                      {/* Applied filters summary */}
-                      {/* Filters summary moved to persistent bar above the input (see below) */}
                       {msg.products.map((product, idx) => {
                         const imageUrl = getProductImageUrl(product);
                         return (
@@ -775,10 +770,12 @@ export const ChatPopup = () => {
                             p={3}
                             bg={productCardBg}
                             cursor="pointer"
-                            transition="all 0.2s"
+                            transition="all 0.3s"
+                            borderRadius="12px"
                             _hover={{
                               borderColor: productCardHover,
-                              transform: 'translateX(1px)'
+                              transform: 'translateY(-2px)',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
                             }}
                             onClick={() => window.open(`${typeof window !== 'undefined' ? window.location.origin : ''}/products/${product.id}`, '_blank')}
                           >
@@ -794,6 +791,7 @@ export const ChatPopup = () => {
                                 overflow="hidden"
                                 border="1px solid"
                                 borderColor={borderColor}
+                                borderRadius="8px"
                               >
                                 {imageUrl ? (
                                   <Image 
@@ -820,7 +818,7 @@ export const ChatPopup = () => {
                               <Box flex="1" minWidth="0">
                                 <Text 
                                   fontSize="13px" 
-                                  fontWeight="500" 
+                                  fontWeight="600" 
                                   mb={1}
                                   noOfLines={1}
                                   color={textColor}
@@ -829,17 +827,17 @@ export const ChatPopup = () => {
                                 </Text>
                                 
                                 <Box 
-                                  bg={productPriceBg}
+                                  bg="linear-gradient(135deg, #10b981 0%, #059669 100%)"
                                   display="inline-block"
                                   px={2}
                                   py={1}
                                   mb={1}
-                                  borderRadius="1px"
+                                  borderRadius="6px"
                                 >
                                   <Text 
-                                    fontSize="15px" 
-                                    fontWeight="600" 
-                                    color={productPriceColor}
+                                    fontSize="13px" 
+                                    fontWeight="700" 
+                                    color="white"
                                   >
                                     {new Intl.NumberFormat('fr-FR', { 
                                       maximumFractionDigits: 0 
@@ -852,6 +850,7 @@ export const ChatPopup = () => {
                                   color={mutedTextColor}
                                   letterSpacing="0.3px"
                                   textTransform="uppercase"
+                                  fontWeight="500"
                                 >
                                   {product.category}
                                 </Text>
@@ -865,7 +864,7 @@ export const ChatPopup = () => {
                   
                   <Text 
                     fontSize="11px" 
-                    color={msg.from === 'user' ? 'gray.400' : mutedTextColor}
+                    color={msg.from === 'user' ? 'rgba(255,255,255,0.7)' : mutedTextColor}
                     mt={2}
                     textAlign={msg.from === 'user' ? 'right' : 'left'}
                   >
@@ -878,18 +877,18 @@ export const ChatPopup = () => {
                 
                 {msg.from === 'user' && (
                   <Box 
-                    width="30px" 
-                    height="30px" 
+                    width="32px" 
+                    height="32px" 
                     borderRadius="full" 
-                    bg={mine}
+                    bgGradient="linear(135deg, #f97316 0%, #ea580c 100%)"
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
                     flexShrink={0}
-                    border="1px solid"
-                    borderColor={borderColor}
+                    boxShadow="0 2px 8px rgba(249, 115, 22, 0.3)"
+                    border="2px solid white"
                   >
-                    <Text fontSize="8px" color="white">VOUS</Text>
+                    <Text fontSize="14px"></Text>
                   </Box>
                 )}
               </Flex>
@@ -900,52 +899,42 @@ export const ChatPopup = () => {
             <Box alignSelf="flex-start" maxWidth="90%">
               <Flex align="flex-end" gap={3}>
                 <Box 
-                  width="24px" 
-                  height="24px" 
+                  width="32px" 
+                  height="32px" 
                   borderRadius="full" 
-                  bg={loadingBg}
+                  bgGradient="linear(135deg, #10b981 0%, #059669 100%)"
                   display="flex"
                   alignItems="center"
                   justifyContent="center"
                   flexShrink={0}
-                  border="1px solid"
-                  borderColor={borderColor}
+                  boxShadow="0 2px 8px rgba(16, 185, 129, 0.3)"
+                  border="2px solid white"
                 >
-                  <Text fontSize="10px" color={mutedTextColor}>AI</Text>
+                  <Text fontSize="14px" color="white" fontWeight="bold">🤖</Text>
                 </Box>
                 <Box 
                   bg={loadingBg} 
                   px={4} 
                   py={3} 
-                  borderRadius="2px"
+                  borderRadius="16px"
                   position="relative"
                   border="1px solid"
                   borderColor={borderColor}
-                  _before={{
-                    content: '""',
-                    position: 'absolute',
-                    left: '-8px',
-                    bottom: '0',
-                    width: '0',
-                    height: '0',
-                    borderRight: `8px solid ${loadingBg}`,
-                    borderTop: '8px solid transparent',
-                    borderBottom: '8px solid transparent'
-                  }}
+                  boxShadow="0 2px 8px rgba(0,0,0,0.1)"
                 >
                   <Box display="flex" gap={1}>
                     {[1, 2, 3].map((dot) => (
                       <Box
                         key={dot}
-                        width="4px"
-                        height="4px"
+                        width="6px"
+                        height="6px"
                         borderRadius="full"
-                        bg={mutedTextColor}
+                        bgGradient="linear(135deg, #10b981 0%, #059669 100%)"
                         animation={`pulse 1.5s infinite ${dot * 0.2}s`}
                         sx={{
                           '@keyframes pulse': {
-                            '0%, 100%': { opacity: 0.4 },
-                            '50%': { opacity: 1 }
+                            '0%, 100%': { opacity: 0.4, transform: 'scale(0.8)' },
+                            '50%': { opacity: 1, transform: 'scale(1)' }
                           }
                         }}
                       />

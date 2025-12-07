@@ -70,6 +70,7 @@ export default function SellerDashboard() {
   const [messageInputs, setMessageInputs] = useState<Record<string, string>>({})
   const [sendingMessage, setSendingMessage] = useState<string | null>(null)
   const messagesEndRefs = React.useRef<Record<string, HTMLDivElement | null>>({})
+  const pollingIntervalRef = React.useRef<NodeJS.Timeout | null>(null)
   const user = getItem('user') ? JSON.parse(getItem('user') as string) : null
  
   const cardBg = useColorModeValue('white', 'gray.900')
@@ -80,13 +81,15 @@ export default function SellerDashboard() {
   const bgLight = useColorModeValue('gray.50', 'gray.800')
   
   // Messaging colors
-  const msgBgSeller = useColorModeValue('blue.500', 'blue.600')
+  const msgBgSeller = useColorModeValue('orange.500', 'orange.600')
   const msgBgBuyer = useColorModeValue('gray.200', 'gray.600')
   const msgTextSeller = useColorModeValue('white', 'white')
   const msgTextBuyer = useColorModeValue('gray.900', 'gray.100')
   const inputBg = useColorModeValue('white', 'gray.700')
   const messagingBg = useColorModeValue('gray.50', 'gray.900')
   const messageContainerBg = useColorModeValue('white', 'gray.800')
+  const msgsBgGradient1 = useColorModeValue('rgba(255,255,255,0.95)', 'rgba(31,41,55,0.95)')
+  const msgsBgGradient2 = useColorModeValue('rgba(249,250,251,0.95)', 'rgba(17,24,39,0.95)')
 
   useEffect(() => {
     let mounted = true
@@ -126,6 +129,40 @@ export default function SellerDashboard() {
       if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 0)
     })
   }, [orderMessages])
+
+  // Auto-refresh messages when a chat is open (polling every 2 seconds)
+  useEffect(() => {
+    if (!showMessages) {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current)
+        pollingIntervalRef.current = null
+      }
+      return
+    }
+
+    const pollMessages = async () => {
+      try {
+        const token = getItem('token')
+        if (!token || !showMessages) return
+        const msgs = await api.orders.getMessages(showMessages, token)
+        setOrderMessages(prev => ({...prev, [showMessages]: msgs || []}))
+      } catch (err) {
+        // Silently fail on polling errors
+        console.debug('Failed to poll messages', err)
+      }
+    }
+
+    // Poll immediately and then every 2 seconds
+    pollMessages()
+    pollingIntervalRef.current = setInterval(pollMessages, 2000)
+
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current)
+        pollingIntervalRef.current = null
+      }
+    }
+  }, [showMessages])
 
   async function handleDelete(id: string) {
     if (!confirm('Supprimer ce produit ?')) return
@@ -768,17 +805,17 @@ export default function SellerDashboard() {
                               </Button>
                               
                               {showMessages === o.id && (
-                                <Box mt={3} borderRadius="lg" bg={messagingBg} p={3} boxShadow="inset 0 2px 4px rgba(0,0,0,0.05)">
-                                  {/* Messages Container */}
+                                <Box mt={3} borderRadius="lg" p={3} boxShadow="inset 0 2px 4px rgba(0,0,0,0.05)">
+                                  {/* Messages Container with gradient background */}
                                   <Box 
-                                    maxH="300px" 
+                                    maxH="350px" 
                                     overflowY="auto" 
                                     mb={3}
-                                    borderRadius="md"
-                                    bg={messageContainerBg}
+                                    borderRadius="lg"
+                                    bgImage={`linear-gradient(135deg, ${msgsBgGradient1} 0%, ${msgsBgGradient2} 100%), url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><rect fill="%23f3f4f6" width="60" height="60"/><circle cx="10" cy="10" r="1" fill="%23e5e7eb"/><circle cx="25" cy="15" r="1.5" fill="%23e5e7eb"/><circle cx="40" cy="10" r="1" fill="%23e5e7eb"/><circle cx="55" cy="20" r="1" fill="%23e5e7eb"/><circle cx="15" cy="35" r="1.5" fill="%23e5e7eb"/><circle cx="30" cy="40" r="1" fill="%23e5e7eb"/><circle cx="50" cy="45" r="1" fill="%23e5e7eb"/><circle cx="20" cy="55" r="1.5" fill="%23e5e7eb"/></svg>')`}
+                                    bgSize="cover"
+                                    bgPosition="center"
                                     p={3}
-                                    borderWidth="1px"
-                                    borderColor={borderColor}
                                     css={{
                                       '&::-webkit-scrollbar': {
                                         width: '6px',
@@ -802,7 +839,7 @@ export default function SellerDashboard() {
                                         </Text>
                                       </Box>
                                     ) : (
-                                      <VStack spacing={2} align="stretch">
+                                      <VStack spacing={3} align="stretch">
                                         {orderMessages[o.id as string]?.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()).map((msg: any, idx: number) => {
                                           const isSeller = msg.sender_type === 'seller'
                                           const isLast = idx === (orderMessages[o.id as string]?.length ?? 0) - 1
@@ -814,30 +851,71 @@ export default function SellerDashboard() {
                                               }}
                                               display="flex"
                                               justifyContent={isSeller ? 'flex-end' : 'flex-start'}
+                                              alignItems="flex-end"
+                                              gap={2}
                                             >
-                                              <Box
-                                                maxW="85%"
-                                                bg={isSeller ? msgBgSeller : msgBgBuyer}
-                                                color={isSeller ? msgTextSeller : msgTextBuyer}
-                                                px={3}
-                                                py={2}
-                                                borderRadius={isSeller ? "lg 0 lg lg" : "0 lg lg lg"}
-                                                boxShadow="sm"
-                                              >
-                                                <Text fontSize="xs" fontWeight="600" opacity="0.8" mb={1}>
-                                                  {isSeller ? '🏪 Vous' : '👤 Client'}
-                                                </Text>
-                                                <Text fontSize="sm" wordBreak="break-word">
-                                                  {msg.message}
-                                                </Text>
-                                                <Text 
-                                                  fontSize="xs" 
-                                                  opacity="0.7" 
-                                                  mt={1}
+                                              {/* Buyer avatar */}
+                                              {!isSeller && (
+                                                <Box
+                                                  width="28px"
+                                                  height="28px"
+                                                  borderRadius="full"
+                                                  bgGradient="linear(135deg, #06b6d4 0%, #0891b2 100%)"
+                                                  boxShadow="0 2px 6px rgba(6, 182, 212, 0.3)"
+                                                  border="2px solid white"
+                                                  display="flex"
+                                                  alignItems="center"
+                                                  justifyContent="center"
+                                                  flexShrink={0}
                                                 >
-                                                  {new Date(msg.created_at).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}
-                                                </Text>
+                                                  <Text fontSize="14px" fontWeight="bold"></Text>
+                                                </Box>
+                                              )}
+                                              
+                                              <Box maxW="75%">
+                                                <Box
+                                                  bg={isSeller ? msgBgSeller : 'white'}
+                                                  color={isSeller ? msgTextSeller : msgTextBuyer}
+                                                  px={4}
+                                                  py={3}
+                                                  borderRadius="16px"
+                                                  boxShadow={isSeller ? '0 2px 8px rgba(249, 115, 22, 0.2)' : '0 2px 8px rgba(0, 0, 0, 0.08)'}
+                                                  borderWidth={!isSeller ? '1px' : 'none'}
+                                                  borderColor={!isSeller ? borderColor : undefined}
+                                                >
+                                                  <Text fontSize="xs" fontWeight="600" opacity="0.75" mb={1}>
+                                                    {isSeller ? ' Vous' : ' Client'}
+                                                  </Text>
+                                                  <Text fontSize="sm" wordBreak="break-word" fontWeight="500">
+                                                    {msg.message}
+                                                  </Text>
+                                                  <Text 
+                                                    fontSize="xs" 
+                                                    opacity="0.6" 
+                                                    mt={1.5}
+                                                  >
+                                                    {new Date(msg.created_at).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}
+                                                  </Text>
+                                                </Box>
                                               </Box>
+                                              
+                                              {/* Seller avatar */}
+                                              {isSeller && (
+                                                <Box
+                                                  width="28px"
+                                                  height="28px"
+                                                  borderRadius="full"
+                                                  bgGradient="linear(135deg, #f97316 0%, #ea580c 100%)"
+                                                  boxShadow="0 2px 6px rgba(249, 115, 22, 0.3)"
+                                                  border="2px solid white"
+                                                  display="flex"
+                                                  alignItems="center"
+                                                  justifyContent="center"
+                                                  flexShrink={0}
+                                                >
+                                                  <Text fontSize="14px" fontWeight="bold"></Text>
+                                                </Box>
+                                              )}
                                             </Box>
                                           )
                                         })}
@@ -846,16 +924,21 @@ export default function SellerDashboard() {
                                   </Box>
                                   
                                   {/* Input Area */}
-                                  <HStack spacing={2} align="stretch">
+                                  <HStack spacing={2} align="stretch" mt={3}>
                                     <Input
                                       placeholder="Écrivez un message..."
                                       size="sm"
                                       bg={inputBg}
                                       borderColor={borderColor}
                                       borderWidth="1px"
+                                      borderRadius="20px"
+                                      pl={4}
                                       _focus={{
-                                        borderColor: 'blue.500',
-                                        boxShadow: '0 0 0 1px blue.500',
+                                        borderColor: 'orange.400',
+                                        boxShadow: '0 0 0 1px var(--chakra-colors-orange-400)',
+                                      }}
+                                      _placeholder={{
+                                        color: textMuted,
                                       }}
                                       value={messageInputs[o.id as string] || ''}
                                       onChange={(e) => setMessageInputs(prev => ({...prev, [o.id as string]: e.target.value}))}
@@ -868,11 +951,15 @@ export default function SellerDashboard() {
                                     />
                                     <Button
                                       size="sm"
-                                      colorScheme="blue"
+                                      colorScheme="orange"
                                       onClick={() => handleSendMessage(o.id)}
                                       isLoading={sendingMessage === o.id}
                                       leftIcon={<Icon as={FiSend} />}
-                                      borderRadius="md"
+                                      borderRadius="20px"
+                                      boxShadow="0 2px 8px rgba(249, 115, 22, 0.2)"
+                                      _hover={{
+                                        boxShadow: '0 4px 12px rgba(249, 115, 22, 0.3)',
+                                      }}
                                     >
                                       Envoyer
                                     </Button>
