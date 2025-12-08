@@ -102,8 +102,8 @@ export const api = {
     login: (payload: any) => request('/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
     // get public user profile by userId
     profile: (userId: string) => request(`/auth/profile/${encodeURIComponent(userId)}`),
-    // update current user profile
-    updateMe: (payload: any, token?: string) => request('/auth/me', { method: 'PATCH', body: JSON.stringify(payload), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
+    // update user profile by userId
+    updateProfile: (userId: string, payload: any, token?: string) => request(`/auth/profile/${encodeURIComponent(userId)}`, { method: 'PATCH', body: JSON.stringify(payload), headers: token ? { Authorization: `Bearer ${token}` } : {} }),
   },
   categories: {
     list: () => request('/categories'),

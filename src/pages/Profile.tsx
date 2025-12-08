@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { 
-  Box, Heading, Text, Avatar, VStack, HStack, Button, Spinner, 
+  Box, Heading, Text, Avatar, VStack, HStack, Button, 
   useColorModeValue, FormControl, FormLabel, Input, Grid, 
-  IconButton, useBreakpointValue, Container, Flex, Divider,
+  IconButton, useBreakpointValue, Container, Flex,
   Badge, useToast, Card, CardBody, SimpleGrid
 } from '@chakra-ui/react'
-import { EditIcon, ChevronRightIcon, StarIcon } from '@chakra-ui/icons'
-import ProductCard from '../components/ProductCard'
+import { EditIcon, ChevronRightIcon } from '@chakra-ui/icons'
 import { getCurrentUser, signOut } from '../services/auth'
 import api from '../services/api'
 import { useNavigate } from 'react-router-dom'
@@ -14,9 +13,6 @@ import { setItem } from '../utils/localAuth'
 
 export default function ProfilePage() {
   const [user, setUser] = useState(() => getCurrentUser())
-  const [shop, setShop] = React.useState<any | null>(null)
-  const [loading, setLoading] = React.useState(false)
-  const [likedProducts, setLikedProducts] = React.useState<any[] | null>(null)
   const navigate = useNavigate()
   const toast = useToast()
 
@@ -26,19 +22,10 @@ export default function ProfilePage() {
   const borderColor = useColorModeValue('gray.200', 'gray.700')
   const accentColor = 'gray.900'
   const hoverColor = useColorModeValue('gray.50', 'gray.800')
-  const sectionBg = useColorModeValue('gray.50', 'gray.800')
 
   // Responsive values
   const avatarSize = useBreakpointValue({ base: 'lg', md: 'xl' })
   const headingSize = useBreakpointValue({ base: 'lg', md: 'xl' })
-  const gridColumns = useBreakpointValue({ base: 1, md: 2, lg: 3 })
-  const stackDirection = useBreakpointValue({ base: 'column', md: 'row' })
-
-  // Shops removed - no longer loading shop data
-  React.useEffect(() => {
-    setShop(null)
-    setLoading(false)
-  }, [user])
 
   // État d'édition du profil
   const [editing, setEditing] = useState(false)
@@ -53,40 +40,26 @@ export default function ProfilePage() {
     setEditPhone(user?.phone ?? '')
   }, [user])
 
-  // Chargement des produits aimés
-  React.useEffect(() => {
-    let mounted = true
-    const loadLikes = async () => {
-      if (!user) return
-      try {
-        const token = globalThis.localStorage?.getItem('token') ?? undefined
-        const likes = await api.user.myLikes(token)
-        if (!mounted) return
-        setLikedProducts(likes || [])
-      } catch (err) {
-        console.error('Failed to load liked products', err)
-        if (mounted) setLikedProducts([])
-      }
-    }
-    loadLikes()
-    return () => { mounted = false }
-  }, [user])
-
   const handleSaveProfile = async () => {
     setIsSaving(true)
     try {
+      if (!user?.id) {
+        throw new Error('User ID not available')
+      }
       const token = globalThis.localStorage?.getItem('token') ?? undefined
-      const res = await api.auth.updateMe({ 
+      const res = await api.auth.updateProfile(user.id, { 
         email: editEmail || null, 
-        displayName: editDisplayName || null,
+        display_name: editDisplayName || null,
         phone: editPhone || null,
       }, token)
       
-      if (res?.user) {
+      if (res) {
         try { 
-          setItem('user', JSON.stringify(res.user)) 
-        } catch (e) {}
-        setUser(res.user)
+          setItem('user', JSON.stringify(res)) 
+        } catch (err) {
+          console.error('Failed to save user to localStorage', err)
+        }
+        setUser(res)
         toast({
           title: "Profil mis à jour",
           status: "success",

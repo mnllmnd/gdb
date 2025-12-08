@@ -309,24 +309,27 @@ function PinterestProductCard({ product }: { product: Product }) {
         </Box>
 
         {/* Texte en dessous (centré) */}
-        <Box pt={2} px={1} textAlign="center">
+        <Box pt={1.5} px={0.5} textAlign="center">
           <Heading
             as="h3"
-            fontSize="sm"
-            fontWeight="600"
+            fontSize="xs"
+            fontWeight="400"
             color={textColor}
             noOfLines={2}
-            mb={1}
-            lineHeight="1.3"
+            mb={0.5}
+            lineHeight="1.2"
+            letterSpacing="0.02em"
+            textTransform="uppercase"
           >
             {product.title || product.name || 'Sans titre'}
           </Heading>
           
           {product.price && (
             <Text
-              fontSize="md"
-              fontWeight="700"
+              fontSize="xs"
+              fontWeight="500"
               color={textColor}
+              letterSpacing="0.01em"
             >
               {formatPrice(product.price)}
             </Text>
@@ -444,7 +447,7 @@ export default function Home() {
           <Box px={{ base: 2, md: 0 }} py={6}>
             <SimpleGrid
               columns={{ base: 2, md: 3, lg: 4, xl: 5 }}
-              spacing={{ base: 3, md: 4 }}
+              spacing={{ base: 2, md: 2.5 }}
             >
               {filteredProducts.map((product) => (
                 <ScaleFade key={product.id} initialScale={0.9} in={true}>
