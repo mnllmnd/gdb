@@ -142,7 +142,7 @@ export const ChatPopup = () => {
   const userMessageTextColor = useColorModeValue('white', 'white');
   const mutedTextColor = useColorModeValue('gray.500', 'gray.400');
   const cardBg = useColorModeValue('gray.50', 'gray.800');
-  const mine = useColorModeValue('maroon.500', 'gray.900');
+  const mine = useColorModeValue('gray.500', 'gray.900');
   const inputBg = useColorModeValue('white', 'gray.800');
   const inputBorder = useColorModeValue('gray.300', 'gray.600');
   const hoverBg = useColorModeValue('gray.50', 'gray.900');
@@ -588,19 +588,17 @@ export const ChatPopup = () => {
   return (
     <Box
       position="fixed"
-      bottom={isMobile ? "80px" : "24px"}
-      left={isMobile ? "10px" : "24px"}
-      right={isMobile ? "10px" : "auto"}
-      width={isMobile ? "auto" : "600px"}
-      height={isMobile ? "75vh" : "600px"}
+      top="0"
+      left="0"
+      right="0"
+      bottom="0"
       bg={bgColor}
       borderRadius="0"
       boxShadow="0 8px 40px rgba(0,0,0,0.12)"
       zIndex={9999}
       display="flex"
       flexDirection="row"
-      border="1px solid"
-      borderColor={borderColor}
+      border="none"
       overflow="hidden"
       fontFamily="'Inter', sans-serif"
     >
@@ -730,15 +728,14 @@ export const ChatPopup = () => {
                     width="32px" 
                     height="32px" 
                     borderRadius="full" 
-                    bgGradient="linear(135deg, #10b981 0%, #059669 100%)"
+                    bg={cardBg}
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
                     flexShrink={0}
-                    boxShadow="0 2px 8px rgba(16, 185, 129, 0.3)"
-                    border="2px solid white"
+                    border="1px solid"
+                    borderColor={borderColor}
                   >
-                    <Text fontSize="14px" color="white" fontWeight="bold"></Text>
                   </Box>
                 )}
                 
@@ -880,15 +877,14 @@ export const ChatPopup = () => {
                     width="32px" 
                     height="32px" 
                     borderRadius="full" 
-                    bgGradient="linear(135deg, #f97316 0%, #ea580c 100%)"
+                    bg={inputBg}
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
                     flexShrink={0}
-                    boxShadow="0 2px 8px rgba(249, 115, 22, 0.3)"
-                    border="2px solid white"
+                    border="1px solid"
+                    borderColor={inputBorder}
                   >
-                    <Text fontSize="14px"></Text>
                   </Box>
                 )}
               </Flex>
@@ -902,15 +898,15 @@ export const ChatPopup = () => {
                   width="32px" 
                   height="32px" 
                   borderRadius="full" 
-                  bgGradient="linear(135deg, #10b981 0%, #059669 100%)"
+                  bg={cardBg}
                   display="flex"
                   alignItems="center"
                   justifyContent="center"
                   flexShrink={0}
-                  boxShadow="0 2px 8px rgba(16, 185, 129, 0.3)"
-                  border="2px solid white"
+                  border="1px solid"
+                  borderColor={borderColor}
                 >
-                  <Text fontSize="14px" color="white" fontWeight="bold">🤖</Text>
+                  <Text fontSize="14px" color={textColor} fontWeight="bold">AI</Text>
                 </Box>
                 <Box 
                   bg={loadingBg} 
