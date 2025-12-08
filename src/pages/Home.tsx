@@ -262,9 +262,8 @@ function PinterestProductCard({ product }: { product: Product }) {
             <Text 
               color="white" 
               fontSize="sm" 
-              fontWeight="600" 
+              fontWeight="300" 
               letterSpacing="wide"
-              textTransform="uppercase"
             >
               Voir détails
             </Text>
